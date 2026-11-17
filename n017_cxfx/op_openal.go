@@ -4,7 +4,7 @@ package cxfx
 
 import (
 	"bufio"
-	"github.com/mjibson/go-dsp/wav"
+	"github.com/madelynnblue/go-dsp/wav"
 	"github.com/skycoin/skycoin-cx/n001_types"
 	"github.com/skycoin/skycoin-cx/n002_util"
 	"github.com/skycoin/skycoin-cx/n006_ast"
