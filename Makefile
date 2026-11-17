@@ -24,10 +24,10 @@ build-tests: build ## Build the cx program test runner
 	go build -o ./bin/cxtest ./cmd/cxtest
 
 test: build-tests ## Run the stable CX program tests
-	./bin/cxtest --cxpath=./bin/$(CXEXE) --wdir=./tests --log=fail,stderr --disable-tests=gui,issue
+	./bin/cxtest --cxpath=$(CURDIR)/bin/$(CXEXE) --wdir=./tests --log=fail,stderr --disable-tests=gui,issue
 
 test-all: build-tests ## Run all non-GUI CX program tests, including known issues
-	./bin/cxtest --cxpath=./bin/$(CXEXE) --wdir=./tests --log=fail,stderr --disable-tests=gui
+	./bin/cxtest --cxpath=$(CURDIR)/bin/$(CXEXE) --wdir=./tests --log=fail,stderr --disable-tests=gui
 
 test-go: ## Run the Go unit tests
 	go test ./...
