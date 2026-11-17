@@ -9,6 +9,15 @@ language, with a very strict type system and a syntax
 similar to Golang's. CX provides a new programming paradigm based on
 the concept of affordances.
 
+## Repository layout
+
+Every Go package sits one level below the root as `nNNN_<name>`. The number
+is its place in the import order, so a package only imports packages with a
+lower number. `cmd/` holds the binaries, `tests/` the CX test programs and
+`benchmarks/` the CX and Go benchmarks. `CLEANUP.md` lists every file of the
+former CX repositories with a keep, merge or delete recommendation.
+
+
 [Table of Contents](#Table-ofContents) 
 
    * [CX Programming Language](#cx-programming-language-1)
@@ -36,7 +45,7 @@ purpose programming.
 
 ## Installation
 
-CX requires a Golang version of `1.15` or higher. 
+CX requires Go 1.26 or newer. `go build ./cmd/cx` builds the language with cipher, os and regexp support; `make build-gui` adds the cxfx GL package, which needs cgo and X11/GL headers.
 
 ### Binary Releases
 
@@ -57,7 +66,7 @@ If you have not setup Golang on your machine, follow this [guide](https://www.te
 Download CX's repository using Go:
 
 ```
-go get github.com/skycoin/cx
+git clone https://github.com/skycoin/skycoin-cx
 ```
 
 Get required Go dependencies with:
@@ -73,7 +82,6 @@ Build CX's binary and install by running:
 
 ```
 make build
-make install
 make test
 ```
 
@@ -102,7 +110,7 @@ brew install git
 Download CX's repository using Go:
 
 ```
-go get github.com/skycoin/cx
+git clone https://github.com/skycoin/skycoin-cx
 ```
 
 Navigate to CX's repository.
@@ -111,7 +119,6 @@ Build CX's binary and install by running:
 
 ```
 make build
-make install
 ```
 
 Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
@@ -165,7 +172,6 @@ cx lib/args.cx tests/main.cx ++wdir=tests ++disable-tests=issue
 You can update your CX installation by running:
 
 ```
-make install
 ```
 
 Or on Windows:

@@ -1,4 +1,4 @@
-// +build cxfx,android
+//go:build cxfx && android
 
 package main
 
@@ -15,7 +15,7 @@ import (
 	"golang.org/x/mobile/event/touch"
 	"golang.org/x/mobile/gl"
 
-	"github.com/skycoin/cx/cx/packages/cxfx"
+	"github.com/skycoin/skycoin-cx/n017_cxfx"
 )
 
 func startCXVM() {

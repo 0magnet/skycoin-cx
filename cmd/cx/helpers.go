@@ -9,20 +9,20 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/cx/cx/opcodes"
-	"github.com/skycoin/cx/cx/types"
+	"github.com/skycoin/skycoin-cx/n001_types"
+	"github.com/skycoin/skycoin-cx/n009_opcodes"
 
-	repl "github.com/skycoin/cx/cmd/cxrepl"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/globals"
-	cxinit "github.com/skycoin/cx/cx/init"
-	"github.com/skycoin/cx/cx/util"
-	"github.com/skycoin/cx/cxparser/actions"
-	cxparsering "github.com/skycoin/cx/cxparser/cxparsing"
-	cxparsing "github.com/skycoin/cx/cxparser/cxparsing"
-	cxgo "github.com/skycoin/cx/cxparser/cxparsingcompletor"
-	"github.com/skycoin/cx/cxparser/util/profiling"
+	"github.com/skycoin/skycoin-cx/n002_util"
+	"github.com/skycoin/skycoin-cx/n004_constants"
+	"github.com/skycoin/skycoin-cx/n005_globals"
+	"github.com/skycoin/skycoin-cx/n006_ast"
+	"github.com/skycoin/skycoin-cx/n007_profiling"
+	"github.com/skycoin/skycoin-cx/n011_actions"
+	cxinit "github.com/skycoin/skycoin-cx/n018_init"
+	cxgo "github.com/skycoin/skycoin-cx/n020_cxparsingcompletor"
+	cxparsering "github.com/skycoin/skycoin-cx/n021_cxparsing"
+	cxparsing "github.com/skycoin/skycoin-cx/n021_cxparsing"
+	repl "github.com/skycoin/skycoin-cx/n024_cxrepl"
 )
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) bool {

@@ -1,4 +1,4 @@
-// +build os,mobile
+//go:build os && mobile
 
 package cxcore
 

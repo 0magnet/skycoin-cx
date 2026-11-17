@@ -4,17 +4,17 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/skycoin/cx/cx/opcodes"
-	"github.com/skycoin/cx/cx/types"
-	"github.com/skycoin/cx/cx/util"
+	"github.com/skycoin/skycoin-cx/n001_types"
+	"github.com/skycoin/skycoin-cx/n002_util"
+	"github.com/skycoin/skycoin-cx/n009_opcodes"
 
-	repl "github.com/skycoin/cx/cmd/cxrepl"
-	"github.com/skycoin/cx/cx/ast"
-	"github.com/skycoin/cx/cx/constants"
-	"github.com/skycoin/cx/cx/execute"
-	"github.com/skycoin/cx/cxparser/actions"
-	parsingcompletor "github.com/skycoin/cx/cxparser/cxparsingcompletor"
-	"github.com/skycoin/cx/cxparser/util/profiling"
+	"github.com/skycoin/skycoin-cx/n004_constants"
+	"github.com/skycoin/skycoin-cx/n006_ast"
+	"github.com/skycoin/skycoin-cx/n007_profiling"
+	"github.com/skycoin/skycoin-cx/n010_execute"
+	"github.com/skycoin/skycoin-cx/n011_actions"
+	parsingcompletor "github.com/skycoin/skycoin-cx/n020_cxparsingcompletor"
+	repl "github.com/skycoin/skycoin-cx/n024_cxrepl"
 )
 
 func main() {

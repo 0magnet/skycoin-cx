@@ -101,3 +101,6 @@ fabric.properties
 out
 gen
 *.rdb
+
+# packageloader test databases
+program_list.db

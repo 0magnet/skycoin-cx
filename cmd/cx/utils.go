@@ -2,7 +2,7 @@ package main
 
 import "os"
 
-//todo find out why program halt
+// todo find out why program halt
 func parseCmdFlags(options cxCmdFlags, args []string) {
 
 	parseFlags(&options, args)

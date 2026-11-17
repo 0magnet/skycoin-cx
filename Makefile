@@ -1,145 +1,51 @@
-export GO111MODULE=on
-
-
 .DEFAULT_GOAL := help
-.PHONY: build-parser build test test-parser build-core
-.PHONY: install
-.PHONY: dep
+.PHONY: build build-gui build-debug build-tests test test-all test-go vet check build-parser clean help
 
-PWD := $(shell pwd)
-PTR := ptr32
-##PTR := ptr64
-
-UNAME_S := $(shell uname -s)
-
-
-ifneq (,$(findstring Linux, $(UNAME_S)))
-PLATFORM := LINUX
-SUBSYSTEM := LINUX
-PACKAGES := PGK_NAMES_LINUX
-DISPLAY  := :99.0
-endif
-
-ifneq (,$(findstring Darwin, $(UNAME_S)))
-PLATFORM := MACOS
-SUBSYSTEM := MACOS
-PACKAGES := PKG_NAMES_MACOS
-endif
-
-ifneq (,$(findstring MINGW, $(UNAME_S)))
-PLATFORM := WINDOWS
-SUBSYSTEM := MINGW
-PACKAGES := PKG_NAMES_WINDOWS
-endif
-
-ifneq (,$(findstring MSYS, $(UNAME_S)))
-PLATFORM := WINDOWS
-SUBSYSTEM := MSYS
-PACKAGES := PKG_NAMES_WINDOWS
-endif
-
-ifeq ($(PLATFORM), WINDOWS)
-GOPATH := $(subst \,/,${GOPATH})
-HOME := $(subst \,/,${HOME})
-CXPATH := $(subst, \,/, ${CXPATH})
-CXEXE := cx.exe
-else
 CXEXE := cx
+ifeq ($(OS),Windows_NT)
+CXEXE := cx.exe
 endif
 
-CXVERSION := $(shell $(PWD)/bin/$(CXEXE) --version 2> /dev/null)
+# Default build includes cipher, cxos and regexp. Opt out with nocipher,
+# nocxos, noregexp. ptr64 switches the VM to 64 bit pointers.
+TAGS ?=
+GUI_TAGS := cxfx
 
-GLOBAL_GOPATH := $(GOPATH)
-LOCAL_GOPATH  := $(HOME)/go
+build: ## Build cx into ./bin
+	go build -tags="$(TAGS)" -o ./bin/$(CXEXE) ./cmd/cx
 
-ifdef GLOBAL_GOPATH
-  GOPATH := $(GLOBAL_GOPATH)
-else
-  GOPATH := $(LOCAL_GOPATH)
-endif
+build-gui: ## Build cx with the cxfx GL/GLFW/OpenAL package (needs cgo and X11/GL headers)
+	go build -tags="$(TAGS) $(GUI_TAGS)" -o ./bin/$(CXEXE) ./cmd/cx
 
-GOLANGCI_LINT_VERSION ?= latest
+build-debug: ## Build cx without optimizations
+	go build -gcflags="all=-N -l" -tags="$(TAGS)" -o ./bin/$(CXEXE) ./cmd/cx
 
-GO_OPTS ?= -mod=vendor
+build-tests: build ## Build the cx program test runner
+	go build -o ./bin/cxtest ./cmd/cxtest
 
-ifdef CXPATH
-	CX_PATH := $(CXPATH)
-else
-	CX_PATH := $(HOME)/cx
-endif
+test: build-tests ## Run the stable CX program tests
+	./bin/cxtest --cxpath=./bin/$(CXEXE) --wdir=./tests --log=fail,stderr --disable-tests=gui,issue
 
-ifeq ($(UNAME_S), Linux)
-endif
+test-all: build-tests ## Run all non-GUI CX program tests, including known issues
+	./bin/cxtest --cxpath=./bin/$(CXEXE) --wdir=./tests --log=fail,stderr --disable-tests=gui
 
-build: ## Build CX from sources
-	$(GO_OPTS) go build -tags="$(PTR) cipher cxfx cxos http regexp" -o ./bin/$(CXEXE) github.com/skycoin/cx/cmd/cx
-	chmod +x ./bin/$(CXEXE)
+test-go: ## Run the Go unit tests
+	go test ./...
 
-build-debug: ## Build CX from sources
-	$(GO_OPTS) go build -gcflags="all=-N -l" -tags="$(PTR) cipher cxfx cxos http regexp" -o ./bin/$(CXEXE) github.com/skycoin/cx/cmd/cx
-	chmod +x ./bin/$(CXEXE)
+vet: ## go vet with default, ptr64 and cxfx tags
+	go vet ./...
+	go vet -tags ptr64 ./n001_types ./n006_ast
+	go vet -tags cxfx ./n017_cxfx ./n018_init ./cmd/cx
 
-build-core: ## Build CX with CXFX support. Done via satisfying 'cxfx' build tag.
-	$(GO_OPTS) go build -tags="$(PTR) base" -o ./bin/$(CXEXE) github.com/skycoin/cx/cmd/cx
-	chmod +x ./bin/$(CXEXE)
+check: vet test-go test ## vet, Go tests and CX program tests
 
-build-tests: build-debug
-	go build -gcflags="all=-N -l" -o ./bin/cxtests github.com/skycoin/cx/cmd/cxtest/
-	chmod +x  ./bin/cxtests
+build-parser: ## Regenerate the CX parsers from the .y grammars
+	go tool goyacc -o n019_cxpartialparsing/cxpartialparsing.go -v /dev/null n019_cxpartialparsing/cxpartialparsing.y
+	go tool goyacc -o n020_cxparsingcompletor/parsingcompletor.go -v /dev/null n020_cxparsingcompletor/parsingcompletor.y
+	gofmt -w n019_cxpartialparsing n020_cxparsingcompletor
 
-clean: ## Removes binaries.
-	rm -rf ./bin/cx
-	rm -rf ./bin/$(CXEXE)
-	rm -rf ./bin/cxtests
-
-install: configure-workspace ## Install CX from sources. Build dependencies
-	@echo 'NOTE:\tWe recommend you to test your CX installation by running "$(CXEXE) ./tests"'
-	./bin/$(CXEXE) -v
-
-test-parser: build-parser build test
-
-test:  ## Run CX test suite.
-ifndef CXVERSION
-	@echo "$(CXEXE) not found in $(PWD)/bin, please run make install first"
-else
-	# go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
-	go run -mod=vendor ./cmd/cxtest/main.go --cxpath=$(PWD)/bin/$(CXEXE) --wdir=./tests --log=fail,stderr --disable-tests=gui,issue
-endif
-
-test-all:  ## Run CX test suite.
-ifndef CXVERSION
-	@echo "$(CXEXE) not found in $(PWD)/bin, please run make install first"
-else
-	# go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
-	go run -mod=vendor ./cmd/cxtest/main.go --cxpath=$(PWD)/bin/$(CXEXE) --wdir=./tests --log=fail,stderr
-endif
-
-build-goyacc: ## Builds goyacc into /bin/goyacc
-	go build -o ./bin/goyacc ./cmd/goyacc/main.go
-
-build-parser: ## Generate lexer and parser for CX grammar
-	#go build -o ./bin/goyacc ./cmd/goyacc/main.go
-	./bin/goyacc -o cxparser/cxpartialparsing/cxpartialparsing.go cxparser/cxpartialparsing/cxpartialparsing.y
-	./bin/goyacc -o cxparser/cxparsingcompletor/parsingcompletor.go cxparser/cxparsingcompletor/parsingcompletor.y
-
-token-fuzzer:
-	go build $(GO_OPTS) -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
-	chmod +x ./bin/cx-token-fuzzer
-
-configure-workspace: ## Configure CX workspace environment
-	mkdir -p $(CX_PATH)/src $(CX_PATH)/bin $(CX_PATH)/pkg
-	@echo "NOTE:\tCX workspace at $(CX_PATH)"
-
-format: ## Formats the code. Must have goimports installed (use make install-linters).
-	goimports -w -local github.com/skycoin/cx ./cmd
-	goimports -w -local github.com/skycoin/cx ./cx
-	goimports -w -local github.com/skycoin/cx ./cxfx
-	goimports -w -local github.com/skycoin/cx ./cxgo
-
-dep: ## Update go vendor
-	go mod vendor
-	go mod verify
-	go mod tidy
+clean: ## Remove binaries
+	rm -rf ./bin
 
 help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-14s\033[0m %s\n", $$1, $$2}'

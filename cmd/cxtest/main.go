@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/skycoin/cx/cmd/cxtest/runner"
+	"github.com/skycoin/skycoin-cx/n025_cxtestrunner"
 	"github.com/urfave/cli/v2"
 )
 
