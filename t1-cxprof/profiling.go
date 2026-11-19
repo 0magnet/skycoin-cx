@@ -2,7 +2,7 @@ package cxprof
 
 import (
 	"fmt"
-	"github.com/skycoin/skycoin-cx/t0-util"
+	"github.com/skycoin/skycoin-cx/t0-util" // thin: only CXCreateFile; no depth gain
 	"os"
 	"runtime"
 	"runtime/pprof"

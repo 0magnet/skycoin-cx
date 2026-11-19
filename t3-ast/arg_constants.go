@@ -2,6 +2,10 @@ package ast
 
 import "github.com/skycoin/skycoin-cx/t0-types"
 
+// VIOLATION: init chaining. Init 2: the shared ConstCxArg_* templates here and
+// in arg_constants_ptr*.go, called from Go package init. RegisterOpCode writes
+// their Offset.
+
 // Integer Types, CxArg Constants
 var ConstCXArg_I8 = Param(types.I8)
 var ConstCxArg_I16 = Param(types.I16)

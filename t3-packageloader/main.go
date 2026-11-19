@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/skycoin/skycoin-cx/t1-plloader"
-	"github.com/skycoin/skycoin-cx/t2-plencoder"
-	"github.com/skycoin/skycoin-cx/t2-plgraph"
-	"github.com/skycoin/skycoin-cx/t2-pltree"
+	"github.com/skycoin/skycoin-cx/t1-plloader"  // thin: only LoadCXProgram, ParseArgsForCX; no depth gain
+	"github.com/skycoin/skycoin-cx/t2-plencoder" // thin: only SavePackagesToDisk; no depth gain
+	"github.com/skycoin/skycoin-cx/t2-plgraph"   // thin: only GetImportGraph; no depth gain
+	"github.com/skycoin/skycoin-cx/t2-pltree"    // thin: only GetImportTree; no depth gain
 )
 
 func main() {

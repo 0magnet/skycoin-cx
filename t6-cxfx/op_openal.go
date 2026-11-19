@@ -6,7 +6,7 @@ import (
 	"bufio"
 	"github.com/madelynnblue/go-dsp/wav"
 	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t0-util"
+	"github.com/skycoin/skycoin-cx/t0-util" // thin: only CXOpenFile; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	//"golang.org/x/mobile/exp/audio/al"

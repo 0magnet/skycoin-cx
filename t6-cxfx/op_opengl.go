@@ -18,7 +18,7 @@ import (
 	"strings"
 
 	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t0-util"
+	"github.com/skycoin/skycoin-cx/t0-util" // thin: only CXOpenFile; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 
 	//"bytes"

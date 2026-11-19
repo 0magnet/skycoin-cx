@@ -1,7 +1,7 @@
 package globals
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-types" // thin: only Pointer; no depth gain
 	"os"
 )
 
@@ -15,6 +15,8 @@ var (
 // Working directory is property of executable and can be retrieved with golang library
 var CxProgramPath string = ""
 
+// VIOLATION: init chaining. Init 1: CXPATH, BINPATH, PKGPATH from the env,
+// called from Go package init. t11-cx GetCXPath sets them again.
 var CXPATH = os.Getenv("CXPATH") + "/"
 var BINPATH = CXPATH + "bin/" // TODO @evanlinjin: Not used.
 var PKGPATH = CXPATH + "pkg/" // TODO @evanlinjin: Not used.

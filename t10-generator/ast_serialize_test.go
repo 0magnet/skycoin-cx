@@ -12,7 +12,7 @@ import (
 	cxgenerator "github.com/skycoin/skycoin-cx/t10-generator"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	cxast "github.com/skycoin/skycoin-cx/t3-ast"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
+	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: tests use only MakeProgram, RegisterPackages; no depth gain
 	"github.com/skycoin/skycoin-cx/t9-astapi"
 )
 
@@ -212,6 +212,7 @@ func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *cxast.C
 	// because of dependency on cxast.OpNames
 	// cxparsingcompletor.InitCXCore()
 	cxProgram = cxinit.MakeProgram()
+	cxinit.RegisterPackages(cxProgram)
 
 	err := astapi.AddEmptyPackage(cxProgram, "main")
 	if err != nil {

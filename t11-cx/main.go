@@ -5,16 +5,19 @@ import (
 	"runtime"
 
 	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t0-util"
-	"github.com/skycoin/skycoin-cx/t4-opcodes"
+	"github.com/skycoin/skycoin-cx/t0-util"    // thin: only CXCreateFile, CXLogFile, CXOpenFile; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-opcodes" // thin: only AssertFailed, RegisterOpcodes; no depth gain
 
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	"github.com/skycoin/skycoin-cx/t1-profiling"
-	repl "github.com/skycoin/skycoin-cx/t10-cxrepl"
+	repl "github.com/skycoin/skycoin-cx/t10-cxrepl" // thin: only Repl, ReplTargetFn; only user of cxrepl, could merge it here, max tier 11 to 10
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
-	"github.com/skycoin/skycoin-cx/t4-execute"
-	parsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor"
+	"github.com/skycoin/skycoin-cx/t4-execute"                             // thin: only RunCompiled; no depth gain
+	"github.com/skycoin/skycoin-cx/t5-cxos"                                // thin: only InitConstants; no depth gain
+	"github.com/skycoin/skycoin-cx/t6-cxfx"                                // thin: only InitConstants; no depth gain
+	cxinit "github.com/skycoin/skycoin-cx/t7-init"                         // thin: only MakeProgram, RegisterPackages; no depth gain
+	parsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only DebugLexer, Tokenize; no depth gain
 )
 
 func main() {
@@ -158,8 +161,20 @@ func Run(args []string) {
 
 	profiling.DebugProfile = profiling.DebugProfileRate > 0
 
-	// Load op code tables
-	parsingcompletor.InitCXCore()
+	// Init 4-9 run here, after the flags, so the heap flags size the program.
+	// Init 1-3 are package vars (see the VIOLATION comments).
+	// Init 4: cx.* constants in actions.ConstCodes
+	actions.InitConstants()
+	// Init 5: os.* constants (empty with nocxos)
+	cxos.InitConstants()
+	// Init 6: gl, glfw and al constants (empty without cxfx)
+	cxfx.InitConstants()
+	// Init 7: actions.AST, the program state
+	actions.AST = cxinit.MakeProgram()
+	// Init 8: native packages in the program and the global opcode tables
+	cxinit.RegisterPackages(actions.AST)
+	// Init 9: built-in opcode and operator tables
+	opcodes.RegisterOpcodes(actions.AST)
 
 	if run := parseProgram(options, fileNames, sourceCode); run {
 

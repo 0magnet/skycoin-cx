@@ -7,7 +7,7 @@ import (
 	"net/rpc"
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-types" // thin: only Write_str; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -18,6 +18,8 @@ var lc net.ListenConfig
 
 var conn net.Conn
 
+// VIOLATION: init chaining. Init 3: the tcp package RPC server, called from Go
+// package init.
 var DefaultServer = rpc.NewServer()
 
 func opTCPDial(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {

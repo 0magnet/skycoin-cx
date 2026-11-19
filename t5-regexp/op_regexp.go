@@ -5,8 +5,8 @@ package regexp
 import (
 	"regexp"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-types"     // thin: only Read_str, STR, Write_str; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-constants" // thin: only CX_RUNTIME_ERROR; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 
 	"github.com/jinzhu/copier"

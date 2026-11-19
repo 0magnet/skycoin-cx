@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-gl/gl/v3.2-compatibility/gl"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t1-constants" // thin: only CX_RUNTIME_NOT_IMPLEMENTED; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 

@@ -12,14 +12,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t3-ast"
-	"github.com/skycoin/skycoin-cx/t4-execute"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
+	"github.com/skycoin/skycoin-cx/t3-ast"         // thin: only InREPL; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-execute"     // thin: only RunCompiled; no depth gain
+	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: only MakeProgram, RegisterPackages; no depth gain
 
-	"github.com/skycoin/skycoin-cx/t4-actions"
-	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing"
-	cxparsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor"
-	cxparsering "github.com/skycoin/skycoin-cx/t9-cxparsing"
+	"github.com/skycoin/skycoin-cx/t4-actions"                               // thin: only AST, LineNo; no depth gain
+	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing"     // thin: only Parse, Program; no depth gain
+	cxparsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only Lexer, NewLexer, Parse; no depth gain
+	cxparsering "github.com/skycoin/skycoin-cx/t9-cxparsing"                 // thin: only AddInitFunction; could move AddInitFunction to t4-actions
 )
 
 const VERSION = "0.8.0"
@@ -45,7 +45,9 @@ func unsafeEval(code string) (out string) {
 
 	actions.LineNo = 0
 
+	// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 	actions.AST = cxinit.MakeProgram()
+	cxinit.RegisterPackages(actions.AST)
 	cxpartialparsing.Program = actions.AST
 
 	cxpartialparsing.Parse(code)
@@ -63,7 +65,9 @@ func unsafeEval(code string) (out string) {
 	//err = actions.AST.RunCompiled(0, nil);
 	err = execute.RunCompiled(actions.AST, 0, nil)
 	if err != nil {
+		// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 		actions.AST = cxinit.MakeProgram()
+		cxinit.RegisterPackages(actions.AST)
 		return fmt.Sprintf("%s", err)
 	}
 	//Tod: If error equals nill?
@@ -79,7 +83,9 @@ func unsafeEval(code string) (out string) {
 	os.Stdout = old // restoring the real stdout
 	out = <-outC
 
+	// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 	actions.AST = cxinit.MakeProgram()
+	cxinit.RegisterPackages(actions.AST)
 	return out
 }
 
@@ -101,7 +107,9 @@ func Eval(code string) string {
 	case <-ch:
 		return result
 	case <-timer.C:
+		// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 		actions.AST = cxinit.MakeProgram()
+		cxinit.RegisterPackages(actions.AST)
 		return "Timed out."
 	}
 }

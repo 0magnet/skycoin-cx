@@ -1,7 +1,7 @@
 package astapi
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-types" // thin: only Code; no depth gain
 	cxast "github.com/skycoin/skycoin-cx/t3-ast"
 )
 

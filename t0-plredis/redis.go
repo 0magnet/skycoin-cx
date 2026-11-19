@@ -9,6 +9,8 @@ import (
 var ctx = context.Background()
 var rdb *redis.Client
 
+// VIOLATION: init chaining. Init 2 of the package loader tools: the redis
+// client for localhost:6379, called from Go package init.
 func init() {
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",

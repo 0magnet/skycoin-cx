@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t1-plloader"
-	"github.com/skycoin/skycoin-cx/t5-plfileoutput"
+	"github.com/skycoin/skycoin-cx/t1-plloader"     // thin: tests use only LoadCXProgram, ParseArgsForCX; no depth gain
+	"github.com/skycoin/skycoin-cx/t5-plfileoutput" // thin: tests use only GetImportFiles; tests only, could move the test to t5-plfileoutput, tier 6 to 2
 	"github.com/skycoin/skycoin-cx/t6-declextractor"
 )
 

@@ -29,7 +29,8 @@ var (
 )
 
 // nolint typecheck
-func init() {
+// InitConstants registers the cx.* constants in ConstCodes and Constants.
+func InitConstants() {
 	// cx
 	AddConstI32(CONST_CX_SUCCESS, "cx.SUCCESS", constants.CX_SUCCESS)
 	AddConstI32(CONST_CX_COMPILATION_ERROR, "cx.COMPILATION_ERROR", constants.CX_COMPILATION_ERROR)

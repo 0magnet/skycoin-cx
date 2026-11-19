@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 
-	. "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor"
+	. "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: lexer tokens, keep
 )
 
 var tbits int = 4

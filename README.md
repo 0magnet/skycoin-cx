@@ -20,6 +20,14 @@ runner. `tests/` holds the CX test programs, `lib/` CX libraries and
 `t0-benchmarks/` the CX and Go benchmarks. `CLEANUP.md` lists every file of
 the former CX repositories with a keep, merge or delete recommendation.
 
+Init lives in one place. No package has a Go `func init()`, and no setup is
+hidden in a constructor or in a package level variable. A constructor only
+returns a new object. Setup that touches shared state is an explicit,
+exported Init function, and `t11-cx` main calls each one in a numbered order
+before the run loop. `make check-inits` fails on `func init()` outside package
+main. The files that still break the rule are listed in `init-allowlist.txt`,
+which only shrinks, and each one is marked `// VIOLATION: init chaining`.
+
 
 Table of Contents
 

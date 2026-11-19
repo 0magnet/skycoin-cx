@@ -1,7 +1,7 @@
 package globals
 
 import (
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t1-constants" // thin: only END_OF_NAMED_OPCODES; core, keep
 )
 
 var (

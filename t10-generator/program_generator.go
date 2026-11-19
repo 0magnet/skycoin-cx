@@ -13,8 +13,8 @@ import (
 	"github.com/jinzhu/copier"
 	cxconstants "github.com/skycoin/skycoin-cx/t1-constants"
 	cxast "github.com/skycoin/skycoin-cx/t3-ast"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
-	cxparsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor"
+	cxinit "github.com/skycoin/skycoin-cx/t7-init"                           // thin: only MakeProgram, RegisterPackages; no depth gain
+	cxparsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only InitCXCore; no depth gain
 	"github.com/skycoin/skycoin-cx/t9-astapi"
 )
 
@@ -420,6 +420,7 @@ func GenerateSampleProgram(t *testing.T, withLiteral bool) *cxast.CXProgram {
 	// because of dependency on cxast.OpNames
 	cxparsingcompletor.InitCXCore()
 	cxProgram = cxinit.MakeProgram()
+	cxinit.RegisterPackages(cxProgram)
 
 	err := astapi.AddEmptyPackage(cxProgram, "main")
 	if err != nil {
