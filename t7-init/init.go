@@ -13,6 +13,8 @@ import (
 	"github.com/skycoin/skycoin-cx/t5-regexp"
 )
 
+// RegisterPackages adds the native packages to prgrm and their functions to
+// the global opcode tables.
 func RegisterPackages(prgrm *ast.CXProgram) {
 	cipher.RegisterPackage(prgrm)
 	cxfx.RegisterPackage(prgrm)
@@ -22,7 +24,8 @@ func RegisterPackages(prgrm *ast.CXProgram) {
 	tcp.RegisterPackage(prgrm)
 }
 
-// MakeProgram ...
+// MakeProgram returns a new empty program. Call RegisterPackages on it to add
+// the native packages.
 func MakeProgram() *ast.CXProgram {
 	minHeapSize := ast.MinHeapSize()
 	newPrgrm := &ast.CXProgram{
@@ -43,8 +46,6 @@ func MakeProgram() *ast.CXProgram {
 		},
 		CXArgs: make([]ast.CXArgument, 0),
 	}
-
-	RegisterPackages(newPrgrm)
 
 	return newPrgrm
 }

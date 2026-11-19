@@ -13,6 +13,7 @@ func TestASTAPI_Functions(t *testing.T) {
 	var cxprogram *cxast.CXProgram
 	t.Run("make program", func(t *testing.T) {
 		cxprogram = cxinit.MakeProgram()
+		cxinit.RegisterPackages(cxprogram)
 	})
 
 	t.Run("add empty package", func(t *testing.T) {

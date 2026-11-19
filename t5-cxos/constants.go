@@ -58,7 +58,8 @@ const (
 	OS_RUN_TIMEOUT
 )
 
-func init() {
+// InitConstants registers the os.* constants in actions.ConstCodes.
+func InitConstants() {
 	// os
 	actions.AddConstI32(CONST_OS_RUN_SUCCESS, "os.RUN_SUCCESS", OS_RUN_SUCCESS)
 	actions.AddConstI32(CONST_OS_RUN_EMPTY_CMD, "os.RUN_EMPTY_CMD", OS_RUN_EMPTY_CMD)

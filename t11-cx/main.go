@@ -14,6 +14,9 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t5-cxos"
+	"github.com/skycoin/skycoin-cx/t6-cxfx"
+	cxinit "github.com/skycoin/skycoin-cx/t7-init"
 	parsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor"
 )
 
@@ -158,8 +161,20 @@ func Run(args []string) {
 
 	profiling.DebugProfile = profiling.DebugProfileRate > 0
 
-	// Load op code tables
-	parsingcompletor.InitCXCore()
+	// Init 4-9 run here, after the flags, so the heap flags size the program.
+	// Init 1-3 are package vars (see the VIOLATION comments).
+	// Init 4: cx.* constants in actions.ConstCodes
+	actions.InitConstants()
+	// Init 5: os.* constants (empty with nocxos)
+	cxos.InitConstants()
+	// Init 6: gl, glfw and al constants (empty without cxfx)
+	cxfx.InitConstants()
+	// Init 7: actions.AST, the program state
+	actions.AST = cxinit.MakeProgram()
+	// Init 8: native packages in the program and the global opcode tables
+	cxinit.RegisterPackages(actions.AST)
+	// Init 9: built-in opcode and operator tables
+	opcodes.RegisterOpcodes(actions.AST)
 
 	if run := parseProgram(options, fileNames, sourceCode); run {
 

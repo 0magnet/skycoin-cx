@@ -420,6 +420,7 @@ func GenerateSampleProgram(t *testing.T, withLiteral bool) *cxast.CXProgram {
 	// because of dependency on cxast.OpNames
 	cxparsingcompletor.InitCXCore()
 	cxProgram = cxinit.MakeProgram()
+	cxinit.RegisterPackages(cxProgram)
 
 	err := astapi.AddEmptyPackage(cxProgram, "main")
 	if err != nil {

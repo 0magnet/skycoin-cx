@@ -37,6 +37,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 
 	if actions.AST == nil {
 		actions.AST = cxinit.MakeProgram()
+		cxinit.RegisterPackages(actions.AST)
 	}
 
 	// Parsing all the source code files sent as CLI arguments to CX.

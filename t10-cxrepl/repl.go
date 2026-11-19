@@ -46,6 +46,7 @@ func unsafeEval(code string) (out string) {
 	actions.LineNo = 0
 
 	actions.AST = cxinit.MakeProgram()
+	cxinit.RegisterPackages(actions.AST)
 	cxpartialparsing.Program = actions.AST
 
 	cxpartialparsing.Parse(code)
@@ -64,6 +65,7 @@ func unsafeEval(code string) (out string) {
 	err = execute.RunCompiled(actions.AST, 0, nil)
 	if err != nil {
 		actions.AST = cxinit.MakeProgram()
+		cxinit.RegisterPackages(actions.AST)
 		return fmt.Sprintf("%s", err)
 	}
 	//Tod: If error equals nill?
@@ -80,6 +82,7 @@ func unsafeEval(code string) (out string) {
 	out = <-outC
 
 	actions.AST = cxinit.MakeProgram()
+	cxinit.RegisterPackages(actions.AST)
 	return out
 }
 
@@ -102,6 +105,7 @@ func Eval(code string) string {
 		return result
 	case <-timer.C:
 		actions.AST = cxinit.MakeProgram()
+		cxinit.RegisterPackages(actions.AST)
 		return "Timed out."
 	}
 }

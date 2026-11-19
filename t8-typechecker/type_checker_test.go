@@ -127,6 +127,7 @@ func TestTypeChecker_ParseDeclarationSpecifier(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			actions.AST = cxinit.MakeProgram()
+			cxinit.RegisterPackages(actions.AST)
 
 			if tc.strctName != "" {
 
@@ -243,6 +244,7 @@ func TestTypeChecker_ParseParameterDeclaration(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			actions.AST = cxinit.MakeProgram()
+			cxinit.RegisterPackages(actions.AST)
 
 			var pkg *ast.CXPackage
 			pkg = ast.MakePackage(tc.pkgName)
@@ -313,6 +315,7 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
+			cxinit.RegisterPackages(actions.AST)
 
 			srcBytes, err := os.ReadFile(tc.testDir)
 			if err != nil {
@@ -490,6 +493,7 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
+			cxinit.RegisterPackages(actions.AST)
 
 			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
 
@@ -675,6 +679,7 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
+			cxinit.RegisterPackages(actions.AST)
 
 			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
 
@@ -840,6 +845,7 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 
 			actions.AST = cxinit.MakeProgram()
+			cxinit.RegisterPackages(actions.AST)
 
 			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
 

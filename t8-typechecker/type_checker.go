@@ -12,6 +12,7 @@ func ParseAllDeclarations(files []*loader.File, imports []declaration_extractor.
 	// Make AST if not made yet
 	if actions.AST == nil {
 		actions.AST = cxinit.MakeProgram()
+		cxinit.RegisterPackages(actions.AST)
 	}
 
 	err := ParseImports(imports)
