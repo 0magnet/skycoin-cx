@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: build build-gui build-debug build-tests test test-all test-go vet check-tiers check build-parser clean help
+.PHONY: build build-gui build-debug build-tests test test-all test-go vet check-tiers check-inits check build-parser clean help
 
 CXEXE := cx
 ifeq ($(OS),Windows_NT)
@@ -40,7 +40,10 @@ vet: ## go vet with default, ptr64 and cxfx tags
 check-tiers: ## Check that packages only import lower tiers and sit at <dir>/<file>.go
 	./check-tiers.sh
 
-check: check-tiers vet test-go test ## tier check, vet, Go tests and CX program tests
+check-inits: ## Check that no package outside main has func init(), see init-allowlist.txt
+	./check-inits.sh
+
+check: check-tiers check-inits vet test-go test ## tier check, init check, vet, Go tests and CX program tests
 
 build-parser: ## Regenerate the CX parsers from the .y grammars
 	go tool goyacc -o t5-cxpartialparsing/cxpartialparsing.go -v /dev/null t5-cxpartialparsing/cxpartialparsing.y
