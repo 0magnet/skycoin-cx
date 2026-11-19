@@ -18,6 +18,8 @@ var lc net.ListenConfig
 
 var conn net.Conn
 
+// VIOLATION: init chaining. Init 3: the tcp package RPC server, called from Go
+// package init.
 var DefaultServer = rpc.NewServer()
 
 func opTCPDial(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {

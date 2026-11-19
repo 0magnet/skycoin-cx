@@ -11,6 +11,8 @@ import (
 
 var DBPath string
 
+// VIOLATION: init chaining. Init 1 of the package loader tools: opens
+// program_list.db next to the executable, called from Go package init.
 func init() {
 	path, err := os.Executable()
 	if err != nil {

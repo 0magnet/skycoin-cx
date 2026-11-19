@@ -45,6 +45,7 @@ func unsafeEval(code string) (out string) {
 
 	actions.LineNo = 0
 
+	// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 	actions.AST = cxinit.MakeProgram()
 	cxinit.RegisterPackages(actions.AST)
 	cxpartialparsing.Program = actions.AST
@@ -64,6 +65,7 @@ func unsafeEval(code string) (out string) {
 	//err = actions.AST.RunCompiled(0, nil);
 	err = execute.RunCompiled(actions.AST, 0, nil)
 	if err != nil {
+		// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 		actions.AST = cxinit.MakeProgram()
 		cxinit.RegisterPackages(actions.AST)
 		return fmt.Sprintf("%s", err)
@@ -81,6 +83,7 @@ func unsafeEval(code string) (out string) {
 	os.Stdout = old // restoring the real stdout
 	out = <-outC
 
+	// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 	actions.AST = cxinit.MakeProgram()
 	cxinit.RegisterPackages(actions.AST)
 	return out
@@ -104,6 +107,7 @@ func Eval(code string) string {
 	case <-ch:
 		return result
 	case <-timer.C:
+		// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 		actions.AST = cxinit.MakeProgram()
 		cxinit.RegisterPackages(actions.AST)
 		return "Timed out."

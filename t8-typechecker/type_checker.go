@@ -10,6 +10,8 @@ import (
 func ParseAllDeclarations(files []*loader.File, imports []declaration_extractor.ImportDeclaration, globals []declaration_extractor.GlobalDeclaration, structs []declaration_extractor.StructDeclaration, funcs []declaration_extractor.FuncDeclaration) error {
 
 	// Make AST if not made yet
+	// VIOLATION: init chaining. Init 7-8 again when actions.AST is nil, called
+	// from ParseAllDeclarations. The caller should pass the program in.
 	if actions.AST == nil {
 		actions.AST = cxinit.MakeProgram()
 		cxinit.RegisterPackages(actions.AST)
