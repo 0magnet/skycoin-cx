@@ -4,7 +4,7 @@ package cxfx
 
 import (
 	"github.com/skycoin/skycoin-cx/t3-ast"
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-execute" // thin: only Callback; no depth gain
 )
 
 type Func_i32_i32 func(a int32, b int32)

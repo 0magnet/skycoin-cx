@@ -3,7 +3,7 @@
 package cxos
 
 import (
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-actions" // thin: only AddConstI32; no depth gain
 )
 
 const (

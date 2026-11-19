@@ -3,8 +3,8 @@ package assert
 import (
 	"fmt"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-types" // thin: only Code; no depth gain
+	"github.com/skycoin/skycoin-cx/t3-ast"   // thin: only CXArgument; could merge t4-assert into its user, tier 4 to 1
 )
 
 func ArgOfType(arg *ast.CXArgument, t int) {

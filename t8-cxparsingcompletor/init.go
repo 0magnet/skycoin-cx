@@ -2,10 +2,10 @@ package parsingcompletor
 
 import (
 	"github.com/skycoin/skycoin-cx/t4-actions"
-	"github.com/skycoin/skycoin-cx/t4-opcodes"
-	"github.com/skycoin/skycoin-cx/t5-cxos"
-	"github.com/skycoin/skycoin-cx/t6-cxfx"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
+	"github.com/skycoin/skycoin-cx/t4-opcodes"     // thin: only RegisterOpcodes; no depth gain
+	"github.com/skycoin/skycoin-cx/t5-cxos"        // thin: only InitConstants; only for the InitCXCore helper, goes with the init move (A)
+	"github.com/skycoin/skycoin-cx/t6-cxfx"        // thin: only InitConstants; only for the InitCXCore helper, goes with the init move (A)
+	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: only MakeProgram, RegisterPackages; only for the InitCXCore helper, goes with the init move (A), tier 8 to 5
 )
 
 var Initialized bool

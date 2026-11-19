@@ -6,14 +6,14 @@ import (
 	"os"
 	"testing"
 
-	cxpackages "github.com/skycoin/skycoin-cx/t0-packages"
+	cxpackages "github.com/skycoin/skycoin-cx/t0-packages" // thin: tests use only IsDefaultPackage; no depth gain
 	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t1-plloader"
+	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: tests use only LoadCXProgram, ParseArgsForCX; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
-	"github.com/skycoin/skycoin-cx/t5-plfileoutput"
+	"github.com/skycoin/skycoin-cx/t5-plfileoutput" // thin: tests use only GetImportFiles; no depth gain
 	"github.com/skycoin/skycoin-cx/t6-declextractor"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
+	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: tests use only MakeProgram, RegisterPackages; could take the program as an argument, tier 8 to 7
 	"github.com/skycoin/skycoin-cx/t8-typechecker"
 )
 

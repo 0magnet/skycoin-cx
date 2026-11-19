@@ -14,8 +14,8 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t0-util"
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t2-globals"
+	"github.com/skycoin/skycoin-cx/t1-constants" // thin: only CX_RUNTIME_INVALID_ARGUMENT; no depth gain
+	"github.com/skycoin/skycoin-cx/t2-globals"   // thin: only CxProgramPath; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 

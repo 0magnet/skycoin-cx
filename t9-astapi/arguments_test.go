@@ -5,11 +5,11 @@ import (
 	"encoding/binary"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	cxconstants "github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-types"                 // thin: tests use only Code, I16, I32; no depth gain
+	cxconstants "github.com/skycoin/skycoin-cx/t1-constants" // thin: tests use only OP_ADD, OP_DIV, OP_SUB; no depth gain
 	cxast "github.com/skycoin/skycoin-cx/t3-ast"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
-	parsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor"
+	cxinit "github.com/skycoin/skycoin-cx/t7-init"                         // thin: tests use only MakeProgram, RegisterPackages; tests only, moving these tests up lets astapi drop to t5
+	parsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: tests use only InitCXCore; tests only, could init with t7-init and t4-opcodes
 	"github.com/skycoin/skycoin-cx/t9-astapi"
 )
 

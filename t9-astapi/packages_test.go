@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cxast "github.com/skycoin/skycoin-cx/t3-ast"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
+	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: tests use only MakeProgram, RegisterPackages; tests only, moving these tests up lets astapi drop to t5
 	"github.com/skycoin/skycoin-cx/t9-astapi"
 )
 

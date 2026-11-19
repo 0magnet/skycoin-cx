@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	cxpackages "github.com/skycoin/skycoin-cx/t0-packages"
+	cxpackages "github.com/skycoin/skycoin-cx/t0-packages" // thin: only IsDefaultPackage; no depth gain
 
 	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t0-util"
+	"github.com/skycoin/skycoin-cx/t0-util" // thin: only CXOpenFile, CXStatFile; no depth gain
 	"github.com/skycoin/skycoin-cx/t1-constants"
 )
 

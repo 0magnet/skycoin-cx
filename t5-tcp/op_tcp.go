@@ -7,7 +7,7 @@ import (
 	"net/rpc"
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-types" // thin: only Write_str; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 

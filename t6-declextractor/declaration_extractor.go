@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/skycoin/skycoin-cx/t1-plloader"
+	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File; no depth gain
 )
 
 func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {

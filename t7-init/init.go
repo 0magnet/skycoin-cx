@@ -1,16 +1,16 @@
 package init
 
 import (
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t1-constants" // thin: only CALLSTACK_SIZE, NULL_HEAP_ADDRESS_OFFSET, STACK_SIZE; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
-	"github.com/skycoin/skycoin-cx/t5-cipher"
-	"github.com/skycoin/skycoin-cx/t5-cxos"
-	"github.com/skycoin/skycoin-cx/t5-tcp"
-	"github.com/skycoin/skycoin-cx/t6-cxfx"
+	"github.com/skycoin/skycoin-cx/t5-cipher" // thin: only RegisterPackage; registration list, keep
+	"github.com/skycoin/skycoin-cx/t5-cxos"   // thin: only RegisterPackage; registration list, keep
+	"github.com/skycoin/skycoin-cx/t5-tcp"    // thin: only RegisterPackage; registration list, keep
+	"github.com/skycoin/skycoin-cx/t6-cxfx"   // thin: only RegisterPackage; registration list, keep
 
 	// "github.com/skycoin/cx/cx/packages/http"
 
-	"github.com/skycoin/skycoin-cx/t5-regexp"
+	"github.com/skycoin/skycoin-cx/t5-regexp" // thin: only RegisterPackage; registration list, keep
 )
 
 // RegisterPackages adds the native packages to prgrm and their functions to

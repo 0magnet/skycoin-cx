@@ -3,10 +3,10 @@ package astapi
 import (
 	"errors"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-types" // thin: only Code; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	cxast "github.com/skycoin/skycoin-cx/t3-ast"
-	cxparseractions "github.com/skycoin/skycoin-cx/t4-actions"
+	cxparseractions "github.com/skycoin/skycoin-cx/t4-actions" // thin: only AST, WritePrimary; no depth gain
 )
 
 // AddNativeInputToExpression adds native input to an expression

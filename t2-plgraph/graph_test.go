@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt"
+	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: tests use only DBPath; no depth gain
 )
 
 // Test currently fails because the graph is dependent on the order packages are added

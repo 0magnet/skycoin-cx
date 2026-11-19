@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/skycoin/skycoin-cx/t1-plloader"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-actions" // thin: tests use only AST; tests only set actions.AST = nil, could drop it, tier 5 to 2
 	"github.com/skycoin/skycoin-cx/t5-plfileoutput"
 )
 

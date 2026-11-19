@@ -10,19 +10,19 @@ import (
 	"strings"
 
 	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t4-opcodes"
+	"github.com/skycoin/skycoin-cx/t4-opcodes" // thin: only AssertFailed, RegisterOpcodes; no depth gain
 
-	"github.com/skycoin/skycoin-cx/t0-util"
+	"github.com/skycoin/skycoin-cx/t0-util" // thin: only CXCreateFile, CXLogFile, CXOpenFile; no depth gain
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	"github.com/skycoin/skycoin-cx/t1-profiling"
-	repl "github.com/skycoin/skycoin-cx/t10-cxrepl"
+	repl "github.com/skycoin/skycoin-cx/t10-cxrepl" // thin: only Repl, ReplTargetFn; only user of cxrepl, could merge it here, max tier 11 to 10
 	"github.com/skycoin/skycoin-cx/t2-globals"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
-	cxgo "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor"
-	cxparsering "github.com/skycoin/skycoin-cx/t9-cxparsing"
-	cxparsing "github.com/skycoin/skycoin-cx/t9-cxparsing"
+	cxinit "github.com/skycoin/skycoin-cx/t7-init"             // thin: only MakeProgram, RegisterPackages; no depth gain
+	cxgo "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only DebugLexer, Tokenize; no depth gain
+	cxparsering "github.com/skycoin/skycoin-cx/t9-cxparsing"   // thin: only AddInitFunction, ParseSourceCode; no depth gain
+	cxparsing "github.com/skycoin/skycoin-cx/t9-cxparsing"     // thin: only AddInitFunction, ParseSourceCode; no depth gain
 )
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) bool {

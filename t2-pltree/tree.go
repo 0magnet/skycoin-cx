@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt"
-	"github.com/skycoin/skycoin-cx/t0-plredis"
+	"github.com/skycoin/skycoin-cx/t0-plbolt"  // thin: only Get; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-plredis" // thin: only Get; no depth gain
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 

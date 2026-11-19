@@ -8,7 +8,7 @@ import (
 
 	"github.com/skycoin/gltext"
 
-	"github.com/skycoin/skycoin-cx/t5-cxos"
+	"github.com/skycoin/skycoin-cx/t5-cxos" // thin: only ValidFile; could move ValidFile to t0-util or t3-ast, max tier 11 to 10
 )
 
 var fonts map[string]*gltext.Font = make(map[string]*gltext.Font, 0)

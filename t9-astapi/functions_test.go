@@ -3,9 +3,9 @@ package astapi_test
 import (
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-types" // thin: tests use only Code, I16, I32; no depth gain
 	cxast "github.com/skycoin/skycoin-cx/t3-ast"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
+	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: tests use only MakeProgram, RegisterPackages; tests only, moving these tests up lets astapi drop to t5
 	"github.com/skycoin/skycoin-cx/t9-astapi"
 )
 

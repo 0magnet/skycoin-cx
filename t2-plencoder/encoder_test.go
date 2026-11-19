@@ -3,7 +3,7 @@ package encoder
 import (
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt"
+	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: tests use only DBPath; no depth gain
 )
 
 func TestSavePackage(t *testing.T) {

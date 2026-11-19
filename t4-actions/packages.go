@@ -3,7 +3,7 @@ package actions
 import (
 	"fmt"
 
-	cxpackages "github.com/skycoin/skycoin-cx/t0-packages"
+	cxpackages "github.com/skycoin/skycoin-cx/t0-packages" // thin: only IsDefaultPackage; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 

@@ -5,19 +5,19 @@ import (
 	"runtime"
 
 	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t0-util"
-	"github.com/skycoin/skycoin-cx/t4-opcodes"
+	"github.com/skycoin/skycoin-cx/t0-util"    // thin: only CXCreateFile, CXLogFile, CXOpenFile; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-opcodes" // thin: only AssertFailed, RegisterOpcodes; no depth gain
 
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	"github.com/skycoin/skycoin-cx/t1-profiling"
-	repl "github.com/skycoin/skycoin-cx/t10-cxrepl"
+	repl "github.com/skycoin/skycoin-cx/t10-cxrepl" // thin: only Repl, ReplTargetFn; only user of cxrepl, could merge it here, max tier 11 to 10
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
-	"github.com/skycoin/skycoin-cx/t4-execute"
-	"github.com/skycoin/skycoin-cx/t5-cxos"
-	"github.com/skycoin/skycoin-cx/t6-cxfx"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
-	parsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor"
+	"github.com/skycoin/skycoin-cx/t4-execute"                             // thin: only RunCompiled; no depth gain
+	"github.com/skycoin/skycoin-cx/t5-cxos"                                // thin: only InitConstants; no depth gain
+	"github.com/skycoin/skycoin-cx/t6-cxfx"                                // thin: only InitConstants; no depth gain
+	cxinit "github.com/skycoin/skycoin-cx/t7-init"                         // thin: only MakeProgram, RegisterPackages; no depth gain
+	parsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only DebugLexer, Tokenize; no depth gain
 )
 
 func main() {

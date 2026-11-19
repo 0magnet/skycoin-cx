@@ -3,9 +3,9 @@ package encoder
 import (
 	"os"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt"
-	"github.com/skycoin/skycoin-cx/t0-plredis"
-	"github.com/skycoin/skycoin-cx/t1-plloader"
+	"github.com/skycoin/skycoin-cx/t0-plbolt"   // thin: only Get; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-plredis"  // thin: only Get; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File, Package, PackageList; types only, could move them to t0, tier 2 to 1
 )
 
 func SavePackagesToDisk(packageName string, path string, database string) error {

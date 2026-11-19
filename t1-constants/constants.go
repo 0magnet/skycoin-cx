@@ -1,7 +1,7 @@
 package constants
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-types" // thin: only POINTER_SIZE, Pointer; core types, keep
 )
 
 // var COREPATH = ""

@@ -1,7 +1,7 @@
 package globals
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-types" // thin: only Pointer; no depth gain
 	"os"
 )
 
