@@ -21,10 +21,7 @@ import (
 )
 
 func main() {
-
-	if os.Args != nil && len(os.Args) > 1 {
-		Run(os.Args[1:])
-	}
+	Run(os.Args[1:])
 }
 
 func Run(args []string) {

@@ -1,0 +1,32 @@
+package main
+
+import (
+	"os"
+	"os/exec"
+	"strings"
+	"testing"
+)
+
+func TestMain(m *testing.M) {
+	if os.Getenv("CX_TEST_RUN_MAIN") == "1" {
+		os.Args = []string{"cx"}
+		main()
+		os.Exit(0)
+	}
+	os.Exit(m.Run())
+}
+
+// cx with no arguments used to exit silently instead of starting the REPL.
+// See #145.
+func TestNoArgsStartsRepl(t *testing.T) {
+	cmd := exec.Command(os.Args[0])
+	cmd.Env = append(os.Environ(), "CX_TEST_RUN_MAIN=1")
+	cmd.Stdin = strings.NewReader("")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("cx: %v\n%s", err, out)
+	}
+	if !strings.Contains(string(out), "Bye!") {
+		t.Fatalf("cx with no arguments did not start the REPL, output %q", out)
+	}
+}
