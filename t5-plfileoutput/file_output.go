@@ -1,7 +1,7 @@
 package file_output
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/skycoin/skycoin-cx/t0-plbolt"  // thin: only Get; no depth gain
 	"github.com/skycoin/skycoin-cx/t0-plredis" // thin: only Get; no depth gain
@@ -20,7 +20,9 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 	if err != nil {
 		return files, err
 	}
-	packageList.UnmarshalBinary(listBytes)
+	if err := packageList.UnmarshalBinary(listBytes); err != nil {
+		return files, fmt.Errorf("decode package list %s: %w", packageName, err)
+	}
 
 	for _, packageString := range packageList.Packages {
 
@@ -30,7 +32,9 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 		if err != nil {
 			return files, err
 		}
-		packageStruct.UnmarshalBinary(packageBytes)
+		if err := packageStruct.UnmarshalBinary(packageBytes); err != nil {
+			return files, fmt.Errorf("decode package %s: %w", packageString, err)
+		}
 
 		for _, fileString := range packageStruct.Files {
 
@@ -40,7 +44,9 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 			if err != nil {
 				return files, err
 			}
-			fileStruct.UnmarshalBinary(fileBytes)
+			if err := fileStruct.UnmarshalBinary(fileBytes); err != nil {
+				return files, fmt.Errorf("decode file %s: %w", fileString, err)
+			}
 
 			// Add file struct to array
 			files = append(files, &fileStruct)
@@ -53,17 +59,17 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 func GetStructBytes(structName string, database string) ([]byte, error) {
 	switch database {
 	case "redis":
-		interfaceString, err := redis.Get(structName)
+		value, err := redis.Get(structName)
 		if err != nil {
-			return []byte{}, err
+			return nil, err
 		}
-		return []byte(interfaceString.(string)), nil
+		s, ok := value.(string)
+		if !ok {
+			return nil, fmt.Errorf("redis: value of %q is %T, want string", structName, value)
+		}
+		return []byte(s), nil
 	case "bolt":
-		listBytes, err := bolt.Get(structName)
-		if err != nil {
-			return []byte{}, err
-		}
-		return listBytes, nil
+		return bolt.Get(structName)
 	}
-	return []byte{}, errors.New("invalid database")
+	return nil, fmt.Errorf("unknown database %q", database)
 }
