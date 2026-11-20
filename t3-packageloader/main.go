@@ -25,6 +25,18 @@ func main() {
 	if flag.NFlag()+flag.NArg() > 4 || flag.NFlag()+flag.NArg() < 2 {
 		log.Fatal("Wrong number of arguments. Type -help for more information")
 	}
+	actions := 0
+	for _, set := range []bool{*loadFlag, *saveFlag, *treeFlag, *graphFlag} {
+		if set {
+			actions++
+		}
+	}
+	if actions != 1 {
+		log.Fatal("Give exactly one of -load, -save, -tree or -graph. Type -help for more information")
+	}
+	if *nameFlag == "" {
+		log.Fatal("-name is required")
+	}
 
 	var database string
 	if *redisFlag {
