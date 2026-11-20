@@ -13,8 +13,7 @@ import (
 	"strings"
 
 	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Add; no depth gain
-	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
-	"github.com/skycoin/skycoin-cx/t0-util" // thin: only CXOpenFile, CXStatFile; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-util"   // thin: only CXOpenFile, CXStatFile; no depth gain
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -111,12 +110,9 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 	return cxArgs, sourceCode, fileNames, nil
 }
 
-func LoadCXProgram(programName string, sourceCode []*os.File, database string) (err error) {
+func LoadCXProgram(programName string, sourceCode []*os.File) (err error) {
 	if programName == "" {
 		return errors.New("load program: empty program name")
-	}
-	if err := checkDatabase(database); err != nil {
-		return fmt.Errorf("load program %s: %w", programName, err)
 	}
 	if len(sourceCode) == 0 {
 		return fmt.Errorf("load program %s: no source files", programName)
@@ -132,13 +128,13 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 	importMap := make(map[string][]string)
 
 	// Start with the main package
-	err = addNewPackage(&packageListStruct, "main", fileMap, importMap, database)
+	err = addNewPackage(&packageListStruct, "main", fileMap, importMap)
 	if err != nil {
 		return err
 	}
 
 	// load the imported packages
-	err = loadImportPackages(&packageListStruct, "main", fileMap, importMap, database)
+	err = loadImportPackages(&packageListStruct, "main", fileMap, importMap)
 	if err != nil {
 		return err
 	}
@@ -148,19 +144,11 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 		return err
 	}
 
-	switch database {
-	// redis: unrelated to CX, commented out
-	// case "redis":
-	// 	return redis.Add(programName, packageListStruct)
-	case "bolt":
-		value, err := packageListStruct.MarshalBinary()
-		if err != nil {
-			return err
-		}
-		return bolt.Add(programName, value)
-	default:
-		return fmt.Errorf("save program %s: unknown database %q", programName, database)
+	value, err := packageListStruct.MarshalBinary()
+	if err != nil {
+		return err
 	}
+	return bolt.Add(programName, value)
 }
 
 func filePathWalkDir(root string) ([]string, error) {
@@ -255,10 +243,9 @@ func getPackageName(file *os.File) (string, error) {
 //	2. packageName -  name of package to be added
 //	3. fileMap - file map that contains the files
 //	4. importMap - import map that contains the imports
-//	5. database - "bolt" (redis: unrelated to CX, commented out)
 //
 // This function contains steps 4 - 9 of package loader
-func addNewPackage(packageListStruct *PackageList, packageName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
+func addNewPackage(packageListStruct *PackageList, packageName string, fileMap map[string][]*os.File, importMap map[string][]string) error {
 	if packageListStruct == nil || fileMap == nil || importMap == nil {
 		return errors.New("add package: nil package list, file map or import map")
 	}
@@ -278,7 +265,7 @@ func addNewPackage(packageListStruct *PackageList, packageName string, fileMap m
 	}
 
 	// Creates the package struct
-	packageStruct, err := createPackageStruct(packageName, files, Package{}, database)
+	packageStruct, err := createPackageStruct(packageName, files, Package{})
 	if err != nil {
 		return err
 	}
@@ -294,7 +281,7 @@ func addNewPackage(packageListStruct *PackageList, packageName string, fileMap m
 	importMap[packageName] = newImportList
 
 	// Append the package to the package struct
-	return packageListStruct.appendPackage(&packageStruct, database)
+	return packageListStruct.appendPackage(&packageStruct)
 }
 
 func getImports(file *os.File) (imports []string, err error) {
@@ -379,10 +366,9 @@ func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 //	1. name - name of the struct
 //	2. files - file list that are part of the package
 //	3. packageStruct - pass an empty package struct "Package{}"
-//	4. database - "bolt" (redis: unrelated to CX, commented out)
 //
 // This function works recursively
-func createPackageStruct(name string, files []*os.File, packageStruct Package, database string) (Package, error) {
+func createPackageStruct(name string, files []*os.File, packageStruct Package) (Package, error) {
 
 	// Base case
 	if len(files) == 0 {
@@ -400,7 +386,7 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 	}
 
 	// Append file struct
-	err = packageStruct.appendFile(&fileStruct, database)
+	err = packageStruct.appendFile(&fileStruct)
 	if err != nil {
 		return packageStruct, err
 	}
@@ -418,7 +404,7 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package, d
 		packageStruct.Blake2Hash = string(hash[:])
 	}
 
-	return createPackageStruct(name, newFiles, packageStruct, database)
+	return createPackageStruct(name, newFiles, packageStruct)
 }
 
 //	 Create an import list from the list of files
@@ -452,36 +438,26 @@ func createImportList(files []*os.File, importList []string) ([]string, error) {
 //		2. importName - package with imports
 //		3. fileMap - file map that contains the files
 //		4. importMap - import map that contains the imports
-//		5. database - "bolt" (redis: unrelated to CX, commented out)
 //
 // This function works recursively, loading the import packages and then loading import packages of imports
-func loadImportPackages(packageListStruct *PackageList, importName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
+func loadImportPackages(packageListStruct *PackageList, importName string, fileMap map[string][]*os.File, importMap map[string][]string) error {
 	for _, imprt := range importMap[importName] {
 		// A package already in importMap is loaded. Skipping it stops an import
 		// loop from recursing forever, checkForDependencyLoop reports it later.
 		if _, loaded := importMap[imprt]; loaded {
 			continue
 		}
-		err := addNewPackage(packageListStruct, imprt, fileMap, importMap, database)
+		err := addNewPackage(packageListStruct, imprt, fileMap, importMap)
 		if err != nil {
 			return err
 		}
 
 		// Load the imports of the import
-		err = loadImportPackages(packageListStruct, imprt, fileMap, importMap, database)
+		err = loadImportPackages(packageListStruct, imprt, fileMap, importMap)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-// checkDatabase reports whether database names a supported store.
-func checkDatabase(database string) error {
-	switch database {
-	case "bolt": // redis: unrelated to CX, commented out, was case "redis", "bolt"
-		return nil
-	}
-	return fmt.Errorf("unknown database %q, want bolt", database)
 }

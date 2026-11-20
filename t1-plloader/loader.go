@@ -12,8 +12,7 @@ import (
 	"strings"
 
 	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Add; no depth gain
-	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
-	"github.com/skycoin/skycoin-cx/t0-util" // thin: only CXOpenFile, CXStatFile; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-util"   // thin: only CXOpenFile, CXStatFile; no depth gain
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -147,12 +146,9 @@ func checkForDependencyLoop(importMap map[string][]string) (err error) {
 	return nil
 }
 
-func LoadCXProgram(programName string, sourceCode []*os.File, database string) (err error) {
+func LoadCXProgram(programName string, sourceCode []*os.File) (err error) {
 	if programName == "" {
 		return errors.New("load program: empty program name")
-	}
-	if err := checkDatabase(database); err != nil {
-		return fmt.Errorf("load program %s: %w", programName, err)
 	}
 	if len(sourceCode) == 0 {
 		return fmt.Errorf("load program %s: no source files", programName)
@@ -178,28 +174,20 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 
 	packageListStruct := PackageList{}
 	for _, key := range packageNames {
-		err = addNewPackage(&packageListStruct, key, fileMap[key], database)
+		err = addNewPackage(&packageListStruct, key, fileMap[key])
 		if err != nil {
 			return err
 		}
 	}
 
-	switch database {
-	// redis: unrelated to CX, commented out
-	// case "redis":
-	// 	return redis.Add(programName, packageListStruct)
-	case "bolt":
-		value, err := packageListStruct.MarshalBinary()
-		if err != nil {
-			return err
-		}
-		return bolt.Add(programName, value)
-	default:
-		return fmt.Errorf("save program %s: unknown database %q", programName, database)
+	value, err := packageListStruct.MarshalBinary()
+	if err != nil {
+		return err
 	}
+	return bolt.Add(programName, value)
 }
 
-func addNewPackage(packageListStruct *PackageList, packageName string, files []*os.File, database string) error {
+func addNewPackage(packageListStruct *PackageList, packageName string, files []*os.File) error {
 	if packageListStruct == nil {
 		return errors.New("add package: nil package list")
 	}
@@ -215,13 +203,13 @@ func addNewPackage(packageListStruct *PackageList, packageName string, files []*
 		if err != nil {
 			return err
 		}
-		err = packageStruct.appendFile(&fileStruct, database)
+		err = packageStruct.appendFile(&fileStruct)
 		if err != nil {
 			return err
 		}
 	}
 
-	return packageListStruct.appendPackage(&packageStruct, database)
+	return packageListStruct.appendPackage(&packageStruct)
 }
 
 func fileStructFromFile(file *os.File) (File, error) {
@@ -361,13 +349,4 @@ func ioReadDir(root string) ([]string, error) {
 		files = append(files, filepath.Join(root, file.Name()))
 	}
 	return files, nil
-}
-
-// checkDatabase reports whether database names a supported store.
-func checkDatabase(database string) error {
-	switch database {
-	case "bolt": // redis: unrelated to CX, commented out, was case "redis", "bolt"
-		return nil
-	}
-	return fmt.Errorf("unknown database %q, want bolt", database)
 }

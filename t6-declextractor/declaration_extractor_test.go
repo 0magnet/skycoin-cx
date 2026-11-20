@@ -1434,12 +1434,12 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			if perr != nil {
 				t.Fatal(perr)
 			}
-			err := loader.LoadCXProgram("mypkg1", sourceCodes, "bolt")
+			err := loader.LoadCXProgram("mypkg1", sourceCodes)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("mypkg1", "bolt")
+			files, err := file_output.GetImportFiles("mypkg1")
 			if err != nil {
 				t.Fatal(err)
 			}

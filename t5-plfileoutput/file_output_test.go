@@ -3,7 +3,6 @@ package file_output_test
 import (
 	"testing"
 
-	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 	"github.com/skycoin/skycoin-cx/t4-actions" // thin: tests use only AST; tests only set actions.AST = nil, could drop it, tier 5 to 2
 	"github.com/skycoin/skycoin-cx/t5-plfileoutput"
@@ -19,14 +18,12 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 		scenario    string
 		programName string
 		testDir     string
-		database    string
 		files       []loader.File
 	}{
 		{
 			scenario:    "Has Imports",
 			programName: "tester",
 			testDir:     "./test_files/test_valid_program",
-			database:    "bolt",
 			files: []loader.File{
 				{
 					FileName: "testimport.cx",
@@ -39,38 +36,10 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 				},
 			},
 		},
-		// redis: unrelated to CX, commented out
-		// {
-		// 	scenario:    "Has Imports",
-		// 	programName: "tester",
-		// 	testDir:     "./test_files/test_tree",
-		// 	database:    "redis",
-		// 	files: []loader.File{
-		// 		{
-		// 			FileName: "testimport1file1.cx",
-		// 		},
-		// 		{
-		// 			FileName: "testimport1file2.cx",
-		// 		},
-		// 		{
-		// 			FileName: "testimport2file.cx",
-		// 		},
-		// 		{
-		// 			FileName: "testimport3file1.cx",
-		// 		},
-		// 		{
-		// 			FileName: "testmain.cx",
-		// 		},
-		// 	},
-		// },
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
-			// redis: unrelated to CX, commented out
-			// if tc.database == "redis" && redis.Ping() != nil {
-			// 	t.Skip("needs a redis server on localhost:6379")
-			// }
 
 			actions.AST = nil
 
@@ -78,12 +47,12 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 			if perr != nil {
 				t.Fatal(perr)
 			}
-			err := loader.LoadCXProgram(tc.programName, sourceCodes, tc.database)
+			err := loader.LoadCXProgram(tc.programName, sourceCodes)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles(tc.programName, tc.database)
+			files, err := file_output.GetImportFiles(tc.programName)
 			if err != nil {
 				t.Fatal(err)
 			}

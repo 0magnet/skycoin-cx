@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Add; no depth gain
-	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -37,24 +36,14 @@ func (newFile *File) getHash() ([64]byte, error) {
 	return blake2b.Sum512(buffer.Bytes()), err
 }
 
-func (newFile *File) saveToDatabase(hash [64]byte, database string) error {
+func (newFile *File) saveToDatabase(hash [64]byte) error {
 	key := fmt.Sprintf("%x", hash[:])
-	switch database {
-	// redis: unrelated to CX, commented out
-	// case "redis":
-	// 	if err := redis.Add(key, *newFile); err != nil {
-	// 		return fmt.Errorf("save file %s: %w", newFile.FileName, err)
-	// 	}
-	case "bolt":
-		value, err := newFile.MarshalBinary()
-		if err != nil {
-			return fmt.Errorf("encode file %s: %w", newFile.FileName, err)
-		}
-		if err := bolt.Add(key, value); err != nil {
-			return fmt.Errorf("save file %s: %w", newFile.FileName, err)
-		}
-	default:
-		return fmt.Errorf("save file %s: unknown database %q", newFile.FileName, database)
+	value, err := newFile.MarshalBinary()
+	if err != nil {
+		return fmt.Errorf("encode file %s: %w", newFile.FileName, err)
+	}
+	if err := bolt.Add(key, value); err != nil {
+		return fmt.Errorf("save file %s: %w", newFile.FileName, err)
 	}
 	FileHashMap[newFile.FileName] = key
 	return nil

@@ -8,16 +8,15 @@ import (
 	"strings"
 
 	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Get; no depth gain
-	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
-func GetImportGraph(packageName string, database string) (output string, err error) {
+func GetImportGraph(packageName string) (output string, err error) {
 	if packageName == "" {
 		return output, errors.New("GetImportGraph: empty program name")
 	}
 	var packageList loader.PackageList
-	listBytes, err := GetStructBytes(packageName, database)
+	listBytes, err := bolt.Get(packageName)
 	if err != nil {
 		return output, err
 	}
@@ -31,7 +30,7 @@ func GetImportGraph(packageName string, database string) (output string, err err
 	for _, packageString := range packageList.Packages {
 		var imports []string
 		var packageStruct loader.Package
-		packageBytes, err := GetStructBytes(packageString, database)
+		packageBytes, err := bolt.Get(packageString)
 		if err != nil {
 			return output, err
 		}
@@ -41,7 +40,7 @@ func GetImportGraph(packageName string, database string) (output string, err err
 
 		for _, fileString := range packageStruct.Files {
 			var fileStruct loader.File
-			fileBytes, err := GetStructBytes(fileString, database)
+			fileBytes, err := bolt.Get(fileString)
 			if err != nil {
 				return output, err
 			}
@@ -111,26 +110,4 @@ func GetImportGraph(packageName string, database string) (output string, err err
 		output += otherImport
 	}
 	return output, nil
-}
-
-func GetStructBytes(structName string, database string) ([]byte, error) {
-	if structName == "" {
-		return nil, errors.New("get struct bytes: empty key")
-	}
-	switch database {
-	// redis: unrelated to CX, commented out
-	// case "redis":
-	// 	value, err := redis.Get(structName)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	s, ok := value.(string)
-	// 	if !ok {
-	// 		return nil, fmt.Errorf("redis: value of %q is %T, want string", structName, value)
-	// 	}
-	// 	return []byte(s), nil
-	case "bolt":
-		return bolt.Get(structName)
-	}
-	return nil, fmt.Errorf("unknown database %q", database)
 }

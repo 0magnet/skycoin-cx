@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Get; no depth gain
-	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
@@ -13,14 +12,14 @@ import (
 // - Returns Import Files
 // - Packages must be added to AST first or an error will occur
 // - Call AddPkgsToAST before calling this function
-func GetImportFiles(packageName string, database string) (files []*loader.File, err error) {
+func GetImportFiles(packageName string) (files []*loader.File, err error) {
 	if packageName == "" {
 		return files, errors.New("GetImportFiles: empty program name")
 	}
 
 	// Get package list
 	var packageList loader.PackageList
-	listBytes, err := GetStructBytes(packageName, database)
+	listBytes, err := bolt.Get(packageName)
 	if err != nil {
 		return files, err
 	}
@@ -32,7 +31,7 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 
 		//  Get package struct
 		var packageStruct loader.Package
-		packageBytes, err := GetStructBytes(packageString, database)
+		packageBytes, err := bolt.Get(packageString)
 		if err != nil {
 			return files, err
 		}
@@ -44,7 +43,7 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 
 			// Get file struct
 			var fileStruct loader.File
-			fileBytes, err := GetStructBytes(fileString, database)
+			fileBytes, err := bolt.Get(fileString)
 			if err != nil {
 				return files, err
 			}
@@ -58,26 +57,4 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 	}
 
 	return files, nil
-}
-
-func GetStructBytes(structName string, database string) ([]byte, error) {
-	if structName == "" {
-		return nil, errors.New("get struct bytes: empty key")
-	}
-	switch database {
-	// redis: unrelated to CX, commented out
-	// case "redis":
-	// 	value, err := redis.Get(structName)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	s, ok := value.(string)
-	// 	if !ok {
-	// 		return nil, fmt.Errorf("redis: value of %q is %T, want string", structName, value)
-	// 	}
-	// 	return []byte(s), nil
-	case "bolt":
-		return bolt.Get(structName)
-	}
-	return nil, fmt.Errorf("unknown database %q", database)
 }

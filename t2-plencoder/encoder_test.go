@@ -6,41 +6,31 @@ import (
 	"testing"
 
 	"github.com/skycoin/skycoin-cx/t0-plbolt"
-	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
 func TestSavePackage(t *testing.T) {
-	// redis: unrelated to CX, commented out
-	for _, database := range []string{"bolt"} {
-		t.Run(database, func(t *testing.T) {
-			// redis: unrelated to CX, commented out
-			// if database == "redis" && redis.Ping() != nil {
-			// 	t.Skip("needs a redis server on localhost:6379")
-			// }
-			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{"test_tree"}, true)
-			if perr != nil {
-				t.Fatal(perr)
-			}
-			if err := loader.LoadCXProgram("Test", sourceCodes, database); err != nil {
-				t.Fatal(err)
-			}
-			dir := filepath.Join(t.TempDir(), "out") + "/"
-			if err := SavePackagesToDisk("Test", dir, database); err != nil {
-				t.Fatal(err)
-			}
-			got, err := os.ReadFile(filepath.Join(dir, "src", "testimport2", "testimport2file.cx"))
-			if err != nil {
-				t.Fatal(err)
-			}
-			want, err := os.ReadFile(filepath.Join("test_tree", "src", "testimport2", "testimport2file.cx"))
-			if err != nil {
-				t.Fatal(err)
-			}
-			if string(got) != string(want) {
-				t.Errorf("saved file differs from the source:\n got %q\nwant %q", got, want)
-			}
-		})
+	_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{"test_tree"}, true)
+	if perr != nil {
+		t.Fatal(perr)
+	}
+	if err := loader.LoadCXProgram("Test", sourceCodes); err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(t.TempDir(), "out") + "/"
+	if err := SavePackagesToDisk("Test", dir); err != nil {
+		t.Fatal(err)
+	}
+	got, err := os.ReadFile(filepath.Join(dir, "src", "testimport2", "testimport2file.cx"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want, err := os.ReadFile(filepath.Join("test_tree", "src", "testimport2", "testimport2file.cx"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != string(want) {
+		t.Errorf("saved file differs from the source:\n got %q\nwant %q", got, want)
 	}
 }
 
@@ -59,12 +49,12 @@ func TestSavePackageRejectsUnsafeNames(t *testing.T) {
 		put("unsafe-pkg", loader.Package{PackageName: "main", Files: []string{"unsafe-file"}})
 		put("UnsafeProgram", loader.PackageList{Packages: []string{"unsafe-pkg"}})
 		dir := filepath.Join(t.TempDir(), "out")
-		if err := SavePackagesToDisk("UnsafeProgram", dir, "bolt"); err == nil {
+		if err := SavePackagesToDisk("UnsafeProgram", dir); err == nil {
 			t.Errorf("file name %q: want an error, got nil", name)
 		}
 	}
 	put("unsafe-pkg", loader.Package{PackageName: "../up", Files: nil})
-	if err := SavePackagesToDisk("UnsafeProgram", filepath.Join(t.TempDir(), "out"), "bolt"); err == nil {
+	if err := SavePackagesToDisk("UnsafeProgram", filepath.Join(t.TempDir(), "out")); err == nil {
 		t.Error("package name ../up: want an error, got nil")
 	}
 }
