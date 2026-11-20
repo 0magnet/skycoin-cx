@@ -11,9 +11,7 @@ var (
 	HeapOffset types.Pointer
 )
 
-// Path is only used by os module and only to get working directory
-// Path and working directory should not be hard coded into program struct (etc, when serialized)
-// Working directory is property of executable and can be retrieved with golang library
+// CxProgramPath is unused. os.GetWorkingDirectory reads os.Getwd instead.
 var CxProgramPath string = ""
 
 // VIOLATION: init chaining. Init 1: CXPATH, BINPATH, PKGPATH from the env,
