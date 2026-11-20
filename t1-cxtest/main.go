@@ -152,6 +152,7 @@ func runTestCases(t *runner.TestRunner) {
 	t.Run("test-str.cx", runner.CxSuccess, "str")
 	t.Run("test-str-compare.cx", runner.CxSuccess, "str ordering operators (skycoin-cx#87)")
 	t.Run("test-os-getwd.cx", runner.CxSuccess, "os.GetWorkingDirectory (skycoin-cx#117)")
+	t.Run("test-cx-constants.cx", runner.CxSuccess, "cx package constants (skycoin-cx#84)")
 	t.Run("test-utils.cx test-pointers.cx", runner.CxSuccess, "pointers")
 	t.Run("test-slices.cx", runner.CxSuccess, "slices")
 
