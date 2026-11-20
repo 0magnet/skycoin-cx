@@ -12,43 +12,43 @@ import (
 // - Returns Import Files
 // - Packages must be added to AST first or an error will occur
 // - Call AddPkgsToAST before calling this function
-func GetImportFiles(packageName string) (files []*loader.File, err error) {
-	if packageName == "" {
+func GetImportFiles(programName string) (files []*loader.File, err error) {
+	if programName == "" {
 		return files, errors.New("GetImportFiles: empty program name")
 	}
 
 	// Get package list
 	var packageList loader.PackageList
-	listBytes, err := bolt.Get(packageName)
+	listBytes, err := bolt.Get(programName)
 	if err != nil {
 		return files, err
 	}
 	if err := packageList.UnmarshalBinary(listBytes); err != nil {
-		return files, fmt.Errorf("decode package list %s: %w", packageName, err)
+		return files, fmt.Errorf("decode package list %s: %w", programName, err)
 	}
 
-	for _, packageString := range packageList.Packages {
+	for _, packageKey := range packageList.Packages {
 
 		//  Get package struct
 		var packageStruct loader.Package
-		packageBytes, err := bolt.Get(packageString)
+		packageBytes, err := bolt.Get(packageKey)
 		if err != nil {
 			return files, err
 		}
 		if err := packageStruct.UnmarshalBinary(packageBytes); err != nil {
-			return files, fmt.Errorf("decode package %s: %w", packageString, err)
+			return files, fmt.Errorf("decode package %s: %w", packageKey, err)
 		}
 
-		for _, fileString := range packageStruct.Files {
+		for _, fileKey := range packageStruct.Files {
 
 			// Get file struct
 			var fileStruct loader.File
-			fileBytes, err := bolt.Get(fileString)
+			fileBytes, err := bolt.Get(fileKey)
 			if err != nil {
 				return files, err
 			}
 			if err := fileStruct.UnmarshalBinary(fileBytes); err != nil {
-				return files, fmt.Errorf("decode file %s: %w", fileString, err)
+				return files, fmt.Errorf("decode file %s: %w", fileKey, err)
 			}
 
 			// Add file struct to array

@@ -17,7 +17,7 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
-var SKIP_PACKAGES = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
+var builtinPackages = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
 
 // VIOLATION: state outside State. Owner: t1-plloader2; moves to PackageFileMng in phase 1.
 var FileHashMap = make(map[string]string)
@@ -75,9 +75,9 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 			// Checking if we want to check all subdirectories.
 			if alsoSubdirs {
-				fileList, err = filePathWalkDir(arg)
+				fileList, err = listDirRecursive(arg)
 			} else {
-				fileList, err = ioReadDir(arg)
+				fileList, err = listDir(arg)
 			}
 			if err != nil {
 				return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: list source files: %w", arg, err)
@@ -151,7 +151,7 @@ func LoadCXProgram(programName string, sourceCode []*os.File) (err error) {
 	return bolt.Add(programName, value)
 }
 
-func filePathWalkDir(root string) ([]string, error) {
+func listDirRecursive(root string) ([]string, error) {
 	var files []string
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -165,7 +165,7 @@ func filePathWalkDir(root string) ([]string, error) {
 	return files, err
 }
 
-func ioReadDir(root string) ([]string, error) {
+func listDir(root string) ([]string, error) {
 	var files []string
 	fileInfo, err := ioutil.ReadDir(root)
 	if err != nil {
@@ -255,12 +255,12 @@ func addNewPackage(packageListStruct *PackageList, packageName string, fileMap m
 
 	// Checks if package is found in the directory
 	files, ok := fileMap[packageName]
-	if !ok && !Contains(SKIP_PACKAGES, packageName) {
+	if !ok && !Contains(builtinPackages, packageName) {
 		return fmt.Errorf("package %s not found", packageName)
 	}
 
 	// Skip if the import is a built-in package
-	if Contains(SKIP_PACKAGES, packageName) {
+	if Contains(builtinPackages, packageName) {
 		return nil
 	}
 
@@ -435,25 +435,25 @@ func createImportList(files []*os.File, importList []string) ([]string, error) {
 
 //	 Loads Import Packages
 //		1. packageListStruct - package list pointer
-//		2. importName - package with imports
+//		2. parentName - package with imports
 //		3. fileMap - file map that contains the files
 //		4. importMap - import map that contains the imports
 //
 // This function works recursively, loading the import packages and then loading import packages of imports
-func loadImportPackages(packageListStruct *PackageList, importName string, fileMap map[string][]*os.File, importMap map[string][]string) error {
-	for _, imprt := range importMap[importName] {
+func loadImportPackages(packageListStruct *PackageList, parentName string, fileMap map[string][]*os.File, importMap map[string][]string) error {
+	for _, importName := range importMap[parentName] {
 		// A package already in importMap is loaded. Skipping it stops an import
 		// loop from recursing forever, checkForDependencyLoop reports it later.
-		if _, loaded := importMap[imprt]; loaded {
+		if _, loaded := importMap[importName]; loaded {
 			continue
 		}
-		err := addNewPackage(packageListStruct, imprt, fileMap, importMap)
+		err := addNewPackage(packageListStruct, importName, fileMap, importMap)
 		if err != nil {
 			return err
 		}
 
 		// Load the imports of the import
-		err = loadImportPackages(packageListStruct, imprt, fileMap, importMap)
+		err = loadImportPackages(packageListStruct, importName, fileMap, importMap)
 		if err != nil {
 			return err
 		}

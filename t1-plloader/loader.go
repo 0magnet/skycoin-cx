@@ -16,7 +16,7 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
-var SKIP_PACKAGES = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
+var builtinPackages = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
 
 // VIOLATION: state outside State. Owner: t1-plloader; moves to PackageFileMng in phase 1.
 var FileHashMap = make(map[string]string)
@@ -286,9 +286,9 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 			// Checking if we want to check all subdirectories.
 			if alsoSubdirs {
-				fileList, err = filePathWalkDir(arg)
+				fileList, err = listDirRecursive(arg)
 			} else {
-				fileList, err = ioReadDir(arg)
+				fileList, err = listDir(arg)
 			}
 			if err != nil {
 				return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: list source files: %w", arg, err)
@@ -321,7 +321,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 	return cxArgs, sourceCode, fileNames, nil
 }
 
-func filePathWalkDir(root string) ([]string, error) {
+func listDirRecursive(root string) ([]string, error) {
 	var files []string
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -335,7 +335,7 @@ func filePathWalkDir(root string) ([]string, error) {
 	return files, err
 }
 
-func ioReadDir(root string) ([]string, error) {
+func listDir(root string) ([]string, error) {
 	var files []string
 	fileInfo, err := ioutil.ReadDir(root)
 	if err != nil {

@@ -11,41 +11,41 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
-func GetImportGraph(packageName string) (output string, err error) {
-	if packageName == "" {
+func GetImportGraph(programName string) (output string, err error) {
+	if programName == "" {
 		return output, errors.New("GetImportGraph: empty program name")
 	}
 	var packageList loader.PackageList
-	listBytes, err := bolt.Get(packageName)
+	listBytes, err := bolt.Get(programName)
 	if err != nil {
 		return output, err
 	}
 	if err := packageList.UnmarshalBinary(listBytes); err != nil {
-		return output, fmt.Errorf("decode package list %s: %w", packageName, err)
+		return output, fmt.Errorf("decode package list %s: %w", programName, err)
 	}
 
 	var importMap = make(map[string][]string)
 	var indexList = make([]string, 0)
 	var importIndexMap = make(map[string]int)
-	for _, packageString := range packageList.Packages {
+	for _, packageKey := range packageList.Packages {
 		var imports []string
 		var packageStruct loader.Package
-		packageBytes, err := bolt.Get(packageString)
+		packageBytes, err := bolt.Get(packageKey)
 		if err != nil {
 			return output, err
 		}
 		if err := packageStruct.UnmarshalBinary(packageBytes); err != nil {
-			return output, fmt.Errorf("decode package %s: %w", packageString, err)
+			return output, fmt.Errorf("decode package %s: %w", packageKey, err)
 		}
 
-		for _, fileString := range packageStruct.Files {
+		for _, fileKey := range packageStruct.Files {
 			var fileStruct loader.File
-			fileBytes, err := bolt.Get(fileString)
+			fileBytes, err := bolt.Get(fileKey)
 			if err != nil {
 				return output, err
 			}
 			if err := fileStruct.UnmarshalBinary(fileBytes); err != nil {
-				return output, fmt.Errorf("decode file %s: %w", fileString, err)
+				return output, fmt.Errorf("decode file %s: %w", fileKey, err)
 			}
 
 			scanner := bufio.NewScanner(strings.NewReader(string(fileStruct.Content)))
@@ -92,19 +92,19 @@ func GetImportGraph(packageName string) (output string, err error) {
 	for i, module := range indexList {
 		output += "id=" + strconv.Itoa(i) + ", "
 		output += "module=" + module + ", "
-		var tmp = "imports="
+		var importIDs = "imports="
 		imports := importMap[module]
 		for _, importString := range imports {
 			importIndex, ok := importIndexMap[importString]
 			if !ok {
-				tmp += strconv.Itoa(otherImportIndex) + ","
+				importIDs += strconv.Itoa(otherImportIndex) + ","
 				otherImports = append(otherImports, "id="+strconv.Itoa(otherImportIndex)+", module="+importString+", imports=,\n")
 				otherImportIndex++
 				continue
 			}
-			tmp += strconv.Itoa(importIndex) + ","
+			importIDs += strconv.Itoa(importIndex) + ","
 		}
-		output += tmp + "\n"
+		output += importIDs + "\n"
 	}
 	for _, otherImport := range otherImports {
 		output += otherImport
