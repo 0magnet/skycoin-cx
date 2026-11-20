@@ -171,16 +171,11 @@ here: [https://guides.github.com/activities/forking].
 
 ### Git Branching Model
 
-Skycoin uses a well-tested git branching strategy that is described in detail
-here: [https://nvie.com/posts/a-successful-git-branching-model/].
-
-The main idea is that you have one branch called `develop`, where most of the
-development is collected. When you start to develop a new feature or fix an
-issue, you create a branch for this from the `develop` branch in your forked
-repository.  When you are done with the development (or have reached an
-important milestone where you want to merge it), you will create a pull
-request from your branch and into the `develop` branch of the `skycoin/cx`
-repository.
+`main` is the only long-lived branch. Each developer, or each agent instance,
+works on its own branch made from `main`, in a fork or as a named branch. When
+a feature or fix is done, open a pull request from that branch into `main` of
+`skycoin/skycoin-cx`. The `check` jobs must pass before it merges. There is no
+shared `develop` branch.
 
 ### Code Formatting
 
