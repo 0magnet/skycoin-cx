@@ -12,9 +12,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt"  // thin: only Add; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-plredis" // thin: only Add; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-util"    // thin: only CXOpenFile, CXStatFile; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Add; no depth gain
+	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
+	"github.com/skycoin/skycoin-cx/t0-util" // thin: only CXOpenFile, CXStatFile; no depth gain
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -149,8 +149,9 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 	}
 
 	switch database {
-	case "redis":
-		return redis.Add(programName, packageListStruct)
+	// redis: unrelated to CX, commented out
+	// case "redis":
+	// 	return redis.Add(programName, packageListStruct)
 	case "bolt":
 		value, err := packageListStruct.MarshalBinary()
 		if err != nil {
@@ -254,7 +255,7 @@ func getPackageName(file *os.File) (string, error) {
 //	2. packageName -  name of package to be added
 //	3. fileMap - file map that contains the files
 //	4. importMap - import map that contains the imports
-//	5. database - "redis" or "bolt"
+//	5. database - "bolt" (redis: unrelated to CX, commented out)
 //
 // This function contains steps 4 - 9 of package loader
 func addNewPackage(packageListStruct *PackageList, packageName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
@@ -378,7 +379,7 @@ func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 //	1. name - name of the struct
 //	2. files - file list that are part of the package
 //	3. packageStruct - pass an empty package struct "Package{}"
-//	4. database - "redis" or "bolt"
+//	4. database - "bolt" (redis: unrelated to CX, commented out)
 //
 // This function works recursively
 func createPackageStruct(name string, files []*os.File, packageStruct Package, database string) (Package, error) {
@@ -451,7 +452,7 @@ func createImportList(files []*os.File, importList []string) ([]string, error) {
 //		2. importName - package with imports
 //		3. fileMap - file map that contains the files
 //		4. importMap - import map that contains the imports
-//		5. database - "redis" or "bolt"
+//		5. database - "bolt" (redis: unrelated to CX, commented out)
 //
 // This function works recursively, loading the import packages and then loading import packages of imports
 func loadImportPackages(packageListStruct *PackageList, importName string, fileMap map[string][]*os.File, importMap map[string][]string, database string) error {
@@ -479,8 +480,8 @@ func loadImportPackages(packageListStruct *PackageList, importName string, fileM
 // checkDatabase reports whether database names a supported store.
 func checkDatabase(database string) error {
 	switch database {
-	case "redis", "bolt":
+	case "bolt": // redis: unrelated to CX, commented out, was case "redis", "bolt"
 		return nil
 	}
-	return fmt.Errorf("unknown database %q, want redis or bolt", database)
+	return fmt.Errorf("unknown database %q, want bolt", database)
 }

@@ -13,7 +13,8 @@ import (
 )
 
 func main() {
-	redisFlag := flag.Bool("redis", false, "Use Redis Key-Value database.")
+	// redis: unrelated to CX, commented out
+	// redisFlag := flag.Bool("redis", false, "Use Redis Key-Value database.")
 	loadFlag := flag.Bool("load", false, "OPTION: Load a program to the database, with a given name to load it as and path to the program")
 	saveFlag := flag.Bool("save", false, "OPTION: Save a package to disk, with a given name to search on the database and a new directory path to save to")
 	treeFlag := flag.Bool("tree", false, "OPTION: Print the import dependency tree for a given program on the database")
@@ -38,12 +39,11 @@ func main() {
 		log.Fatal("-name is required")
 	}
 
-	var database string
-	if *redisFlag {
-		database = "redis"
-	} else {
-		database = "bolt"
-	}
+	// redis: unrelated to CX, commented out
+	// if *redisFlag {
+	// 	database = "redis"
+	// }
+	database := "bolt"
 
 	programName := *nameFlag
 

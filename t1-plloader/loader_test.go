@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-plredis"
+	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
@@ -125,11 +125,12 @@ func TestAddNewPackage(t *testing.T) {
 		FilesPath string
 		Database  string
 	}{
-		{
-			Scenario:  "Test adding package to Redis database",
-			FilesPath: TEST_SRC_PATH_VALID,
-			Database:  "redis",
-		},
+		// redis: unrelated to CX, commented out
+		// {
+		// 	Scenario:  "Test adding package to Redis database",
+		// 	FilesPath: TEST_SRC_PATH_VALID,
+		// 	Database:  "redis",
+		// },
 		{
 			Scenario:  "Test adding package to Bolt database",
 			FilesPath: TEST_SRC_PATH_VALID,
@@ -138,9 +139,10 @@ func TestAddNewPackage(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			if testcase.Database == "redis" && redis.Ping() != nil {
-				t.Skip("needs a redis server on localhost:6379")
-			}
+			// redis: unrelated to CX, commented out
+			// if testcase.Database == "redis" && redis.Ping() != nil {
+			// 	t.Skip("needs a redis server on localhost:6379")
+			// }
 			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
 			if perr != nil {
 				t.Fatal(perr)
@@ -164,12 +166,13 @@ func TestLoadCXProgram(t *testing.T) {
 		Database         string
 		ExpectedPackages int
 	}{
-		{
-			Scenario:         "Test adding package to Redis database",
-			FilesPath:        TEST_SRC_PATH_VALID,
-			Database:         "redis",
-			ExpectedPackages: 2,
-		},
+		// redis: unrelated to CX, commented out
+		// {
+		// 	Scenario:         "Test adding package to Redis database",
+		// 	FilesPath:        TEST_SRC_PATH_VALID,
+		// 	Database:         "redis",
+		// 	ExpectedPackages: 2,
+		// },
 		{
 			Scenario:         "Test adding package to Bolt database",
 			FilesPath:        TEST_SRC_PATH_VALID,
@@ -179,9 +182,10 @@ func TestLoadCXProgram(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			if testcase.Database == "redis" && redis.Ping() != nil {
-				t.Skip("needs a redis server on localhost:6379")
-			}
+			// redis: unrelated to CX, commented out
+			// if testcase.Database == "redis" && redis.Ping() != nil {
+			// 	t.Skip("needs a redis server on localhost:6379")
+			// }
 			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
 			if perr != nil {
 				t.Fatal(perr)

@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt"  // thin: only Add; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-plredis" // thin: only Add; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Add; no depth gain
+	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -40,10 +40,11 @@ func (newFile *File) getHash() ([64]byte, error) {
 func (newFile *File) saveToDatabase(hash [64]byte, database string) error {
 	key := fmt.Sprintf("%x", hash[:])
 	switch database {
-	case "redis":
-		if err := redis.Add(key, *newFile); err != nil {
-			return fmt.Errorf("save file %s: %w", newFile.FileName, err)
-		}
+	// redis: unrelated to CX, commented out
+	// case "redis":
+	// 	if err := redis.Add(key, *newFile); err != nil {
+	// 		return fmt.Errorf("save file %s: %w", newFile.FileName, err)
+	// 	}
 	case "bolt":
 		value, err := newFile.MarshalBinary()
 		if err != nil {

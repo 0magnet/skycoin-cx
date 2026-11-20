@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt"  // thin: only Get; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-plredis" // thin: only Get; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Get; no depth gain
+	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
@@ -65,16 +65,17 @@ func GetStructBytes(structName string, database string) ([]byte, error) {
 		return nil, errors.New("get struct bytes: empty key")
 	}
 	switch database {
-	case "redis":
-		value, err := redis.Get(structName)
-		if err != nil {
-			return nil, err
-		}
-		s, ok := value.(string)
-		if !ok {
-			return nil, fmt.Errorf("redis: value of %q is %T, want string", structName, value)
-		}
-		return []byte(s), nil
+	// redis: unrelated to CX, commented out
+	// case "redis":
+	// 	value, err := redis.Get(structName)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	s, ok := value.(string)
+	// 	if !ok {
+	// 		return nil, fmt.Errorf("redis: value of %q is %T, want string", structName, value)
+	// 	}
+	// 	return []byte(s), nil
 	case "bolt":
 		return bolt.Get(structName)
 	}
