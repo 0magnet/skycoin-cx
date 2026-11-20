@@ -1,6 +1,7 @@
 package file_output
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/skycoin/skycoin-cx/t0-plbolt"  // thin: only Get; no depth gain
@@ -13,6 +14,9 @@ import (
 // - Packages must be added to AST first or an error will occur
 // - Call AddPkgsToAST before calling this function
 func GetImportFiles(packageName string, database string) (files []*loader.File, err error) {
+	if packageName == "" {
+		return files, errors.New("GetImportFiles: empty program name")
+	}
 
 	// Get package list
 	var packageList loader.PackageList
@@ -57,6 +61,9 @@ func GetImportFiles(packageName string, database string) (files []*loader.File, 
 }
 
 func GetStructBytes(structName string, database string) ([]byte, error) {
+	if structName == "" {
+		return nil, errors.New("get struct bytes: empty key")
+	}
 	switch database {
 	case "redis":
 		value, err := redis.Get(structName)
