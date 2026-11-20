@@ -2,6 +2,7 @@ package loader
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -19,6 +20,9 @@ func (pl *PackageList) UnmarshalBinary(data []byte) error {
 
 // Encode a package and put it in the specified package list
 func (packageList *PackageList) appendPackage(newPackage *Package, database string) error {
+	if newPackage == nil {
+		return errors.New("append package: nil package")
+	}
 	hash, err := newPackage.getHash()
 	if err != nil {
 		return err
