@@ -119,7 +119,8 @@ func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []Globa
 	typeDefinitionChannel := make(chan []TypeDefinitionDeclaration, len(source))
 	structChannel := make(chan []StructDeclaration, len(source))
 	funcChannel := make(chan []FuncDeclaration, len(source))
-	errorChannel := make(chan error, len(source))
+	// Each file sends at most one error from each of its six extractors.
+	errorChannel := make(chan error, 6*len(source))
 
 	var wg sync.WaitGroup
 
