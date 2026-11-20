@@ -8,10 +8,9 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
-// - Adds Imports to AST
-// - Returns Import Files
-// - Packages must be added to AST first or an error will occur
-// - Call AddPkgsToAST before calling this function
+// GetImportFiles returns every file of the program stored under programName.
+// NOTE: the PackageList, Package and File read and decode is repeated in four
+// packages. See #92.
 func GetImportFiles(programName string) (files []*loader.File, err error) {
 	if programName == "" {
 		return files, errors.New("GetImportFiles: empty program name")
