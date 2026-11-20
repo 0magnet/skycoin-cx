@@ -35,18 +35,42 @@ var ReplTargetMod string = ""
 
 func unsafeEval(code string) (out string) {
 	var lexer *cxparsingcompletor.Lexer
-	defer func() {
-		if r := recover(); r != nil {
-			out = fmt.Sprintf("%v", r)
-			// lexer.Stop()
-			return
-		}
-	}()
 
 	// storing strings sent to standard output
 	old := os.Stdout
-	r, w, _ := os.Pipe()
+	r, w, err := os.Pipe()
+	if err != nil {
+		return fmt.Sprintf("%s", err)
+	}
+	// Drain the pipe while the program runs, or output larger than the
+	// pipe buffer blocks it.
+	outC := make(chan string, 1)
+	go func() {
+		var buf bytes.Buffer
+		io.Copy(&buf, r)
+		r.Close()
+		outC <- buf.String()
+	}()
 	os.Stdout = w
+
+	restored := false
+	restore := func() string {
+		if restored {
+			return ""
+		}
+		restored = true
+		w.Close()
+		os.Stdout = old // restoring the real stdout
+		return <-outC
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			restore()
+			out = fmt.Sprintf("%v", r)
+			// lexer.Stop()
+		}
+	}()
 
 	actions.LineNo = 0
 
@@ -62,14 +86,16 @@ func unsafeEval(code string) (out string) {
 	lexer = cxparsingcompletor.NewLexer(bytes.NewBufferString(code))
 	cxparsingcompletor.Parse(lexer)
 	//yyParse(lexer)
-	err := cxparsering.AddInitFunction(actions.AST)
+	err = cxparsering.AddInitFunction(actions.AST)
 	if err != nil {
+		restore()
 		return fmt.Sprintf("%s", err)
 	}
 
 	//err = actions.AST.RunCompiled(0, nil);
 	err = execute.RunCompiled(actions.AST, 0, nil)
 	if err != nil {
+		restore()
 		// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 		actions.AST = cxinit.MakeProgram()
 		cxinit.RegisterPackages(actions.AST)
@@ -77,16 +103,7 @@ func unsafeEval(code string) (out string) {
 	}
 	//Tod: If error equals nill?
 
-	outC := make(chan string)
-	go func() {
-		var buf bytes.Buffer
-		io.Copy(&buf, r)
-		outC <- buf.String()
-	}()
-
-	w.Close()
-	os.Stdout = old // restoring the real stdout
-	out = <-outC
+	out = restore()
 
 	// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 	actions.AST = cxinit.MakeProgram()
@@ -94,6 +111,8 @@ func unsafeEval(code string) (out string) {
 	return out
 }
 
+// Eval runs code as a CX program and returns its output. The caller must
+// first run the init in t11-cx Run: InitConstants, MakeProgram, RegisterPackages, RegisterOpcodes.
 func Eval(code string) string {
 	runtime.GOMAXPROCS(2)
 	ch := make(chan string, 1)
