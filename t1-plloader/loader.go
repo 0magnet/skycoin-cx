@@ -36,8 +36,11 @@ func Contains(list []string, element string) bool {
 func createFileMap(files []*os.File) (fileMap map[string][]*os.File, err error) {
 	fileMap = make(map[string][]*os.File)
 	for _, file := range files {
-		path := strings.Split(filepath.ToSlash(file.Name()), "/")
-		packageName := path[len(path)-2]
+		absPath, err := filepath.Abs(file.Name())
+		if err != nil {
+			return fileMap, fmt.Errorf("%s: resolve path: %w", file.Name(), err)
+		}
+		packageName := filepath.Base(filepath.Dir(absPath))
 		filePackageName, err := getPackageName(file)
 		if err != nil {
 			return fileMap, err
@@ -196,8 +199,7 @@ func addNewPackage(packageListStruct *PackageList, packageName string, files []*
 }
 
 func fileStructFromFile(file *os.File) (File, error) {
-	path := strings.Split(filepath.ToSlash(file.Name()), "/")
-	fileName := path[len(path)-1]
+	fileName := filepath.Base(file.Name())
 	fileInfo, err := file.Stat()
 	if err != nil {
 		return File{}, fmt.Errorf("%s: stat: %w", file.Name(), err)
@@ -256,6 +258,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 			continue
 		}
 
+		arg = filepath.Clean(arg)
 		fi, err := util.CXStatFile(arg)
 		if err != nil {
 			return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: source file or library not found: %w", arg, err)
@@ -277,7 +280,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 			for _, path := range fileList {
 				// only loading .cx files
-				if !strings.HasSuffix(path, ".cx") {
+				if filepath.Ext(path) != ".cx" {
 					continue
 				}
 				file, err := util.CXOpenFile(path)
@@ -324,7 +327,10 @@ func ioReadDir(root string) ([]string, error) {
 	}
 
 	for _, file := range fileInfo {
-		files = append(files, fmt.Sprintf("%s/%s", root, file.Name()))
+		if file.IsDir() {
+			continue
+		}
+		files = append(files, filepath.Join(root, file.Name()))
 	}
 	return files, nil
 }

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/skycoin/skycoin-cx/t1-plloader2" // thin: only LoadCXProgram, ParseArgsForCX; no depth gain
 	"github.com/skycoin/skycoin-cx/t2-plencoder" // thin: only SavePackagesToDisk; no depth gain
@@ -52,13 +53,10 @@ func main() {
 		return
 	}
 
-	path := *pathFlag
-	if path[len(path)-1:] != "/" {
-		path += "/"
+	if *pathFlag == "" {
+		log.Fatal("-path is required with -load and -save")
 	}
-	if path[0:2] == "./" {
-		path = path[2:]
-	}
+	path := filepath.Clean(*pathFlag)
 
 	if *loadFlag {
 		_, sourceCodes, _, err := loader.ParseArgsForCX([]string{path}, true)
