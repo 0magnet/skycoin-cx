@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/skycoin/skycoin-cx/t0-plbolt"
 	"github.com/skycoin/skycoin-cx/t0-plredis"
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
@@ -38,5 +39,30 @@ func TestSavePackage(t *testing.T) {
 				t.Errorf("saved file differs from the source:\n got %q\nwant %q", got, want)
 			}
 		})
+	}
+}
+
+func TestSavePackageRejectsUnsafeNames(t *testing.T) {
+	put := func(key string, v interface{ MarshalBinary() ([]byte, error) }) {
+		b, err := v.MarshalBinary()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := bolt.Add(key, b); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, name := range []string{"../escape.cx", "..", "a/b.cx", `a\b.cx`, ""} {
+		put("unsafe-file", loader.File{FileName: name, Content: []byte("package main\n")})
+		put("unsafe-pkg", loader.Package{PackageName: "main", Files: []string{"unsafe-file"}})
+		put("UnsafeProgram", loader.PackageList{Packages: []string{"unsafe-pkg"}})
+		dir := filepath.Join(t.TempDir(), "out")
+		if err := SavePackagesToDisk("UnsafeProgram", dir, "bolt"); err == nil {
+			t.Errorf("file name %q: want an error, got nil", name)
+		}
+	}
+	put("unsafe-pkg", loader.Package{PackageName: "../up", Files: nil})
+	if err := SavePackagesToDisk("UnsafeProgram", filepath.Join(t.TempDir(), "out"), "bolt"); err == nil {
+		t.Error("package name ../up: want an error, got nil")
 	}
 }
