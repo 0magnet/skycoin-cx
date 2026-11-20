@@ -1,0 +1,10 @@
+// https://github.com/skycoin/skycoin-cx/issues/84
+
+package main
+
+import "cx"
+
+func main() {
+	test(strerror(cx.RUNTIME_NOT_IMPLEMENTED), "CX_RUNTIME_NOT_IMPLEMENTED", "cx.RUNTIME_NOT_IMPLEMENTED")
+	test(strerror(cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE), "CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE", "cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE")
+}
