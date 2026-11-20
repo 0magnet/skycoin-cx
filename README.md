@@ -97,9 +97,6 @@ Save it as `hello.cx` and run `./bin/cx hello.cx`. More programs are in
   fail, and each one names its issue in `t1-cxtest/main.go`.
 - `make vet-gui` vets the cxfx build.
 
-The package loader tests use redis on `localhost:6379` when it is running and
-skip those cases when it is not.
-
 ## Status
 
 Works:

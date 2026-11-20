@@ -14,8 +14,6 @@ import (
 )
 
 func main() {
-	// redis: unrelated to CX, commented out
-	// redisFlag := flag.Bool("redis", false, "Use Redis Key-Value database.")
 	loadFlag := flag.Bool("load", false, "OPTION: Load a program to the database, with a given name to load it as and path to the program")
 	saveFlag := flag.Bool("save", false, "OPTION: Save a package to disk, with a given name to search on the database and a new directory path to save to")
 	treeFlag := flag.Bool("tree", false, "OPTION: Print the import dependency tree for a given program on the database")
@@ -44,16 +42,10 @@ func main() {
 		log.Fatal("-name is required")
 	}
 
-	// redis: unrelated to CX, commented out
-	// if *redisFlag {
-	// 	database = "redis"
-	// }
-	database := "bolt"
-
 	programName := *nameFlag
 
 	if *treeFlag {
-		output, err := tree.GetImportTree(programName, database)
+		output, err := tree.GetImportTree(programName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -62,7 +54,7 @@ func main() {
 	}
 
 	if *graphFlag {
-		output, err := graph.GetImportGraph(programName, database)
+		output, err := graph.GetImportGraph(programName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -80,14 +72,14 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = loader.LoadCXProgram(programName, sourceCodes, database)
+		err = loader.LoadCXProgram(programName, sourceCodes)
 		if err != nil {
 			log.Fatal(err)
 		}
 		return
 	}
 	if *saveFlag {
-		err := encoder.SavePackagesToDisk(programName, path, database)
+		err := encoder.SavePackagesToDisk(programName, path)
 		if err != nil {
 			log.Fatal(err)
 		}

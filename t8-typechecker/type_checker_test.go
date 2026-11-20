@@ -500,12 +500,12 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 				t.Fatal(perr)
 			}
 
-			err := loader.LoadCXProgram("test", sourceCode, "bolt")
+			err := loader.LoadCXProgram("test", sourceCode)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("test", "bolt")
+			files, err := file_output.GetImportFiles("test")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -662,12 +662,12 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 				t.Fatal(perr)
 			}
 
-			err := loader.LoadCXProgram("test", sourceCode, "bolt")
+			err := loader.LoadCXProgram("test", sourceCode)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("test", "bolt")
+			files, err := file_output.GetImportFiles("test")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -833,12 +833,12 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 				t.Fatal(perr)
 			}
 
-			err := loader.LoadCXProgram("test", sourceCode, "bolt")
+			err := loader.LoadCXProgram("test", sourceCode)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("test", "bolt")
+			files, err := file_output.GetImportFiles("test")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1165,12 +1165,12 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 				t.Fatal(perr)
 			}
 
-			err := loader.LoadCXProgram("test", sourceCode, "bolt")
+			err := loader.LoadCXProgram("test", sourceCode)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("test", "bolt")
+			files, err := file_output.GetImportFiles("test")
 			if err != nil {
 				t.Fatal(err)
 			}

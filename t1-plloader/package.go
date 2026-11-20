@@ -8,7 +8,6 @@ import (
 	"fmt"
 
 	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Add; no depth gain
-	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -26,7 +25,7 @@ func (p *Package) UnmarshalBinary(data []byte) error {
 }
 
 // Encode a file and put it in the specified package
-func (newPackage *Package) appendFile(newFile *File, database string) error {
+func (newPackage *Package) appendFile(newFile *File) error {
 	if newFile == nil {
 		return errors.New("append file: nil file")
 	}
@@ -35,7 +34,7 @@ func (newPackage *Package) appendFile(newFile *File, database string) error {
 		return err
 	}
 	newPackage.Files = append(newPackage.Files, fmt.Sprintf("%x", hash[:]))
-	err = newFile.saveToDatabase(hash, database)
+	err = newFile.saveToDatabase(hash)
 	if err != nil {
 		return err
 	}
@@ -53,24 +52,14 @@ func (newPackage *Package) getHash() ([64]byte, error) {
 	return blake2b.Sum512(buffer.Bytes()), err
 }
 
-func (newPackage *Package) saveToDatabase(hash [64]byte, database string) error {
+func (newPackage *Package) saveToDatabase(hash [64]byte) error {
 	key := fmt.Sprintf("%x", hash[:])
-	switch database {
-	// redis: unrelated to CX, commented out
-	// case "redis":
-	// 	if err := redis.Add(key, *newPackage); err != nil {
-	// 		return fmt.Errorf("save package %s: %w", newPackage.PackageName, err)
-	// 	}
-	case "bolt":
-		value, err := newPackage.MarshalBinary()
-		if err != nil {
-			return fmt.Errorf("encode package %s: %w", newPackage.PackageName, err)
-		}
-		if err := bolt.Add(key, value); err != nil {
-			return fmt.Errorf("save package %s: %w", newPackage.PackageName, err)
-		}
-	default:
-		return fmt.Errorf("save package %s: unknown database %q", newPackage.PackageName, database)
+	value, err := newPackage.MarshalBinary()
+	if err != nil {
+		return fmt.Errorf("encode package %s: %w", newPackage.PackageName, err)
+	}
+	if err := bolt.Add(key, value); err != nil {
+		return fmt.Errorf("save package %s: %w", newPackage.PackageName, err)
 	}
 	PackageHashMap[newPackage.PackageName] = key
 	return nil

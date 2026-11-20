@@ -4,7 +4,6 @@ import (
 	"os"
 	"testing"
 
-	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
@@ -123,32 +122,20 @@ func TestAddNewPackage(t *testing.T) {
 	tests := []struct {
 		Scenario  string
 		FilesPath string
-		Database  string
 	}{
-		// redis: unrelated to CX, commented out
-		// {
-		// 	Scenario:  "Test adding package to Redis database",
-		// 	FilesPath: TEST_SRC_PATH_VALID,
-		// 	Database:  "redis",
-		// },
 		{
 			Scenario:  "Test adding package to Bolt database",
 			FilesPath: TEST_SRC_PATH_VALID,
-			Database:  "bolt",
 		},
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			// redis: unrelated to CX, commented out
-			// if testcase.Database == "redis" && redis.Ping() != nil {
-			// 	t.Skip("needs a redis server on localhost:6379")
-			// }
 			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
 			if perr != nil {
 				t.Fatal(perr)
 			}
 			testPackageStruct := loader.PackageList{}
-			err := loader.AddNewPackage(&testPackageStruct, "main", sourceCodes, testcase.Database)
+			err := loader.AddNewPackage(&testPackageStruct, "main", sourceCodes)
 			if err != nil {
 				t.Error(err)
 			}
@@ -163,34 +150,21 @@ func TestLoadCXProgram(t *testing.T) {
 	tests := []struct {
 		Scenario         string
 		FilesPath        string
-		Database         string
 		ExpectedPackages int
 	}{
-		// redis: unrelated to CX, commented out
-		// {
-		// 	Scenario:         "Test adding package to Redis database",
-		// 	FilesPath:        TEST_SRC_PATH_VALID,
-		// 	Database:         "redis",
-		// 	ExpectedPackages: 2,
-		// },
 		{
 			Scenario:         "Test adding package to Bolt database",
 			FilesPath:        TEST_SRC_PATH_VALID,
-			Database:         "bolt",
 			ExpectedPackages: 2,
 		},
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			// redis: unrelated to CX, commented out
-			// if testcase.Database == "redis" && redis.Ping() != nil {
-			// 	t.Skip("needs a redis server on localhost:6379")
-			// }
 			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
 			if perr != nil {
 				t.Fatal(perr)
 			}
-			err := loader.LoadCXProgram("test", sourceCodes, testcase.Database)
+			err := loader.LoadCXProgram("test", sourceCodes)
 			if err != nil {
 				t.Error(err)
 			}
@@ -201,15 +175,5 @@ func TestLoadCXProgram(t *testing.T) {
 func TestParseArgsForCXMissingPath(t *testing.T) {
 	if _, _, _, err := loader.ParseArgsForCX([]string{"test_folder/does_not_exist"}, true); err == nil {
 		t.Error("want an error for a missing path, got nil")
-	}
-}
-
-func TestLoadCXProgramUnknownDatabase(t *testing.T) {
-	_, sourceCodes, _, err := loader.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := loader.LoadCXProgram("test", sourceCodes, "nosuchdb"); err == nil {
-		t.Error("want an error for an unknown database, got nil")
 	}
 }

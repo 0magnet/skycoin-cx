@@ -7,21 +7,16 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Get; no depth gain
-	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
+	"github.com/skycoin/skycoin-cx/t0-plbolt"   // thin: only Get; no depth gain
 	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File, Package, PackageList; types only, could move them to t0, tier 2 to 1
 )
 
-func SavePackagesToDisk(packageName string, path string, database string) error {
+func SavePackagesToDisk(packageName string, path string) error {
 	if packageName == "" {
 		return errors.New("save packages: empty program name")
 	}
 	if path == "" {
 		return fmt.Errorf("save packages %s: empty output path", packageName)
-	}
-	// redis: unrelated to CX, commented out
-	if database != "bolt" {
-		return fmt.Errorf("save packages %s: unknown database %q", packageName, database)
 	}
 	err := os.Mkdir(path, 0755)
 	if err != nil {
@@ -29,7 +24,7 @@ func SavePackagesToDisk(packageName string, path string, database string) error 
 	}
 
 	var packageList loader.PackageList
-	listBytes, err := getBytes(packageName, database)
+	listBytes, err := bolt.Get(packageName)
 	if err != nil {
 		return err
 	}
@@ -39,7 +34,7 @@ func SavePackagesToDisk(packageName string, path string, database string) error 
 
 	for _, pack := range packageList.Packages {
 		var packageStruct loader.Package
-		packageBytes, err := getBytes(pack, database)
+		packageBytes, err := bolt.Get(pack)
 		if err != nil {
 			return err
 		}
@@ -55,7 +50,7 @@ func SavePackagesToDisk(packageName string, path string, database string) error 
 			filePath = filepath.Join(filePath, packageStruct.PackageName)
 		}
 
-		err = SaveFilesToDisk(packageStruct, filePath, database)
+		err = SaveFilesToDisk(packageStruct, filePath)
 		if err != nil {
 			return err
 		}
@@ -63,7 +58,7 @@ func SavePackagesToDisk(packageName string, path string, database string) error 
 	return nil
 }
 
-func SaveFilesToDisk(packageStruct loader.Package, filePath string, database string) error {
+func SaveFilesToDisk(packageStruct loader.Package, filePath string) error {
 	if filePath == "" {
 		return fmt.Errorf("save files of package %s: empty output path", packageStruct.PackageName)
 	}
@@ -73,7 +68,7 @@ func SaveFilesToDisk(packageStruct loader.Package, filePath string, database str
 	}
 	for _, file := range packageStruct.Files {
 		var fileStruct loader.File
-		fileBytes, err := getBytes(file, database)
+		fileBytes, err := bolt.Get(file)
 		if err != nil {
 			return err
 		}
@@ -90,25 +85,6 @@ func SaveFilesToDisk(packageStruct loader.Package, filePath string, database str
 		}
 	}
 	return nil
-}
-
-func getBytes(key string, database string) ([]byte, error) {
-	switch database {
-	// redis: unrelated to CX, commented out
-	// case "redis":
-	// 	value, err := redis.Get(key)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	s, ok := value.(string)
-	// 	if !ok {
-	// 		return nil, fmt.Errorf("redis: value of %q is %T, want string", key, value)
-	// 	}
-	// 	return []byte(s), nil
-	case "bolt":
-		return bolt.Get(key)
-	}
-	return nil, fmt.Errorf("unknown database %q", database)
 }
 
 // checkPathElement rejects a name read from the database that is not a single
