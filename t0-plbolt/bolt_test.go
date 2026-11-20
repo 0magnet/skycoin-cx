@@ -20,3 +20,12 @@ func TestGetMissingKey(t *testing.T) {
 		t.Error("Get of a missing key: want an error, got nil")
 	}
 }
+
+func TestEmptyKey(t *testing.T) {
+	if err := Add("", []byte("v")); err == nil {
+		t.Error("Add with an empty key: want an error, got nil")
+	}
+	if _, err := Get(""); err == nil {
+		t.Error("Get with an empty key: want an error, got nil")
+	}
+}
