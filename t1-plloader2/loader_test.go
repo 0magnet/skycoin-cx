@@ -528,3 +528,13 @@ func TestLoadCXProgramUnknownDatabase(t *testing.T) {
 		t.Error("want an error for an unknown database, got nil")
 	}
 }
+
+func TestLoadCXProgramImportLoop(t *testing.T) {
+	_, sourceCodes, _, err := loader.ParseArgsForCX([]string{TEST_SRC_PATH_LOOP}, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := loader.LoadCXProgram("loop", sourceCodes, "bolt"); err == nil {
+		t.Error("want a dependency loop error, got nil")
+	}
+}

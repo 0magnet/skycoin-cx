@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"path/filepath"
 	"sort"
@@ -36,6 +37,9 @@ func Contains(list []string, element string) bool {
 func createFileMap(files []*os.File) (fileMap map[string][]*os.File, err error) {
 	fileMap = make(map[string][]*os.File)
 	for _, file := range files {
+		if file == nil {
+			return fileMap, errors.New("create file map: nil source file")
+		}
 		absPath, err := filepath.Abs(file.Name())
 		if err != nil {
 			return fileMap, fmt.Errorf("%s: resolve path: %w", file.Name(), err)
@@ -59,6 +63,9 @@ func createFileMap(files []*os.File) (fileMap map[string][]*os.File, err error) 
 }
 
 func getPackageName(file *os.File) (string, error) {
+	if file == nil {
+		return "", errors.New("get package name: nil file")
+	}
 	openFile, err := os.Open(file.Name())
 	if err != nil {
 		return "", err
@@ -99,6 +106,9 @@ func createImportMap(fileMap map[string][]*os.File) (importMap map[string][]stri
 }
 
 func getImports(file *os.File) (imports []string, err error) {
+	if file == nil {
+		return nil, errors.New("get imports: nil file")
+	}
 	openFile, err := os.Open(file.Name())
 	if err != nil {
 		return imports, err
@@ -138,6 +148,15 @@ func checkForDependencyLoop(importMap map[string][]string) (err error) {
 }
 
 func LoadCXProgram(programName string, sourceCode []*os.File, database string) (err error) {
+	if programName == "" {
+		return errors.New("load program: empty program name")
+	}
+	if err := checkDatabase(database); err != nil {
+		return fmt.Errorf("load program %s: %w", programName, err)
+	}
+	if len(sourceCode) == 0 {
+		return fmt.Errorf("load program %s: no source files", programName)
+	}
 	fileMap, err := createFileMap(sourceCode)
 	if err != nil {
 		return err
@@ -180,6 +199,12 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 }
 
 func addNewPackage(packageListStruct *PackageList, packageName string, files []*os.File, database string) error {
+	if packageListStruct == nil {
+		return errors.New("add package: nil package list")
+	}
+	if packageName == "" {
+		return errors.New("add package: empty package name")
+	}
 	packageStruct := Package{
 		PackageName: packageName,
 	}
@@ -199,20 +224,22 @@ func addNewPackage(packageListStruct *PackageList, packageName string, files []*
 }
 
 func fileStructFromFile(file *os.File) (File, error) {
-	fileName := filepath.Base(file.Name())
-	fileInfo, err := file.Stat()
-	if err != nil {
-		return File{}, fmt.Errorf("%s: stat: %w", file.Name(), err)
+	if file == nil {
+		return File{}, errors.New("file struct: nil file")
 	}
+	fileName := filepath.Base(file.Name())
 	fileBytes, err := ioutil.ReadFile(file.Name())
 	if err != nil {
 		return File{}, fmt.Errorf("%s: read: %w", file.Name(), err)
+	}
+	if uint64(len(fileBytes)) > math.MaxUint32 {
+		return File{}, fmt.Errorf("%s: %d bytes does not fit the uint32 Length field", file.Name(), len(fileBytes))
 	}
 	fileHash := blake2b.Sum512(fileBytes)
 
 	fileStruct := File{
 		FileName:   fileName,
-		Length:     uint32(fileInfo.Size()),
+		Length:     uint32(len(fileBytes)),
 		Content:    fileBytes,
 		Blake2Hash: string(fileHash[:]),
 	}
@@ -333,4 +360,13 @@ func ioReadDir(root string) ([]string, error) {
 		files = append(files, filepath.Join(root, file.Name()))
 	}
 	return files, nil
+}
+
+// checkDatabase reports whether database names a supported store.
+func checkDatabase(database string) error {
+	switch database {
+	case "redis", "bolt":
+		return nil
+	}
+	return fmt.Errorf("unknown database %q, want redis or bolt", database)
 }

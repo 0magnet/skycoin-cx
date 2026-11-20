@@ -2,6 +2,7 @@ package graph
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -12,6 +13,9 @@ import (
 )
 
 func GetImportGraph(packageName string, database string) (output string, err error) {
+	if packageName == "" {
+		return output, errors.New("GetImportGraph: empty program name")
+	}
 	var packageList loader.PackageList
 	listBytes, err := GetStructBytes(packageName, database)
 	if err != nil {
@@ -110,6 +114,9 @@ func GetImportGraph(packageName string, database string) (output string, err err
 }
 
 func GetStructBytes(structName string, database string) ([]byte, error) {
+	if structName == "" {
+		return nil, errors.New("get struct bytes: empty key")
+	}
 	switch database {
 	case "redis":
 		value, err := redis.Get(structName)

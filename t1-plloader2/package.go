@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/skycoin/skycoin-cx/t0-plbolt"  // thin: only Add; no depth gain
@@ -27,6 +28,9 @@ func (p *Package) UnmarshalBinary(data []byte) error {
 
 // Encode a file and put it in the specified package
 func (newPackage *Package) appendFile(newFile *File, database string) error {
+	if newFile == nil {
+		return errors.New("append file: nil file")
+	}
 	hash, err := newFile.getHash()
 	if err != nil {
 		return err

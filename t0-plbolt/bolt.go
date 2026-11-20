@@ -35,6 +35,9 @@ func init() {
 // withDB opens the database, runs fn and closes it again. A close error is
 // returned when fn itself succeeded.
 func withDB(fn func(db *bolt.DB) error) (err error) {
+	if DBPath == "" {
+		return errors.New("bolt: DBPath is not set")
+	}
 	file := filepath.Join(DBPath, "program_list.db")
 	db, err := bolt.Open(file, 0644, nil)
 	if err != nil {
@@ -50,6 +53,9 @@ func withDB(fn func(db *bolt.DB) error) (err error) {
 
 // Add stores value under key in the program bucket.
 func Add(key string, value []byte) error {
+	if key == "" {
+		return errors.New("bolt: put: empty key")
+	}
 	return withDB(func(db *bolt.DB) error {
 		return db.Update(func(tx *bolt.Tx) error {
 			bucket := tx.Bucket([]byte("program"))
@@ -66,6 +72,9 @@ func Add(key string, value []byte) error {
 
 // Get returns a copy of the value stored under key. A missing key is an error.
 func Get(key string) ([]byte, error) {
+	if key == "" {
+		return nil, errors.New("bolt: get: empty key")
+	}
 	var ret []byte
 	err := withDB(func(db *bolt.DB) error {
 		return db.View(func(tx *bolt.Tx) error {

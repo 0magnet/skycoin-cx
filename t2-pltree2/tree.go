@@ -2,6 +2,7 @@ package tree
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -11,6 +12,9 @@ import (
 )
 
 func GetImportTree(packageName string, database string) (output string, err error) {
+	if packageName == "" {
+		return output, errors.New("GetImportTree: empty program name")
+	}
 	var packageList loader.PackageList
 	listBytes, err := GetStructBytes(packageName, database)
 	if err != nil {
@@ -89,15 +93,20 @@ func GetImportTree(packageName string, database string) (output string, err erro
 			output += "|--" + mainImport + "\n"
 			layers[0] = true
 		}
-		output += AddDependenciesRecur(importMap, importMap[mainImport], 1, layers)
+		onPath := map[string]bool{"main": true, mainImport: true}
+		output += addDependencies(importMap, importMap[mainImport], 1, layers, onPath)
 	}
 	return output, nil
 }
 
 func AddDependenciesRecur(importMap map[string][]string, dependencies []string, depth int, layers map[int]bool) (output string) {
-	if len(dependencies) == 0 {
-		return output
-	}
+	return addDependencies(importMap, dependencies, depth, layers, map[string]bool{})
+}
+
+// addDependencies is AddDependenciesRecur with the packages on the current
+// branch in onPath. The import map comes from stored data, so a cycle is
+// printed once with a marker instead of recursing forever.
+func addDependencies(importMap map[string][]string, dependencies []string, depth int, layers map[int]bool, onPath map[string]bool) (output string) {
 	for i, dependencyImport := range dependencies {
 		for l := 0; l < depth; l++ {
 			if layers[l] {
@@ -106,19 +115,28 @@ func AddDependenciesRecur(importMap map[string][]string, dependencies []string, 
 				output += "   "
 			}
 		}
+		branch := "|--"
+		layers[depth] = true
 		if i == len(dependencies)-1 {
-			output += "`--" + dependencyImport + "\n"
+			branch = "`--"
 			layers[depth] = false
-		} else {
-			output += "|--" + dependencyImport + "\n"
-			layers[depth] = true
 		}
-		output += AddDependenciesRecur(importMap, importMap[dependencyImport], depth+1, layers)
+		if onPath[dependencyImport] {
+			output += branch + dependencyImport + " (import cycle)\n"
+			continue
+		}
+		output += branch + dependencyImport + "\n"
+		onPath[dependencyImport] = true
+		output += addDependencies(importMap, importMap[dependencyImport], depth+1, layers, onPath)
+		delete(onPath, dependencyImport)
 	}
 	return output
 }
 
 func GetStructBytes(structName string, database string) ([]byte, error) {
+	if structName == "" {
+		return nil, errors.New("get struct bytes: empty key")
+	}
 	switch database {
 	case "redis":
 		value, err := redis.Get(structName)

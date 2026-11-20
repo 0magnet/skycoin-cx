@@ -1,6 +1,7 @@
 package encoder
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,6 +13,15 @@ import (
 )
 
 func SavePackagesToDisk(packageName string, path string, database string) error {
+	if packageName == "" {
+		return errors.New("save packages: empty program name")
+	}
+	if path == "" {
+		return fmt.Errorf("save packages %s: empty output path", packageName)
+	}
+	if database != "redis" && database != "bolt" {
+		return fmt.Errorf("save packages %s: unknown database %q", packageName, database)
+	}
 	err := os.Mkdir(path, 0755)
 	if err != nil {
 		return err
@@ -53,6 +63,9 @@ func SavePackagesToDisk(packageName string, path string, database string) error 
 }
 
 func SaveFilesToDisk(packageStruct loader.Package, filePath string, database string) error {
+	if filePath == "" {
+		return fmt.Errorf("save files of package %s: empty output path", packageStruct.PackageName)
+	}
 	err := os.MkdirAll(filePath, 0755)
 	if err != nil {
 		return err

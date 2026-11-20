@@ -25,6 +25,12 @@ func init() {
 
 // Add stores value under key.
 func Add(key string, value interface{}) error {
+	if key == "" {
+		return errors.New("redis: set: empty key")
+	}
+	if value == nil {
+		return fmt.Errorf("redis: set %q: nil value", key)
+	}
 	if err := rdb.Set(ctx, key, value, 0).Err(); err != nil {
 		return fmt.Errorf("redis: set %q: %w", key, err)
 	}
@@ -33,6 +39,9 @@ func Add(key string, value interface{}) error {
 
 // Get returns the value stored under key. A missing key is an error.
 func Get(key string) (interface{}, error) {
+	if key == "" {
+		return nil, errors.New("redis: get: empty key")
+	}
 	ret, err := rdb.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		return nil, fmt.Errorf("redis: no value for key %q", key)
