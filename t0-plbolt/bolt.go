@@ -3,7 +3,6 @@ package bolt
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -13,30 +12,28 @@ import (
 // VIOLATION: state outside State. Owner: t0-plbolt; moves to PackageDBMng in phase 2.
 var DBPath string
 
-// VIOLATION: init chaining. Init 1 of the package loader tools: opens
-// program_list.db next to the executable, called from Go package init.
-func init() {
+// Init is init 1 of the package loader tools. It points DBPath at the
+// executable directory and creates the program bucket in program_list.db there.
+// t3-packageloader main and the test mains call it before Add or Get.
+func Init() error {
 	path, err := os.Executable()
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("bolt: find executable: %w", err)
 	}
 	DBPath = filepath.Dir(path)
-	err = withDB(func(db *bolt.DB) error {
+	return withDB(func(db *bolt.DB) error {
 		return db.Update(func(tx *bolt.Tx) error {
 			_, err := tx.CreateBucketIfNotExists([]byte("program"))
 			return err
 		})
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 // withDB opens the database, runs fn and closes it again. A close error is
 // returned when fn itself succeeded.
 func withDB(fn func(db *bolt.DB) error) (err error) {
 	if DBPath == "" {
-		return errors.New("bolt: DBPath is not set")
+		return errors.New("bolt: DBPath is not set, call Init first")
 	}
 	file := filepath.Join(DBPath, "program_list.db")
 	db, err := bolt.Open(file, 0644, nil)

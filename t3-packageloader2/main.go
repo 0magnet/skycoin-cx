@@ -6,6 +6,7 @@ import (
 	"log"
 	"path/filepath"
 
+	"github.com/skycoin/skycoin-cx/t0-plbolt"    // thin: only Init; no depth gain
 	"github.com/skycoin/skycoin-cx/t1-plloader2" // thin: only LoadCXProgram, ParseArgsForCX; no depth gain
 	"github.com/skycoin/skycoin-cx/t2-plencoder" // thin: only SavePackagesToDisk; no depth gain
 	"github.com/skycoin/skycoin-cx/t2-plgraph"   // thin: only GetImportGraph; no depth gain
@@ -22,6 +23,10 @@ func main() {
 	nameFlag := flag.String("name", "", "The name of the program to load or save")
 	pathFlag := flag.String("path", "", "The path to the program to load or save")
 	flag.Parse()
+
+	if err := bolt.Init(); err != nil {
+		log.Fatal(err)
+	}
 
 	if flag.NFlag()+flag.NArg() > 4 || flag.NFlag()+flag.NArg() < 2 {
 		log.Fatal("Wrong number of arguments. Type -help for more information")
