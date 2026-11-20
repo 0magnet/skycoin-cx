@@ -35,7 +35,7 @@ func init() {
 // withDB opens the database, runs fn and closes it again. A close error is
 // returned when fn itself succeeded.
 func withDB(fn func(db *bolt.DB) error) (err error) {
-	file := DBPath + "/program_list.db"
+	file := filepath.Join(DBPath, "program_list.db")
 	db, err := bolt.Open(file, 0644, nil)
 	if err != nil {
 		return fmt.Errorf("bolt: open %s: %w", file, err)
