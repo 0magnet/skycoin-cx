@@ -1430,7 +1430,10 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			if perr != nil {
+				t.Fatal(perr)
+			}
 			err := loader.LoadCXProgram("mypkg1", sourceCodes, "bolt")
 			if err != nil {
 				t.Fatal(err)

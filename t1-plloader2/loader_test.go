@@ -161,7 +161,10 @@ func TestCreateFileMap(t *testing.T) {
 
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			if perr != nil {
+				t.Fatal(perr)
+			}
 			gotFileMap, gotErr := loader.CreateFileMap(sourceCodes)
 			for wantKey, wantValue := range testcase.WantFileMap {
 				gotValue, ok := gotFileMap[wantKey]
@@ -291,7 +294,10 @@ func TestAddNewPackage(t *testing.T) {
 			if testcase.Database == "redis" && redis.Ping() != nil {
 				t.Skip("needs a redis server on localhost:6379")
 			}
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
+			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
+			if perr != nil {
+				t.Fatal(perr)
+			}
 			fileMap, err := loader.CreateFileMap(sourceCodes)
 			if err != nil {
 				t.Error(err)
@@ -382,7 +388,10 @@ func TestLoadImportPackages(t *testing.T) {
 			if testcase.Database == "redis" && redis.Ping() != nil {
 				t.Skip("needs a redis server on localhost:6379")
 			}
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			if perr != nil {
+				t.Fatal(perr)
+			}
 			fileMap, err := loader.CreateFileMap(sourceCodes)
 			if err != nil {
 				t.Error(err)
@@ -492,11 +501,30 @@ func TestLoadCXProgram(t *testing.T) {
 			if testcase.Database == "redis" && redis.Ping() != nil {
 				t.Skip("needs a redis server on localhost:6379")
 			}
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			if perr != nil {
+				t.Fatal(perr)
+			}
 			err := loader.LoadCXProgram("test", sourceCodes, testcase.Database)
 			if err != nil {
 				t.Error(err)
 			}
 		})
+	}
+}
+
+func TestParseArgsForCXMissingPath(t *testing.T) {
+	if _, _, _, err := loader.ParseArgsForCX([]string{"test_folder/does_not_exist"}, true); err == nil {
+		t.Error("want an error for a missing path, got nil")
+	}
+}
+
+func TestLoadCXProgramUnknownDatabase(t *testing.T) {
+	_, sourceCodes, _, err := loader.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := loader.LoadCXProgram("test", sourceCodes, "nosuchdb"); err == nil {
+		t.Error("want an error for an unknown database, got nil")
 	}
 }

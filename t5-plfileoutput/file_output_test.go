@@ -72,7 +72,10 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 
 			actions.AST = nil
 
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			if perr != nil {
+				t.Fatal(perr)
+			}
 			err := loader.LoadCXProgram(tc.programName, sourceCodes, tc.database)
 			if err != nil {
 				t.Fatal(err)

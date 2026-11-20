@@ -25,7 +25,19 @@ var FileHashMap = make(map[string]string)
 // VIOLATION: state outside State. Owner: t1-plloader2; moves to PackageFileMng in phase 1.
 var PackageHashMap = make(map[string]string)
 
-func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
+// ParseArgsForCX splits args into "++" cx flags and .cx source files. A
+// directory argument adds every .cx file in it, and in its subdirectories
+// when alsoSubdirs is set. On error every file it opened is closed again.
+func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string, err error) {
+	defer func() {
+		if err != nil {
+			for _, file := range sourceCode {
+				file.Close()
+			}
+			cxArgs, sourceCode, fileNames = nil, nil, nil
+		}
+	}()
+
 	skip := false // flag for skipping arg
 
 	for _, arg := range args {
@@ -53,57 +65,48 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 		fi, err := util.CXStatFile(arg)
 		if err != nil {
-			println(fmt.Sprintf("%s: source file or library not found", arg))
-			os.Exit(1)
+			return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: source file or library not found: %w", arg, err)
 		}
 
 		switch mode := fi.Mode(); {
 		case mode.IsDir():
 			var fileList []string
-			var err error
 
 			// Checking if we want to check all subdirectories.
 			if alsoSubdirs {
 				fileList, err = filePathWalkDir(arg)
 			} else {
 				fileList, err = ioReadDir(arg)
-				// fileList, err = filePathWalkDir(arg)
 			}
-
 			if err != nil {
-				panic(err)
+				return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: list source files: %w", arg, err)
 			}
 
 			for _, path := range fileList {
+				// only loading .cx files
+				if !strings.HasSuffix(path, ".cx") {
+					continue
+				}
 				file, err := util.CXOpenFile(path)
-
 				if err != nil {
-					println(fmt.Sprintf("%s: source file or library not found", arg))
-					os.Exit(1)
+					return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: open source file: %w", path, err)
 				}
-
-				fiName := file.Name()
-				fiNameLen := len(fiName)
-
-				if fiNameLen > 2 && fiName[fiNameLen-3:] == ".cx" {
-					// only loading .cx files
-					sourceCode = append(sourceCode, file)
-					fileNames = append(fileNames, fiName)
-				}
+				sourceCode = append(sourceCode, file)
+				fileNames = append(fileNames, file.Name())
 			}
 		case mode.IsRegular():
 			file, err := util.CXOpenFile(arg)
-
 			if err != nil {
-				panic(err)
+				return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: open source file: %w", arg, err)
 			}
-
 			fileNames = append(fileNames, file.Name())
 			sourceCode = append(sourceCode, file)
+		default:
+			return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: not a regular file or directory", arg)
 		}
 	}
 
-	return cxArgs, sourceCode, fileNames
+	return cxArgs, sourceCode, fileNames, nil
 }
 
 func LoadCXProgram(programName string, sourceCode []*os.File, database string) (err error) {
@@ -143,18 +146,21 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 			return err
 		}
 		return bolt.Add(programName, value)
+	default:
+		return fmt.Errorf("save program %s: unknown database %q", programName, database)
 	}
-
-	return nil
 }
 
 func filePathWalkDir(root string) ([]string, error) {
 	var files []string
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 		if !info.IsDir() {
 			files = append(files, path)
 		}
-		return err
+		return nil
 	})
 	return files, err
 }
@@ -206,10 +212,16 @@ func getPackageName(file *os.File) (string, error) {
 	scanner := bufio.NewScanner(openFile)
 
 	for scanner.Scan() {
-		line := strings.Split(scanner.Text(), " ")
-		if line[0] == "package" {
+		line := strings.Fields(scanner.Text())
+		if len(line) > 0 && line[0] == "package" {
+			if len(line) < 2 {
+				return "", fmt.Errorf("%s: package clause without a name", file.Name())
+			}
 			return line[1], nil
 		}
+	}
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("%s: read: %w", file.Name(), err)
 	}
 	return "", errors.New("file doesn't contain a package name")
 }
@@ -265,10 +277,17 @@ func getImports(file *os.File) (imports []string, err error) {
 	scanner := bufio.NewScanner(openFile)
 
 	for scanner.Scan() {
-		line := strings.Split(scanner.Text(), " ")
-		if line[0] == "import" {
-			imports = append(imports, line[1][1:len(line[1])-1])
+		line := strings.Fields(scanner.Text())
+		if len(line) == 0 || line[0] != "import" {
+			continue
 		}
+		if len(line) < 2 || len(line[1]) < 2 || line[1][0] != '"' || line[1][len(line[1])-1] != '"' {
+			return nil, fmt.Errorf("%s: malformed import line %q", file.Name(), scanner.Text())
+		}
+		imports = append(imports, line[1][1:len(line[1])-1])
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("%s: read: %w", file.Name(), err)
 	}
 	return imports, nil
 }
@@ -292,11 +311,11 @@ func fileStructFromFile(file *os.File) (File, error) {
 	fileName := path[len(path)-1]
 	fileInfo, err := file.Stat()
 	if err != nil {
-		return File{}, err
+		return File{}, fmt.Errorf("%s: stat: %w", file.Name(), err)
 	}
 	fileBytes, err := ioutil.ReadFile(file.Name())
 	if err != nil {
-		return File{}, err
+		return File{}, fmt.Errorf("%s: read: %w", file.Name(), err)
 	}
 	fileHash := blake2b.Sum512(fileBytes)
 
