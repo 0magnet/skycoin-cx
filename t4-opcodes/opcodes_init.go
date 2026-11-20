@@ -492,4 +492,9 @@ func RegisterOpcodes(prgrm *ast.CXProgram) {
 	//RegisterOpCode(prgrm,OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_F64), Slice(TYPE_F64), ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_F64), nil)
 	//RegisterOpCode(prgrm,OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_I32, ConstCxArg_F64), nil)
 
+	// Registered last so the opcode numbers stored in serialized programs do not shift.
+	RegisterOperator(prgrm, "str.lt", opStrLt, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_BOOL), types.STR, constants.OP_LT)
+	RegisterOperator(prgrm, "str.lteq", opStrLteq, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_BOOL), types.STR, constants.OP_LTEQ)
+	RegisterOperator(prgrm, "str.gt", opStrGt, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_BOOL), types.STR, constants.OP_GT)
+	RegisterOperator(prgrm, "str.gteq", opStrGteq, In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), Out(ast.ConstCxArg_BOOL), types.STR, constants.OP_GTEQ)
 }

@@ -110,7 +110,7 @@ func opStrLteq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue
 }
 
 func opStrGt(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_str(prgrm) >= inputs[1].Get_str(prgrm)
+	outV0 := inputs[0].Get_str(prgrm) > inputs[1].Get_str(prgrm)
 	outputs[0].Set_bool(prgrm, outV0)
 }
 
