@@ -13,8 +13,9 @@ import (
 
 type Package struct {
 	PackageName string
-	Blake2Hash  string
-	Files       []string
+	// NOTE: raw hash bytes in a string do not survive the JSON encoding. See #93.
+	Blake2Hash string
+	Files      []string
 }
 
 func (p Package) MarshalBinary() ([]byte, error) {
@@ -26,7 +27,7 @@ func (p *Package) UnmarshalBinary(data []byte) error {
 }
 
 // Encode a file and put it in the specified package
-func (newPackage *Package) appendFile(newFile *File) error {
+func (p *Package) appendFile(newFile *File) error {
 	if newFile == nil {
 		return errors.New("append file: nil file")
 	}
@@ -34,7 +35,7 @@ func (newPackage *Package) appendFile(newFile *File) error {
 	if err != nil {
 		return err
 	}
-	newPackage.Files = append(newPackage.Files, fmt.Sprintf("%x", hash[:]))
+	p.Files = append(p.Files, fmt.Sprintf("%x", hash[:]))
 	err = newFile.saveToDatabase(hash)
 	if err != nil {
 		return err
@@ -42,26 +43,26 @@ func (newPackage *Package) appendFile(newFile *File) error {
 	return nil
 }
 
-func (newPackage *Package) getHash() ([64]byte, error) {
+func (p *Package) getHash() ([64]byte, error) {
 	var buffer bytes.Buffer
 	encoder := gob.NewEncoder(&buffer)
 
-	err := encoder.Encode(newPackage)
+	err := encoder.Encode(p)
 	if err != nil {
 		return [64]byte{}, err
 	}
 	return blake2b.Sum512(buffer.Bytes()), err
 }
 
-func (newPackage *Package) saveToDatabase(hash [64]byte) error {
+func (p *Package) saveToDatabase(hash [64]byte) error {
 	key := fmt.Sprintf("%x", hash[:])
-	value, err := newPackage.MarshalBinary()
+	value, err := p.MarshalBinary()
 	if err != nil {
-		return fmt.Errorf("encode package %s: %w", newPackage.PackageName, err)
+		return fmt.Errorf("encode package %s: %w", p.PackageName, err)
 	}
 	if err := bolt.Add(key, value); err != nil {
-		return fmt.Errorf("save package %s: %w", newPackage.PackageName, err)
+		return fmt.Errorf("save package %s: %w", p.PackageName, err)
 	}
-	PackageHashMap[newPackage.PackageName] = key
+	PackageHashMap[p.PackageName] = key
 	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
+// NOTE: VALID points at test_invalid_program and INVALID at test_valid_program. See #96.
 const TEST_SRC_PATH_VALID = "test_folder/test_invalid_program/src/"
 const TEST_SRC_PATH_INVALID = "test_folder/test_valid_program/src/"
 const TEST_SRC_PATH_LOOP = "test_folder/test_loop_program/src/"

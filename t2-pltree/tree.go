@@ -10,39 +10,41 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
-func GetImportTree(packageName string) (output string, err error) {
-	if packageName == "" {
+// NOTE: t2-pltree and t2-pltree2 differ only in the loader import. The read and
+// decode walk is repeated in four packages. See #91 and #92.
+func GetImportTree(programName string) (output string, err error) {
+	if programName == "" {
 		return output, errors.New("GetImportTree: empty program name")
 	}
 	var packageList loader.PackageList
-	listBytes, err := bolt.Get(packageName)
+	listBytes, err := bolt.Get(programName)
 	if err != nil {
 		return output, err
 	}
 	if err := packageList.UnmarshalBinary(listBytes); err != nil {
-		return output, fmt.Errorf("decode package list %s: %w", packageName, err)
+		return output, fmt.Errorf("decode package list %s: %w", programName, err)
 	}
 
 	var importMap = make(map[string][]string)
-	for _, packageString := range packageList.Packages {
+	for _, packageKey := range packageList.Packages {
 		var imports []string
 		var packageStruct loader.Package
-		packageBytes, err := bolt.Get(packageString)
+		packageBytes, err := bolt.Get(packageKey)
 		if err != nil {
 			return output, err
 		}
 		if err := packageStruct.UnmarshalBinary(packageBytes); err != nil {
-			return output, fmt.Errorf("decode package %s: %w", packageString, err)
+			return output, fmt.Errorf("decode package %s: %w", packageKey, err)
 		}
 
-		for _, fileString := range packageStruct.Files {
+		for _, fileKey := range packageStruct.Files {
 			var fileStruct loader.File
-			fileBytes, err := bolt.Get(fileString)
+			fileBytes, err := bolt.Get(fileKey)
 			if err != nil {
 				return output, err
 			}
 			if err := fileStruct.UnmarshalBinary(fileBytes); err != nil {
-				return output, fmt.Errorf("decode file %s: %w", fileString, err)
+				return output, fmt.Errorf("decode file %s: %w", fileKey, err)
 			}
 
 			scanner := bufio.NewScanner(strings.NewReader(string(fileStruct.Content)))
@@ -58,6 +60,8 @@ func GetImportTree(packageName string) (output string, err error) {
 					wordBefore = scanner.Text()
 					continue
 				}
+				// NOTE: unreachable, the word is always "import" here. The scan also takes
+				// "import" in block comments and strings as an import. See #98.
 				if scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
 					break
 				}

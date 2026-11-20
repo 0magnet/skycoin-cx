@@ -19,7 +19,7 @@ func (pl *PackageList) UnmarshalBinary(data []byte) error {
 }
 
 // Encode a package and put it in the specified package list
-func (packageList *PackageList) appendPackage(newPackage *Package) error {
+func (pl *PackageList) appendPackage(newPackage *Package) error {
 	if newPackage == nil {
 		return errors.New("append package: nil package")
 	}
@@ -27,10 +27,10 @@ func (packageList *PackageList) appendPackage(newPackage *Package) error {
 	if err != nil {
 		return err
 	}
-	if Contains(packageList.Packages, fmt.Sprintf("%x", hash[:])) {
+	if Contains(pl.Packages, fmt.Sprintf("%x", hash[:])) {
 		return nil
 	}
-	packageList.Packages = append(packageList.Packages, fmt.Sprintf("%x", hash[:]))
+	pl.Packages = append(pl.Packages, fmt.Sprintf("%x", hash[:]))
 	err = newPackage.saveToDatabase(hash)
 	if err != nil {
 		return err

@@ -11,9 +11,10 @@ import (
 )
 
 type File struct {
-	FileName   string
-	Length     uint32
-	Content    []byte
+	FileName string
+	Length   uint32
+	Content  []byte
+	// NOTE: raw hash bytes in a string do not survive the JSON encoding. See #93.
 	Blake2Hash string
 }
 
@@ -25,26 +26,26 @@ func (f *File) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, f)
 }
 
-func (newFile *File) getHash() ([64]byte, error) {
+func (f *File) getHash() ([64]byte, error) {
 	var buffer bytes.Buffer
 	encoder := gob.NewEncoder(&buffer)
 
-	err := encoder.Encode(newFile)
+	err := encoder.Encode(f)
 	if err != nil {
 		return [64]byte{}, err
 	}
 	return blake2b.Sum512(buffer.Bytes()), err
 }
 
-func (newFile *File) saveToDatabase(hash [64]byte) error {
+func (f *File) saveToDatabase(hash [64]byte) error {
 	key := fmt.Sprintf("%x", hash[:])
-	value, err := newFile.MarshalBinary()
+	value, err := f.MarshalBinary()
 	if err != nil {
-		return fmt.Errorf("encode file %s: %w", newFile.FileName, err)
+		return fmt.Errorf("encode file %s: %w", f.FileName, err)
 	}
 	if err := bolt.Add(key, value); err != nil {
-		return fmt.Errorf("save file %s: %w", newFile.FileName, err)
+		return fmt.Errorf("save file %s: %w", f.FileName, err)
 	}
-	FileHashMap[newFile.FileName] = key
+	FileHashMap[f.FileName] = key
 	return nil
 }

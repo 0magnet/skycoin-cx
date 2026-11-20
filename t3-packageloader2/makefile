@@ -1,4 +1,5 @@
 
+# NOTE: stale, the paths below no longer exist since the tier layout. See #113.
 build:
 	go build -o packageloader2
 
