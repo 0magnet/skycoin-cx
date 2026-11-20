@@ -150,6 +150,7 @@ func runTestCases(t *runner.TestRunner) {
 	t.Run("test-control-flow.cx", runner.CxSuccess, "control floow")
 	t.Run("test-utils.cx test-struct.cx", runner.CxSuccess, "struct")
 	t.Run("test-str.cx", runner.CxSuccess, "str")
+	t.Run("test-str-compare.cx", runner.CxSuccess, "str ordering operators (skycoin-cx#87)")
 	t.Run("test-utils.cx test-pointers.cx", runner.CxSuccess, "pointers")
 	t.Run("test-slices.cx", runner.CxSuccess, "slices")
 
