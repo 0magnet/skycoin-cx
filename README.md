@@ -2,7 +2,7 @@
 
 # CX Programming Language
  
-[![check](https://github.com/skycoin/skycoin-cx/actions/workflows/check.yml/badge.svg?branch=develop)](https://github.com/skycoin/skycoin-cx/actions/workflows/check.yml)
+[![check](https://github.com/skycoin/skycoin-cx/actions/workflows/check.yml/badge.svg?branch=main)](https://github.com/skycoin/skycoin-cx/actions/workflows/check.yml)
 
 CX is a general purpose, interpreted and compiled programming
 language, with a very strict type system and a syntax
