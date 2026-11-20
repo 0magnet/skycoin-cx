@@ -1,3 +1,8 @@
+//go:build ignore
+
+// redis: unrelated to CX, commented out. This file is excluded from the
+// build and t0-plredis has no other files.
+
 package redis
 
 import (
@@ -15,13 +20,13 @@ var rdb *redis.Client
 
 // VIOLATION: init chaining. Init 2 of the package loader tools: the redis
 // client for localhost:6379, called from Go package init.
-func init() {
-	rdb = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-}
+// func init() {
+// 	rdb = redis.NewClient(&redis.Options{
+// 		Addr:     "localhost:6379",
+// 		Password: "", // no password set
+// 		DB:       0,  // use default DB
+// 	})
+// }
 
 // Add stores value under key.
 func Add(key string, value interface{}) error {

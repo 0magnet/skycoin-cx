@@ -11,9 +11,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt"  // thin: only Add; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-plredis" // thin: only Add; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-util"    // thin: only CXOpenFile, CXStatFile; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Add; no depth gain
+	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
+	"github.com/skycoin/skycoin-cx/t0-util" // thin: only CXOpenFile, CXStatFile; no depth gain
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -185,8 +185,9 @@ func LoadCXProgram(programName string, sourceCode []*os.File, database string) (
 	}
 
 	switch database {
-	case "redis":
-		return redis.Add(programName, packageListStruct)
+	// redis: unrelated to CX, commented out
+	// case "redis":
+	// 	return redis.Add(programName, packageListStruct)
 	case "bolt":
 		value, err := packageListStruct.MarshalBinary()
 		if err != nil {
@@ -365,8 +366,8 @@ func ioReadDir(root string) ([]string, error) {
 // checkDatabase reports whether database names a supported store.
 func checkDatabase(database string) error {
 	switch database {
-	case "redis", "bolt":
+	case "bolt": // redis: unrelated to CX, commented out, was case "redis", "bolt"
 		return nil
 	}
-	return fmt.Errorf("unknown database %q, want redis or bolt", database)
+	return fmt.Errorf("unknown database %q, want bolt", database)
 }

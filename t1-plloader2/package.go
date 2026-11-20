@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt"  // thin: only Add; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-plredis" // thin: only Add; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Add; no depth gain
+	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -57,10 +57,11 @@ func (newPackage *Package) getHash() ([64]byte, error) {
 func (newPackage *Package) saveToDatabase(hash [64]byte, database string) error {
 	key := fmt.Sprintf("%x", hash[:])
 	switch database {
-	case "redis":
-		if err := redis.Add(key, *newPackage); err != nil {
-			return fmt.Errorf("save package %s: %w", newPackage.PackageName, err)
-		}
+	// redis: unrelated to CX, commented out
+	// case "redis":
+	// 	if err := redis.Add(key, *newPackage); err != nil {
+	// 		return fmt.Errorf("save package %s: %w", newPackage.PackageName, err)
+	// 	}
 	case "bolt":
 		value, err := newPackage.MarshalBinary()
 		if err != nil {

@@ -6,16 +6,18 @@ import (
 	"testing"
 
 	"github.com/skycoin/skycoin-cx/t0-plbolt"
-	"github.com/skycoin/skycoin-cx/t0-plredis"
+	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
 func TestSavePackage(t *testing.T) {
-	for _, database := range []string{"redis", "bolt"} {
+	// redis: unrelated to CX, commented out
+	for _, database := range []string{"bolt"} {
 		t.Run(database, func(t *testing.T) {
-			if database == "redis" && redis.Ping() != nil {
-				t.Skip("needs a redis server on localhost:6379")
-			}
+			// redis: unrelated to CX, commented out
+			// if database == "redis" && redis.Ping() != nil {
+			// 	t.Skip("needs a redis server on localhost:6379")
+			// }
 			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{"test_tree"}, true)
 			if perr != nil {
 				t.Fatal(perr)

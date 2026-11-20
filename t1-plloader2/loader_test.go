@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-plredis"
+	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"github.com/skycoin/skycoin-cx/t1-plloader2"
 )
 
@@ -252,24 +252,26 @@ func TestAddNewPackage(t *testing.T) {
 		WantImportMap        map[string][]string
 		WantErr              error
 	}{
-		{
-			Scenario:             "Test adding package to Redis database",
-			FilesPath:            TEST_SRC_PATH_VALID,
-			Database:             "redis",
-			WantNumberOfPackages: 1,
-			WantImportMap: map[string][]string{
-				"main": {"os", "testimport"},
-			},
-			WantErr: nil,
-		},
-		{
-			Scenario:             "Test adding package to Redis database with missing package",
-			FilesPath:            "test_folder/test_valid_program/",
-			Database:             "redis",
-			WantNumberOfPackages: 0,
-			WantImportMap:        map[string][]string{},
-			WantErr:              errors.New("package main not found"),
-		},
+		// redis: unrelated to CX, commented out
+		// {
+		// 	Scenario:             "Test adding package to Redis database",
+		// 	FilesPath:            TEST_SRC_PATH_VALID,
+		// 	Database:             "redis",
+		// 	WantNumberOfPackages: 1,
+		// 	WantImportMap: map[string][]string{
+		// 		"main": {"os", "testimport"},
+		// 	},
+		// 	WantErr: nil,
+		// },
+		// redis: unrelated to CX, commented out
+		// {
+		// 	Scenario:             "Test adding package to Redis database with missing package",
+		// 	FilesPath:            "test_folder/test_valid_program/",
+		// 	Database:             "redis",
+		// 	WantNumberOfPackages: 0,
+		// 	WantImportMap:        map[string][]string{},
+		// 	WantErr:              errors.New("package main not found"),
+		// },
 		{
 			Scenario:             "Test adding package to Bolt database",
 			FilesPath:            TEST_SRC_PATH_VALID,
@@ -291,9 +293,10 @@ func TestAddNewPackage(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			if testcase.Database == "redis" && redis.Ping() != nil {
-				t.Skip("needs a redis server on localhost:6379")
-			}
+			// redis: unrelated to CX, commented out
+			// if testcase.Database == "redis" && redis.Ping() != nil {
+			// 	t.Skip("needs a redis server on localhost:6379")
+			// }
 			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{testcase.FilesPath}, false)
 			if perr != nil {
 				t.Fatal(perr)
@@ -337,28 +340,30 @@ func TestLoadImportPackages(t *testing.T) {
 		WantImportMap        map[string][]string
 		WantErr              error
 	}{
-		{
-			Scenario:             "Test adding package to Redis database",
-			FilesPath:            TEST_SRC_PATH_VALID,
-			Database:             "redis",
-			WantNumberOfPackages: 2,
-			WantImportMap: map[string][]string{
-				"main":       {"os", "testimport"},
-				"testimport": {},
-			},
-			WantErr: nil,
-		},
-		{
-			Scenario:             "Test adding package to Redis database with missing package",
-			FilesPath:            "test_folder/test_import_package_error/",
-			Database:             "redis",
-			WantNumberOfPackages: 2,
-			WantImportMap: map[string][]string{
-				"main":       {"os", "testimport"},
-				"testimport": {"testimport2"},
-			},
-			WantErr: errors.New("package testimport2 not found"),
-		},
+		// redis: unrelated to CX, commented out
+		// {
+		// 	Scenario:             "Test adding package to Redis database",
+		// 	FilesPath:            TEST_SRC_PATH_VALID,
+		// 	Database:             "redis",
+		// 	WantNumberOfPackages: 2,
+		// 	WantImportMap: map[string][]string{
+		// 		"main":       {"os", "testimport"},
+		// 		"testimport": {},
+		// 	},
+		// 	WantErr: nil,
+		// },
+		// redis: unrelated to CX, commented out
+		// {
+		// 	Scenario:             "Test adding package to Redis database with missing package",
+		// 	FilesPath:            "test_folder/test_import_package_error/",
+		// 	Database:             "redis",
+		// 	WantNumberOfPackages: 2,
+		// 	WantImportMap: map[string][]string{
+		// 		"main":       {"os", "testimport"},
+		// 		"testimport": {"testimport2"},
+		// 	},
+		// 	WantErr: errors.New("package testimport2 not found"),
+		// },
 		{
 			Scenario:             "Test adding package to Bolt database",
 			FilesPath:            TEST_SRC_PATH_VALID,
@@ -385,9 +390,10 @@ func TestLoadImportPackages(t *testing.T) {
 
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			if testcase.Database == "redis" && redis.Ping() != nil {
-				t.Skip("needs a redis server on localhost:6379")
-			}
+			// redis: unrelated to CX, commented out
+			// if testcase.Database == "redis" && redis.Ping() != nil {
+			// 	t.Skip("needs a redis server on localhost:6379")
+			// }
 			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
 			if perr != nil {
 				t.Fatal(perr)
@@ -483,12 +489,13 @@ func TestLoadCXProgram(t *testing.T) {
 		Database         string
 		ExpectedPackages int
 	}{
-		{
-			Scenario:         "Test adding package to Redis database",
-			FilesPath:        TEST_SRC_PATH_VALID,
-			Database:         "redis",
-			ExpectedPackages: 2,
-		},
+		// redis: unrelated to CX, commented out
+		// {
+		// 	Scenario:         "Test adding package to Redis database",
+		// 	FilesPath:        TEST_SRC_PATH_VALID,
+		// 	Database:         "redis",
+		// 	ExpectedPackages: 2,
+		// },
 		{
 			Scenario:         "Test adding package to Bolt database",
 			FilesPath:        TEST_SRC_PATH_VALID,
@@ -498,9 +505,10 @@ func TestLoadCXProgram(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			if testcase.Database == "redis" && redis.Ping() != nil {
-				t.Skip("needs a redis server on localhost:6379")
-			}
+			// redis: unrelated to CX, commented out
+			// if testcase.Database == "redis" && redis.Ping() != nil {
+			// 	t.Skip("needs a redis server on localhost:6379")
+			// }
 			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{testcase.FilesPath}, true)
 			if perr != nil {
 				t.Fatal(perr)

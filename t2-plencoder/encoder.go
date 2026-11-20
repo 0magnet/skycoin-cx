@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt"   // thin: only Get; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-plredis"  // thin: only Get; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-plbolt" // thin: only Get; no depth gain
+	// "github.com/skycoin/skycoin-cx/t0-plredis" // redis: unrelated to CX, commented out
 	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File, Package, PackageList; types only, could move them to t0, tier 2 to 1
 )
 
@@ -19,7 +19,8 @@ func SavePackagesToDisk(packageName string, path string, database string) error 
 	if path == "" {
 		return fmt.Errorf("save packages %s: empty output path", packageName)
 	}
-	if database != "redis" && database != "bolt" {
+	// redis: unrelated to CX, commented out
+	if database != "bolt" {
 		return fmt.Errorf("save packages %s: unknown database %q", packageName, database)
 	}
 	err := os.Mkdir(path, 0755)
@@ -93,16 +94,17 @@ func SaveFilesToDisk(packageStruct loader.Package, filePath string, database str
 
 func getBytes(key string, database string) ([]byte, error) {
 	switch database {
-	case "redis":
-		value, err := redis.Get(key)
-		if err != nil {
-			return nil, err
-		}
-		s, ok := value.(string)
-		if !ok {
-			return nil, fmt.Errorf("redis: value of %q is %T, want string", key, value)
-		}
-		return []byte(s), nil
+	// redis: unrelated to CX, commented out
+	// case "redis":
+	// 	value, err := redis.Get(key)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	s, ok := value.(string)
+	// 	if !ok {
+	// 		return nil, fmt.Errorf("redis: value of %q is %T, want string", key, value)
+	// 	}
+	// 	return []byte(s), nil
 	case "bolt":
 		return bolt.Get(key)
 	}
