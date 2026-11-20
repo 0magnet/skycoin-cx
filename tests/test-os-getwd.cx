@@ -1,0 +1,16 @@
+// https://github.com/skycoin/skycoin-cx/issues/117
+
+package main
+
+import "os"
+
+func main() {
+	var wd str
+	wd = os.GetWorkingDirectory()
+	test(wd != "", true, "working directory is empty")
+
+	var handle i32
+	handle = os.Open(str.concat(wd, "testdata/json/test-0.json"))
+	test(handle >= 0, true, "cannot open a file relative to the working directory")
+	test(os.Close(handle), true, "close")
+}

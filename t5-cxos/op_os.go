@@ -15,7 +15,6 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t0-util"
 	"github.com/skycoin/skycoin-cx/t1-constants" // thin: only CX_RUNTIME_INVALID_ARGUMENT; no depth gain
-	"github.com/skycoin/skycoin-cx/t2-globals"   // thin: only CxProgramPath; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -782,7 +781,11 @@ func opOsWriteI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 }
 
 func opOsGetWorkingDirectory(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_str(prgrm, globals.CxProgramPath)
+	wd, err := os.Getwd()
+	if err == nil && !strings.HasSuffix(wd, string(os.PathSeparator)) {
+		wd += string(os.PathSeparator)
+	}
+	outputs[0].Set_str(prgrm, wd)
 }
 
 func opOsExit(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
