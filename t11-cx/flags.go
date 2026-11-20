@@ -119,35 +119,35 @@ func printVersion() {
 }
 
 func checkHelp(args []string) bool {
-	if command(args[0], "help") {
+	if len(args) > 0 && command(args[0], "help") {
 		return true
 	}
 	return false
 }
 
 func checkversion(args []string) bool {
-	if command(args[0], "version") {
+	if len(args) > 0 && command(args[0], "version") {
 		return true
 	}
 	return false
 }
 
 func checkenv(args []string) bool {
-	if command(args[0], "env") {
+	if len(args) > 0 && command(args[0], "env") {
 		return true
 	}
 	return false
 }
 
 func checkAST(args []string) bool {
-	if command(args[0], "ast") {
+	if len(args) > 0 && command(args[0], "ast") {
 		return true
 	}
 	return false
 }
 
 func checktokenizeMode(args []string) bool {
-	if command(args[0], "tokenize") {
+	if len(args) > 0 && command(args[0], "tokenize") {
 		return true
 	}
 	return false
