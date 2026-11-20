@@ -11,7 +11,9 @@ import (
 )
 
 func getLastLine(cxprogram *ast.CXProgram) ast.CXExpression {
-	for c := cxprogram.CallCounter - 1; c >= 0; c-- {
+	// CallCounter is unsigned, so count down from it and index with c = n-1.
+	for n := cxprogram.CallCounter; n > 0; n-- {
+		c := n - 1
 		if cxprogram.CallStack[c].Line+1 >= len(cxprogram.CallStack[c].Operator.Expressions) {
 			// then it'll also return from this function call; continue
 			continue
