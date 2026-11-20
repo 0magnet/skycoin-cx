@@ -785,6 +785,10 @@ func SerializeDebugInfo(prgrm *CXProgram, includeMemory, useCompression bool) Se
 	var s SerializedCXProgram
 
 	bytes := SerializeCXProgram(prgrm, includeMemory, useCompression)
+	if useCompression {
+		// The index and section offsets refer to the uncompressed bytes.
+		UncompressBytesLZ4(&bytes)
+	}
 	deserializeRaw(bytes, 0, types.Cast_ui64_to_ptr(idxSize), &s.Index)
 
 	data := &SerializedDataSize{
