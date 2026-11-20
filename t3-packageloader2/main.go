@@ -13,6 +13,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t2-pltree2"   // thin: only GetImportTree; no depth gain
 )
 
+// NOTE: t3-packageloader and t3-packageloader2 differ only in their imports. See #91.
 func main() {
 	loadFlag := flag.Bool("load", false, "OPTION: Load a program to the database, with a given name to load it as and path to the program")
 	saveFlag := flag.Bool("save", false, "OPTION: Save a package to disk, with a given name to search on the database and a new directory path to save to")
@@ -26,6 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// NOTE: counts set flags rather than what an action needs. See #102.
 	if flag.NFlag()+flag.NArg() > 4 || flag.NFlag()+flag.NArg() < 2 {
 		log.Fatal("Wrong number of arguments. Type -help for more information")
 	}

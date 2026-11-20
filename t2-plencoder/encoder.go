@@ -11,6 +11,8 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File, Package, PackageList; types only, could move them to t0, tier 2 to 1
 )
 
+// NOTE: the PackageList, Package and File read and decode is repeated in four
+// packages. See #92.
 func SavePackagesToDisk(programName string, outDir string) error {
 	if programName == "" {
 		return errors.New("save packages: empty program name")

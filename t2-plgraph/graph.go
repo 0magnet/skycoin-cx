@@ -11,6 +11,8 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
+// NOTE: the PackageList, Package and File read and decode is repeated in four
+// packages. See #92.
 func GetImportGraph(programName string) (output string, err error) {
 	if programName == "" {
 		return output, errors.New("GetImportGraph: empty program name")
@@ -61,6 +63,8 @@ func GetImportGraph(programName string) (output string, err error) {
 					wordBefore = scanner.Text()
 					continue
 				}
+				// NOTE: unreachable, the word is always "import" here. The scan also takes
+				// "import" in block comments and strings as an import. See #98.
 				if scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
 					break
 				}
@@ -98,6 +102,7 @@ func GetImportGraph(programName string) (output string, err error) {
 			importIndex, ok := importIndexMap[importString]
 			if !ok {
 				importIDs += strconv.Itoa(otherImportIndex) + ","
+				// NOTE: an external import gets a new id every time it is seen. See #105.
 				otherImports = append(otherImports, "id="+strconv.Itoa(otherImportIndex)+", module="+importString+", imports=,\n")
 				otherImportIndex++
 				continue

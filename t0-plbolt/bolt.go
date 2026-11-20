@@ -31,6 +31,8 @@ func Init() error {
 
 // withDB opens the database, runs fn and closes it again. A close error is
 // returned when fn itself succeeded.
+// NOTE: the database is opened on every call and lives in the executable directory.
+// See #99.
 func withDB(fn func(db *bolt.DB) error) (err error) {
 	if DBPath == "" {
 		return errors.New("bolt: DBPath is not set, call Init first")

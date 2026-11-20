@@ -16,12 +16,17 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
+// NOTE: t1-plloader and t1-plloader2 are near copies of each other. See #91.
+// NOTE: unused here, and a hand kept copy of the default packages. See #95.
 var builtinPackages = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
 
 // VIOLATION: state outside State. Owner: t1-plloader; moves to PackageFileMng in phase 1.
+// NOTE: written but never read, and keyed by base file name, so files in different
+// packages overwrite each other. See #94.
 var FileHashMap = make(map[string]string)
 
 // VIOLATION: state outside State. Owner: t1-plloader; moves to PackageFileMng in phase 1.
+// NOTE: written but never read. See #94.
 var PackageHashMap = make(map[string]string)
 
 func Contains(list []string, element string) bool {
@@ -33,6 +38,8 @@ func Contains(list []string, element string) bool {
 	return false
 }
 
+// NOTE: drops a file whose package does not match its directory without an error,
+// unlike t1-plloader2. The tests depend on it. See #96.
 func createFileMap(files []*os.File) (fileMap map[string][]*os.File, err error) {
 	fileMap = make(map[string][]*os.File)
 	for _, file := range files {
@@ -132,6 +139,8 @@ func getImports(file *os.File) (imports []string, err error) {
 	return imports, nil
 }
 
+// NOTE: finds only self imports and loops of two packages, a -> b -> c -> a passes.
+// See #97.
 func checkForDependencyLoop(importMap map[string][]string) (err error) {
 	for packageName := range importMap {
 		for _, importName := range importMap[packageName] {
@@ -261,6 +270,8 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 		// cli flags are either "--key=value" or "-key value"
 		// we have to skip both cases
+		// NOTE: assumes every flag without = takes a value, so a bool flag swallows the
+		// next argument, which may be a source file. See #101.
 		if len(arg) > 1 && arg[0] == '-' {
 			if !strings.Contains(arg, "=") {
 				skip = true
@@ -275,6 +286,8 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 		}
 
 		arg = filepath.Clean(arg)
+		// NOTE: CXStatFile, the directory walk and CXOpenFile apply the working directory
+		// in different ways. See #100.
 		fi, err := util.CXStatFile(arg)
 		if err != nil {
 			return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: source file or library not found: %w", arg, err)

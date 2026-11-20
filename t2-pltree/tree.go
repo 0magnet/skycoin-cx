@@ -10,6 +10,8 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
+// NOTE: t2-pltree and t2-pltree2 differ only in the loader import. The read and
+// decode walk is repeated in four packages. See #91 and #92.
 func GetImportTree(programName string) (output string, err error) {
 	if programName == "" {
 		return output, errors.New("GetImportTree: empty program name")
@@ -58,6 +60,8 @@ func GetImportTree(programName string) (output string, err error) {
 					wordBefore = scanner.Text()
 					continue
 				}
+				// NOTE: unreachable, the word is always "import" here. The scan also takes
+				// "import" in block comments and strings as an import. See #98.
 				if scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
 					break
 				}

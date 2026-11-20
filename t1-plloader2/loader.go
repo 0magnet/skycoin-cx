@@ -17,12 +17,17 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
+// NOTE: t1-plloader and t1-plloader2 are near copies of each other. See #91.
+// NOTE: a hand kept copy of the default packages in t0-packages. See #95.
 var builtinPackages = []string{"al", "gl", "glfw", "time", "os", "gltext", "cx", "json", "cipher", "tcp"}
 
 // VIOLATION: state outside State. Owner: t1-plloader2; moves to PackageFileMng in phase 1.
+// NOTE: written but never read, and keyed by base file name, so files in different
+// packages overwrite each other. See #94.
 var FileHashMap = make(map[string]string)
 
 // VIOLATION: state outside State. Owner: t1-plloader2; moves to PackageFileMng in phase 1.
+// NOTE: written but never read. See #94.
 var PackageHashMap = make(map[string]string)
 
 // ParseArgsForCX splits args into "++" cx flags and .cx source files. A
@@ -50,6 +55,8 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 		// cli flags are either "--key=value" or "-key value"
 		// we have to skip both cases
+		// NOTE: assumes every flag without = takes a value, so a bool flag swallows the
+		// next argument, which may be a source file. See #101.
 		if len(arg) > 1 && arg[0] == '-' {
 			if !strings.Contains(arg, "=") {
 				skip = true
@@ -64,6 +71,8 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 		}
 
 		arg = filepath.Clean(arg)
+		// NOTE: CXStatFile, the directory walk and CXOpenFile apply the working directory
+		// in different ways. See #100.
 		fi, err := util.CXStatFile(arg)
 		if err != nil {
 			return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: source file or library not found: %w", arg, err)
@@ -312,6 +321,8 @@ func getImports(file *os.File) (imports []string, err error) {
 	return imports, nil
 }
 
+// NOTE: finds only self imports and loops of two packages, a -> b -> c -> a passes.
+// See #97.
 func checkForDependencyLoop(importMap map[string][]string) (err error) {
 	for packageName := range importMap {
 		for _, importName := range importMap[packageName] {
@@ -368,6 +379,7 @@ func blake2HashFromFileUUID(fileUUID []string) ([64]byte, error) {
 //	3. packageStruct - pass an empty package struct "Package{}"
 //
 // This function works recursively
+// NOTE: recursion with an accumulator the caller must pass, a loop would do. See #103.
 func createPackageStruct(name string, files []*os.File, packageStruct Package) (Package, error) {
 
 	// Base case
@@ -412,6 +424,7 @@ func createPackageStruct(name string, files []*os.File, packageStruct Package) (
 //		2. importList - empty string slice "[]string{}"
 //
 // This function works recursively
+// NOTE: recursion with an accumulator the caller must pass, a loop would do. See #103.
 func createImportList(files []*os.File, importList []string) ([]string, error) {
 	// Base case
 	if len(files) == 0 {
