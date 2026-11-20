@@ -2,6 +2,7 @@ package bolt
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -20,68 +21,69 @@ func init() {
 		log.Fatal(err)
 	}
 	DBPath = filepath.Dir(path)
-	db, err := bolt.Open(DBPath+"/program_list.db", 0644, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte("program"))
-		if err != nil {
+	err = withDB(func(db *bolt.DB) error {
+		return db.Update(func(tx *bolt.Tx) error {
+			_, err := tx.CreateBucketIfNotExists([]byte("program"))
 			return err
-		}
-		return nil
+		})
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
+// withDB opens the database, runs fn and closes it again. A close error is
+// returned when fn itself succeeded.
+func withDB(fn func(db *bolt.DB) error) (err error) {
+	file := DBPath + "/program_list.db"
+	db, err := bolt.Open(file, 0644, nil)
+	if err != nil {
+		return fmt.Errorf("bolt: open %s: %w", file, err)
+	}
+	defer func() {
+		if cerr := db.Close(); cerr != nil && err == nil {
+			err = fmt.Errorf("bolt: close %s: %w", file, cerr)
+		}
+	}()
+	return fn(db)
+}
+
+// Add stores value under key in the program bucket.
 func Add(key string, value []byte) error {
-	db, err := bolt.Open(DBPath+"/program_list.db", 0644, nil)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	err = db.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte("program"))
-		if bucket == nil {
-			return errors.New("bucket program was not found")
-		}
-		err := bucket.Put([]byte(key), value)
-		if err != nil {
-			return err
-		}
-		return nil
+	return withDB(func(db *bolt.DB) error {
+		return db.Update(func(tx *bolt.Tx) error {
+			bucket := tx.Bucket([]byte("program"))
+			if bucket == nil {
+				return errors.New("bolt: bucket program was not found")
+			}
+			if err := bucket.Put([]byte(key), value); err != nil {
+				return fmt.Errorf("bolt: put %q: %w", key, err)
+			}
+			return nil
+		})
 	})
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
+// Get returns a copy of the value stored under key. A missing key is an error.
 func Get(key string) ([]byte, error) {
 	var ret []byte
-	db, err := bolt.Open(DBPath+"/program_list.db", 0644, nil)
-	if err != nil {
-		return ret, err
-	}
-	defer db.Close()
-	err = db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte("program"))
-		if bucket == nil {
-			return errors.New("bucket program was not found")
-		}
-		value := bucket.Get([]byte(key))
-		ret = make([]byte, len(value))
-		copy(ret, value)
-		if ret == nil {
-			return errors.New("no value associated with key " + key)
-		}
-		return nil
+	err := withDB(func(db *bolt.DB) error {
+		return db.View(func(tx *bolt.Tx) error {
+			bucket := tx.Bucket([]byte("program"))
+			if bucket == nil {
+				return errors.New("bolt: bucket program was not found")
+			}
+			value := bucket.Get([]byte(key))
+			if value == nil {
+				return fmt.Errorf("bolt: no value for key %q", key)
+			}
+			ret = make([]byte, len(value))
+			copy(ret, value)
+			return nil
+		})
 	})
 	if err != nil {
-		return ret, err
+		return nil, err
 	}
 	return ret, nil
 }

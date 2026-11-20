@@ -495,7 +495,10 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 			actions.AST = cxinit.MakeProgram()
 			cxinit.RegisterPackages(actions.AST)
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _, perr := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			if perr != nil {
+				t.Fatal(perr)
+			}
 
 			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {
@@ -654,7 +657,10 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 			actions.AST = cxinit.MakeProgram()
 			cxinit.RegisterPackages(actions.AST)
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _, perr := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			if perr != nil {
+				t.Fatal(perr)
+			}
 
 			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {
@@ -822,7 +828,10 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 			actions.AST = cxinit.MakeProgram()
 			cxinit.RegisterPackages(actions.AST)
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _, perr := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			if perr != nil {
+				t.Fatal(perr)
+			}
 
 			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {
@@ -1151,7 +1160,10 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 			actions.AST = nil
 
-			_, sourceCode, _ := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _, perr := loader.ParseArgsForCX([]string{tc.testDir}, true)
+			if perr != nil {
+				t.Fatal(perr)
+			}
 
 			err := loader.LoadCXProgram("test", sourceCode, "bolt")
 			if err != nil {

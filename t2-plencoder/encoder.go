@@ -1,6 +1,7 @@
 package encoder
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/skycoin/skycoin-cx/t0-plbolt"   // thin: only Get; no depth gain
@@ -15,41 +16,22 @@ func SavePackagesToDisk(packageName string, path string, database string) error 
 	}
 
 	var packageList loader.PackageList
-	var listBytes []byte
-	switch database {
-	case "redis":
-		interfaceString, err := redis.Get(packageName)
-		if err != nil {
-			return err
-		}
-		listBytes = []byte(interfaceString.(string))
-	case "bolt":
-		listBytes, err = bolt.Get(packageName)
-		if err != nil {
-			return err
-		}
+	listBytes, err := getBytes(packageName, database)
+	if err != nil {
+		return err
 	}
-	packageList.UnmarshalBinary(listBytes)
+	if err := packageList.UnmarshalBinary(listBytes); err != nil {
+		return fmt.Errorf("decode package list %s: %w", packageName, err)
+	}
 
 	for _, pack := range packageList.Packages {
 		var packageStruct loader.Package
-		var packageBytes []byte
-		switch database {
-		case "redis":
-			interfaceString, err := redis.Get(pack)
-			if err != nil {
-				return err
-			}
-			packageBytes = []byte(interfaceString.(string))
-		case "bolt":
-			packageBytes, err = bolt.Get(pack)
-			if err != nil {
-				return err
-			}
-		}
-		err := packageStruct.UnmarshalBinary(packageBytes)
+		packageBytes, err := getBytes(pack, database)
 		if err != nil {
 			return err
+		}
+		if err := packageStruct.UnmarshalBinary(packageBytes); err != nil {
+			return fmt.Errorf("decode package %s: %w", pack, err)
 		}
 
 		var filePath string
@@ -74,21 +56,13 @@ func SaveFilesToDisk(packageStruct loader.Package, filePath string, database str
 	}
 	for _, file := range packageStruct.Files {
 		var fileStruct loader.File
-		var fileBytes []byte
-		switch database {
-		case "redis":
-			interfaceString, err := redis.Get(file)
-			if err != nil {
-				return err
-			}
-			fileBytes = []byte(interfaceString.(string))
-		case "bolt":
-			fileBytes, err = bolt.Get(file)
-			if err != nil {
-				return err
-			}
+		fileBytes, err := getBytes(file, database)
+		if err != nil {
+			return err
 		}
-		fileStruct.UnmarshalBinary(fileBytes)
+		if err := fileStruct.UnmarshalBinary(fileBytes); err != nil {
+			return fmt.Errorf("decode file %s of package %s: %w", file, packageStruct.PackageName, err)
+		}
 
 		err = os.WriteFile(filePath+fileStruct.FileName, fileStruct.Content, 0755)
 		if err != nil {
@@ -96,4 +70,22 @@ func SaveFilesToDisk(packageStruct loader.Package, filePath string, database str
 		}
 	}
 	return nil
+}
+
+func getBytes(key string, database string) ([]byte, error) {
+	switch database {
+	case "redis":
+		value, err := redis.Get(key)
+		if err != nil {
+			return nil, err
+		}
+		s, ok := value.(string)
+		if !ok {
+			return nil, fmt.Errorf("redis: value of %q is %T, want string", key, value)
+		}
+		return []byte(s), nil
+	case "bolt":
+		return bolt.Get(key)
+	}
+	return nil, fmt.Errorf("unknown database %q", database)
 }

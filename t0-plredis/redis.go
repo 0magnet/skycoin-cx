@@ -2,6 +2,8 @@ package redis
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -21,18 +23,22 @@ func init() {
 	})
 }
 
+// Add stores value under key.
 func Add(key string, value interface{}) error {
-	err := rdb.Set(ctx, key, value, 0).Err()
-	if err != nil {
-		return err
+	if err := rdb.Set(ctx, key, value, 0).Err(); err != nil {
+		return fmt.Errorf("redis: set %q: %w", key, err)
 	}
 	return nil
 }
 
+// Get returns the value stored under key. A missing key is an error.
 func Get(key string) (interface{}, error) {
 	ret, err := rdb.Get(ctx, key).Result()
+	if errors.Is(err, redis.Nil) {
+		return nil, fmt.Errorf("redis: no value for key %q", key)
+	}
 	if err != nil {
-		return ret, err
+		return nil, fmt.Errorf("redis: get %q: %w", key, err)
 	}
 	return ret, nil
 }

@@ -51,16 +51,23 @@ func (newPackage *Package) getHash() ([64]byte, error) {
 }
 
 func (newPackage *Package) saveToDatabase(hash [64]byte, database string) error {
+	key := fmt.Sprintf("%x", hash[:])
 	switch database {
 	case "redis":
-		redis.Add(fmt.Sprintf("%x", hash[:]), *newPackage)
+		if err := redis.Add(key, *newPackage); err != nil {
+			return fmt.Errorf("save package %s: %w", newPackage.PackageName, err)
+		}
 	case "bolt":
 		value, err := newPackage.MarshalBinary()
 		if err != nil {
-			return err
+			return fmt.Errorf("encode package %s: %w", newPackage.PackageName, err)
 		}
-		bolt.Add(fmt.Sprintf("%x", hash[:]), value)
+		if err := bolt.Add(key, value); err != nil {
+			return fmt.Errorf("save package %s: %w", newPackage.PackageName, err)
+		}
+	default:
+		return fmt.Errorf("save package %s: unknown database %q", newPackage.PackageName, database)
 	}
-	PackageHashMap[newPackage.PackageName] = fmt.Sprintf("%x", hash[:])
+	PackageHashMap[newPackage.PackageName] = key
 	return nil
 }

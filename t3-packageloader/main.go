@@ -61,8 +61,11 @@ func main() {
 	}
 
 	if *loadFlag {
-		_, sourceCodes, _ := loader.ParseArgsForCX([]string{path}, true)
-		err := loader.LoadCXProgram(programName, sourceCodes, database)
+		_, sourceCodes, _, err := loader.ParseArgsForCX([]string{path}, true)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = loader.LoadCXProgram(programName, sourceCodes, database)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -38,16 +38,23 @@ func (newFile *File) getHash() ([64]byte, error) {
 }
 
 func (newFile *File) saveToDatabase(hash [64]byte, database string) error {
+	key := fmt.Sprintf("%x", hash[:])
 	switch database {
 	case "redis":
-		redis.Add(fmt.Sprintf("%x", hash[:]), *newFile)
+		if err := redis.Add(key, *newFile); err != nil {
+			return fmt.Errorf("save file %s: %w", newFile.FileName, err)
+		}
 	case "bolt":
 		value, err := newFile.MarshalBinary()
 		if err != nil {
-			return err
+			return fmt.Errorf("encode file %s: %w", newFile.FileName, err)
 		}
-		bolt.Add(fmt.Sprintf("%x", hash[:]), value)
+		if err := bolt.Add(key, value); err != nil {
+			return fmt.Errorf("save file %s: %w", newFile.FileName, err)
+		}
+	default:
+		return fmt.Errorf("save file %s: unknown database %q", newFile.FileName, database)
 	}
-	FileHashMap[newFile.FileName] = fmt.Sprintf("%x", hash[:])
+	FileHashMap[newFile.FileName] = key
 	return nil
 }

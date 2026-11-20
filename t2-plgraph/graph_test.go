@@ -14,7 +14,10 @@ func TestGraph(t *testing.T) {
 			if database == "redis" && redis.Ping() != nil {
 				t.Skip("needs a redis server on localhost:6379")
 			}
-			_, sourceCodes, _ := loader.ParseArgsForCX([]string{"test_tree"}, true)
+			_, sourceCodes, _, perr := loader.ParseArgsForCX([]string{"test_tree"}, true)
+			if perr != nil {
+				t.Fatal(perr)
+			}
 			if err := loader.LoadCXProgram("TestTree", sourceCodes, database); err != nil {
 				t.Fatal(err)
 			}

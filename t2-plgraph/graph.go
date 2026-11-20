@@ -2,7 +2,7 @@ package graph
 
 import (
 	"bufio"
-	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -17,7 +17,9 @@ func GetImportGraph(packageName string, database string) (output string, err err
 	if err != nil {
 		return output, err
 	}
-	packageList.UnmarshalBinary(listBytes)
+	if err := packageList.UnmarshalBinary(listBytes); err != nil {
+		return output, fmt.Errorf("decode package list %s: %w", packageName, err)
+	}
 
 	var importMap = make(map[string][]string)
 	var indexList = make([]string, 0)
@@ -29,7 +31,9 @@ func GetImportGraph(packageName string, database string) (output string, err err
 		if err != nil {
 			return output, err
 		}
-		packageStruct.UnmarshalBinary(packageBytes)
+		if err := packageStruct.UnmarshalBinary(packageBytes); err != nil {
+			return output, fmt.Errorf("decode package %s: %w", packageString, err)
+		}
 
 		for _, fileString := range packageStruct.Files {
 			var fileStruct loader.File
@@ -37,7 +41,9 @@ func GetImportGraph(packageName string, database string) (output string, err err
 			if err != nil {
 				return output, err
 			}
-			fileStruct.UnmarshalBinary(fileBytes)
+			if err := fileStruct.UnmarshalBinary(fileBytes); err != nil {
+				return output, fmt.Errorf("decode file %s: %w", fileString, err)
+			}
 
 			scanner := bufio.NewScanner(strings.NewReader(string(fileStruct.Content)))
 			scanner.Split(bufio.ScanWords)
@@ -55,12 +61,23 @@ func GetImportGraph(packageName string, database string) (output string, err err
 				if scanner.Text() == "var" || scanner.Text() == "const" || scanner.Text() == "type" || scanner.Text() == "func" {
 					break
 				}
-				scanner.Scan()
-				importString := scanner.Text()[1 : len(scanner.Text())-1]
+				if !scanner.Scan() {
+					break
+				}
+				tok := scanner.Text()
+				if len(tok) < 2 || tok[0] != '"' || tok[len(tok)-1] != '"' {
+					// "import" not followed by a quoted path, so not an import statement.
+					wordBefore = tok
+					continue
+				}
+				importString := tok[1 : len(tok)-1]
 				if !loader.Contains(imports, importString) {
 					imports = append(imports, importString)
 				}
 				wordBefore = scanner.Text()
+			}
+			if err := scanner.Err(); err != nil {
+				return output, fmt.Errorf("file %s: scan: %w", fileStruct.FileName, err)
 			}
 		}
 		indexList = append(indexList, packageStruct.PackageName)
@@ -75,8 +92,8 @@ func GetImportGraph(packageName string, database string) (output string, err err
 		var tmp = "imports="
 		imports := importMap[module]
 		for _, importString := range imports {
-			importIndex := importIndexMap[importString]
-			if importIndex == 0 {
+			importIndex, ok := importIndexMap[importString]
+			if !ok {
 				tmp += strconv.Itoa(otherImportIndex) + ","
 				otherImports = append(otherImports, "id="+strconv.Itoa(otherImportIndex)+", module="+importString+", imports=,\n")
 				otherImportIndex++
@@ -95,17 +112,17 @@ func GetImportGraph(packageName string, database string) (output string, err err
 func GetStructBytes(structName string, database string) ([]byte, error) {
 	switch database {
 	case "redis":
-		interfaceString, err := redis.Get(structName)
+		value, err := redis.Get(structName)
 		if err != nil {
-			return []byte{}, err
+			return nil, err
 		}
-		return []byte(interfaceString.(string)), nil
+		s, ok := value.(string)
+		if !ok {
+			return nil, fmt.Errorf("redis: value of %q is %T, want string", structName, value)
+		}
+		return []byte(s), nil
 	case "bolt":
-		listBytes, err := bolt.Get(structName)
-		if err != nil {
-			return []byte{}, err
-		}
-		return listBytes, nil
+		return bolt.Get(structName)
 	}
-	return []byte{}, errors.New("invalid database")
+	return nil, fmt.Errorf("unknown database %q", database)
 }
