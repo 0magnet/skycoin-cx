@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"io/ioutil"
 	"os"
 	"time"
 )
@@ -128,7 +127,7 @@ func main() {
 	start = time.Now()
 	for c := 0; c < 100; c++ {
 		//byts := encoder.Serialize(testArrays)
-		ioutil.WriteFile(fileName, encoder.Serialize(testArrays), os.FileMode(644))
+		mustWrite(fileName, encoder.Serialize(testArrays))
 	}
 	duration = time.Since(start)
 	fmt.Println("s+w\t", duration)
@@ -137,7 +136,7 @@ func main() {
 	byts := encoder.Serialize(testArrays)
 	start = time.Now()
 	for c := 0; c < 100; c++ {
-		ioutil.WriteFile(fileName, byts, os.FileMode(644))
+		mustWrite(fileName, byts)
 	}
 	duration = time.Since(start)
 	fmt.Println("w\t", duration)
@@ -180,4 +179,16 @@ func main() {
 	// duration := time.Since(start)
 	// fmt.Println("read\t\t", duration)
 
+}
+
+func writeFile(name string, b []byte) error {
+	return os.WriteFile(name, b, 0644)
+}
+
+// mustWrite exits on a failed write so it does not count in the timing.
+func mustWrite(name string, b []byte) {
+	if err := writeFile(name, b); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
