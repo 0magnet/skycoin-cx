@@ -14,7 +14,8 @@ func IsValidSliceIndex(prgrm *CXProgram, offset types.Pointer, index types.Point
 	sliceLen := GetSliceLen(prgrm, offset)
 	bytesLen := sliceLen * sizeofElement
 	index -= types.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE + offset
-	if index >= 0 && index < bytesLen && (index%sizeofElement) == 0 {
+	// An index before the data wraps to a large value and fails index < bytesLen.
+	if index < bytesLen && (index%sizeofElement) == 0 {
 		return true
 	}
 	return false
@@ -183,7 +184,7 @@ func SliceInsert(prgrm *CXProgram, fp types.Pointer, out *CXTypeSignature, inp *
 		inputSliceLen = GetSliceLen(prgrm, inputSliceOffset)
 	}
 
-	if index < 0 || index > inputSliceLen {
+	if index > inputSliceLen {
 		panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 	}
 
@@ -206,7 +207,7 @@ func SliceRemove(prgrm *CXProgram, fp types.Pointer, out *CXTypeSignature, inp *
 		inputSliceLen = GetSliceLen(prgrm, inputSliceOffset)
 	}
 
-	if index < 0 || index >= inputSliceLen {
+	if index >= inputSliceLen {
 		panic(constants.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 	}
 

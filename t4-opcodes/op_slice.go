@@ -19,8 +19,6 @@ func opSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 			sliceOffset := types.Read_ptr(prgrm.Memory, inputs[0].Offset)
 			if sliceOffset > 0 && sliceOffset.IsValid() {
 				sliceLen = ast.GetSliceLen(prgrm, sliceOffset)
-			} else if sliceOffset < 0 {
-				panic(constants.CX_RUNTIME_ERROR)
 			}
 			// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
 		} else if (elt.PointerTargetType == types.STR || elt.Type == types.STR) && elt.Lengths == nil {
@@ -35,8 +33,6 @@ func opSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		sliceOffset := types.Read_ptr(prgrm.Memory, inputs[0].Offset)
 		if sliceOffset > 0 && sliceOffset.IsValid() {
 			sliceLen = ast.GetSliceLen(prgrm, sliceOffset)
-		} else if sliceOffset < 0 {
-			panic(constants.CX_RUNTIME_ERROR)
 		}
 	} else if inputs[0].TypeSignature.Type == ast.TYPE_STRUCT {
 		structDetails := prgrm.GetCXTypeSignatureStructFromArray(inputs[0].TypeSignature.Meta)
@@ -50,8 +46,6 @@ func opSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 				sliceOffset := types.Read_ptr(prgrm.Memory, inputs[0].Offset)
 				if sliceOffset > 0 && sliceOffset.IsValid() {
 					sliceLen = ast.GetSliceLen(prgrm, sliceOffset)
-				} else if sliceOffset < 0 {
-					panic(constants.CX_RUNTIME_ERROR)
 				}
 				// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
 			} else if (fld.PointerTargetType == types.STR || fld.Type == types.STR) && fld.Lengths == nil {
@@ -427,7 +421,7 @@ func opSliceCopy(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	src := ast.GetSliceData(prgrm, srcOffset, srcSize)
 
 	var count types.Pointer
-	if dstType == srcType && dstOffset >= 0 && srcOffset >= 0 {
+	if dstType == srcType {
 		count = types.Cast_int_to_ptr(copy(dst, src))
 		if count%dstSize != 0 {
 			panic(constants.CX_RUNTIME_ERROR)

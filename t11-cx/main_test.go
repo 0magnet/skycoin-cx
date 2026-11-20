@@ -5,6 +5,11 @@ import (
 	"os/exec"
 	"strings"
 	"testing"
+
+	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-opcodes"
+	"github.com/skycoin/skycoin-cx/t5-cxos"
+	cxinit "github.com/skycoin/skycoin-cx/t7-init"
 )
 
 func TestMain(m *testing.M) {
@@ -29,4 +34,12 @@ func TestNoArgsStartsRepl(t *testing.T) {
 	if !strings.Contains(string(out), "Bye!") {
 		t.Fatalf("cx with no arguments did not start the REPL, output %q", out)
 	}
+}
+
+func initProgram() {
+	actions.InitConstants()
+	cxos.InitConstants()
+	actions.AST = cxinit.MakeProgram()
+	cxinit.RegisterPackages(actions.AST)
+	opcodes.RegisterOpcodes(actions.AST)
 }

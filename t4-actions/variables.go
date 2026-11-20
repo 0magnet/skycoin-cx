@@ -93,7 +93,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// if offset is not valid, assign new offset
 		// VIOLATION: created outside manager; phase 1.
 		var glblArg *ast.CXArgument = &ast.CXArgument{}
-		if glbl.Offset < 0 || !glbl.Offset.IsValid() {
+		if !glbl.Offset.IsValid() {
 			if declaration_specifiers.IsSlice() { // TODO:PTR move branch in WritePrimary
 				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
 					make([]byte, types.POINTER_SIZE), true)
@@ -107,7 +107,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		if ast.IsTypeAtomic(declaration_specifiers) {
 			glbl.Type = ast.TYPE_ATOMIC
 			glbl.Meta = int(declaration_specifiers.Type)
-			if glbl.Offset < 0 || !glbl.Offset.IsValid() {
+			if !glbl.Offset.IsValid() {
 				glbl.Offset = glblArg.Offset
 			}
 
@@ -115,7 +115,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		} else if ast.IsTypePointerAtomic(declaration_specifiers) {
 			glbl.Type = ast.TYPE_POINTER_ATOMIC
 			glbl.Meta = int(declaration_specifiers.Type)
-			if glbl.Offset < 0 || !glbl.Offset.IsValid() {
+			if !glbl.Offset.IsValid() {
 				glbl.Offset = glblArg.Offset
 			}
 
@@ -135,7 +135,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 			glbl.PassBy = declaration_specifiers.PassBy
 
-			if glbl.Offset < 0 || !glbl.Offset.IsValid() {
+			if !glbl.Offset.IsValid() {
 				glbl.Offset = glblArg.Offset
 			}
 		} else if ast.IsTypePointerArrayAtomic(declaration_specifiers) {
@@ -152,7 +152,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Meta = typeSignatureForArrayIdx
 			glbl.PassBy = declaration_specifiers.PassBy
 
-			if glbl.Offset < 0 || !glbl.Offset.IsValid() {
+			if !glbl.Offset.IsValid() {
 				glbl.Offset = glblArg.Offset
 			}
 		} else if ast.IsTypeSliceAtomic(declaration_specifiers) {
@@ -171,7 +171,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Meta = typeSignatureForArrayIdx
 			glbl.PassBy = declaration_specifiers.PassBy
 
-			if glbl.Offset < 0 || !glbl.Offset.IsValid() {
+			if !glbl.Offset.IsValid() {
 				glbl.Offset = glblArg.Offset
 			}
 		} else if ast.IsTypePointerSliceAtomic(declaration_specifiers) {
@@ -190,7 +190,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Meta = typeSignatureForArrayIdx
 			glbl.PassBy = declaration_specifiers.PassBy
 
-			if glbl.Offset < 0 || !glbl.Offset.IsValid() {
+			if !glbl.Offset.IsValid() {
 				glbl.Offset = glblArg.Offset
 			}
 		} else {
@@ -205,7 +205,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				panic("type is not type cx argument deprecate\n\n")
 			}
 
-			if glbl.Offset < 0 || glblCXArg.Size == 0 || totalSize == 0 {
+			if glblCXArg.Size == 0 || totalSize == 0 {
 				prgrm.CXArgs[glblIdx].Offset = glblArg.Offset
 				prgrm.CXArgs[glblIdx].PassBy = glblArg.PassBy
 			}
