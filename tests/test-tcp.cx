@@ -1,0 +1,29 @@
+// https://github.com/skycoin/skycoin-cx/issues/115
+
+package main
+
+import "tcp"
+
+func main() {
+	var err str
+
+	err = tcp.Listen("tcp", "127.0.0.1:47115")
+	test(err, "", "listen")
+
+	err = tcp.Dial("tcp", "127.0.0.1:47115")
+	test(err, "", "dial the listener")
+
+	err = tcp.Accept("", "")
+	test(err, "", "accept the dialed connection")
+
+	tcp.Close()
+
+	err = tcp.Dial("tcp", "127.0.0.1:47115")
+	test(err != "", true, "dial after close must fail")
+
+	err = tcp.Accept("", "")
+	test(err != "", true, "accept after close must fail")
+
+	err = tcp.Listen("nosuchnet", "127.0.0.1:47115")
+	test(err != "", true, "listen on a bad network must fail")
+}
