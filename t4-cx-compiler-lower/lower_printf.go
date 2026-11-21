@@ -5,6 +5,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
@@ -80,7 +81,7 @@ func (s *state) printfFormat(signatureIndex ast.CXTypeSignatureIndex) ([]byte, R
 		name = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(signature.Meta)).Name
 	}
 	code, p, reason := s.placeOf(nil, signatureIndex)
-	if reason != ReasonNone || name != "" || len(code) > 0 || p.placeFrame {
+	if reason != ReasonNone || name != stringpool.StringGidNil || len(code) > 0 || p.placeFrame {
 		return nil, ReasonPrintfFormat
 	}
 	if _, reason := s.placeStatic(place{placeOffset: p.placeOffset, placeSize: machinePointerSize}); reason != ReasonNone {

@@ -1,11 +1,13 @@
 package ast
 
-import "github.com/skycoin/skycoin-cx/t0-types"
+import (
+	"github.com/skycoin/skycoin-cx/t0-types"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
+)
 
 type CXTypeSignature struct {
-	Index CXTypeSignatureIndex
-	// NameStringID int
-	Name    string // temporary
+	Index   CXTypeSignatureIndex
+	Name    stringpool.StringGid
 	Offset  types.Pointer
 	Type    CXTypeSignature_TYPE
 	Package CXPackageIndex

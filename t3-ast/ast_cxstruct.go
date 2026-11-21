@@ -15,7 +15,7 @@ type CXStructIndex int
 
 // GetField returns the signature of the field name of strct. Its
 // GetStructType and GetOffset give what a caller needs of the field.
-func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXTypeSignature, error) {
+func (strct *CXStruct) GetField(prgrm *CXProgram, name stringpool.StringGid) (*CXTypeSignature, error) {
 	for _, typeSignatureIdx := range strct.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0254.
@@ -25,7 +25,7 @@ func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXTypeSignature
 		}
 	}
 
-	return nil, fmt.Errorf("field '%s' not found in struct '%s'", name, prgrm.CXProgramNameText(strct.Name))
+	return nil, fmt.Errorf("field '%s' not found in struct '%s'", prgrm.CXProgramNameText(name), prgrm.CXProgramNameText(strct.Name))
 }
 
 // ----------------------------------------------------------------

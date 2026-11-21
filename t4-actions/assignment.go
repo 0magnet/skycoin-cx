@@ -5,6 +5,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -19,7 +20,7 @@ import (
 //	fromExprs - fromExprs are the array of expressions that will contain the
 //			    series of struct field assignments.
 //	structLiteralName - name of the struct, in the example above this is "foo".
-func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExprs []ast.CXExpression, structLiteralName string) []ast.CXExpression {
+func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExprs []ast.CXExpression, structLiteralName stringpool.StringGid) []ast.CXExpression {
 	toExpression, err := prgrm.GetCXAtomicOpFromExpressions(toExprs, 0)
 	if err != nil {
 		panic(err)
@@ -140,7 +141,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		// And we also need an auxiliary variable to point to,
 		// otherwise we'd be trying to assign the fields to a nil value.
 		outField := lastFromExpressionOutputArg
-		auxName := generateTempVarName(constants.LOCAL_PREFIX)
+		auxName := generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 		// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 		// Now a constructor call, site S0522.
 		_, aux := ast.MakeArgument(prgrm, auxName, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
@@ -288,7 +289,7 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now a constructor call, site S0538.
-			_, sym := ast.MakeArgument(prgrm, generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+			_, sym := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
 			sym.SetType(fromExpressionInputArg.Type)
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
@@ -296,7 +297,7 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 			typeSigIdx = ast.AllocCXTypeSignatureOfCXArgBuilder(prgrm, sym)
 		} else if fromExpressionInputTypeSig.Type == ast.TYPE_ATOMIC || fromExpressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			_, newTypeSig := prgrm.AllocCXTypeSignatureCopy(fromExpressionInputTypeSig)
-			newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+			newTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 			newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 			typeSigIdx = newTypeSig.Index
 		} else {

@@ -37,7 +37,7 @@ func MakeFunction(prgrm *CXProgram, name stringpool.StringGid, fileName string, 
 		Inputs: &CXStruct{
 			Name: prgrm.CXProgramNameIntern(prgrm.CXProgramNameText(name) + "_Input"),
 		},
-		LocalVariables: []string{},
+		LocalVariables: []stringpool.StringGid{},
 	}
 }
 
@@ -61,7 +61,7 @@ func (fn *CXFunction) GetExpressionByLabel(prgrm *CXProgram, lbl string) (*CXExp
 	}
 
 	for _, expr := range fn.Expressions {
-		if expr.GetLabel(prgrm) == lbl {
+		if prgrm.CXProgramNameText(expr.GetLabel(prgrm)) == lbl {
 			return &expr, nil
 		}
 	}
@@ -254,13 +254,13 @@ func (fn *CXFunction) RemoveExpression(line int) {
 	}
 }
 
-func (fn *CXFunction) AddLocalVariableName(name string) error {
+func (fn *CXFunction) AddLocalVariableName(name stringpool.StringGid) error {
 	fn.LocalVariables = append(fn.LocalVariables, name)
 
 	return nil
 }
 
-func (fn *CXFunction) IsLocalVariable(name string) bool {
+func (fn *CXFunction) IsLocalVariable(name stringpool.StringGid) bool {
 	for _, localVar := range fn.LocalVariables {
 		if name == localVar {
 			return true
@@ -270,7 +270,7 @@ func (fn *CXFunction) IsLocalVariable(name string) bool {
 	return false
 }
 
-func (fn *CXFunction) RemoveLocalVariableFromArray(name string) error {
+func (fn *CXFunction) RemoveLocalVariableFromArray(name stringpool.StringGid) error {
 	for idx, localVar := range fn.LocalVariables {
 		if name == localVar {
 			fn.LocalVariables = append(fn.LocalVariables[:idx], fn.LocalVariables[idx+1:]...)

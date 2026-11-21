@@ -132,7 +132,7 @@ func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName string) (*CXStruct, 
 }
 
 // GetGlobal ...
-func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName string) (*CXTypeSignature, error) {
+func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName stringpool.StringGid) (*CXTypeSignature, error) {
 	for _, fieldIdx := range pkg.Globals.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0171.
@@ -142,7 +142,7 @@ func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName string) (*CXTypeSignat
 		}
 	}
 
-	return nil, fmt.Errorf("global '%s' not found in package '%s'", defName, prgrm.CXProgramNameText(pkg.Name))
+	return nil, fmt.Errorf("global '%s' not found in package '%s'", prgrm.CXProgramNameText(defName), prgrm.CXProgramNameText(pkg.Name))
 }
 
 // GetCurrentFunction ...

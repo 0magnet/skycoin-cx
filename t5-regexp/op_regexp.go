@@ -23,10 +23,9 @@ func expOffset(prgrm *ast.CXProgram, value ast.CXValue) types.Pointer {
 	if err != nil {
 		panic(err)
 	}
-	expFld, err := regexpType.GetField(prgrm, "exp")
-	if err != nil {
-		panic(err)
-	}
+	// exp is the only field init gives Regexp. The pool is frozen at run
+	// time, so the field is not looked up by name.
+	expFld := prgrm.GetCXTypeSignatureFromArray(regexpType.Fields[0])
 	return value.Offset + expFld.GetOffset(prgrm)
 }
 

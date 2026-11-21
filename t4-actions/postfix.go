@@ -29,7 +29,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	prevExprCXLine, _ := prgrm.GetPreviousCXLine(prevExprs, len(prevExprs)-1)
 
 	if prevExpressionOperator != nil && len(prgrm.CXAtomicOps[prevExpressionIdx].GetOutputs(prgrm)) == 0 {
-		genName := generateTempVarName(constants.LOCAL_PREFIX)
+		genName := generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S1095.
@@ -213,7 +213,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now a constructor call, site S1127.
-			_, sym := ast.MakeArgument(prgrm, generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+			_, sym := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
 			sym.SetType(postExpressionOperatorOutputArg.Type)
 			sym.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
 			sym.PreviouslyDeclared = true
@@ -242,7 +242,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				postExpressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(postExpressionOperatorOutputTypeSig.Meta))
 				// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 				// Now a constructor call, site S1131.
-				_, idxSym := ast.MakeArgument(prgrm, generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+				_, idxSym := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
 				idxSym.SetType(postExpressionOperatorOutputArg.Type)
 				idxSym.Size = postExpressionOperatorOutputArg.Size
 
@@ -257,7 +257,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				argDetails.FileLine = LineNo
 				_, newTypeSig := prgrm.AllocCXTypeSignature()
 				newTypeSig.ArgDetails = argDetailsGid
-				newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+				newTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 				newTypeSig.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
 				newTypeSig.Type = postExpressionOperatorOutputTypeSig.Type
 				newTypeSig.Meta = postExpressionOperatorOutputTypeSig.Meta
@@ -270,7 +270,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				argDetails.FileLine = LineNo
 				_, newTypeSig := prgrm.AllocCXTypeSignature()
 				newTypeSig.ArgDetails = argDetailsGid
-				newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+				newTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 				newTypeSig.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
 				newTypeSig.Type = postExpressionOperatorOutputTypeSig.Type
 				newTypeSig.Meta = postExpressionOperatorOutputTypeSig.Meta
@@ -421,7 +421,7 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpre
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S1153.
 		prevExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prevExpression.GetOutputs(prgrm)[0])
-		if opCode, ok := ast.OpCodes[prevExpressionOutputTypeSig.Name]; ok {
+		if opCode, ok := ast.OpCodes[prgrm.CXProgramNameText(prevExpressionOutputTypeSig.Name)]; ok {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				prgrm.CXAtomicOps[firstPrevExpressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 			}
@@ -486,7 +486,7 @@ func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
 
 	} else if lastPrevExpressionOperator == nil {
-		if opCode, ok := ast.OpCodes[lastPrevExpressionOutputTypeSig.Name]; ok {
+		if opCode, ok := ast.OpCodes[prgrm.CXProgramNameText(lastPrevExpressionOutputTypeSig.Name)]; ok {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				prgrm.CXAtomicOps[firstPrevExpressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 			}
@@ -586,7 +586,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		// Now an arena getter, site S1166.
 		lastExpressionOperatorOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(lastExpressionOperatorOutputs[0])
 
-		symName := generateTempVarName(constants.LOCAL_PREFIX)
+		symName := generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 		if lastExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1167.
@@ -710,15 +710,15 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		panic(err)
 	}
 
-	if imp, err := pkg.GetImport(prgrm, leftExprOutputTypeSig.Name); err == nil {
+	if imp, err := pkg.GetImport(prgrm, prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)); err == nil {
 		// the external property will be propagated to the following arguments
 		// this way we avoid considering these arguments as module names
 
-		if cxpackages.IsDefaultPackage(leftExprOutputTypeSig.Name) {
-			//TODO: constants.ConstCodes[leftExprOutputTypeSig.Name+"."+ident]
+		if cxpackages.IsDefaultPackage(prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)) {
+			//TODO: constants.ConstCodes[prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)+"."+ident]
 			//TODO: only play ConstCodes are used
 			//Is used for constant declaration? But only for core packages?
-			if code, ok := ConstCodes[leftExprOutputTypeSig.Name+"."+ident]; ok {
+			if code, ok := ConstCodes[prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)+"."+ident]; ok {
 				constant := Constants[code]
 				valArg := WritePrimary(prgrm, constant.Type, constant.Value, false)
 
@@ -753,11 +753,11 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				}
 
 				return prevExprs
-			} else if _, ok := ast.OpCodes[leftExprOutputTypeSig.Name+"."+ident]; ok {
+			} else if _, ok := ast.OpCodes[prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)+"."+ident]; ok {
 				// then it's a native
 				// TODO: we'd be referring to the function itself, not a function call
 				// (functions as first-class objects)
-				leftExprOutputTypeSigName := leftExprOutputTypeSig.Name + "." + ident
+				leftExprOutputTypeSigName := prgrm.CXProgramNameIntern(prgrm.CXProgramNameText(leftExprOutputTypeSig.Name) + "." + ident)
 				leftExprOutputTypeSig.Name = leftExprOutputTypeSigName
 				if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					leftExprIdx := leftExprOutputTypeSig.Meta
@@ -778,7 +778,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			prgrm.GetCXArg(ast.CXArgumentIndex(leftExprIdx)).Package = ast.CXPackageIndex(imp.Index)
 		}
 
-		if glbl, err := imp.GetGlobal(prgrm, ident); err == nil {
+		if glbl, err := imp.GetGlobal(prgrm, prgrm.CXProgramNameIntern(ident)); err == nil {
 			// then it's a global
 			// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl
 			if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
@@ -858,17 +858,17 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 	} else {
 		// then left is not a package name
-		if cxpackages.IsDefaultPackage(leftExprOutputTypeSig.Name) {
+		if cxpackages.IsDefaultPackage(prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)) {
 			println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, leftExprOutputTypeSig.ArgDetails)),
 				fmt.Sprintf("built-in package %s is used without importing it, add import \"%s%s\"",
-					leftExprOutputTypeSig.Name, cxpackages.SysPrefix, leftExprOutputTypeSig.Name))
+					prgrm.CXProgramNameText(leftExprOutputTypeSig.Name), cxpackages.SysPrefix, prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)))
 			os.Exit(types.CX_COMPILATION_ERROR)
 		}
 
 		// then it's a struct
 		// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 		// Now a constructor call, site S1199.
-		_, leftExprField := ast.MakeArgument(prgrm, ident, CurrentFile, LineNo)
+		_, leftExprField := ast.MakeArgument(prgrm, prgrm.CXProgramNameIntern(ident), CurrentFile, LineNo)
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S1200.
 		leftPkg, err := prgrm.GetPackageFromArray(leftExprOutputTypeSig.Package)

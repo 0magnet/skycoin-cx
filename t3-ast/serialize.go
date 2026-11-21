@@ -123,7 +123,7 @@ func serializeArgument(prgrm *CXProgram, arg *CXArgument, s *SerializedCXProgram
 
 	sNil := int64(-1)
 
-	s.Arguments[argOff].NameOffset, s.Arguments[argOff].NameSize = serializeString(arg.Name, s)
+	s.Arguments[argOff].NameOffset, s.Arguments[argOff].NameSize = serializeString(prgrm.CXProgramNameText(arg.Name), s)
 
 	s.Arguments[argOff].Type = int64(arg.Type)
 
@@ -263,7 +263,7 @@ func serializeExpression(prgrm *CXProgram, expr *CXExpression, s *SerializedCXPr
 		outputCXArgs := prgrm.ConvertIndexTypeSignaturesToPointerArgs(cxAtomicOp.GetOutputs(prgrm))
 		sExpr.OutputsOffset, sExpr.OutputsSize = serializeSliceOfArguments(prgrm, outputCXArgs, s)
 
-		sExpr.LabelOffset, sExpr.LabelSize = serializeString(cxAtomicOp.Label, s)
+		sExpr.LabelOffset, sExpr.LabelSize = serializeString(prgrm.CXProgramNameText(cxAtomicOp.Label), s)
 		sExpr.ThenLines = int64(cxAtomicOp.ThenLines)
 		sExpr.ElseLines = int64(cxAtomicOp.ElseLines)
 
@@ -1055,7 +1055,7 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	// Now a local object, site S0435.
 	var arg CXArgument
 	arg.ArgDetails = prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugAlloc()
-	arg.Name = deserializeString(sArg.NameOffset, sArg.NameSize, s)
+	arg.Name = prgrm.CXProgramNameIntern(deserializeString(sArg.NameOffset, sArg.NameSize, s))
 	arg.Type = types.Code(sArg.Type)
 
 	//arg.StructType = getStructType(sArg, s, prgrm)
@@ -1242,7 +1242,7 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 			cxAtomicOp.AddOutput(prgrm, typeSignatureIdx)
 		}
 
-		cxAtomicOp.Label = deserializeString(sExpr.LabelOffset, sExpr.LabelSize, s)
+		cxAtomicOp.Label = prgrm.CXProgramNameIntern(deserializeString(sExpr.LabelOffset, sExpr.LabelSize, s))
 
 		cxAtomicOp.ThenLines = int(sExpr.ThenLines)
 		cxAtomicOp.ElseLines = int(sExpr.ElseLines)

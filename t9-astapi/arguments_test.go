@@ -133,7 +133,7 @@ func TestASTAPI_Arguments(t *testing.T) {
 	t.Run("add global", func(t *testing.T) {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 		// Now a constructor call, site S1588.
-		_, arg := cxast.MakeGlobal(cxprogram, "testGlobal", types.I16, "", -1)
+		_, arg := cxast.MakeGlobal(cxprogram, cxprogram.CXProgramNameIntern("testGlobal"), types.I16, "", -1)
 
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S1589.
@@ -156,8 +156,8 @@ func TestASTAPI_Arguments(t *testing.T) {
 
 		got := map[string]bool{}
 		for _, arg := range args {
-			t.Logf("Arg (name,type)=(%v,%v)\n", arg.Name, types.Code(arg.Meta))
-			got[arg.Name] = true
+			t.Logf("Arg (name,type)=(%v,%v)\n", cxprogram.CXProgramNameText(arg.Name), types.Code(arg.Meta))
+			got[cxprogram.CXProgramNameText(arg.Name)] = true
 		}
 		for _, want := range []string{"testGlobal", "y"} {
 			if !got[want] {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/skycoin/skycoin-cx/t0-types"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 )
 
 // stackValueBadIndex is printed for a value whose index is out of range.
@@ -54,7 +55,7 @@ func (cxprogram *CXProgram) PrintStack() {
 			if err != nil {
 				panic(err)
 			}
-			dupNames = append(dupNames, cxprogram.CXProgramNameText(inpPkg.Name)+input.Name)
+			dupNames = append(dupNames, cxprogram.CXProgramNameText(inpPkg.Name)+cxprogram.CXProgramNameText(input.Name))
 		}
 
 		opOutputs := op.GetOutputs(cxprogram)
@@ -72,7 +73,7 @@ func (cxprogram *CXProgram) PrintStack() {
 			if err != nil {
 				panic(err)
 			}
-			dupNames = append(dupNames, cxprogram.CXProgramNameText(outPkg.Name)+output.Name)
+			dupNames = append(dupNames, cxprogram.CXProgramNameText(outPkg.Name)+cxprogram.CXProgramNameText(output.Name))
 		}
 
 		// fmt.Println("Expressions")
@@ -93,7 +94,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				// Now an arena getter, site S0471.
 				input := cxprogram.GetCXTypeSignatureFromArray(inputIdx)
 
-				if input.Name == "" || cxAtomicOpOperator == nil {
+				if input.Name == stringpool.StringGidNil || cxAtomicOpOperator == nil {
 					continue
 				}
 
@@ -105,7 +106,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				}
 				var dup bool
 				for _, name := range dupNames {
-					if name == cxprogram.CXProgramNameText(inpPkg.Name)+input.Name {
+					if name == cxprogram.CXProgramNameText(inpPkg.Name)+cxprogram.CXProgramNameText(input.Name) {
 						dup = true
 						break
 					}
@@ -118,7 +119,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				// exprs += fmt.Sprintln("\t", stackValueHeader(inp.FileName, inp.FileLine), "\t", ":", "\t", GetPrintableValue(fp, inp))
 				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(CXArgumentDebugFileLine(cxprogram, input.ArgDetails)), cxAtomicOp.GetOperatorName(cxprogram), stackValuePrintable(cxprogram, fp, input))
 
-				dupNames = append(dupNames, cxprogram.CXProgramNameText(inpPkg.Name)+input.Name)
+				dupNames = append(dupNames, cxprogram.CXProgramNameText(inpPkg.Name)+cxprogram.CXProgramNameText(input.Name))
 			}
 
 			for _, outputIdx := range cxAtomicOp.GetOutputs(cxprogram) {
@@ -127,7 +128,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				output := cxprogram.GetCXTypeSignatureFromArray(outputIdx)
 
 				if output.Type == TYPE_CXARGUMENT_DEPRECATE {
-					if output.Name == "" || cxAtomicOpOperator == nil {
+					if output.Name == stringpool.StringGidNil || cxAtomicOpOperator == nil {
 						continue
 					}
 
@@ -139,7 +140,7 @@ func (cxprogram *CXProgram) PrintStack() {
 					}
 					var dup bool
 					for _, name := range dupNames {
-						if name == cxprogram.CXProgramNameText(outPkg.Name)+output.Name {
+						if name == cxprogram.CXProgramNameText(outPkg.Name)+cxprogram.CXProgramNameText(output.Name) {
 							dup = true
 							break
 						}
@@ -153,9 +154,9 @@ func (cxprogram *CXProgram) PrintStack() {
 
 					exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(CXArgumentDebugFileLine(cxprogram, output.ArgDetails)), cxAtomicOp.GetOperatorName(cxprogram), stackValuePrintable(cxprogram, fp, output))
 
-					dupNames = append(dupNames, cxprogram.CXProgramNameText(outPkg.Name)+output.Name)
+					dupNames = append(dupNames, cxprogram.CXProgramNameText(outPkg.Name)+cxprogram.CXProgramNameText(output.Name))
 				} else if output.Type == TYPE_ATOMIC || output.Type == TYPE_POINTER_ATOMIC || output.Type == TYPE_ARRAY_ATOMIC || output.Type == TYPE_POINTER_ARRAY_ATOMIC || output.Type == TYPE_SLICE_ATOMIC || output.Type == TYPE_POINTER_SLICE_ATOMIC {
-					if output.Name == "" || cxAtomicOpOperator == nil {
+					if output.Name == stringpool.StringGidNil || cxAtomicOpOperator == nil {
 						continue
 					}
 
@@ -168,7 +169,7 @@ func (cxprogram *CXProgram) PrintStack() {
 
 					var dup bool
 					for _, name := range dupNames {
-						if name == cxprogram.CXProgramNameText(outputPkg.Name)+output.Name {
+						if name == cxprogram.CXProgramNameText(outputPkg.Name)+cxprogram.CXProgramNameText(output.Name) {
 							dup = true
 							break
 						}
@@ -180,7 +181,7 @@ func (cxprogram *CXProgram) PrintStack() {
 					// TODO: Make GetPrintableValue() and other functions receive CXTypeSignature instead of CXArgument
 					exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(CXArgumentDebugFileLine(cxprogram, output.ArgDetails)), cxAtomicOp.GetOperatorName(cxprogram), stackValuePrintable(cxprogram, fp, output))
 
-					dupNames = append(dupNames, cxprogram.CXProgramNameText(outputPkg.Name)+output.Name)
+					dupNames = append(dupNames, cxprogram.CXProgramNameText(outputPkg.Name)+cxprogram.CXProgramNameText(output.Name))
 
 				}
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -96,7 +97,7 @@ func IterationExpressions(prgrm *ast.CXProgram,
 			lastCondExpressionOperatorOutputType = lastCondExpressionOperatorOutputArg.Type
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now a constructor call, site S0616.
-			_, predicate := ast.MakeArgument(prgrm, generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+			_, predicate := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
 			predicate.SetType(lastCondExpressionOperatorOutputType)
 			predicate.Package = ast.CXPackageIndex(pkg.Index)
 			predicate.PreviouslyDeclared = true
@@ -104,13 +105,13 @@ func IterationExpressions(prgrm *ast.CXProgram,
 			typeSigIdx = ast.AllocCXTypeSignatureOfCXArgBuilder(prgrm, predicate)
 		} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			_, newTypeSig := prgrm.AllocCXTypeSignatureCopy(lastCondExpressionOperatorOutputTypeSig)
-			newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+			newTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 			newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 			newTypeSig.Offset = types.Pointer(0)
 			typeSigIdx = newTypeSig.Index
 		} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			_, newTypeSig := prgrm.AllocCXTypeSignatureCopy(lastCondExpressionOperatorOutputTypeSig)
-			newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+			newTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 			newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 			newTypeSig.Offset = types.Pointer(0)
 			typeSigIdx = newTypeSig.Index
@@ -270,7 +271,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 		// then it's an expression
 		// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 		// Now a constructor call, site S0632.
-		_, predicate := ast.MakeArgument(prgrm, generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+		_, predicate := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		if conditionExprs[len(conditionExprs)-1].IsMethodCall() {
 			// we'll change this once we have access to method's types in
 			// ProcessMethodCall
@@ -438,7 +439,8 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 
 // IsTempVar ...
 // TODO: Delete this function; only called by next function
-func IsTempVar(name string) bool {
+func IsTempVar(prgrm *ast.CXProgram, nameGid stringpool.StringGid) bool {
+	name := prgrm.CXProgramNameText(nameGid)
 	if len(name) >= len(constants.LOCAL_PREFIX) && name[:len(constants.LOCAL_PREFIX)] == constants.LOCAL_PREFIX {
 		return true
 	}
@@ -478,7 +480,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now a constructor call, site S0650.
-			_, out := ast.MakeArgument(prgrm, generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+			_, out := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
 			out.SetType(resolveTypeForUnd(prgrm, &leftExprs[len(leftExprs)-1]))
 			out.Size = lastLeftExpressionOperatorOutputArg.Size
 			out.Type = lastLeftExpressionOperatorOutputArg.Type
@@ -494,7 +496,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			argDetails.FileLine = LineNo
 			_, typeSig := prgrm.AllocCXTypeSignature()
 			typeSig.ArgDetails = argDetailsGid
-			typeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+			typeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 			typeSig.Package = lastLeftExpressionOperatorOutputTypeSig.Package
 			typeSig.Type = ast.TYPE_ATOMIC
 			typeSig.Meta = lastLeftExpressionOperatorOutputTypeSig.Meta
@@ -508,7 +510,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			argDetails.FileLine = LineNo
 			_, typeSig := prgrm.AllocCXTypeSignature()
 			typeSig.ArgDetails = argDetailsGid
-			typeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+			typeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 			typeSig.Package = lastLeftExpressionOperatorOutputTypeSig.Package
 			typeSig.Type = ast.TYPE_POINTER_ATOMIC
 			typeSig.Meta = lastLeftExpressionOperatorOutputTypeSig.Meta
@@ -541,7 +543,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now a constructor call, site S0662.
-			_, out := ast.MakeArgument(prgrm, generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, LineNo)
+			_, out := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
 			out.SetType(resolveTypeForUnd(prgrm, &rightExprs[len(rightExprs)-1]))
 			out.Size = lastRightExpressionOperatorOutputArg.Size
 			out.Type = lastRightExpressionOperatorOutputArg.Type
@@ -557,7 +559,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			argDetails.FileLine = LineNo
 			_, typeSig := prgrm.AllocCXTypeSignature()
 			typeSig.ArgDetails = argDetailsGid
-			typeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+			typeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 			typeSig.Package = lastRightExpressionOperatorOutputTypeSig.Package
 			typeSig.Type = ast.TYPE_ATOMIC
 			typeSig.Meta = lastRightExpressionOperatorOutputTypeSig.Meta
@@ -571,7 +573,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 			argDetails.FileLine = LineNo
 			_, typeSig := prgrm.AllocCXTypeSignature()
 			typeSig.ArgDetails = argDetailsGid
-			typeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+			typeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 			typeSig.Package = lastRightExpressionOperatorOutputTypeSig.Package
 			typeSig.Type = ast.TYPE_POINTER_ATOMIC
 			typeSig.Meta = lastRightExpressionOperatorOutputTypeSig.Meta
@@ -616,7 +618,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		// then it's a function call or an array access
 		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSigIdx)
 
-		if IsTempVar(lastLeftExpressionOutputTypeSig.Name) {
+		if IsTempVar(prgrm, lastLeftExpressionOutputTypeSig.Name) {
 			out = append(out, leftExprs...)
 		} else {
 			out = append(out, leftExprs[:len(leftExprs)-1]...)
@@ -646,7 +648,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		// then it's a function call or an array access
 		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSigIdx)
 
-		if IsTempVar(lastRightExpressionOutputTypeSig.Name) {
+		if IsTempVar(prgrm, lastRightExpressionOutputTypeSig.Name) {
 			out = append(out, rightExprs...)
 		} else {
 			out = append(out, rightExprs[:len(rightExprs)-1]...)
@@ -1001,7 +1003,7 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 	}
 
 	// simulating a label so it gets executed without evaluating a predicate
-	expression.Label = generateTempVarName(constants.LABEL_PREFIX)
+	expression.Label = generateTempVarName(prgrm, constants.LABEL_PREFIX)
 	expression.ThenLines = types.MAX_INT32
 	expression.Package = ast.CXPackageIndex(pkg.Index)
 

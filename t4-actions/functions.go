@@ -9,13 +9,20 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	objmodel "github.com/skycoin/skycoin-cx/t1-cx-core-objmodel"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
+
+// SymbolsDataKey names a symbol of a scope by its package name and its name.
+type SymbolsDataKey struct {
+	SymbolsDataKeyPackage stringpool.StringGid
+	SymbolsDataKeyName    stringpool.StringGid
+}
 
 type SymbolsData struct {
 	varCount     int
 	symbols      []ast.CXTypeSignatureIndex
-	symbolsIndex []map[string]int
+	symbolsIndex []map[SymbolsDataKey]int
 	// functionSymbols are the signatures lookupSymbol made for function names,
 	// released with their arguments at the end of FunctionDeclaration.
 	functionSymbols []ast.CXTypeSignatureIndex
@@ -210,8 +217,8 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 	// getting offset to use by statements (excluding inputs, outputs and receiver).
 	var offset types.Pointer
 
-	symIndex := make([]map[string]int, 0)
-	symIndex = append(symIndex, make(map[string]int))
+	symIndex := make([]map[SymbolsDataKey]int, 0)
+	symIndex = append(symIndex, make(map[SymbolsDataKey]int))
 
 	symbolsData := &SymbolsData{
 		varCount: 1,
@@ -252,7 +259,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionIndex, inputs
 		}
 
 		if expr.IsScopeNew() {
-			symbolsData.symbolsIndex = append(symbolsData.symbolsIndex, make(map[string]int))
+			symbolsData.symbolsIndex = append(symbolsData.symbolsIndex, make(map[SymbolsDataKey]int))
 		}
 
 		ProcessMethodCall(prgrm, &expr, symbolsData)
@@ -468,7 +475,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			panic(err)
 		}
 
-		if op, err := prgrm.GetFunction(opName, prgrm.CXProgramNameText(opPkg.Name)); err == nil {
+		if op, err := prgrm.GetFunction(prgrm.CXProgramNameText(opName), prgrm.CXProgramNameText(opPkg.Name)); err == nil {
 			expression.Operator = ast.CXFunctionIndex(op.Index)
 		} else if fieldless {
 			// then it's not a possible method call
@@ -557,7 +564,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 
 							// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 							// Now a constructor call, site S0759.
-							_, out = ast.MakeArgument(prgrm, generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber)
+							_, out = ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber)
 							out.SetType(inpExprAtomicOpInputArg.Type)
 							out.StructType = inpExprAtomicOpInputArg.StructType
 							out.Size = inpExprAtomicOpInputArg.Size
@@ -575,7 +582,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 							argDetails.FileLine = inpExprCXLine.LineNumber
 							_, outTypeSig := prgrm.AllocCXTypeSignature()
 							outTypeSig.ArgDetails = argDetailsGid
-							outTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+							outTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 							outTypeSig.Type = ast.TYPE_ATOMIC
 							outTypeSig.Meta = inpExprAtomicOpInputTypeSig.Meta
 							outTypeSig.Package = inpExprAtomicOpInputTypeSig.Package
@@ -589,7 +596,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 							argDetails.FileLine = inpExprCXLine.LineNumber
 							_, outTypeSig := prgrm.AllocCXTypeSignature()
 							outTypeSig.ArgDetails = argDetailsGid
-							outTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+							outTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 							outTypeSig.Type = ast.TYPE_POINTER_ATOMIC
 							outTypeSig.Meta = inpExprAtomicOpInputTypeSig.Meta
 							outTypeSig.Package = inpExprAtomicOpInputTypeSig.Package
@@ -603,7 +610,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 					} else {
 						// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 						// Now a constructor call, site S0767.
-						_, out = ast.MakeArgument(prgrm, generateTempVarName(constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber)
+						_, out = ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber)
 						out.SetType(inpExprAtomicOpOperatorOutputArg.Type)
 						out.DeclarationSpecifiers = inpExprAtomicOpOperatorOutputArg.DeclarationSpecifiers
 
@@ -635,7 +642,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 					expression.AddInput(prgrm, typeSigIdx)
 				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 					_, newTypeSig := prgrm.AllocCXTypeSignatureCopy(inpExprAtomicOpOperatorOutputTypeSig)
-					newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+					newTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 					newTypeSig.Package = inpExprAtomicOp.Package
 					newTypeSigIdx := newTypeSig.Index
 
@@ -643,7 +650,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 					expression.AddInput(prgrm, newTypeSigIdx)
 				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					_, newTypeSig := prgrm.AllocCXTypeSignatureCopy(inpExprAtomicOpOperatorOutputTypeSig)
-					newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+					newTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 					newTypeSig.Package = inpExprAtomicOp.Package
 					newTypeSigIdx := newTypeSig.Index
 
@@ -651,7 +658,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 					expression.AddInput(prgrm, newTypeSigIdx)
 				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_STRUCT {
 					_, newTypeSig := prgrm.AllocCXTypeSignatureCopy(inpExprAtomicOpOperatorOutputTypeSig)
-					newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+					newTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 					newTypeSig.Package = inpExprAtomicOp.Package
 					newTypeSigIdx := newTypeSig.Index
 
@@ -1001,7 +1008,7 @@ func ProcessExpressionArguments(prgrm *ast.CXProgram, symbolsData *SymbolsData, 
 		// TempVar always have PreviouslyDeclared=true
 		typeSignatureName := typeSignature.Name
 		isLocalVar := fn.IsLocalVariable(typeSignatureName)
-		if (arg != nil && arg.PreviouslyDeclared) || IsTempVar(typeSignatureName) || (arg == nil && isLocalVar) {
+		if (arg != nil && arg.PreviouslyDeclared) || IsTempVar(prgrm, typeSignatureName) || (arg == nil && isLocalVar) {
 			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, false)
 		} else {
 			UpdateSymbolsTable(prgrm, symbolsData, typeSignatureIdx, offset, true)
@@ -1158,9 +1165,9 @@ func CheckRedeclared(prgrm *ast.CXProgram, symbolsData *SymbolsData, expr *ast.C
 			panic(err)
 		}
 
-		_, found := (symbolsData.symbolsIndex)[lastIdx][prgrm.CXProgramNameText(symPkg.Name)+"."+typeSig.Name]
+		_, found := (symbolsData.symbolsIndex)[lastIdx][SymbolsDataKey{SymbolsDataKeyPackage: symPkg.Name, SymbolsDataKeyName: typeSig.Name}]
 		if found {
-			println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, typeSig.ArgDetails)), fmt.Sprintf("'%s' redeclared", typeSig.Name))
+			println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, typeSig.ArgDetails)), fmt.Sprintf("'%s' redeclared", prgrm.CXProgramNameText(typeSig.Name)))
 		}
 	}
 }
@@ -1288,7 +1295,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		// FIXME: There are some expressions added by the cxgo where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.IsTempVar to
 		// exclude these cases for now.
-		if expressionOperator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(expressionOutputTypeSig.Name) {
+		if expressionOperator.AtomicOPCode == constants.OP_IDENTITY && !IsTempVar(prgrm, expressionOutputTypeSig.Name) {
 			var outType, inpType string
 
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
@@ -1310,7 +1317,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			// We use `isInputs` to only print the error once.
 			// Otherwise we'd print the error twice: once for the input and again for the output
 			if inpType != outType && isInputs {
-				println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, expressionInputTypeSig.ArgDetails)), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, expressionOutputTypeSigName, outType))
+				println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, expressionInputTypeSig.ArgDetails)), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, prgrm.CXProgramNameText(expressionOutputTypeSigName), outType))
 			}
 
 		}
@@ -1440,9 +1447,9 @@ func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 				if exprs[currIndex].IsStructLiteral() {
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S0835.
-					println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, expressionOutputTypeSig.ArgDetails)), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", prgrm.GetCXArgFromArray(expressionOutputArg.Fields[0]).Name, prgrm.CXProgramNameText(expressionOutputArg.StructType.Name), expectedType, receivedType))
+					println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, expressionOutputTypeSig.ArgDetails)), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", prgrm.CXProgramNameText(prgrm.GetCXArgFromArray(expressionOutputArg.Fields[0]).Name), prgrm.CXProgramNameText(expressionOutputArg.StructType.Name), expectedType, receivedType))
 				} else {
-					println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, expressionOutputTypeSig.ArgDetails)), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expressionOutputTypeSig.Name, expectedType))
+					println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, expressionOutputTypeSig.ArgDetails)), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, prgrm.CXProgramNameText(expressionOutputTypeSig.Name), expectedType))
 				}
 			}
 
@@ -1506,8 +1513,8 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				out = out.GetAssignmentElement(prgrm)
 				inp := expressionInputArg.GetAssignmentElement(prgrm)
 
-				if (out.Type == types.STR || out.Type == types.AFF) && out.Name != "" &&
-					(inp.Type == types.STR || inp.Type == types.AFF) && inp.Name != "" {
+				if (out.Type == types.STR || out.Type == types.AFF) && out.Name != stringpool.StringGidNil &&
+					(inp.Type == types.STR || inp.Type == types.AFF) && inp.Name != stringpool.StringGidNil {
 					out.PassBy = constants.PASSBY_VALUE
 				}
 			}
@@ -1817,8 +1824,8 @@ func ProcessSliceAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 }
 
 // lookupSymbol searches for `ident` in `symbols`, starting from the innermost scope.
-func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbolsData *SymbolsData) (*ast.CXTypeSignature, error) {
-	fullName := pkgName + "." + StripNameNumber(ident)
+func lookupSymbol(prgrm *ast.CXProgram, pkgName stringpool.StringGid, ident stringpool.StringGid, symbolsData *SymbolsData) (*ast.CXTypeSignature, error) {
+	fullName := SymbolsDataKey{SymbolsDataKeyPackage: pkgName, SymbolsDataKeyName: StripNameNumber(prgrm, ident)}
 	for c := len(symbolsData.symbolsIndex) - 1; c >= 0; c-- {
 		if symIdx, found := (symbolsData.symbolsIndex)[c][fullName]; found {
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
@@ -1828,16 +1835,16 @@ func lookupSymbol(prgrm *ast.CXProgram, pkgName, ident string, symbolsData *Symb
 	}
 
 	// Checking if `ident` refers to a function.
-	pkg, err := prgrm.GetPackage(pkgName)
+	pkg, err := prgrm.GetPackage(prgrm.CXProgramNameText(pkgName))
 	if err != nil {
 		return nil, err
 	}
 
-	notFound := errors.New("identifier '" + ident + "' does not exist")
+	notFound := errors.New("identifier '" + prgrm.CXProgramNameText(ident) + "' does not exist")
 	// We're not checking for that error
-	fn, err := pkg.GetFunction(prgrm, ident)
+	fn, err := pkg.GetFunction(prgrm, prgrm.CXProgramNameText(ident))
 	if err != nil {
-		return nil, errors.New(err.Error() + ":" + notFound.Error() + fmt.Sprintf("--fullName=%s", fullName))
+		return nil, errors.New(err.Error() + ":" + notFound.Error() + fmt.Sprintf("--fullName=%s.%s", prgrm.CXProgramNameText(pkgName), prgrm.CXProgramNameText(fullName.SymbolsDataKeyName)))
 	}
 	// Then we found a function by that name. Let's create a `cxcore.CXArgument` of
 	// type `func` with that name.
@@ -1871,7 +1878,7 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigI
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0878.
 		sym = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
-		if sym.Type == types.UNDEFINED && !IsTempVar(typeSig.Name) {
+		if sym.Type == types.UNDEFINED && !IsTempVar(prgrm, typeSig.Name) {
 			return
 		}
 	} else {
@@ -1880,7 +1887,7 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigI
 		sym = nil
 	}
 
-	if typeSig.Name != "" {
+	if typeSig.Name != stringpool.StringGidNil {
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S0879.
 		typeSigPkg, err := prgrm.GetPackageFromArray(typeSig.Package)
@@ -1898,15 +1905,15 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigI
 		}
 
 		lastIdx := len(symbolsData.symbolsIndex) - 1
-		fullName := prgrm.CXProgramNameText(typeSigPkg.Name) + "." + StripNameNumber(typeSig.Name)
+		fullName := SymbolsDataKey{SymbolsDataKeyPackage: typeSigPkg.Name, SymbolsDataKeyName: StripNameNumber(prgrm, typeSig.Name)}
 
 		// outerSym, err := lookupSymbol(sym.Package.Name, sym.Name, symbols)
-		_, err = lookupSymbol(prgrm, prgrm.CXProgramNameText(typeSigPkg.Name), typeSig.Name, symbolsData)
+		_, err = lookupSymbol(prgrm, typeSigPkg.Name, typeSig.Name, symbolsData)
 		_, found := (symbolsData.symbolsIndex)[lastIdx][fullName]
 
 		// then it wasn't found in any scope
 		if err != nil && shouldAlreadyExist {
-			println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, typeSig.ArgDetails)), "identifier '"+typeSig.Name+"' does not exist")
+			println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, typeSig.ArgDetails)), "identifier '"+prgrm.CXProgramNameText(typeSig.Name)+"' does not exist")
 		}
 
 		// then it was already added in the innermost scope
@@ -1922,9 +1929,9 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigI
 				panic(err)
 			}
 
-			if !IsTempVar(typeSig.Name) {
+			if !IsTempVar(prgrm, typeSig.Name) {
 				// Change name to n:varname format
-				typeSig.Name = fmt.Sprintf("%v:%s", symbolsData.varCount, typeSig.Name)
+				typeSig.Name = prgrm.CXProgramNameIntern(fmt.Sprintf("%v:%s", symbolsData.varCount, prgrm.CXProgramNameText(typeSig.Name)))
 				symbolsData.varCount++
 			}
 
@@ -1974,9 +1981,9 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0881.
 		expressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetInputs(prgrm)[0])
-		if expressionInputTypeSig.Name != "" && expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if expressionInputTypeSig.Name != stringpool.StringGidNil && expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			inpIdx = ast.CXArgumentIndex(expressionInputTypeSig.Meta)
-		} else if expressionInputTypeSig.Name != "" && expressionInputTypeSig.Type == ast.TYPE_STRUCT {
+		} else if expressionInputTypeSig.Name != stringpool.StringGidNil && expressionInputTypeSig.Type == ast.TYPE_STRUCT {
 			println("went here type struct for processMethodCall")
 		}
 	}
@@ -1985,7 +1992,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0882.
 		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
-		if expressionOutputTypeSig.Name != "" && expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if expressionOutputTypeSig.Name != stringpool.StringGidNil && expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			outIdx = ast.CXArgumentIndex(expressionOutputTypeSig.Meta)
 		}
 	}
@@ -2000,7 +2007,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1690.
-		if argInpTypeSignature, err := lookupSymbol(prgrm, prgrm.CXProgramNameText(inpPkg.Name), prgrm.GetCXArg(ast.CXArgumentIndex(inpIdx)).Name, symbolsData); err == nil {
+		if argInpTypeSignature, err := lookupSymbol(prgrm, inpPkg.Name, prgrm.GetCXArg(ast.CXArgumentIndex(inpIdx)).Name, symbolsData); err == nil {
 			var argInpStructType *ast.CXStruct
 			if argInpTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
@@ -2045,7 +2052,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0888. Also CXArgumentGet, phase 5 #327, site S1694.
-				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(inpIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(inpIdx)).Fields)-1]).Name, prgrm.CXProgramNameText(strct.Name)); err == nil {
+				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.CXProgramNameText(prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(inpIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(inpIdx)).Fields)-1]).Name), prgrm.CXProgramNameText(strct.Name)); err == nil {
 					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 				} else {
 					panic(err)
@@ -2065,7 +2072,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 				}
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S1700.
-				argOutTypeSignature, err := lookupSymbol(prgrm, prgrm.CXProgramNameText(outPkg.Name), prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Name, symbolsData)
+				argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Name, symbolsData)
 				if err != nil {
 					panic(err)
 				}
@@ -2084,7 +2091,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 				}
 
 				if strct == nil {
-					println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, argOutTypeSignature.ArgDetails)), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOutTypeSignature.Name, argOutType))
+					println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, argOutTypeSignature.ArgDetails)), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", prgrm.CXProgramNameText(argOutTypeSignature.Name), argOutType))
 					os.Exit(types.CX_COMPILATION_ERROR)
 				}
 
@@ -2104,7 +2111,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0896. Also CXArgumentGet, phase 5 #327, site S1702.
-				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name, prgrm.CXProgramNameText(strct.Name)); err == nil {
+				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.CXProgramNameText(prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name), prgrm.CXProgramNameText(strct.Name)); err == nil {
 					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 				} else {
 					panic(err)
@@ -2128,11 +2135,11 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1707.
-			argOutTypeSignature, err := lookupSymbol(prgrm, prgrm.CXProgramNameText(outPkg.Name), prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Name, symbolsData)
+			argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Name, symbolsData)
 			if err != nil {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S1708.
-				println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).ArgDetails)), fmt.Sprintf("identifier '%s' does not exist", prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Name))
+				println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).ArgDetails)), fmt.Sprintf("identifier '%s' does not exist", prgrm.CXProgramNameText(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Name)))
 				os.Exit(types.CX_COMPILATION_ERROR)
 			}
 			// then we found an output
@@ -2158,7 +2165,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0902. Also CXArgumentGet, phase 5 #327, site S1711.
-				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name, prgrm.CXProgramNameText(strct.Name)); err == nil {
+				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.CXProgramNameText(prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name), prgrm.CXProgramNameText(strct.Name)); err == nil {
 					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 				} else {
 					panic("")
@@ -2190,11 +2197,11 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1716.
-		argOutTypeSignature, err := lookupSymbol(prgrm, prgrm.CXProgramNameText(outPkg.Name), prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Name, symbolsData)
+		argOutTypeSignature, err := lookupSymbol(prgrm, outPkg.Name, prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Name, symbolsData)
 		if err != nil {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1717.
-			println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).ArgDetails)), fmt.Sprintf("identifier '%s' does not exist", prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Name))
+			println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).ArgDetails)), fmt.Sprintf("identifier '%s' does not exist", prgrm.CXProgramNameText(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Name)))
 			os.Exit(types.CX_COMPILATION_ERROR)
 		}
 
@@ -2211,7 +2218,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 				strct := argOut.StructType
 
 				if strct == nil {
-					println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, argOutTypeSignature.ArgDetails)), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOutTypeSignature.Name, argOut.Type.Name()))
+					println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, argOutTypeSignature.ArgDetails)), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", prgrm.CXProgramNameText(argOutTypeSignature.Name), argOut.Type.Name()))
 					os.Exit(types.CX_COMPILATION_ERROR)
 				}
 
@@ -2224,7 +2231,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0911. Also CXArgumentGet, phase 5 #327, site S1720.
-				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name, prgrm.CXProgramNameText(strct.Name)); err == nil {
+				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.CXProgramNameText(prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name), prgrm.CXProgramNameText(strct.Name)); err == nil {
 					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 				} else {
 					panic("")
@@ -2267,7 +2274,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 				if strct == nil {
 					// TODO: add proper println for error
-					println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, argOutTypeSignature.ArgDetails)), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOutTypeSignature.Name, argOutTypeSignature.GetTypeString(prgrm)))
+					println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, argOutTypeSignature.ArgDetails)), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", prgrm.CXProgramNameText(argOutTypeSignature.Name), argOutTypeSignature.GetTypeString(prgrm)))
 					os.Exit(types.CX_COMPILATION_ERROR)
 				}
 
@@ -2280,7 +2287,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0919. Also CXArgumentGet, phase 5 #327, site S1725.
-				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name, prgrm.CXProgramNameText(strct.Name)); err == nil {
+				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.CXProgramNameText(prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name), prgrm.CXProgramNameText(strct.Name)); err == nil {
 					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 				} else {
 					panic("")
@@ -2317,8 +2324,8 @@ func GiveOffset(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigIdx ast.C
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0925.
 	symTypeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
-	symTypeSigName := StripNameNumber(symTypeSig.Name)
-	if symTypeSigName != "" {
+	symTypeSigName := StripNameNumber(prgrm, symTypeSig.Name)
+	if symTypeSigName != stringpool.StringGidNil {
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S0926.
 		symPkg, err := prgrm.GetPackageFromArray(symTypeSig.Package)
@@ -2336,7 +2343,7 @@ func GiveOffset(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSigIdx ast.C
 			GetGlobalSymbol(prgrm, symbolsData, symPkg, symTypeSigName)
 		}
 
-		argTypeSignature, err := lookupSymbol(prgrm, prgrm.CXProgramNameText(symPkg.Name), symTypeSigName, symbolsData)
+		argTypeSignature, err := lookupSymbol(prgrm, symPkg.Name, symTypeSigName, symbolsData)
 		if err == nil {
 			ProcessSymbolFields(prgrm, symTypeSig, argTypeSignature)
 			CopyArgFields(prgrm, symTypeSig, argTypeSignature)
@@ -2368,7 +2375,7 @@ func ProcessTempVariable(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0929.
 		outputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
-		if IsTempVar(outputTypeSig.Name) {
+		if IsTempVar(prgrm, outputTypeSig.Name) {
 			if outputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 				outputArgIdx := ast.CXArgumentIndex(outputTypeSig.Meta)
 
@@ -2928,7 +2935,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 
 	if len(symFields) > 0 {
 		if argStructType == nil || len(argStructType.Fields) == 0 {
-			println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, symTypeSignature.ArgDetails)), fmt.Sprintf("'%s' has no fields", symTypeSignature.Name))
+			println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, symTypeSignature.ArgDetails)), fmt.Sprintf("'%s' has no fields", prgrm.CXProgramNameText(symTypeSignature.Name)))
 			return
 		}
 
@@ -2957,7 +2964,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 				methodName := prgrm.GetCXArgFromArray(symFields[len(symFields)-1]).Name
 				receiverType := strct.Name
 
-				if methodIdx, methodErr := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(receiverType)+"."+methodName, prgrm.CXProgramNameText(receiverType)); methodErr == nil {
+				if methodIdx, methodErr := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(receiverType)+"."+prgrm.CXProgramNameText(methodName), prgrm.CXProgramNameText(receiverType)); methodErr == nil {
 					// OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
 					// Now an arena getter, site S0970.
 					method := prgrm.GetFunctionFromArray(methodIdx)
@@ -3143,15 +3150,15 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 }
 
 // GetGlobalSymbol tries to retrieve `ident` from `symPkg`'s globals if `ident` is not found in the local scope.
-func GetGlobalSymbol(prgrm *ast.CXProgram, symbolsData *SymbolsData, symPkg *ast.CXPackage, ident string) {
-	_, err := lookupSymbol(prgrm, prgrm.CXProgramNameText(symPkg.Name), ident, symbolsData)
+func GetGlobalSymbol(prgrm *ast.CXProgram, symbolsData *SymbolsData, symPkg *ast.CXPackage, ident stringpool.StringGid) {
+	_, err := lookupSymbol(prgrm, symPkg.Name, ident, symbolsData)
 	if err != nil {
 		if glbl, err := symPkg.GetGlobal(prgrm, ident); err == nil {
 			lastIdx := len(*&symbolsData.symbolsIndex) - 1
 
 			// add name to symbols
 			symbolsData.symbols = append(symbolsData.symbols, glbl.Index)
-			(symbolsData.symbolsIndex)[lastIdx][prgrm.CXProgramNameText(symPkg.Name)+"."+ident] = len(symbolsData.symbols) - 1
+			(symbolsData.symbolsIndex)[lastIdx][SymbolsDataKey{SymbolsDataKeyPackage: symPkg.Name, SymbolsDataKeyName: ident}] = len(symbolsData.symbols) - 1
 		}
 	}
 }

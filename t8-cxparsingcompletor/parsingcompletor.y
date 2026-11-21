@@ -6,6 +6,7 @@
 		"github.com/skycoin/skycoin-cx/t3-ast"
 		"github.com/skycoin/skycoin-cx/t1-constants"
         "github.com/skycoin/skycoin-cx/t0-types"
+		stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 		"github.com/skycoin/skycoin-cx/t4-actions"
 	)
 
@@ -365,9 +366,9 @@ direct_declarator:
 			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 				// Now a constructor call, site S1476.
-				_, arg := ast.MakeArgument(actions.AST, "", actions.CurrentFile, actions.LineNo)
+				_, arg := ast.MakeArgument(actions.AST, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
 				arg.SetType(types.UNDEFINED)
-				arg.Name = $1
+				arg.Name = actions.AST.CXProgramNameIntern($1)
 				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
 			} else {
@@ -426,7 +427,7 @@ declaration_specifiers:
 		{
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now a constructor call, site S1479.
-			_, arg := ast.MakeArgument(actions.AST, "", actions.CurrentFile, actions.LineNo)
+			_, arg := ast.MakeArgument(actions.AST, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
 			arg.SetType(types.FUNC)
                        
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
@@ -1065,7 +1066,7 @@ struct_literal_expression:
                         // OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
                         // Now an arena getter, site S1492.
                         cxAtomicOpOutputTypeSig:=actions.AST.GetCXTypeSignatureFromArray(cxAtomicOp.GetOutputs(actions.AST)[0])
-			$$ = actions.PrimaryStructLiteralExternal(actions.AST,cxAtomicOpOutputTypeSig.Name, $3, $5)
+			$$ = actions.PrimaryStructLiteralExternal(actions.AST,actions.AST.CXProgramNameText(cxAtomicOpOutputTypeSig.Name), $3, $5)
                 }
                 ;
 
@@ -1220,7 +1221,7 @@ labeled_statement:
                                         continue
                                 }
                                 expressionIdx :=expr.Index
-				actions.AST.CXAtomicOps[expressionIdx].Label = $1
+				actions.AST.CXAtomicOps[expressionIdx].Label = actions.AST.CXProgramNameIntern($1)
 			}
 
 			$$ = $3
@@ -1412,7 +1413,7 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
                         expr := ast.MakeAtomicOperatorExpression(actions.AST,ast.Natives[constants.OP_GOTO])
                         expressionIdx :=expr.Index
                         actions.AST.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
-                        actions.AST.CXAtomicOps[expressionIdx].Label = $2
+                        actions.AST.CXAtomicOps[expressionIdx].Label = actions.AST.CXProgramNameIntern($2)
                         // OBJMODEL: state.CXExpressionMng (manager storage) or []CXExpressionGid, phase 4 #346.
                         // Now a slice of objects, site S1504.
                         $$ = []ast.CXExpression{*exprCXLine,*expr}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 )
 
 // ToString returns the abstract syntax tree of a CX program in a
@@ -55,7 +56,7 @@ func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 		// Now an arena getter, site S0477.
 		glbl := prgrm.GetCXTypeSignatureFromArray(glblIdx)
 
-		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, glbl.Name, GetFormattedType(prgrm, glbl))
+		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, prgrm.CXProgramNameText(glbl.Name), GetFormattedType(prgrm, glbl))
 	}
 }
 
@@ -77,7 +78,7 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 
 			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
-				k, typeSignature.Name, GetFormattedType(prgrm, typeSignature))
+				k, prgrm.CXProgramNameText(typeSignature.Name), GetFormattedType(prgrm, typeSignature))
 
 		}
 
@@ -134,8 +135,8 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 			// Now an arena getter, site S0481.
 			cxAtomicOpOperator := prgrm.GetFunctionFromArray(cxAtomicOp.Operator)
 			// Adding label in case a `goto` statement was used for the expression.
-			if cxAtomicOp.Label != "" {
-				lbl = " <<" + cxAtomicOp.Label + ">>"
+			if cxAtomicOp.Label != stringpool.StringGidNil {
+				lbl = " <<" + prgrm.CXProgramNameText(cxAtomicOp.Label) + ">>"
 			} else {
 				lbl = ""
 			}
@@ -185,7 +186,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 					*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
 						k,
 						lbl,
-						cxAtomicOpOutputTypeSignature.Name,
+						prgrm.CXProgramNameText(cxAtomicOpOutputTypeSignature.Name),
 						GetFormattedType(prgrm, cxAtomicOpOutputTypeSignature))
 				}
 			}
@@ -247,10 +248,10 @@ func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex
 
 			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(prgrm, param, externalPkg, pkg), GetFormattedType(prgrm, paramTypeSig)))
 		} else {
-			name := paramTypeSig.Name
+			name := prgrm.CXProgramNameText(paramTypeSig.Name)
 
 			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
-			if paramTypeSig.Name == "" {
+			if paramTypeSig.Name == stringpool.StringGidNil {
 				name = constants.LITERAL_PLACEHOLDER
 			}
 
@@ -334,7 +335,7 @@ func structAt(prgrm *CXProgram, addr types.Pointer, strct *CXStruct) string {
 		if c > 0 {
 			val += ", "
 		}
-		val += fld.Name + ": " + typeSignatureAt(prgrm, addr+off, fld)
+		val += prgrm.CXProgramNameText(fld.Name) + ": " + typeSignatureAt(prgrm, addr+off, fld)
 		off += fld.GetSize(prgrm, false)
 	}
 	return val + "}"
@@ -486,13 +487,13 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg 
 	argPkg := pkg
 	// Checking if we should include `arg`'s package name.
 	if includePkg {
-		name = fmt.Sprintf("%s.%s", prgrm.CXProgramNameText(argPkg.Name), arg.Name)
+		name = fmt.Sprintf("%s.%s", prgrm.CXProgramNameText(argPkg.Name), prgrm.CXProgramNameText(arg.Name))
 	} else {
-		name = arg.Name
+		name = prgrm.CXProgramNameText(arg.Name)
 	}
 
 	// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
-	if arg.Name == "" {
+	if arg.Name == stringpool.StringGidNil {
 		name = constants.LITERAL_PLACEHOLDER
 	}
 
@@ -510,7 +511,7 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg 
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
-			idxValue = idx.Name
+			idxValue = prgrm.CXProgramNameText(idx.Name)
 		}
 
 		name = fmt.Sprintf("%s[%s]", name, idxValue)
@@ -749,7 +750,7 @@ func getFormattedType_CXArg(prgrm *CXProgram, arg *CXArgument) string {
 						os.Exit(types.CX_COMPILATION_ERROR)
 					}
 
-					fn, err := pkg.GetFunction(prgrm, elt.Name)
+					fn, err := pkg.GetFunction(prgrm, prgrm.CXProgramNameText(elt.Name))
 					if err == nil {
 						// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
 						// os.Exit(CX_COMPILATION_ERROR)
@@ -773,7 +774,7 @@ func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0511.
 		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
-		fields += fmt.Sprintf(" %s %s;", typeSignature.Name, GetFormattedType(prgrm, typeSignature))
+		fields += fmt.Sprintf(" %s %s;", prgrm.CXProgramNameText(typeSignature.Name), GetFormattedType(prgrm, typeSignature))
 	}
 
 	return fmt.Sprintf("%s struct {%s }", prgrm.CXProgramNameText(s.Name), fields)
