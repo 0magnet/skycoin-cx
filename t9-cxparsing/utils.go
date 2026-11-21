@@ -86,7 +86,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 						// then it hasn't been added
 						// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 						// Now a constructor call, site S1620.
-						newPkg := ast.MakePackage(match[len(match)-1])
+						newPkg := ast.MakePackage(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]))
 						// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 						// Now an arena insert, site S1621.
 						pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
@@ -116,11 +116,11 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 					if prePkg == nil {
 						println(ast.CompilationError(srcName, lineno),
 							"No package defined")
-					} else if _, err := cxpartialparsing.Program.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
+					} else if _, err := cxpartialparsing.Program.GetStruct(match[len(match)-1], cxpartialparsing.Program.CXProgramNameText(prePkg.Name)); err != nil {
 						// then it hasn't been added
 						// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 						// Now a constructor call, site S1623.
-						strct := ast.MakeStruct(match[len(match)-1])
+						strct := ast.MakeStruct(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]))
 						prePkg.AddStruct(cxpartialparsing.Program, strct)
 					}
 				}
@@ -202,7 +202,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 						// then it hasn't been added
 						// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 						// Now a constructor call, site S1624.
-						prePkg = ast.MakePackage(match[len(match)-1])
+						prePkg = ast.MakePackage(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]))
 						// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 						// Now an arena insert, site S1625.
 						pkgIdx := cxpartialparsing.Program.AddPackage(prePkg)
@@ -324,7 +324,7 @@ func AddInitFunction(prgrm *ast.CXProgram) error {
 
 	// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 	// Now a constructor call, site S1629.
-	initFn := ast.MakeFunction(constants.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
+	initFn := ast.MakeFunction(prgrm, prgrm.CxIrState.CxIrStateNameSysInit, actions.CurrentFile, actions.LineNo)
 	_, fnIdx := mainPkg.AddFunction(prgrm, initFn)
 
 	//Init Expressions

@@ -18,7 +18,7 @@ func DeclarePackage(prgrm *ast.CXProgram, pkgName string) {
 	if _, err := prgrm.GetPackage(pkgName); err != nil {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now a constructor call, site S1088.
-		pkg := ast.MakePackage(pkgName)
+		pkg := ast.MakePackage(prgrm.CXProgramNameIntern(pkgName))
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now an arena insert, site S1089.
 		prgrm.AddPackage(pkg)
@@ -89,7 +89,7 @@ func DeclareImport(prgrm *ast.CXProgram, impName string, currentFile string, lin
 	if cxpackages.IsDefaultPackage(ident) {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now a constructor call, site S1090.
-		imp := ast.MakePackage(ident)
+		imp := ast.MakePackage(prgrm.CXProgramNameIntern(ident))
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now an arena insert, site S1091.
 		impIdx := prgrm.AddPackage(imp)

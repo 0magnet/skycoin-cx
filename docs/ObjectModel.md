@@ -51,6 +51,7 @@ free one.
 | `CXTypeSignature_Array` | `0x0C` | `CxIrState.CXTypeSignature_ArrayMng` since #316 | `int`, the slot index |
 | `CXTypeSignature_Struct` | `0x0D` | `CxIrState.CXTypeSignature_StructMng` since #321 | `int`, the slot index |
 | `CXCall` | `0x0E` | `CXProgram.CallStack` | `types.Pointer` (`CallCounter`) |
+| `String` | `0x0F` | `CxIrState.StringPool`, see [String pool](#string-pool) | `StringGid` |
 
 Tags `0x00` and `0x80` to `0xFF` are never used, see
 [Gid](#gid-the-generational-index).
@@ -346,7 +347,7 @@ The 14 managers differ only in their type, so `<obj>_gid.go`,
 `<obj>_mng.go` and the test `<obj>_mng_test.go` are generated from one
 template by `t0-cx-core-objmodelgen` (`make generate-objmodel`), a tier 0
 `package main` that holds the type table above. It also writes
-`GidTypeTagNameTable` into `t1-cx-core-objmodel/gid_typetagname.go`. The
+`GidTypeTagNameTable` into `t1-cx-core-objmodel/gid_typetagname.go`, which also names the tags of hand written managers such as the string pool. The
 generated files are committed and start with a `Code generated ... DO NOT
 EDIT.` line.
 `make check-objmodel` fails when one is stale, when a generated file is no
@@ -449,6 +450,33 @@ from the one Get after the Alloc, like `AllocCXArgument`,
 ends up named by nothing is released. `Param` and `MakeStructParameter` use
 the heap builder `nativeArgument`, because the natives they make are shared
 by every program until the `CXNativeFunction` allocation phase.
+
+### String pool
+
+`StringPool` (`t2-cx-core-stringpool`, #413) interns the names of the IR.
+It is the first field of `CxIrState` and is written by hand, not
+generated, because a string is never released. `StringGid` has the Gid
+layout with type tag `0x0F`, and every slot keeps `GidGenerationFirst`.
+`StringGidNil` is the empty string.
+
+The pool keeps one byte arena and an offset and a length per slot. No Go
+string is stored. `StringPoolIntern(bytes)` returns the existing Gid for
+equal bytes, through a map keyed by views of the arena that
+`StringPoolFreeze` sets to nil. Intern asserts on a frozen pool.
+`StringPoolBytes(gid)` returns a view into the arena, and
+`StringPoolText(gid)` the same view as a string, so neither allocates.
+Equal names have equal Gids, so comparing two names compares two
+integers.
+
+`cx`, the REPL's eval and the test harness freeze the pool when
+compilation ends, before the program runs. The interactive REPL keeps
+compiling between statements, so it does not freeze. `CxIrStateInit`
+interns `main` and `*init`, so the compiler compares with them
+after the freeze too.
+
+`CXPackage.Name`, `CXFunction.Name` and `CXStruct.Name` are `StringGid`.
+The other name fields, and the string keyed maps of packages, functions
+and structs, are still strings until the later steps of #413.
 
 ## Rules
 

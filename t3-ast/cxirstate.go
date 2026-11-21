@@ -8,12 +8,18 @@ import (
 
 	constants "github.com/skycoin/skycoin-cx/t1-constants"
 	objmodel "github.com/skycoin/skycoin-cx/t1-cx-core-objmodel"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 )
 
 // CxIrState holds one manager of each IR object type and is the only owner of
 // every IR object, see docs/ObjectModel.md. Until phase 5 of CXProgram a
 // program reaches its state through CXProgram.CxIrState.
 type CxIrState struct {
+	StringPool stringpool.StringPool
+	// Names the compiler compares with, interned by CxIrStateInit so that a
+	// frozen pool can still be compared with them.
+	CxIrStateNameMain         stringpool.StringGid
+	CxIrStateNameSysInit      stringpool.StringGid
 	CXProgramMng              CXProgramMng
 	CXPackageMng              CXPackageMng
 	CXFunctionMng             CXFunctionMng
@@ -42,6 +48,9 @@ type CxIrStateManagerLen struct {
 // examples/, so a stage never fills a manager. A manager no stage uses yet
 // starts at 64.
 func (state *CxIrState) CxIrStateInit() {
+	state.StringPool.StringPoolInit(1024, 16384)
+	state.CxIrStateNameMain = state.StringPool.StringPoolIntern([]byte(constants.MAIN_PKG))
+	state.CxIrStateNameSysInit = state.StringPool.StringPoolIntern([]byte(constants.SYS_INIT_FUNC))
 	state.CXProgramMng.CXProgramMngInit(1, false)
 	state.CXPackageMng.CXPackageMngInit(64, true)
 	state.CXFunctionMng.CXFunctionMngInit(64, true)

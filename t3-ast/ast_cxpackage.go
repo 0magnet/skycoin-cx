@@ -3,6 +3,8 @@ package ast
 import (
 	"errors"
 	"fmt"
+
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 )
 
 type CXPackageIndex int
@@ -35,7 +37,7 @@ func (pkg *CXPackage) GetFunction(prgrm *CXProgram, fnName string) (*CXFunction,
 		}
 	}
 
-	return nil, fmt.Errorf("function '%s' not found in package '%s' or its imports", fnName, pkg.Name)
+	return nil, fmt.Errorf("function '%s' not found in package '%s' or its imports", fnName, prgrm.CXProgramNameText(pkg.Name))
 }
 
 // GetImport ...
@@ -85,21 +87,21 @@ func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType st
 			panic("type is not known")
 		}
 
-		if len(fnInputs) > 0 && fnInputStructType != nil && fnInputStructType.Name == receiverType {
+		if len(fnInputs) > 0 && fnInputStructType != nil && prgrm.CXProgramNameText(fnInputStructType.Name) == receiverType {
 			return fnIdx, nil
 		}
 	}
 
 	// Trying to find it in `Natives`.
 	// Most likely a method from a core package.
-	if opCode, found := OpCodes[pkg.Name+"."+fnName]; found {
+	if opCode, found := OpCodes[prgrm.CXProgramNameText(pkg.Name)+"."+fnName]; found {
 		// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 		// Now an arena insert, site S0167.
 		opFnIdx := prgrm.AddNativeFunctionInArray(Natives[opCode])
 		return opFnIdx, nil
 	}
 
-	return -1, fmt.Errorf("method '%s' not found in package '%s'", fnName, pkg.Name)
+	return -1, fmt.Errorf("method '%s' not found in package '%s'", fnName, prgrm.CXProgramNameText(pkg.Name))
 }
 
 // GetStruct ...
@@ -125,7 +127,7 @@ func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName string) (*CXStruct, 
 		}
 	}
 
-	return nil, fmt.Errorf("struct '%s' not found in package '%s'", strctName, pkg.Name)
+	return nil, fmt.Errorf("struct '%s' not found in package '%s'", strctName, prgrm.CXProgramNameText(pkg.Name))
 
 }
 
@@ -140,7 +142,7 @@ func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName string) (*CXTypeSignat
 		}
 	}
 
-	return nil, fmt.Errorf("global '%s' not found in package '%s'", defName, pkg.Name)
+	return nil, fmt.Errorf("global '%s' not found in package '%s'", defName, prgrm.CXProgramNameText(pkg.Name))
 }
 
 // GetCurrentFunction ...
@@ -176,7 +178,7 @@ func (pkg *CXPackage) SelectFunction(prgrm *CXProgram, name string) (*CXFunction
 // It can be filled in later with imports, structs, globals and functions.
 // OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 // Now a constructor, site S0174.
-func MakePackage(name string) *CXPackage {
+func MakePackage(name stringpool.StringGid) *CXPackage {
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now a heap literal, site S0175.
 	return &CXPackage{
@@ -199,9 +201,9 @@ func MakePackage(name string) *CXPackage {
 
 // AddImport ...
 func (pkg *CXPackage) AddImport(prgrm *CXProgram, imp *CXPackage) *CXPackage {
-	if _, ok := pkg.Imports[imp.Name]; !ok {
+	if _, ok := pkg.Imports[prgrm.CXProgramNameText(imp.Name)]; !ok {
 		// impIdx := prgrm.AddPackageInArray(imp)
-		pkg.Imports[imp.Name] = CXPackageIndex(imp.Index)
+		pkg.Imports[prgrm.CXProgramNameText(imp.Name)] = CXPackageIndex(imp.Index)
 	}
 
 	return pkg
@@ -218,7 +220,7 @@ func (pkg *CXPackage) RemoveImport(impName string) {
 
 // AddFunction ...
 func (pkg *CXPackage) AddFunction(prgrm *CXProgram, fn *CXFunction) (*CXPackage, CXFunctionIndex) {
-	if _, ok := pkg.Functions[fn.Name]; ok {
+	if _, ok := pkg.Functions[prgrm.CXProgramNameText(fn.Name)]; ok {
 		println(CompilationError(fn.FileName, fn.FileLine), "function redeclaration")
 	}
 
@@ -227,7 +229,7 @@ func (pkg *CXPackage) AddFunction(prgrm *CXProgram, fn *CXFunction) (*CXPackage,
 	// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 	// Now an arena insert, site S0178.
 	fnIdx := prgrm.AddFunctionInArray(fn)
-	pkg.Functions[fn.Name] = fnIdx
+	pkg.Functions[prgrm.CXProgramNameText(fn.Name)] = fnIdx
 	pkg.CurrentFunction = fnIdx
 
 	return pkg, fnIdx
@@ -246,14 +248,14 @@ func (pkg *CXPackage) RemoveFunction(fnName string) {
 
 // AddStruct ...
 func (pkg *CXPackage) AddStruct(prgrm *CXProgram, strct *CXStruct) *CXPackage {
-	if _, ok := pkg.Structs[strct.Name]; ok {
+	if _, ok := pkg.Structs[prgrm.CXProgramNameText(strct.Name)]; ok {
 		return pkg
 	}
 	strct.Package = CXPackageIndex(pkg.Index)
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now an arena insert, site S0180.
 	strctIdx := prgrm.AddStructInArray(strct)
-	pkg.Structs[strct.Name] = strctIdx
+	pkg.Structs[prgrm.CXProgramNameText(strct.Name)] = strctIdx
 
 	return pkg
 }

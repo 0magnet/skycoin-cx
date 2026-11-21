@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	objmodel "github.com/skycoin/skycoin-cx/t1-cx-core-objmodel"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 )
 
 type CXFunctionIndex int
@@ -23,7 +24,7 @@ func (cxf CXFunction) IsAtomic() bool {
 // Later, parameters and contents can be added.
 // OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 // Now a constructor, site S0133.
-func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
+func MakeFunction(prgrm *CXProgram, name stringpool.StringGid, fileName string, fileLine int) *CXFunction {
 	// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 	// Now a heap literal, site S0134.
 	return &CXFunction{
@@ -34,7 +35,7 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 		// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 		// Now a heap literal, site S0135.
 		Inputs: &CXStruct{
-			Name: name + "_Input",
+			Name: prgrm.CXProgramNameIntern(prgrm.CXProgramNameText(name) + "_Input"),
 		},
 		LocalVariables: []string{},
 	}
@@ -44,9 +45,9 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 //                             `CXFunction` Getters
 
 // GetExpressions is not used
-func (fn *CXFunction) GetExpressions() ([]CXExpression, error) {
+func (fn *CXFunction) GetExpressions(prgrm *CXProgram) ([]CXExpression, error) {
 	if fn.Expressions == nil {
-		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
+		return nil, fmt.Errorf("function '%s' has no expressions", prgrm.CXProgramNameText(fn.Name))
 	}
 
 	return fn.Expressions, nil
@@ -56,7 +57,7 @@ func (fn *CXFunction) GetExpressions() ([]CXExpression, error) {
 // GetExpressionByLabel
 func (fn *CXFunction) GetExpressionByLabel(prgrm *CXProgram, lbl string) (*CXExpression, error) {
 	if fn.Expressions == nil {
-		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
+		return nil, fmt.Errorf("function '%s' has no expressions", prgrm.CXProgramNameText(fn.Name))
 	}
 
 	for _, expr := range fn.Expressions {
@@ -64,17 +65,17 @@ func (fn *CXFunction) GetExpressionByLabel(prgrm *CXProgram, lbl string) (*CXExp
 			return &expr, nil
 		}
 	}
-	return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
+	return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, prgrm.CXProgramNameText(fn.Name))
 }
 
 // GetExpressionByLine ...
-func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
+func (fn *CXFunction) GetExpressionByLine(prgrm *CXProgram, line int) (*CXExpression, error) {
 	if fn.Expressions == nil {
-		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
+		return nil, fmt.Errorf("function '%s' has no expressions", prgrm.CXProgramNameText(fn.Name))
 	}
 
 	if line > len(fn.Expressions) {
-		return nil, fmt.Errorf("expression line number '%d' exceeds number of expressions in function '%s'", line, fn.Name)
+		return nil, fmt.Errorf("expression line number '%d' exceeds number of expressions in function '%s'", line, prgrm.CXProgramNameText(fn.Name))
 	}
 
 	return &fn.Expressions[line], nil

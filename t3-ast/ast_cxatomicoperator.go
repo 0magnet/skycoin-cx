@@ -10,7 +10,7 @@ func (op *CXAtomicOperator) GetOperatorName(prgrm *CXProgram) string {
 	if opOperator.IsBuiltIn() {
 		return OpNames[opOperator.AtomicOPCode]
 	}
-	return opOperator.Name
+	return prgrm.CXProgramNameText(opOperator.Name)
 
 }
 

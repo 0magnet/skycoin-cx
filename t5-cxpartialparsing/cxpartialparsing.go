@@ -1294,7 +1294,7 @@ yydefault:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 				// Now a constructor call, site S1400.
-				fn := ast.MakeFunction(yyDollar[2].tok, CurrentFileName, lineNo)
+				fn := ast.MakeFunction(Program, Program.CXProgramNameIntern(yyDollar[2].tok), CurrentFileName, lineNo)
 				_, fnIdx := pkg.AddFunction(Program, fn)
 				pkg.CurrentFunction = fnIdx
 
@@ -1311,12 +1311,12 @@ yydefault:
 				panic("method has multiple receivers")
 			}
 
-			fnName := yyDollar[3].arguments[0].StructType.Name + "." + yyDollar[5].tok
+			fnName := Program.CXProgramNameText(yyDollar[3].arguments[0].StructType.Name) + "." + yyDollar[5].tok
 
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 				// Now a constructor call, site S1401.
-				fn := ast.MakeFunction(fnName, CurrentFileName, lineNo)
+				fn := ast.MakeFunction(Program, Program.CXProgramNameIntern(fnName), CurrentFileName, lineNo)
 				_, fnIdx := pkg.AddFunction(Program, fn)
 				// OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
 				// Now an arena getter, site S1402.

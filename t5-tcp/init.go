@@ -9,7 +9,7 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now a constructor call, site S1427.
-	netPkg := ast.MakePackage("tcp")
+	netPkg := ast.MakePackage(prgrm.CXProgramNameIntern("tcp"))
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now an arena insert, site S1428.
 	pkgIdx := prgrm.AddPackage(netPkg)
@@ -19,7 +19,7 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1430.
-	dialerStrct := ast.MakeStruct("Dialer")
+	dialerStrct := ast.MakeStruct(prgrm.CXProgramNameIntern("Dialer"))
 	netPkg.AddStruct(prgrm, dialerStrct)
 
 	opcodes.RegisterFunction(prgrm, "tcp.Dial", opTCPDial, opcodes.In(ast.ConstCxArg_STR, ast.ConstCxArg_STR), opcodes.Out(ast.ConstCxArg_STR))

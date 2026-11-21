@@ -11,7 +11,7 @@ import (
 func RegisterPackage(prgrm *ast.CXProgram) {
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now a constructor call, site S1410.
-	regexpPkg := ast.MakePackage("regexp")
+	regexpPkg := ast.MakePackage(prgrm.CXProgramNameIntern("regexp"))
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now an arena insert, site S1411.
 	pkgIdx := prgrm.AddPackage(regexpPkg)
@@ -21,7 +21,7 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1413.
-	regexpStrct := ast.MakeStruct("Regexp")
+	regexpStrct := ast.MakeStruct(prgrm.CXProgramNameIntern("Regexp"))
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1414.
 	_, regexpArg := ast.MakeArgument(prgrm, "exp", "", 0)

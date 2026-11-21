@@ -69,7 +69,7 @@ func (cb *CXCallback) Init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs [
 
 	pkg := prgrm.CXPackages[cxAtomicOp.Package]
 
-	cb.init(prgrm, inputs, outputs, pkg.Name)
+	cb.init(prgrm, inputs, outputs, prgrm.CXProgramNameText(pkg.Name))
 }
 
 func (cb *CXCallback) InitEx(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {

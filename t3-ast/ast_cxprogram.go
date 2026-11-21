@@ -30,7 +30,7 @@ type HeapSegmentStruct struct {
 
 // AddPackage ...
 func (cxprogram *CXProgram) AddPackage(mod *CXPackage) CXPackageIndex {
-	if idx, ok := cxprogram.Packages[mod.Name]; ok {
+	if idx, ok := cxprogram.Packages[cxprogram.CXProgramNameText(mod.Name)]; ok {
 		cxprogram.CurrentPackage = idx
 		return idx
 	}
@@ -39,7 +39,7 @@ func (cxprogram *CXProgram) AddPackage(mod *CXPackage) CXPackageIndex {
 	// Now an arena insert, site S0188.
 	index := cxprogram.AddPackageInArray(mod)
 
-	cxprogram.Packages[mod.Name] = CXPackageIndex(index)
+	cxprogram.Packages[cxprogram.CXProgramNameText(mod.Name)] = CXPackageIndex(index)
 	cxprogram.CurrentPackage = CXPackageIndex(index)
 
 	return index

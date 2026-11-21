@@ -15,7 +15,7 @@ func FindPackage(cxprogram *cxast.CXProgram, packageName string) (*cxast.CXPacka
 			panic(err)
 		}
 
-		if pkg.Name == packageName {
+		if cxprogram.CXProgramNameText(pkg.Name) == packageName {
 			return pkg, nil
 		}
 	}
@@ -36,7 +36,7 @@ func FindFunction(cxprogram *cxast.CXProgram, functionName string) (*cxast.CXFun
 			// Now an arena getter, site S1617.
 			fn := cxprogram.GetFunctionFromArray(fnIdx)
 
-			if fn.Name == functionName {
+			if cxprogram.CXProgramNameText(fn.Name) == functionName {
 				return fn, nil
 			}
 		}

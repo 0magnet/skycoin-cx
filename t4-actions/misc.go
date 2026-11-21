@@ -108,7 +108,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	// Argument type
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1058.
-	argStrct := ast.MakeStruct("Argument")
+	argStrct := ast.MakeStruct(prgrm.CXProgramNameIntern("Argument"))
 	// argStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_STR)
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
@@ -130,7 +130,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	// Expression type
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1062.
-	exprStrct := ast.MakeStruct("Expression")
+	exprStrct := ast.MakeStruct(prgrm.CXProgramNameIntern("Expression"))
 	// exprStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR)
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
@@ -144,7 +144,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	// Function type
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1064.
-	fnStrct := ast.MakeStruct("Function")
+	fnStrct := ast.MakeStruct(prgrm.CXProgramNameIntern("Function"))
 	// fnStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_STR)
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
@@ -173,7 +173,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	// Structure type
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1068.
-	strctStrct := ast.MakeStruct("Structure")
+	strctStrct := ast.MakeStruct(prgrm.CXProgramNameIntern("Structure"))
 	// strctStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR)
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
@@ -187,7 +187,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	// Package type
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1070.
-	pkgStrct := ast.MakeStruct("Structure")
+	pkgStrct := ast.MakeStruct(prgrm.CXProgramNameIntern("Structure"))
 	// pkgStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR)
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
@@ -201,7 +201,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	// Caller type
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1072.
-	callStrct := ast.MakeStruct("Caller")
+	callStrct := ast.MakeStruct(prgrm.CXProgramNameIntern("Caller"))
 	// callStrct.Size = cxcore.GetArgSize(cxcore.TYPE_STR) + cxcore.GetArgSize(cxcore.TYPE_I32)
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
@@ -219,7 +219,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	// Program type
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1075.
-	prgrmStrct := ast.MakeStruct("Program")
+	prgrmStrct := ast.MakeStruct(prgrm.CXProgramNameIntern("Program"))
 	// prgrmStrct.Size = cxcore.GetArgSize(cxcore.TYPE_I32) + cxcore.GetArgSize(cxcore.TYPE_I64)
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
@@ -236,7 +236,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 	if err != nil {
 		panic(err)
 	}
-	prgrmFldCaller := DeclarationSpecifiersStruct(prgrm, callStrct.Name, strctPkg.Name, false, currentFile, lineNo)
+	prgrmFldCaller := DeclarationSpecifiersStruct(prgrm, prgrm.CXProgramNameText(callStrct.Name), prgrm.CXProgramNameText(strctPkg.Name), false, currentFile, lineNo)
 	prgrmFldCaller.Name = "Caller"
 
 	prgrmStrct.AddField(prgrm, prgrmFldCallCounter)

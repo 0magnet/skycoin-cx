@@ -12,13 +12,13 @@ import (
 func RegisterPackage(prgrm *ast.CXProgram) {
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now a constructor call, site S1359.
-	cipherPkg := ast.MakePackage("cipher")
+	cipherPkg := ast.MakePackage(prgrm.CXProgramNameIntern("cipher"))
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1360.
-	pubkeyStrct := ast.MakeStruct("PubKey")
+	pubkeyStrct := ast.MakeStruct(prgrm.CXProgramNameIntern("PubKey"))
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1361.
-	seckeyStrct := ast.MakeStruct("SecKey")
+	seckeyStrct := ast.MakeStruct(prgrm.CXProgramNameIntern("SecKey"))
 
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now an arena insert, site S1362.

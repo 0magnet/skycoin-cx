@@ -48,7 +48,7 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 		return err
 	}
 
-	expr, err := fn.GetExpressionByLine(lineNumber)
+	expr, err := fn.GetExpressionByLine(cxprogram, lineNumber)
 	if err != nil {
 		return err
 	}
@@ -156,7 +156,7 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 		return err
 	}
 
-	expr, err := fn.GetExpressionByLine(lineNumber)
+	expr, err := fn.GetExpressionByLine(cxprogram, lineNumber)
 	if err != nil {
 		return err
 	}
@@ -258,7 +258,7 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 		return err
 	}
 
-	expr, err := fn.GetExpressionByLine(lineNumber)
+	expr, err := fn.GetExpressionByLine(cxprogram, lineNumber)
 	if err != nil {
 		return err
 	}
@@ -315,7 +315,7 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 		return err
 	}
 
-	expr, err := fn.GetExpressionByLine(lineNumber)
+	expr, err := fn.GetExpressionByLine(cxprogram, lineNumber)
 	if err != nil {
 		return err
 	}
@@ -449,7 +449,7 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 		return err
 	}
 
-	expr, err := fn.GetExpressionByLine(lineNumber)
+	expr, err := fn.GetExpressionByLine(cxprogram, lineNumber)
 	if err != nil {
 		return err
 	}

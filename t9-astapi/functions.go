@@ -30,7 +30,7 @@ import (
 func AddEmptyFunctionToPackage(cxprogram *cxast.CXProgram, packageName, functionName string) error {
 	// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 	// Now a constructor call, site S1602.
-	fn := cxast.MakeFunction(functionName, "", -1)
+	fn := cxast.MakeFunction(cxprogram, cxprogram.CXProgramNameIntern(functionName), "", -1)
 
 	pkg, err := FindPackage(cxprogram, packageName)
 	if err != nil {

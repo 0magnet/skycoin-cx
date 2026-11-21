@@ -24,7 +24,7 @@ func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
 
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1516.
-			newPkg := ast.MakePackage(imprt.ImportName)
+			newPkg := ast.MakePackage(actions.AST.CXProgramNameIntern(imprt.ImportName))
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1517.
 			pkgIdx := actions.AST.AddPackage(newPkg)
@@ -51,7 +51,7 @@ func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
 
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1519.
-			newPkg := ast.MakePackage(imprt.PackageID)
+			newPkg := ast.MakePackage(actions.AST.CXProgramNameIntern(imprt.PackageID))
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1520.
 			pkgIdx := actions.AST.AddPackage(newPkg)
