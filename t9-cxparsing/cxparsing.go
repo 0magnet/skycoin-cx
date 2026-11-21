@@ -13,6 +13,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t1-profiling" // thin: only CleanupAndExit, StartProfile, StopProfile; no depth gain
 	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t5-cx-runtime-printer"                // thin: only PrinterCompileErrorsPrint; no depth gain
 	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing" // thin: only CurrentFile, Parse, Program; no depth gain
 )
 
@@ -53,6 +54,8 @@ var ErrCompilation = errors.New("compilation error")
 // Unlike ParseSourceCode it returns on errors instead of exiting, so the
 // parser can be embedded in a long running process.
 func ParseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
+	// The compile errors print on return, and before a panic of the compiler.
+	defer func() { printer.PrinterCompileErrorsPrint(actions.AST) }()
 	cxpartialparsing.Program = actions.AST
 	actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
 

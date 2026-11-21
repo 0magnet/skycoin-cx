@@ -3,12 +3,11 @@ package parsingcompletor
 import (
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t4-actions"
 )
 
 type Lexer struct {
@@ -173,7 +172,7 @@ func (s *Lexer) next() {
 	s.nlsemi = false
 	if s.eof {
 		if s.crash {
-			os.Exit(types.CX_COMPILATION_ERROR)
+			actions.AST.CXProgramCompileErrorExit()
 		}
 		s.tok.yys = -1
 		return
@@ -200,7 +199,7 @@ redonext:
 		s.eof = true
 		s.tok.yys = -1
 		if s.crash {
-			os.Exit(types.CX_COMPILATION_ERROR)
+			actions.AST.CXProgramCompileErrorExit()
 		}
 	case '\n':
 		s.nextch()

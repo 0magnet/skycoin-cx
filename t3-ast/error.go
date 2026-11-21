@@ -2,11 +2,10 @@ package ast
 
 import (
 	"runtime/debug"
-	"strconv"
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t2-globals" // thin: only DBG_GOLANG_STACK_TRACE, FoundCompileErrors, HeapOffset; core globals, keep
+	"github.com/skycoin/skycoin-cx/t2-globals" // thin: only DBG_GOLANG_STACK_TRACE, HeapOffset; core globals, keep
 )
 
 // RuntimeErrorRecord is a runtime error of the old loop as data. The loop
@@ -32,13 +31,6 @@ type RuntimeErrorRecord struct {
 	RuntimeErrorRecordAssertLine bool
 	// RuntimeErrorRecordAssertMessage is the heap offset of the CX string.
 	RuntimeErrorRecordAssertMessage types.Pointer
-}
-
-// CompilationError returns the error header of a compile error at the file
-// and line, and records that the program has a compile error.
-func CompilationError(currentFile string, lineNo int) string {
-	globals.FoundCompileErrors = true
-	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
 }
 
 // ErrorString ...

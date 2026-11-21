@@ -15,6 +15,7 @@
 
 #### Added
 
+- Compile errors are data. The compiler records a `CompileErrorRecord` with a `CompileErrorCode`, a `SourceFileGid`, a line and `StringGid` or integer operands in `CxIrState.CompileErrorList`, and `t5-cx-runtime-printer` prints them through a table of formats when compilation returns or the compiler exits. `ast.CompilationError` is gone. Output and exit codes are unchanged (#413)
 - `t5-cx-runtime-printer` prints runtime errors after the run has returned. The old loop records the code, the panic value and the call stack position in `CXProgram.RuntimeError` instead of printing inside its recover, and `PrintStack`, `ErrorHeader` and `RuntimeErrorInfo` moved there as `PrinterStackPrint`, `PrinterErrorHeader` and `PrinterRuntimeErrorPrint`. The `debug` opcode is registered by the printer. Output and exit codes are unchanged (#413)
 - `t3-cx-runtime-vm` runs a lowered `ir.Image` in one switch loop with no allocation. cx runs a program on it when every function lowers and on the old loop otherwise, and `cx --executor=auto|old|vm` chooses. 71 of the 451 programs `TestLowerCompare` checks run on it (#408)
 - The vm subset takes array indexes, struct fields and pointer dereferences into the stack and data segment, taking addresses, struct and array values, `string.PrintLine` and `printf` with a literal format. 149 of the 455 programs `TestLowerCompare` checks run on vm (#408)

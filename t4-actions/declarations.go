@@ -85,14 +85,14 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		// custom type in an imported package
 		imp, err := pkg.GetImport(prgrm, prgrm.CXProgramNameIntern(pkgName))
 		if err != nil {
-			println(ast.CompilationError(prgrm.CXProgramSourceFileText(currentFile), lineNo), err.Error())
+			prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeMessage, currentFile, lineNo, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(err.Error())})
 
 			return nil
 		}
 
 		strct, err = prgrm.GetStruct(identGid, imp.Name)
 		if err != nil {
-			println(ast.CompilationError(prgrm.CXProgramSourceFileText(currentFile), lineNo), err.Error())
+			prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeMessage, currentFile, lineNo, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(err.Error())})
 
 			return nil
 		}
@@ -100,7 +100,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		// custom type in the current package
 		strct, err = prgrm.GetStruct(identGid, pkg.Name)
 		if err != nil {
-			println(ast.CompilationError(prgrm.CXProgramSourceFileText(currentFile), lineNo), err.Error())
+			prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeMessage, currentFile, lineNo, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(err.Error())})
 
 			return nil
 		}

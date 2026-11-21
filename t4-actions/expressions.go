@@ -1,9 +1,6 @@
 package actions
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
@@ -81,8 +78,8 @@ func IterationExpressions(prgrm *ast.CXProgram,
 	lastCondExpressionOperatorOutputs := lastCondExpressionOperator.GetOutputs(prgrm)
 	if len(prgrm.CXAtomicOps[lastCondExpressionIdx].GetOutputs(prgrm)) < 1 {
 		if len(lastCondExpressionOperatorOutputs) == 0 {
-			println(ast.CompilationError(prgrm.CXProgramSourceFileText(CurrentFile), LineNo), "loop condition has no value")
-			os.Exit(types.CX_COMPILATION_ERROR)
+			prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeLoopConditionNoValue, CurrentFile, LineNo, ast.CompileErrorOperands{})
+			prgrm.CXProgramCompileErrorExit()
 		}
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0614.
@@ -678,9 +675,9 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 	}
 
 	if len(lastPrevExpression.GetOutputs(prgrm)) == 0 {
-		println(ast.CompilationError(prgrm.CXProgramSourceFileText(CurrentFile), LineNo), "invalid indirection")
+		prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeInvalidIndirection, CurrentFile, LineNo, ast.CompileErrorOperands{})
 		// needs to be stopped immediately
-		os.Exit(types.CX_COMPILATION_ERROR)
+		prgrm.CXProgramCompileErrorExit()
 	}
 
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
@@ -974,18 +971,7 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 		// lastExpr := retExprs[len(retExprs)-1]
 		lastExprCXLine, _ := prgrm.GetPreviousCXLine(retExprs, len(retExprs)-1)
 
-		var plural1 string
-		var plural2 string = "s"
-		var plural3 string = "were"
-		if len(fnOutputs) > 1 {
-			plural1 = "s"
-		}
-		if exprs.Size == 1 {
-			plural2 = ""
-			plural3 = "was"
-		}
-
-		println(ast.CompilationError(prgrm.CXProgramSourceFileText(lastExprCXLine.FileName), lastExprCXLine.LineNumber), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", prgrm.CXProgramNameText(fn.Name), len(fnOutputs), plural1, exprs.Size, plural2, plural3))
+		prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeFunctionReturnCount, lastExprCXLine.FileName, lastExprCXLine.LineNumber, ast.CompileErrorOperands{int64(fn.Name), int64(len(fnOutputs)), int64(exprs.Size)})
 	}
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.

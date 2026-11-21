@@ -48,7 +48,7 @@ func DeclareImport(prgrm *ast.CXProgram, impName string, currentFile ast.SourceF
 	}
 
 	if err := cxpackages.CheckImport(impName); err != nil {
-		println(ast.CompilationError(prgrm.CXProgramSourceFileText(currentFile), lineNo), err.Error())
+		prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeMessage, currentFile, lineNo, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(err.Error())})
 		return
 	}
 
@@ -111,6 +111,6 @@ func DeclareImport(prgrm *ast.CXProgram, impName string, currentFile ast.SourceF
 		}
 	} else {
 		// This should never happen.
-		panic(fmt.Sprintf("%v: unkown error when trying to read package '%s'", ast.CompilationError(prgrm.CXProgramSourceFileText(currentFile), lineNo), ident))
+		panic(fmt.Sprintf("error: %s:%d: unkown error when trying to read package '%s'", prgrm.CXProgramSourceFileText(currentFile), lineNo, ident))
 	}
 }

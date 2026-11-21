@@ -1280,9 +1280,9 @@ expression_statement:
                                         // OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
                                         // Now an arena getter, site S1499.
                                         outTypeSig:=actions.AST.GetCXTypeSignatureFromArray(outs[0])
-					println(ast.CompilationError( ast.CXArgumentDebugFileLine(actions.AST, outTypeSig.ArgDetails)), "invalid expression")
+					actions.AST.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeInvalidExpression, outTypeSig.ArgDetails, ast.CompileErrorOperands{})
 				} else {
-					println(ast.CompilationError(actions.AST.CXProgramSourceFileText(actions.CurrentFile), actions.LineNo), "invalid expression")
+					actions.AST.CXProgramCompileErrorAdd(ast.CompileErrorCodeInvalidExpression, actions.CurrentFile, actions.LineNo, ast.CompileErrorOperands{})
 				}
 				$$ = nil
 			} else if len($1) > 0 && $1[0].Type != ast.CX_LINE {

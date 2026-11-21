@@ -3,6 +3,7 @@ package type_checker
 import (
 	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File; no depth gain
 	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t5-cx-runtime-printer" // thin: only PrinterCompileErrorsPrint; no depth gain
 	"github.com/skycoin/skycoin-cx/t6-declextractor"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: only MakeProgram, RegisterPackages; could take the program as an argument, tier 8 to 7
 )
@@ -18,6 +19,7 @@ func ParseAllDeclarations(files []*loader.File, imports []declaration_extractor.
 		actions.AST = cxinit.MakeProgram()
 		cxinit.RegisterPackages(actions.AST)
 	}
+	defer printer.PrinterCompileErrorsPrint(actions.AST)
 
 	err := ParseImports(imports)
 	if err != nil {

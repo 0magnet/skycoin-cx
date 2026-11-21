@@ -3,9 +3,7 @@ package partialparsing
 import (
 	"fmt"
 	"io"
-	"os"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -40,8 +38,8 @@ func NewLexer(rdr io.Reader) *Lexer {
 		if ast.InREPL {
 			panic(fmt.Sprintf("[%d:%d] %s\n", l, c, msg))
 		}
-		println(ast.CompilationError(Program.CXProgramSourceFileText(CurrentFile), l), msg)
-		os.Exit(types.CX_COMPILATION_ERROR)
+		Program.CXProgramCompileErrorAdd(ast.CompileErrorCodeMessage, CurrentFile, l, ast.CompileErrorOperands{Program.CXProgramCompileErrorText(msg)})
+		Program.CXProgramCompileErrorExit()
 	})
 	return lx
 }
