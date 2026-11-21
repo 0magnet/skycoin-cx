@@ -254,7 +254,17 @@ func runTestCases(t *runner.TestRunner) {
 		"from a field has 3\ntrue false\n100% done, a \n escape\nmissing -12 and %!d(MISSING)\n",
 		"-12 on a float is empty: []\nelement 77\nthrough a pointer 77 77\n",
 	)
-	t.RunWant("test-test-type-line.cx", types.CX_COMPILATION_ERROR, "a test(), panic or operator type error names the line of the call (skycoin-cx#259)",
+	t.RunWant("test-array-index-negative.cx", types.CX_RUNTIME_INVALID_CAST, "a negative array index is a runtime error and the call stack prints without a panic",
+		"1\nerror: test-array-index-negative.cx:7, CX_RUNTIME_INVALID_CAST, 11\n===Callstack===\n>>> store()\n",
+		"\ttest-array-index-negative.cx:7 : identity() : <index out of range>\n\n>>> main()\n",
+	)
+	t.RunWant("test-printf-extra.cx", types.CX_SUCCESS, "printf prints values past the last verb as %!(EXTRA ...)",
+		"none\n%!(EXTRA i32=1, i32=2)5\n%!(EXTRA i64=1234567890123, bool=true, str=text)5 and\n%!(EXTRA i32=7, i32=9, f64=2.5)",
+	)
+	t.RunWant("test-printf-extra-values.cx", types.CX_SUCCESS, "printf prints arrays, structs and fields past the last verb as %!(EXTRA ...)",
+		"1\n%!(EXTRA i32=[0, 7, 0], point={x: 0, y: 9}, i32=9)",
+	)
+	t.RunWant("test-test-type-line.cx",types.CX_COMPILATION_ERROR, "a test(), panic or operator type error names the line of the call (skycoin-cx#259)",
 		"test-test-type-line.cx:8 first and second input arguments' types are not equal in 'test' call",
 		"test-test-type-line.cx:11 first and second input arguments' types are not equal in 'panic' call",
 		"test-test-type-line.cx:15 invalid argument types for 'add' operator",

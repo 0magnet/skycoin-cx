@@ -326,6 +326,23 @@ func (typeSignature *CXTypeSignature) GetTypeString(prgrm *CXProgram) string {
 	return typeString
 }
 
+// GetValueTypeName returns the type name printf gives an extra value, the
+// struct name for a struct and the element type name otherwise.
+func (typeSignature *CXTypeSignature) GetValueTypeName(prgrm *CXProgram) string {
+	switch typeSignature.Type {
+	case TYPE_CXARGUMENT_DEPRECATE:
+		element := prgrm.GetCXArgFromArray(CXArgumentIndex(typeSignature.Meta)).GetAssignmentElement(prgrm)
+		if element.StructType != nil {
+			return element.StructType.Name
+		}
+		return element.Type.Name()
+	case TYPE_ATOMIC, TYPE_POINTER_ATOMIC, TYPE_ARRAY_ATOMIC, TYPE_POINTER_ARRAY_ATOMIC,
+		TYPE_SLICE_ATOMIC, TYPE_POINTER_SLICE_ATOMIC, TYPE_STRUCT, TYPE_POINTER_STRUCT:
+		return typeSignature.GetTypeString(prgrm)
+	}
+	return types.UNDEFINED.Name()
+}
+
 func (typeSignature *CXTypeSignature) GetCXArgFormat(prgrm *CXProgram) *CXArgument {
 	// MISUSE: builds an IR argument for the garbage collector, which needs only
 	// the offset, types and declaration specifiers of a field, see #423.
