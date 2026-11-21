@@ -9,9 +9,12 @@ type CXPackage struct {
 	Index int                  // Index of package inside the CXPackage array
 
 	// Contents
-	Imports   map[string]CXPackageIndex  // imported packages
-	Functions map[string]CXFunctionIndex // declared functions in this package
-	Structs   map[string]CXStructIndex   // declared structs in this package
+	Imports   map[stringpool.StringGid]CXPackageIndex  // imported packages
+	Functions map[stringpool.StringGid]CXFunctionIndex // declared functions in this package
+	Structs   map[stringpool.StringGid]CXStructIndex   // declared structs in this package
+	// Methods finds a method by its receiver struct and method name. A method
+	// is also in Functions under its "Struct.method" name.
+	Methods map[CXPackageMethodKey]CXFunctionIndex
 	// OBJMODEL: CXStructGid, phase 5 #337.
 	// Now a pointer at rest, site S0157.
 	Globals *CXStruct // declared global variables in this package

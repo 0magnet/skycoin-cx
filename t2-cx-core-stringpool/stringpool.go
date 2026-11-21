@@ -4,6 +4,7 @@
 package stringpool
 
 import (
+	"bytes"
 	"fmt"
 	"unsafe"
 
@@ -67,6 +68,25 @@ func (pool *StringPool) StringPoolIntern(bytes []byte) StringGid {
 	// array left behind by a growing append stays alive while the map holds it.
 	pool.StringPoolIndex[unsafe.String(&pool.StringPoolArena[offset], len(bytes))] = gid
 	return gid
+}
+
+// StringPoolFind returns the Gid of bytes without interning them, and false
+// when they were never interned. On a frozen pool it scans every slot, so it is
+// for rare run time lookups by text such as affordances.
+func (pool *StringPool) StringPoolFind(text []byte) (StringGid, bool) {
+	if len(text) == 0 {
+		return StringGidNil, true
+	}
+	if pool.StringPoolIndex != nil {
+		gid, found := pool.StringPoolIndex[string(text)]
+		return gid, found
+	}
+	for slot, offset := range pool.StringPoolOffsets {
+		if bytes.Equal(pool.StringPoolArena[offset:offset+pool.StringPoolLengths[slot]], text) {
+			return StringGid(objmodel.GidCompose(StringGidTypeTag, objmodel.GidGenerationFirst, uint32(slot))), true
+		}
+	}
+	return StringGidNil, false
 }
 
 // StringPoolFreeze ends interning. It is called when compilation ends, and the

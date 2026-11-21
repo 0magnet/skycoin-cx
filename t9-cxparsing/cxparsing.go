@@ -78,7 +78,7 @@ func ParseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
 		Adding global variables `OS_ARGS` to the `os` (operating system)
 		package.
 	*/
-	if osPkg, err := actions.AST.GetPackage(constants.OS_PKG); err == nil {
+	if osPkg, err := actions.AST.GetPackage(actions.AST.CxIrState.CxIrStateNameOs); err == nil {
 		if _, err := osPkg.GetGlobal(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs); err != nil {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now a constructor call, site S1618.

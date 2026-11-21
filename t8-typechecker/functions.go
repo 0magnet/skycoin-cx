@@ -19,14 +19,15 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 	for _, fun := range funcs {
 
 		// Get Package
-		pkg, err := actions.AST.GetPackage(fun.PackageID)
+		pkgNameGid := actions.AST.CXProgramNameIntern(fun.PackageID)
+		pkg, err := actions.AST.GetPackage(pkgNameGid)
 
 		// If package not in AST
 		if err != nil || pkg == nil {
 
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1505.
-			newPkg := ast.MakePackage(actions.AST.CXProgramNameIntern(fun.PackageID))
+			newPkg := ast.MakePackage(pkgNameGid)
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1506.
 			pkgIdx := actions.AST.AddPackage(newPkg)
@@ -41,7 +42,7 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 			pkg = newPkg
 		}
 
-		actions.AST.SelectPackage(fun.PackageID)
+		actions.AST.SelectPackage(pkgNameGid)
 
 		source, err := GetSourceBytes(files, fun.FileID)
 		if err != nil {

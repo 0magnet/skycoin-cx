@@ -710,7 +710,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		panic(err)
 	}
 
-	if imp, err := pkg.GetImport(prgrm, prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)); err == nil {
+	identGid := prgrm.CXProgramNameIntern(ident)
+	if imp, err := pkg.GetImport(prgrm, leftExprOutputTypeSig.Name); err == nil {
 		// the external property will be propagated to the following arguments
 		// this way we avoid considering these arguments as module names
 
@@ -778,7 +779,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			prgrm.GetCXArg(ast.CXArgumentIndex(leftExprIdx)).Package = ast.CXPackageIndex(imp.Index)
 		}
 
-		if glbl, err := imp.GetGlobal(prgrm, prgrm.CXProgramNameIntern(ident)); err == nil {
+		if glbl, err := imp.GetGlobal(prgrm, identGid); err == nil {
 			// then it's a global
 			// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl
 			if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
@@ -825,12 +826,12 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			} else {
 				panic("type is not known")
 			}
-		} else if fn, err := imp.GetFunction(prgrm, ident); err == nil {
+		} else if fn, err := imp.GetFunction(prgrm, identGid); err == nil {
 			// then it's a function
 			// not sure about this next line
 			prgrm.CXAtomicOps[lastExpressionIdx].Outputs = nil
 			prgrm.CXAtomicOps[lastExpressionIdx].Operator = ast.CXFunctionIndex(fn.Index)
-		} else if strct, err := prgrm.GetStruct(ident, prgrm.CXProgramNameText(imp.Name)); err == nil {
+		} else if strct, err := prgrm.GetStruct(identGid, imp.Name); err == nil {
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 			// Now an arena getter, site S1196.
 			lastExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[lastExpressionIdx].GetOutputs(prgrm)[0])
@@ -868,7 +869,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		// then it's a struct
 		// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 		// Now a constructor call, site S1199.
-		_, leftExprField := ast.MakeArgument(prgrm, prgrm.CXProgramNameIntern(ident), CurrentFile, LineNo)
+		_, leftExprField := ast.MakeArgument(prgrm, identGid, CurrentFile, LineNo)
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S1200.
 		leftPkg, err := prgrm.GetPackageFromArray(leftExprOutputTypeSig.Package)

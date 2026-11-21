@@ -16,11 +16,12 @@ import (
 // program reaches its state through CXProgram.CxIrState.
 type CxIrState struct {
 	StringPool stringpool.StringPool
-	// Names the compiler compares with, interned by CxIrStateInit so that a
-	// frozen pool can still be compared with them.
+	// Names the compiler and the run start look up, interned by CxIrStateInit
+	// so that they work on a frozen pool. Main names the main package and main.
 	CxIrStateNameMain         stringpool.StringGid
 	CxIrStateNameSysInit      stringpool.StringGid
 	CxIrStateNameOsArgs       stringpool.StringGid
+	CxIrStateNameOs           stringpool.StringGid
 	CXProgramMng              CXProgramMng
 	CXPackageMng              CXPackageMng
 	CXFunctionMng             CXFunctionMng
@@ -53,6 +54,7 @@ func (state *CxIrState) CxIrStateInit() {
 	state.CxIrStateNameMain = state.StringPool.StringPoolIntern([]byte(constants.MAIN_PKG))
 	state.CxIrStateNameSysInit = state.StringPool.StringPoolIntern([]byte(constants.SYS_INIT_FUNC))
 	state.CxIrStateNameOsArgs = state.StringPool.StringPoolIntern([]byte(constants.OS_ARGS))
+	state.CxIrStateNameOs = state.StringPool.StringPoolIntern([]byte(constants.OS_PKG))
 	state.CXProgramMng.CXProgramMngInit(1, false)
 	state.CXPackageMng.CXPackageMngInit(64, true)
 	state.CXFunctionMng.CXFunctionMngInit(64, true)

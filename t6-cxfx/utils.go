@@ -21,12 +21,13 @@ var cSources map[string]**uint8 = make(map[string]**uint8, 0)
 func opGlfwFuncI32I32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	packageName := inputs[0].Get_str(prgrm)
 	functionName := inputs[1].Get_str(prgrm)
+	functionIndex, functionFound := cxfxFunction(prgrm, packageName, functionName)
 	callback := func(a int32, b int32) {
 		var inps [][]byte = make([][]byte, 2)
 		inps[0] = fromI32(a)
 		inps[1] = fromI32(b)
-		if fn, err := prgrm.GetFunction(functionName, packageName); err == nil {
-			execute.Callback(prgrm, fn, inps)
+		if functionFound {
+			execute.Callback(prgrm, prgrm.GetFunctionFromArray(functionIndex), inps)
 		}
 	}
 

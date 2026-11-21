@@ -2,6 +2,7 @@ package init
 
 import (
 	"github.com/skycoin/skycoin-cx/t1-constants" // thin: only CALLSTACK_SIZE, NULL_HEAP_ADDRESS_OFFSET, STACK_SIZE; no depth gain
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t5-cipher" // thin: only RegisterPackage; registration list, keep
 	"github.com/skycoin/skycoin-cx/t5-cxos"   // thin: only RegisterPackage; registration list, keep
@@ -35,7 +36,7 @@ func MakeProgram() *ast.CXProgram {
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a heap literal, site S1461.
 	newPrgrm := &ast.CXProgram{
-		Packages: make(map[string]ast.CXPackageIndex, 0),
+		Packages: make(map[stringpool.StringGid]ast.CXPackageIndex, 0),
 		// OBJMODEL: state.CXFunctionMng (manager storage) or []CXFunctionGid, phase 4 #351.
 		// Now a slice of objects, site S1462.
 		CXFunctions:    make([]ast.CXFunction, 0),

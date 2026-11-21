@@ -557,7 +557,7 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 			// Index is the global's position in its package, since the
 			// native packages register type signatures before main.
 			for _, wantGlobal := range tc.globalTypeSignatures {
-				pkg, err := program.GetPackage(wantGlobal.Package)
+				pkg, err := program.GetPackage(program.CXProgramNameIntern(wantGlobal.Package))
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -1230,7 +1230,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 			program := actions.AST
 
 			for _, wantPkg := range tc.wantProgram {
-				gotPkg, err := program.GetPackage(wantPkg.Name)
+				gotPkg, err := program.GetPackage(program.CXProgramNameIntern(wantPkg.Name))
 				if err != nil {
 					t.Fatal(err)
 				}

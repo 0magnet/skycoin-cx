@@ -59,7 +59,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	cxparsing.ParseSourceCode(sourceCode, fileNames)
 
 	// Checking if a main package exists. If not, create and add it to `AST`.
-	if _, err := actions.AST.GetFunction(constants.MAIN_FUNC, constants.MAIN_PKG); err != nil {
+	if _, err := actions.AST.GetFunction(actions.AST.CxIrState.CxIrStateNameMain, actions.AST.CxIrState.CxIrStateNameMain); err != nil {
 		initMainPkg(actions.AST)
 	}
 

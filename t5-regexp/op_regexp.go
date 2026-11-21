@@ -13,20 +13,10 @@ import (
 var regexps map[string]*regexp.Regexp = make(map[string]*regexp.Regexp, 0)
 
 // expOffset returns the offset of the `exp` field of the CX `regexp.Regexp`
-// held by value. The field holds the expression, which keys `regexps`.
-func expOffset(prgrm *ast.CXProgram, value ast.CXValue) types.Pointer {
-	regexpPkg, err := prgrm.GetPackage("regexp")
-	if err != nil {
-		panic(err)
-	}
-	regexpType, err := regexpPkg.GetStruct(prgrm, "Regexp")
-	if err != nil {
-		panic(err)
-	}
-	// exp is the only field init gives Regexp. The pool is frozen at run
-	// time, so the field is not looked up by name.
-	expFld := prgrm.GetCXTypeSignatureFromArray(regexpType.Fields[0])
-	return value.Offset + expFld.GetOffset(prgrm)
+// held by value. The field holds the expression, which keys `regexps`. exp is
+// the only field RegisterPackage gives Regexp, so it starts the struct.
+func expOffset(value ast.CXValue) types.Pointer {
+	return value.Offset
 }
 
 // regexpCompile is a helper function for `opRegexpMustCompile` and
@@ -37,7 +27,7 @@ func regexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 
 	// The CX Regexp only holds the expression. The same expression in two
 	// parts of a program shares one compiled instance.
-	types.Write_str(prgrm, prgrm.Memory, expOffset(prgrm, outputs[0]), exp)
+	types.Write_str(prgrm, prgrm.Memory, expOffset(outputs[0]), exp)
 
 	r, err := regexp.Compile(exp)
 	if err != nil {
@@ -74,7 +64,7 @@ func opRegexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 
 // opRegexpFind is a wrapper for golang's `regexp`'s `Find`.
 func opRegexpFind(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	exp := types.Read_str(prgrm.Memory, expOffset(prgrm, inputs[0]))
+	exp := types.Read_str(prgrm.Memory, expOffset(inputs[0]))
 	r, ok := regexps[exp]
 	if !ok {
 		println("regexp: Find on a Regexp that did not compile: " + exp)

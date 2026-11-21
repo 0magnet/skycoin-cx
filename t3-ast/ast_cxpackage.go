@@ -9,8 +9,15 @@ import (
 
 type CXPackageIndex int
 
+// CXPackageMethodKey names a method by the name of its receiver struct and
+// its own name.
+type CXPackageMethodKey struct {
+	CXPackageMethodKeyStruct stringpool.StringGid
+	CXPackageMethodKeyMethod stringpool.StringGid
+}
+
 // Only Used by Affordances in op_aff.go
-func (pkg *CXPackage) GetFunction(prgrm *CXProgram, fnName string) (*CXFunction, error) {
+func (pkg *CXPackage) GetFunction(prgrm *CXProgram, fnName stringpool.StringGid) (*CXFunction, error) {
 	if fnIdx, ok := pkg.Functions[fnName]; ok {
 		// OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
 		// Now an arena getter, site S0158.
@@ -37,13 +44,13 @@ func (pkg *CXPackage) GetFunction(prgrm *CXProgram, fnName string) (*CXFunction,
 		}
 	}
 
-	return nil, fmt.Errorf("function '%s' not found in package '%s' or its imports", fnName, prgrm.CXProgramNameText(pkg.Name))
+	return nil, fmt.Errorf("function '%s' not found in package '%s' or its imports", prgrm.CXProgramNameText(fnName), prgrm.CXProgramNameText(pkg.Name))
 }
 
 // GetImport ...
-func (pkg *CXPackage) GetImport(prgrm *CXProgram, impName string) (*CXPackage, error) {
+func (pkg *CXPackage) GetImport(prgrm *CXProgram, impName stringpool.StringGid) (*CXPackage, error) {
 	if _, ok := pkg.Imports[impName]; !ok {
-		return nil, fmt.Errorf("package '%s' not imported", impName)
+		return nil, fmt.Errorf("package '%s' not imported", prgrm.CXProgramNameText(impName))
 	}
 
 	// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
@@ -55,57 +62,27 @@ func (pkg *CXPackage) GetImport(prgrm *CXProgram, impName string) (*CXPackage, e
 	return imp, nil
 }
 
-// GetMethod ...
-func (pkg *CXPackage) GetMethod(prgrm *CXProgram, fnName string, receiverType string) (CXFunctionIndex, error) {
-	if fnIdx, ok := pkg.Functions[fnName]; ok {
-		// OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
-		// Now an arena getter, site S0162.
-		fn := prgrm.GetFunctionFromArray(fnIdx)
-		fnInputs := fn.GetInputs(prgrm)
-		fnInputTypeSigIdx := fnInputs[0]
-		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
-		// Now an arena getter, site S0163.
-		fnInputTypeSig := prgrm.GetCXTypeSignatureFromArray(fnInputTypeSigIdx)
-
-		var fnInputStructType *CXStruct
-		if fnInputTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
-			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
-			// Now an arena getter, site S0164.
-			fnInput := prgrm.GetCXArgFromArray(CXArgumentIndex(fnInputTypeSig.Meta))
-			fnInputStructType = fnInput.StructType
-		} else if fnInputTypeSig.Type == TYPE_STRUCT {
-			// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
-			// Now an arena getter, site S0165.
-			structDetails := prgrm.GetCXTypeSignatureStructFromArray(fnInputTypeSig.Meta)
-			fnInputStructType = structDetails.StructType
-		} else if fnInputTypeSig.Type == TYPE_POINTER_STRUCT {
-			// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
-			// Now an arena getter, site S0166.
-			structDetails := prgrm.GetCXTypeSignatureStructFromArray(fnInputTypeSig.Meta)
-			fnInputStructType = structDetails.StructType
-		} else {
-			panic("type is not known")
-		}
-
-		if len(fnInputs) > 0 && fnInputStructType != nil && prgrm.CXProgramNameText(fnInputStructType.Name) == receiverType {
-			return fnIdx, nil
-		}
+// GetMethod returns the method methodName of the struct receiverName.
+func (pkg *CXPackage) GetMethod(prgrm *CXProgram, receiverName stringpool.StringGid, methodName stringpool.StringGid) (CXFunctionIndex, error) {
+	if fnIdx, ok := pkg.Methods[CXPackageMethodKey{CXPackageMethodKeyStruct: receiverName, CXPackageMethodKeyMethod: methodName}]; ok {
+		return fnIdx, nil
 	}
 
 	// Trying to find it in `Natives`.
-	// Most likely a method from a core package.
-	if opCode, found := OpCodes[prgrm.CXProgramNameText(pkg.Name)+"."+fnName]; found {
+	// Most likely a method from a core package. OpCodes stays keyed by text
+	// until CXNativeFunction names are Gids, see #413.
+	if opCode, found := OpCodes[prgrm.CXProgramNameText(pkg.Name)+"."+prgrm.CXProgramNameText(receiverName)+"."+prgrm.CXProgramNameText(methodName)]; found {
 		// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 		// Now an arena insert, site S0167.
 		opFnIdx := prgrm.AddNativeFunctionInArray(Natives[opCode])
 		return opFnIdx, nil
 	}
 
-	return -1, fmt.Errorf("method '%s' not found in package '%s'", fnName, prgrm.CXProgramNameText(pkg.Name))
+	return -1, fmt.Errorf("method '%s.%s' not found in package '%s'", prgrm.CXProgramNameText(receiverName), prgrm.CXProgramNameText(methodName), prgrm.CXProgramNameText(pkg.Name))
 }
 
 // GetStruct ...
-func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName string) (*CXStruct, error) {
+func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName stringpool.StringGid) (*CXStruct, error) {
 	if strctIdx, ok := pkg.Structs[strctName]; ok {
 		// OBJMODEL: state.CXStructMng.CXStructGet(gid), phase 5 #337.
 		// Now a pointer into an arena, site S0168.
@@ -127,7 +104,7 @@ func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName string) (*CXStruct, 
 		}
 	}
 
-	return nil, fmt.Errorf("struct '%s' not found in package '%s'", strctName, prgrm.CXProgramNameText(pkg.Name))
+	return nil, fmt.Errorf("struct '%s' not found in package '%s'", prgrm.CXProgramNameText(strctName), prgrm.CXProgramNameText(pkg.Name))
 
 }
 
@@ -160,9 +137,9 @@ func (pkg *CXPackage) GetCurrentFunction(prgrm *CXProgram) (*CXFunction, error) 
 //                             `CXPackage` Selectors
 
 // SelectFunction ...
-func (pkg *CXPackage) SelectFunction(prgrm *CXProgram, name string) (*CXFunction, error) {
+func (pkg *CXPackage) SelectFunction(prgrm *CXProgram, name stringpool.StringGid) (*CXFunction, error) {
 	if _, ok := pkg.Functions[name]; !ok {
-		return nil, fmt.Errorf("function '%s' does not exist", name)
+		return nil, fmt.Errorf("function '%s' does not exist", prgrm.CXProgramNameText(name))
 	}
 
 	idx := pkg.Functions[name]
@@ -186,9 +163,10 @@ func MakePackage(name stringpool.StringGid) *CXPackage {
 		// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 		// Now a heap literal, site S0176.
 		Globals:         &CXStruct{},
-		Imports:         make(map[string]CXPackageIndex, 0),
-		Structs:         make(map[string]CXStructIndex, 0),
-		Functions:       make(map[string]CXFunctionIndex, 0),
+		Imports:         make(map[stringpool.StringGid]CXPackageIndex, 0),
+		Structs:         make(map[stringpool.StringGid]CXStructIndex, 0),
+		Functions:       make(map[stringpool.StringGid]CXFunctionIndex, 0),
+		Methods:         make(map[CXPackageMethodKey]CXFunctionIndex, 0),
 		CurrentFunction: -1,
 	}
 }
@@ -201,16 +179,16 @@ func MakePackage(name stringpool.StringGid) *CXPackage {
 
 // AddImport ...
 func (pkg *CXPackage) AddImport(prgrm *CXProgram, imp *CXPackage) *CXPackage {
-	if _, ok := pkg.Imports[prgrm.CXProgramNameText(imp.Name)]; !ok {
+	if _, ok := pkg.Imports[imp.Name]; !ok {
 		// impIdx := prgrm.AddPackageInArray(imp)
-		pkg.Imports[prgrm.CXProgramNameText(imp.Name)] = CXPackageIndex(imp.Index)
+		pkg.Imports[imp.Name] = CXPackageIndex(imp.Index)
 	}
 
 	return pkg
 }
 
 // RemoveImport ...
-func (pkg *CXPackage) RemoveImport(impName string) {
+func (pkg *CXPackage) RemoveImport(impName stringpool.StringGid) {
 	if _, ok := pkg.Imports[impName]; ok {
 		// OBJMODEL: state.CXPackageMng.CXPackageRelease(gid), phase 4 #361.
 		// Now a dropped object, site S0177.
@@ -220,7 +198,7 @@ func (pkg *CXPackage) RemoveImport(impName string) {
 
 // AddFunction ...
 func (pkg *CXPackage) AddFunction(prgrm *CXProgram, fn *CXFunction) (*CXPackage, CXFunctionIndex) {
-	if _, ok := pkg.Functions[prgrm.CXProgramNameText(fn.Name)]; ok {
+	if _, ok := pkg.Functions[fn.Name]; ok {
 		println(CompilationError(fn.FileName, fn.FileLine), "function redeclaration")
 	}
 
@@ -229,16 +207,30 @@ func (pkg *CXPackage) AddFunction(prgrm *CXProgram, fn *CXFunction) (*CXPackage,
 	// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 	// Now an arena insert, site S0178.
 	fnIdx := prgrm.AddFunctionInArray(fn)
-	pkg.Functions[prgrm.CXProgramNameText(fn.Name)] = fnIdx
+	pkg.Functions[fn.Name] = fnIdx
 	pkg.CurrentFunction = fnIdx
 
 	return pkg, fnIdx
 }
 
+// AddMethod adds fn, the method methodName of the struct receiverName. The
+// name of fn is "receiverName.methodName", see CXProgramMethodNameIntern.
+func (pkg *CXPackage) AddMethod(prgrm *CXProgram, fn *CXFunction, receiverName stringpool.StringGid, methodName stringpool.StringGid) (*CXPackage, CXFunctionIndex) {
+	_, fnIdx := pkg.AddFunction(prgrm, fn)
+	pkg.Methods[CXPackageMethodKey{CXPackageMethodKeyStruct: receiverName, CXPackageMethodKeyMethod: methodName}] = fnIdx
+	return pkg, fnIdx
+}
+
 // RemoveFunction ...
-func (pkg *CXPackage) RemoveFunction(fnName string) {
-	if _, ok := pkg.Functions[fnName]; !ok {
+func (pkg *CXPackage) RemoveFunction(fnName stringpool.StringGid) {
+	fnIdx, ok := pkg.Functions[fnName]
+	if !ok {
 		return
+	}
+	for key, methodIdx := range pkg.Methods {
+		if methodIdx == fnIdx {
+			delete(pkg.Methods, key)
+		}
 	}
 
 	// OBJMODEL: state.CXFunctionMng.CXFunctionRelease(gid), phase 4 #351.
@@ -248,20 +240,20 @@ func (pkg *CXPackage) RemoveFunction(fnName string) {
 
 // AddStruct ...
 func (pkg *CXPackage) AddStruct(prgrm *CXProgram, strct *CXStruct) *CXPackage {
-	if _, ok := pkg.Structs[prgrm.CXProgramNameText(strct.Name)]; ok {
+	if _, ok := pkg.Structs[strct.Name]; ok {
 		return pkg
 	}
 	strct.Package = CXPackageIndex(pkg.Index)
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now an arena insert, site S0180.
 	strctIdx := prgrm.AddStructInArray(strct)
-	pkg.Structs[prgrm.CXProgramNameText(strct.Name)] = strctIdx
+	pkg.Structs[strct.Name] = strctIdx
 
 	return pkg
 }
 
 // RemoveStruct ...
-func (pkg *CXPackage) RemoveStruct(strctName string) {
+func (pkg *CXPackage) RemoveStruct(strctName stringpool.StringGid) {
 	if _, ok := pkg.Structs[strctName]; !ok {
 		return
 	}

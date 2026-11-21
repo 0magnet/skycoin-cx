@@ -44,10 +44,10 @@ func packageFunctions(prgrm *cxast.CXProgram) map[string][]string {
 		}
 		fns := []string{}
 		for fnName := range pkg.Functions {
-			fns = append(fns, fnName)
+			fns = append(fns, prgrm.CXProgramNameText(fnName))
 		}
 		sort.Strings(fns)
-		got[name] = fns
+		got[prgrm.CXProgramNameText(name)] = fns
 	}
 	return got
 }

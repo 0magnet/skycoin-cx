@@ -8,6 +8,12 @@ func (prgrm *CXProgram) CXProgramNameIntern(text string) stringpool.StringGid {
 	return prgrm.CxIrState.StringPool.StringPoolIntern([]byte(text))
 }
 
+// CXProgramNameFind returns the Gid of a name without interning it, and false
+// when no name has that text. It works on a frozen pool, for run time lookups.
+func (prgrm *CXProgram) CXProgramNameFind(text string) (stringpool.StringGid, bool) {
+	return prgrm.CxIrState.StringPool.StringPoolFind([]byte(text))
+}
+
 // CXProgramNameBytes returns the bytes of a name. Only boundary code calls it,
 // diagnostics, printing, the serializer and the REPL. The caller must not
 // write to them.
@@ -19,4 +25,16 @@ func (prgrm *CXProgram) CXProgramNameBytes(gid stringpool.StringGid) []byte {
 // boundary code that still takes strings. It does not allocate.
 func (prgrm *CXProgram) CXProgramNameText(gid stringpool.StringGid) string {
 	return prgrm.CxIrState.StringPool.StringPoolText(gid)
+}
+
+// CXProgramMethodNameIntern interns "receiverName.methodName", the function
+// name of a method. It is called while compiling only.
+func (prgrm *CXProgram) CXProgramMethodNameIntern(receiverName stringpool.StringGid, methodName stringpool.StringGid) stringpool.StringGid {
+	receiver := prgrm.CXProgramNameBytes(receiverName)
+	method := prgrm.CXProgramNameBytes(methodName)
+	name := make([]byte, 0, len(receiver)+1+len(method))
+	name = append(name, receiver...)
+	name = append(name, '.')
+	name = append(name, method...)
+	return prgrm.CxIrState.StringPool.StringPoolIntern(name)
 }

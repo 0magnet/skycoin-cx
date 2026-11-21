@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/skycoin/skycoin-cx/t0-types"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 )
 
 // CXProgram is used to represent a full CX program.
@@ -20,7 +21,7 @@ type CXProgram struct {
 	Heap  HeapSegmentStruct
 
 	// Contents
-	Packages map[string]CXPackageIndex // Packages in a CX program
+	Packages map[stringpool.StringGid]CXPackageIndex // Packages in a CX program
 
 	// Runtime information
 	ProgramInput []CXArgumentIndex // OS input arguments

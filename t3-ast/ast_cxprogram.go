@@ -31,7 +31,7 @@ type HeapSegmentStruct struct {
 
 // AddPackage ...
 func (cxprogram *CXProgram) AddPackage(mod *CXPackage) CXPackageIndex {
-	if idx, ok := cxprogram.Packages[cxprogram.CXProgramNameText(mod.Name)]; ok {
+	if idx, ok := cxprogram.Packages[mod.Name]; ok {
 		cxprogram.CurrentPackage = idx
 		return idx
 	}
@@ -40,7 +40,7 @@ func (cxprogram *CXProgram) AddPackage(mod *CXPackage) CXPackageIndex {
 	// Now an arena insert, site S0188.
 	index := cxprogram.AddPackageInArray(mod)
 
-	cxprogram.Packages[cxprogram.CXProgramNameText(mod.Name)] = CXPackageIndex(index)
+	cxprogram.Packages[mod.Name] = CXPackageIndex(index)
 	cxprogram.CurrentPackage = CXPackageIndex(index)
 
 	return index
@@ -639,9 +639,9 @@ func (cxprogram *CXProgram) GetPreviousCXAtomicOpFromExpressions(exprs []CXExpre
 }
 
 // Only two users, both in cx/execute.go
-func (cxprogram *CXProgram) SelectPackage(name string) (*CXPackage, error) {
+func (cxprogram *CXProgram) SelectPackage(name stringpool.StringGid) (*CXPackage, error) {
 	if _, ok := cxprogram.Packages[name]; !ok {
-		return nil, fmt.Errorf("Package '%s' does not exist", name)
+		return nil, fmt.Errorf("Package '%s' does not exist", cxprogram.CXProgramNameText(name))
 	}
 
 	cxprogram.CurrentPackage = cxprogram.Packages[name]
@@ -688,9 +688,9 @@ func (cxprogram *CXProgram) GetCurrentFunction() (*CXFunction, error) {
 }
 
 // GetPackage ...
-func (cxprogram *CXProgram) GetPackage(pkgName string) (*CXPackage, error) {
+func (cxprogram *CXProgram) GetPackage(pkgName stringpool.StringGid) (*CXPackage, error) {
 	if _, ok := cxprogram.Packages[pkgName]; !ok {
-		return nil, fmt.Errorf("package '%s' not found", pkgName)
+		return nil, fmt.Errorf("package '%s' not found", cxprogram.CXProgramNameText(pkgName))
 	}
 
 	// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
@@ -699,7 +699,7 @@ func (cxprogram *CXProgram) GetPackage(pkgName string) (*CXPackage, error) {
 }
 
 // GetStruct ...
-func (cxprogram *CXProgram) GetStruct(strctName string, pkgName string) (*CXStruct, error) {
+func (cxprogram *CXProgram) GetStruct(strctName stringpool.StringGid, pkgName stringpool.StringGid) (*CXStruct, error) {
 	pkg, err := cxprogram.GetPackage(pkgName)
 	if err != nil {
 		return nil, err
@@ -714,7 +714,7 @@ func (cxprogram *CXProgram) GetStruct(strctName string, pkgName string) (*CXStru
 }
 
 // GetFunction ...
-func (cxprogram *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunction, error) {
+func (cxprogram *CXProgram) GetFunction(fnName stringpool.StringGid, pkgName stringpool.StringGid) (*CXFunction, error) {
 	pkg, err := cxprogram.GetPackage(pkgName)
 	if err != nil {
 		return nil, err

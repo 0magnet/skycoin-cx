@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	objmodel "github.com/skycoin/skycoin-cx/t1-cx-core-objmodel"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -430,7 +432,7 @@ func serializePackageImports(prgrm *CXProgram, pkg *CXPackage, s *SerializedCXPr
 	}
 	imps := make([]int64, l)
 	count := 0
-	for _, impIdx := range importsByName(pkg) {
+	for _, impIdx := range importsByName(prgrm, pkg) {
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S0406.
 		impPkg, err := prgrm.GetPackageFromArray(impIdx)
@@ -664,7 +666,7 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 	// structs
 	for _, pkg := range packagesByName(prgrm) {
 
-		for _, strctIdx := range structsByName(pkg) {
+		for _, strctIdx := range structsByName(prgrm, pkg) {
 			// OBJMODEL: state.CXStructMng.CXStructGet(gid), phase 5 #337.
 			// Now a pointer into an arena, site S0415.
 			strct := &prgrm.CXStructs[strctIdx]
@@ -678,7 +680,7 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 	// now we add fields
 	for _, pkg := range packagesByName(prgrm) {
 
-		for _, strctIdx := range structsByName(pkg) {
+		for _, strctIdx := range structsByName(prgrm, pkg) {
 			// OBJMODEL: state.CXStructMng.CXStructGet(gid), phase 5 #337.
 			// Now a pointer into an arena, site S0416.
 			strct := &prgrm.CXStructs[strctIdx]
@@ -695,7 +697,7 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 	// functions
 	for _, pkg := range packagesByName(prgrm) {
 
-		for _, fnIdx := range functionsByName(pkg) {
+		for _, fnIdx := range functionsByName(prgrm, pkg) {
 			// OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
 			// Now an arena getter, site S0417.
 			fn := prgrm.GetFunctionFromArray(fnIdx)
@@ -748,7 +750,7 @@ func serializeCXProgramElements(prgrm *CXProgram, s *SerializedCXProgram) {
 	// expressions
 	for _, pkg := range packagesByName(prgrm) {
 
-		for _, fnIdx := range functionsByName(pkg) {
+		for _, fnIdx := range functionsByName(prgrm, pkg) {
 			// OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
 			// Now an arena getter, site S0418.
 			fn := prgrm.GetFunctionFromArray(fnIdx)
@@ -897,11 +899,12 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 		pkg, _ = prgrm.GetPackageFromArray(pkgIdx)
 
 		if sPkg.ImportsSize > 0 {
-			pkg.Imports = make(map[string]CXPackageIndex, sPkg.ImportsSize)
+			pkg.Imports = make(map[stringpool.StringGid]CXPackageIndex, sPkg.ImportsSize)
 		}
 
 		if sPkg.FunctionsSize > 0 {
-			pkg.Functions = make(map[string]CXFunctionIndex, sPkg.FunctionsSize)
+			pkg.Functions = make(map[stringpool.StringGid]CXFunctionIndex, sPkg.FunctionsSize)
+			pkg.Methods = make(map[CXPackageMethodKey]CXFunctionIndex)
 
 			for _, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
 				// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
@@ -912,12 +915,13 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 				// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 				// Now an arena insert, site S0424.
 				fnIdx := prgrm.AddFunctionInArray(&fn)
-				pkg.Functions[prgrm.CXProgramNameText(fn.Name)] = fnIdx
+				pkg.Functions[fn.Name] = fnIdx
+				deserializeMethodKey(prgrm, pkg, fn.Name, fnIdx)
 			}
 		}
 
 		if sPkg.StructsSize > 0 {
-			pkg.Structs = make(map[string]CXStructIndex, sPkg.StructsSize)
+			pkg.Structs = make(map[stringpool.StringGid]CXStructIndex, sPkg.StructsSize)
 
 			for _, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
 				// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
@@ -927,7 +931,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 				// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 				// Now an arena insert, site S0426.
 				strctIdx := prgrm.AddStructInArray(&strct)
-				pkg.Structs[prgrm.CXProgramNameText(strct.Name)] = strctIdx
+				pkg.Structs[strct.Name] = strctIdx
 			}
 		}
 
@@ -937,7 +941,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 
 		// CurrentFunction
 		if sPkg.FunctionsSize > 0 {
-			pkg.CurrentFunction = pkg.Functions[sPkg.CurrentFunctionName]
+			pkg.CurrentFunction = pkg.Functions[prgrm.CXProgramNameIntern(sPkg.CurrentFunctionName)]
 		}
 
 		fnCounter += sPkg.FunctionsSize
@@ -950,7 +954,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 
 			for _, idx := range idxs {
 				impPkg := deserializePackageImport(&s.Packages[idx], s, prgrm)
-				pkg.Imports[prgrm.CXProgramNameText(impPkg.Name)] = CXPackageIndex(impPkg.Index)
+				pkg.Imports[impPkg.Name] = CXPackageIndex(impPkg.Index)
 			}
 		}
 
@@ -976,7 +980,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 				strctName := deserializeString(sStrct.NameOffset, sStrct.NameSize, s)
 				// OBJMODEL: state.CXStructMng.CXStructGet(gid), phase 5 #337.
 				// Now a pointer into an arena, site S0428.
-				strct := &prgrm.CXStructs[pkg.Structs[strctName]]
+				strct := &prgrm.CXStructs[pkg.Structs[prgrm.CXProgramNameIntern(strctName)]]
 				deserializeStruct(&sStrct, strct, s, prgrm)
 			}
 		}
@@ -987,7 +991,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 				fnName := deserializeString(sFn.NameOffset, sFn.NameSize, s)
 				// OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
 				// Now an arena getter, site S0429.
-				pkgFn := prgrm.GetFunctionFromArray(pkg.Functions[fnName])
+				pkgFn := prgrm.GetFunctionFromArray(pkg.Functions[prgrm.CXProgramNameIntern(fnName)])
 
 				deserializeFunction(&sFn, pkgFn, s, prgrm)
 			}
@@ -998,7 +1002,7 @@ func deserializePackages(s *SerializedCXProgram, prgrm *CXProgram) {
 	}
 
 	// current package
-	prgrm.CurrentPackage = prgrm.Packages[s.Program.CurrentPackageName]
+	prgrm.CurrentPackage = prgrm.Packages[prgrm.CXProgramNameIntern(s.Program.CurrentPackageName)]
 }
 
 func deserializeStruct(sStrct *serializedStruct, strct *CXStruct, s *SerializedCXProgram, prgrm *CXProgram) {
@@ -1007,7 +1011,7 @@ func deserializeStruct(sStrct *serializedStruct, strct *CXStruct, s *SerializedC
 	// Now an arena insert, site S0431.
 	strct.Fields = prgrm.AddPointerArgsToTypeSignaturesArray(deserializeArguments(sStrct.FieldsOffset, sStrct.FieldsSize, s, prgrm))
 
-	strct.Package = prgrm.Packages[sStrct.PackageName]
+	strct.Package = prgrm.Packages[prgrm.CXProgramNameIntern(sStrct.PackageName)]
 }
 
 func deserializeArguments(off int64, size int64, s *SerializedCXProgram, prgrm *CXProgram) []*CXArgument {
@@ -1084,8 +1088,8 @@ func deserializeArgument(sArg *serializedArgument, s *SerializedCXProgram, prgrm
 	// Now an arena insert, site S0439.
 	arg.Outputs = prgrm.AddPointerArgsToCXArgsArray(deserializeArguments(sArg.OutputsOffset, sArg.OutputsSize, s, prgrm))
 	arg.Package = -1
-	if _, ok := prgrm.Packages[sArg.PackageName]; ok {
-		arg.Package = prgrm.Packages[sArg.PackageName]
+	if pkgIdx, ok := prgrm.Packages[prgrm.CXProgramNameIntern(sArg.PackageName)]; ok {
+		arg.Package = pkgIdx
 	}
 
 	return &arg
@@ -1096,7 +1100,7 @@ func deserializeOperator(sExpr *serializedExpression, s *SerializedCXProgram, pr
 		return nil
 	}
 
-	opPkgIdx := prgrm.Packages[s.Functions[sExpr.OperatorOffset].PackageName]
+	opPkgIdx := prgrm.Packages[prgrm.CXProgramNameIntern(s.Functions[sExpr.OperatorOffset].PackageName)]
 	sOp := s.Functions[sExpr.OperatorOffset]
 	opName := deserializeString(sOp.NameOffset, sOp.NameSize, s)
 
@@ -1144,7 +1148,7 @@ func deserializeExpressionFunction(sExpr *serializedExpression, s *SerializedCXP
 		return -1
 	}
 
-	fnPkgIdx := prgrm.Packages[s.Functions[sExpr.FunctionOffset].PackageName]
+	fnPkgIdx := prgrm.Packages[prgrm.CXProgramNameIntern(s.Functions[sExpr.FunctionOffset].PackageName)]
 	sFn := s.Functions[sExpr.FunctionOffset]
 	fnName := deserializeString(sFn.NameOffset, sFn.NameSize, s)
 
@@ -1246,7 +1250,7 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 
 		cxAtomicOp.ThenLines = int(sExpr.ThenLines)
 		cxAtomicOp.ElseLines = int(sExpr.ElseLines)
-		cxAtomicOp.Package = prgrm.Packages[sExpr.PackageName]
+		cxAtomicOp.Package = prgrm.Packages[prgrm.CXProgramNameIntern(sExpr.PackageName)]
 		cxAtomicOp.Function = deserializeExpressionFunction(sExpr, s, prgrm)
 
 		// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorAlloc(), phase 4 #341.
@@ -1273,7 +1277,7 @@ func deserializeFunction(sFn *serializedFunction, fn *CXFunction, s *SerializedC
 	}
 
 	fn.ListOfPointers = deserializeArguments(sFn.ListOfPointersOffset, sFn.ListOfPointersSize, s, prgrm)
-	fn.Package = prgrm.Packages[sFn.PackageName]
+	fn.Package = prgrm.Packages[prgrm.CXProgramNameIntern(sFn.PackageName)]
 	fn.Expressions = deserializeExpressions(sFn.ExpressionsOffset, sFn.ExpressionsSize, s, prgrm)
 	fn.Size = types.Cast_i64_to_ptr(sFn.Size)
 	fn.LineCount = int(sFn.Length)
@@ -1315,7 +1319,7 @@ func deserializeIntegers(off int64, size int64, s *SerializedCXProgram) []int {
 // initDeserialization initializes the CXProgram fields that represent a CX program. This should be refactored, as the names Deserialize and initDeserialization create some naming conflict.
 func initDeserialization(prgrm *CXProgram, s *SerializedCXProgram) {
 	prgrm.Memory = s.Memory
-	prgrm.Packages = make(map[string]CXPackageIndex, len(s.Packages))
+	prgrm.Packages = make(map[stringpool.StringGid]CXPackageIndex, len(s.Packages))
 	// OBJMODEL: state.CXCallMng (manager storage) or []CXCallGid, phase 4 #366.
 	// Now a slice of objects, site S0460.
 	prgrm.CallStack = make([]CXCall, constants.CALLSTACK_SIZE)
@@ -1383,7 +1387,7 @@ func packagesByName(prgrm *CXProgram) []*CXPackage {
 	// OBJMODEL: state.CXPackageMng (manager storage) or []CXPackageGid, phase 4 #361.
 	// Now a slice of objects, site S0463.
 	pkgs := make([]*CXPackage, 0, len(prgrm.Packages))
-	for _, name := range sortedKeys(prgrm.Packages) {
+	for _, name := range sortedKeys(prgrm, prgrm.Packages) {
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S0464.
 		pkg, err := prgrm.GetPackageFromArray(prgrm.Packages[name])
@@ -1395,35 +1399,51 @@ func packagesByName(prgrm *CXProgram) []*CXPackage {
 	return pkgs
 }
 
-func structsByName(pkg *CXPackage) []CXStructIndex {
+func structsByName(prgrm *CXProgram, pkg *CXPackage) []CXStructIndex {
 	idxs := make([]CXStructIndex, 0, len(pkg.Structs))
-	for _, name := range sortedKeys(pkg.Structs) {
+	for _, name := range sortedKeys(prgrm, pkg.Structs) {
 		idxs = append(idxs, pkg.Structs[name])
 	}
 	return idxs
 }
 
-func functionsByName(pkg *CXPackage) []CXFunctionIndex {
+func functionsByName(prgrm *CXProgram, pkg *CXPackage) []CXFunctionIndex {
 	idxs := make([]CXFunctionIndex, 0, len(pkg.Functions))
-	for _, name := range sortedKeys(pkg.Functions) {
+	for _, name := range sortedKeys(prgrm, pkg.Functions) {
 		idxs = append(idxs, pkg.Functions[name])
 	}
 	return idxs
 }
 
-func importsByName(pkg *CXPackage) []CXPackageIndex {
+func importsByName(prgrm *CXProgram, pkg *CXPackage) []CXPackageIndex {
 	idxs := make([]CXPackageIndex, 0, len(pkg.Imports))
-	for _, name := range sortedKeys(pkg.Imports) {
+	for _, name := range sortedKeys(prgrm, pkg.Imports) {
 		idxs = append(idxs, pkg.Imports[name])
 	}
 	return idxs
 }
 
-func sortedKeys[V any](m map[string]V) []string {
-	keys := make([]string, 0, len(m))
+// sortedKeys returns the keys of m in the byte order of their names.
+func sortedKeys[V any](prgrm *CXProgram, m map[stringpool.StringGid]V) []stringpool.StringGid {
+	keys := make([]stringpool.StringGid, 0, len(m))
 	for key := range m {
 		keys = append(keys, key)
 	}
-	sort.Strings(keys)
+	sort.Slice(keys, func(i, j int) bool {
+		return bytes.Compare(prgrm.CXProgramNameBytes(keys[i]), prgrm.CXProgramNameBytes(keys[j])) < 0
+	})
 	return keys
+}
+
+// deserializeMethodKey adds the function fnIdx named "Struct.method" to the
+// methods of pkg. A function name has a dot only when it is a method.
+func deserializeMethodKey(prgrm *CXProgram, pkg *CXPackage, fnName stringpool.StringGid, fnIdx CXFunctionIndex) {
+	name := prgrm.CXProgramNameBytes(fnName)
+	dot := bytes.IndexByte(name, '.')
+	if dot < 0 {
+		return
+	}
+	receiverName := prgrm.CxIrState.StringPool.StringPoolIntern(name[:dot])
+	methodName := prgrm.CxIrState.StringPool.StringPoolIntern(name[dot+1:])
+	pkg.Methods[CXPackageMethodKey{CXPackageMethodKeyStruct: receiverName, CXPackageMethodKeyMethod: methodName}] = fnIdx
 }

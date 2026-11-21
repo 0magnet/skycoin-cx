@@ -260,13 +260,14 @@ function_header:
 				panic("method has multiple receivers")
 			}
 
-			fnName := Program.CXProgramNameText($3[0].StructType.Name) + "." + $5
+			receiverName := $3[0].StructType.Name
+			methodName := Program.CXProgramNameIntern($5)
 
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 				// Now a constructor call, site S1401.
-				fn := ast.MakeFunction(Program, Program.CXProgramNameIntern(fnName), CurrentFileName, lineNo)
-				_,fnIdx:=pkg.AddFunction(Program,fn)
+				fn := ast.MakeFunction(Program, Program.CXProgramMethodNameIntern(receiverName, methodName), CurrentFileName, lineNo)
+				_,fnIdx:=pkg.AddMethod(Program,fn,receiverName,methodName)
                                 // OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
                                 // Now an arena getter, site S1402.
                                 newFn:=Program.GetFunctionFromArray(fnIdx)

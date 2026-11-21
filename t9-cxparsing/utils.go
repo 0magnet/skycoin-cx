@@ -9,7 +9,6 @@ import (
 	cxpackages "github.com/skycoin/skycoin-cx/t0-packages" // thin: only IsBuiltinImport; no depth gain
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t0-util"
-	"github.com/skycoin/skycoin-cx/t1-constants"
 	"github.com/skycoin/skycoin-cx/t1-profiling" // thin: only CleanupAndExit, StartProfile, StopProfile; no depth gain
 	"github.com/skycoin/skycoin-cx/t2-globals"   // thin: only FoundCompileErrors, SRCPATH; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
@@ -82,7 +81,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
+					if pkg, err := cxpartialparsing.Program.GetPackage(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1])); err != nil {
 						// then it hasn't been added
 						// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 						// Now a constructor call, site S1620.
@@ -116,7 +115,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 					if prePkg == nil {
 						println(ast.CompilationError(srcName, lineno),
 							"No package defined")
-					} else if _, err := cxpartialparsing.Program.GetStruct(match[len(match)-1], cxpartialparsing.Program.CXProgramNameText(prePkg.Name)); err != nil {
+					} else if _, err := cxpartialparsing.Program.GetStruct(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]), prePkg.Name); err != nil {
 						// then it hasn't been added
 						// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 						// Now a constructor call, site S1623.
@@ -177,7 +176,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 				if match := reImpName.FindStringSubmatch(string(line)); match != nil {
 					pkgName := match[len(match)-1]
 					// Checking if `pkgName` already exists and if it's not a standard library package.
-					if _, err := cxpartialparsing.Program.GetPackage(pkgName); err != nil && !cxpackages.IsBuiltinImport(pkgName) {
+					if _, err := cxpartialparsing.Program.GetPackage(cxpartialparsing.Program.CXProgramNameIntern(pkgName)); err != nil && !cxpackages.IsBuiltinImport(pkgName) {
 						_, sourceCode, fileNames, err := util.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
 						if err != nil {
 							println(err.Error())
@@ -198,7 +197,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
+					if pkg, err := cxpartialparsing.Program.GetPackage(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1])); err != nil {
 						// then it hasn't been added
 						// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 						// Now a constructor call, site S1624.
@@ -258,7 +257,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxpartialparsing.Program.GetPackage(match[len(match)-1]); err != nil {
+					if pkg, err := cxpartialparsing.Program.GetPackage(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1])); err != nil {
 						// it should be already present
 						panic(err)
 					} else {
@@ -317,7 +316,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 
 func AddInitFunction(prgrm *ast.CXProgram) error {
 	prgrm.CxIrState.CxIrStateManagerGrowBoundary()
-	mainPkg, err := prgrm.GetPackage(constants.MAIN_PKG)
+	mainPkg, err := prgrm.GetPackage(prgrm.CxIrState.CxIrStateNameMain)
 	if err != nil {
 		return err
 	}
@@ -330,7 +329,7 @@ func AddInitFunction(prgrm *ast.CXProgram) error {
 	//Init Expressions
 	actions.FunctionDeclaration(prgrm, fnIdx, nil, nil, prgrm.SysInitExprs)
 
-	if _, err := mainPkg.SelectFunction(prgrm, constants.MAIN_FUNC); err != nil {
+	if _, err := mainPkg.SelectFunction(prgrm, prgrm.CxIrState.CxIrStateNameMain); err != nil {
 		return err
 	}
 	return nil
