@@ -1,0 +1,15 @@
+// A negative array index is a CX_RUNTIME_INVALID_CAST runtime error, and the
+// call stack prints the bad element without failing again.
+package main
+
+func store(i i32) {
+	var a [3]i32
+	a[i] = 5
+	i32.print(a[0])
+}
+
+func main() {
+	i32.print(1)
+	store(-1)
+	i32.print(2)
+}

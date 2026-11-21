@@ -1,0 +1,29 @@
+// printf prints values past the last verb as %!(EXTRA type=value, ...) for
+// every kind of operand.
+package main
+
+type point struct {
+	x i32
+	y i32
+}
+
+var global f64
+
+func main() {
+	var i i32
+	var big i64
+	var flag bool
+	var s str
+	var a [3]i32
+	var p point
+	i = 5
+	big = 1234567890123L
+	flag = true
+	s = "text"
+	a[1] = 7
+	p.y = 9
+	global = 2.5D
+	printf("none\n", 1, 2)
+	printf("%d\n", i, big, flag, s)
+	printf("%d and\n", i, a[1], p.y, global)
+}

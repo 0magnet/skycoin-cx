@@ -155,14 +155,7 @@ func (s *state) printfSteps(format []byte, inputs []ast.CXTypeSignatureIndex) ([
 		extra := inputs[specifiers+1:]
 		for c, signatureIndex := range extra {
 			signature := s.statePrgrm.GetCXTypeSignatureFromArray(signatureIndex)
-			if signature.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
-				return nil, ReasonPrintfFormat
-			}
-			element := s.statePrgrm.GetCXArgFromArray(ast.CXArgumentIndex(signature.Meta)).GetAssignmentElement(s.statePrgrm)
-			if element.StructType != nil {
-				return nil, ReasonPrintfFormat
-			}
-			text([]byte(element.Type.Name() + "="))
+			text([]byte(signature.GetValueTypeName(s.statePrgrm) + "="))
 			step, _, reason := s.printfVerb('v', signatureIndex)
 			if reason != ReasonNone {
 				return nil, reason

@@ -17,6 +17,8 @@ type DereferenceStruct struct {
 	arg         *CXArgument
 	finalOffset types.Pointer
 	fp          types.Pointer
+	// fault, when set, records a bad index instead of a panic.
+	fault *bool
 }
 
 // GetSize ...
@@ -137,7 +139,46 @@ func GetDerefSizeSlice(prgrm *CXProgram, typeSignature *CXTypeSignature) types.P
 	return typeSignature.GetSize(prgrm, false)
 }
 
+// GetFinalOffset returns the address of the value argTypeSig names in the
+// frame at fp. A negative or out of range index panics with its CX error.
 func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argTypeSig *CXTypeSignature) types.Pointer {
+	return finalOffsetCompute(prgrm, fp, oldArg, argTypeSig, nil)
+}
+
+// finalOffsetChecked is GetFinalOffset that returns false where it would
+// panic, so the call stack of a runtime error can print the other values.
+func finalOffsetChecked(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignature) (types.Pointer, bool) {
+	var fault bool
+	offset := finalOffsetCompute(prgrm, fp, nil, argTypeSig, &fault)
+	return offset, !fault
+}
+
+// offsetIndexFromI32 is types.Cast_i32_to_ptr for an index. With fault set a
+// negative index sets *fault and counts as 0 instead of panicking.
+func offsetIndexFromI32(value int32, fault *bool) types.Pointer {
+	if value < 0 && fault != nil {
+		*fault = true
+		return 0
+	}
+	return types.Cast_i32_to_ptr(value)
+}
+
+// offsetSliceIndexCheck panics with CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE when
+// an index is out of range, or sets *fault when fault is set.
+func offsetSliceIndexCheck(valid bool, fault *bool) {
+	if valid {
+		return
+	}
+	if fault != nil {
+		*fault = true
+		return
+	}
+	panic(types.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+}
+
+// finalOffsetCompute is GetFinalOffset. With fault set it records a bad index
+// in *fault instead of panicking.
+func finalOffsetCompute(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argTypeSig *CXTypeSignature, fault *bool) types.Pointer {
 	var finalOffset types.Pointer
 
 	var arg *CXArgument
@@ -200,7 +241,7 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 			sizeOfElement := subSize * sizeToUse
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 			// Now an arena getter, site S0374.
-			argTypeSigOffset += types.Cast_i32_to_ptr(types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i])))) * sizeOfElement
+			argTypeSigOffset += offsetIndexFromI32(types.Read_i32(prgrm.Memory, finalOffsetCompute(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i]), fault)), fault) * sizeOfElement
 		}
 
 		return argTypeSigOffset
@@ -231,7 +272,7 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 				sizeOfElement := subSize * sizeToUse
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S0376.
-				finalOffset += types.Cast_i32_to_ptr(types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i])))) * sizeOfElement
+				finalOffset += offsetIndexFromI32(types.Read_i32(prgrm.Memory, finalOffsetCompute(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i]), fault)), fault) * sizeOfElement
 			}
 		}
 
@@ -270,14 +311,12 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 			// Now an arena getter, site S0378.
-			indexOffset := GetFinalOffset(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i]))
+			indexOffset := finalOffsetCompute(prgrm, fp, nil, prgrm.GetCXTypeSignatureFromArray(arrDetails.Indexes[i]), fault)
 			indexValue := types.Read_i32(prgrm.Memory, indexOffset)
 
-			argTypeSigOffset += types.Cast_i32_to_ptr(indexValue) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
+			argTypeSigOffset += offsetIndexFromI32(indexValue, fault) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
 
-			if !IsValidSliceIndex(prgrm, baseOffset, argTypeSigOffset, sizeToUse) {
-				panic(types.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
-			}
+			offsetSliceIndexCheck(IsValidSliceIndex(prgrm, baseOffset, argTypeSigOffset, sizeToUse), fault)
 		}
 
 		return argTypeSigOffset
@@ -318,7 +357,7 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 			// Now an arena getter, site S0380.
 			fld := prgrm.GetCXArgFromArray(fldIdx)
 			argTypeSigOffset += fld.Offset
-			argTypeSigOffset = CalculateDereferences(prgrm, fld, argTypeSigOffset, fp)
+			argTypeSigOffset = calculateDereferencesCompute(prgrm, fld, argTypeSigOffset, fp, fault)
 		}
 
 		return argTypeSigOffset
@@ -347,7 +386,7 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 			// Now an arena getter, site S0382.
 			fld := prgrm.GetCXArgFromArray(fldIdx)
 			argTypeSigOffset += fld.Offset
-			argTypeSigOffset = CalculateDereferences(prgrm, fld, argTypeSigOffset, fp)
+			argTypeSigOffset = calculateDereferencesCompute(prgrm, fld, argTypeSigOffset, fp, fault)
 		}
 
 		return argTypeSigOffset
@@ -375,14 +414,14 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 	//Q: How can CalculateDereferences change offset?
 	//Why is finalOffset fed in as a pointer?
 
-	finalOffset = CalculateDereferences(prgrm, arg, finalOffset, fp)
+	finalOffset = calculateDereferencesCompute(prgrm, arg, finalOffset, fp, fault)
 	for _, fldIdx := range arg.Fields {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0383.
 		fld := prgrm.GetCXArgFromArray(fldIdx)
 		// elt = fld
 		finalOffset += fld.Offset
-		finalOffset = CalculateDereferences(prgrm, fld, finalOffset, fp)
+		finalOffset = calculateDereferencesCompute(prgrm, fld, finalOffset, fp, fault)
 	}
 
 	return finalOffset
@@ -402,14 +441,12 @@ func CalculateDereference_Slice(prgrm *CXProgram, drfsStruct *DereferenceStruct)
 
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0384.
-	indexOffset := GetFinalOffset(prgrm, drfsStruct.fp, nil, prgrm.GetCXTypeSignatureFromArray(drfsStruct.arg.Indexes[drfsStruct.idxCounter]))
+	indexOffset := finalOffsetCompute(prgrm, drfsStruct.fp, nil, prgrm.GetCXTypeSignatureFromArray(drfsStruct.arg.Indexes[drfsStruct.idxCounter]), drfsStruct.fault)
 	indexValue := types.Read_i32(prgrm.Memory, indexOffset)
 
-	drfsStruct.finalOffset += types.Cast_i32_to_ptr(indexValue) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
+	drfsStruct.finalOffset += offsetIndexFromI32(indexValue, drfsStruct.fault) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
 
-	if !IsValidSliceIndex(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, sizeToUse) {
-		panic(types.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
-	}
+	offsetSliceIndexCheck(IsValidSliceIndex(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, sizeToUse), drfsStruct.fault)
 
 	drfsStruct.idxCounter++
 }
@@ -428,7 +465,7 @@ func CalculateDereference_Array(prgrm *CXProgram, drfsStruct *DereferenceStruct)
 
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0385.
-	drfsStruct.finalOffset += types.Cast_i32_to_ptr(types.Read_i32(prgrm.Memory, GetFinalOffset(prgrm, drfsStruct.fp, nil, prgrm.GetCXTypeSignatureFromArray(drfsStruct.arg.Indexes[drfsStruct.idxCounter])))) * drfsStruct.sizeofElement // TODO:PTR Use Read_ptr
+	drfsStruct.finalOffset += offsetIndexFromI32(types.Read_i32(prgrm.Memory, finalOffsetCompute(prgrm, drfsStruct.fp, nil, prgrm.GetCXTypeSignatureFromArray(drfsStruct.arg.Indexes[drfsStruct.idxCounter]), drfsStruct.fault)), drfsStruct.fault) * drfsStruct.sizeofElement // TODO:PTR Use Read_ptr
 	drfsStruct.idxCounter++
 }
 
@@ -438,12 +475,21 @@ func CalculateDereference_Pointer(prgrm *CXProgram, drfsStruct *DereferenceStruc
 	drfsStruct.derefPointer = true
 }
 
+// CalculateDereferences applies the index and pointer dereferences of arg to
+// finalOffset.
 func CalculateDereferences(prgrm *CXProgram, arg *CXArgument, finalOffset types.Pointer, fp types.Pointer) types.Pointer {
+	return calculateDereferencesCompute(prgrm, arg, finalOffset, fp, nil)
+}
+
+// calculateDereferencesCompute is CalculateDereferences, see finalOffsetCompute
+// for fault.
+func calculateDereferencesCompute(prgrm *CXProgram, arg *CXArgument, finalOffset types.Pointer, fp types.Pointer, fault *bool) types.Pointer {
 	drfsStruct := &DereferenceStruct{
 		idxCounter:  0,
 		arg:         arg,
 		finalOffset: finalOffset,
 		fp:          fp,
+		fault:       fault,
 	}
 
 	for _, op := range drfsStruct.arg.DereferenceOperations {
@@ -466,9 +512,7 @@ func CalculateDereferences(prgrm *CXProgram, arg *CXArgument, finalOffset types.
 		drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
 		if drfsStruct.arg.IsSlice() {
 			drfsStruct.finalOffset += constants.SLICE_HEADER_SIZE
-			if !IsValidSliceIndex(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, drfsStruct.sizeofElement) {
-				panic(types.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
-			}
+			offsetSliceIndexCheck(IsValidSliceIndex(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, drfsStruct.sizeofElement), drfsStruct.fault)
 		}
 	}
 
