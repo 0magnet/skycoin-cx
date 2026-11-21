@@ -218,7 +218,7 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 	structNameGid := prgrm.CXProgramNameIntern(structName)
 
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		if strct, err := prgrm.GetStruct(structName, prgrm.CXProgramNameText(pkg.Name)); err == nil {
+		if strct, err := prgrm.GetStruct(structNameGid, pkg.Name); err == nil {
 			for _, expr := range structFields {
 				if expr.Type == ast.CX_LINE {
 					continue
@@ -363,9 +363,10 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, structName string, structFields []ast.CXExpression) []ast.CXExpression {
 	var result []ast.CXExpression
 	structNameGid := prgrm.CXProgramNameIntern(structName)
+	importNameGid := prgrm.CXProgramNameIntern(importName)
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		if _, err := pkg.GetImport(prgrm, importName); err == nil {
-			if strct, err := prgrm.GetStruct(structName, importName); err == nil {
+		if _, err := pkg.GetImport(prgrm, importNameGid); err == nil {
+			if strct, err := prgrm.GetStruct(structNameGid, importNameGid); err == nil {
 				for _, expr := range structFields {
 					if expr.Type == ast.CX_LINE {
 						continue

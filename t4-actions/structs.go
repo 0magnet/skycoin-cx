@@ -21,7 +21,7 @@ func DeclareStruct(prgrm *ast.CXProgram, structName string, structFields []*ast.
 	}
 
 	// Make sure a struct with the same name is not yet defined.
-	strct, err := prgrm.GetStruct(structName, prgrm.CXProgramNameText(pkg.Name))
+	strct, err := prgrm.GetStruct(prgrm.CXProgramNameIntern(structName), pkg.Name)
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)

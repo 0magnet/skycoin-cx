@@ -60,6 +60,29 @@ func TestStringPoolIntern(t *testing.T) {
 	}
 }
 
+func TestStringPoolFind(t *testing.T) {
+	pool := stringPoolTestNew()
+	main := pool.StringPoolIntern([]byte("main"))
+	other := pool.StringPoolIntern([]byte("other"))
+	for _, frozen := range []bool{false, true} {
+		if frozen {
+			pool.StringPoolFreeze()
+		}
+		if got, found := pool.StringPoolFind([]byte("other")); !found || got != other {
+			t.Errorf("frozen %v: Find(other) = %#x, %v, want %#x, true", frozen, got, found, other)
+		}
+		if got, found := pool.StringPoolFind([]byte("main")); !found || got != main {
+			t.Errorf("frozen %v: Find(main) = %#x, %v, want %#x, true", frozen, got, found, main)
+		}
+		if _, found := pool.StringPoolFind([]byte("absent")); found {
+			t.Errorf("frozen %v: Find(absent) found a name", frozen)
+		}
+	}
+	if pool.StringPoolLen() != 2 {
+		t.Errorf("Find interned a name, Len = %d, want 2", pool.StringPoolLen())
+	}
+}
+
 func TestStringPoolAllocs(t *testing.T) {
 	pool := stringPoolTestNew()
 	name := []byte("a.longer.package.name")

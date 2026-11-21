@@ -7,6 +7,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -14,7 +15,7 @@ func newTestProgram() *ast.CXProgram {
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a heap literal, site S1418.
 	prgrm := &ast.CXProgram{
-		Packages:       make(map[string]ast.CXPackageIndex),
+		Packages:       make(map[stringpool.StringGid]ast.CXPackageIndex),
 		CurrentPackage: -1,
 		// OBJMODEL: state.CXCallMng (manager storage) or []CXCallGid, phase 4 #366.
 		// Now a slice of objects, site S1419.

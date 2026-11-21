@@ -20,14 +20,15 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 	for _, global := range globals {
 
 		// Get Package
-		pkg, err := actions.AST.GetPackage(global.PackageID)
+		pkgNameGid := actions.AST.CXProgramNameIntern(global.PackageID)
+		pkg, err := actions.AST.GetPackage(pkgNameGid)
 
 		// If package not in AST
 		if err != nil || pkg == nil {
 
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1510.
-			newPkg := ast.MakePackage(actions.AST.CXProgramNameIntern(global.PackageID))
+			newPkg := ast.MakePackage(pkgNameGid)
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1511.
 			pkgIdx := actions.AST.AddPackage(newPkg)
@@ -42,7 +43,7 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 			pkg = newPkg
 		}
 
-		actions.AST.SelectPackage(global.PackageID)
+		actions.AST.SelectPackage(pkgNameGid)
 
 		// Read File
 		source, err := GetSourceBytes(files, global.FileID)

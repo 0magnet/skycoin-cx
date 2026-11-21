@@ -71,7 +71,9 @@ func RemoveFunctionFromPackage(cxprogram *cxast.CXProgram, packageName, function
 	}
 	// OBJMODEL: state.CXFunctionMng.CXFunctionRelease(gid), phase 4 #351.
 	// Now a release, site S1603.
-	pkg.RemoveFunction(functionName)
+	if functionNameGid, found := cxprogram.CXProgramNameFind(functionName); found {
+		pkg.RemoveFunction(functionNameGid)
+	}
 
 	return nil
 }

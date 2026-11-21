@@ -79,17 +79,18 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		panic(err)
 	}
 
+	identGid := prgrm.CXProgramNameIntern(ident)
 	var strct *ast.CXStruct
 	if isExternal {
 		// custom type in an imported package
-		imp, err := pkg.GetImport(prgrm, pkgName)
+		imp, err := pkg.GetImport(prgrm, prgrm.CXProgramNameIntern(pkgName))
 		if err != nil {
 			println(ast.CompilationError(currentFile, lineNo), err.Error())
 
 			return nil
 		}
 
-		strct, err = prgrm.GetStruct(ident, prgrm.CXProgramNameText(imp.Name))
+		strct, err = prgrm.GetStruct(identGid, imp.Name)
 		if err != nil {
 			println(ast.CompilationError(currentFile, lineNo), err.Error())
 
@@ -97,7 +98,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		}
 	} else {
 		// custom type in the current package
-		strct, err = prgrm.GetStruct(ident, prgrm.CXProgramNameText(pkg.Name))
+		strct, err = prgrm.GetStruct(identGid, pkg.Name)
 		if err != nil {
 			println(ast.CompilationError(currentFile, lineNo), err.Error())
 

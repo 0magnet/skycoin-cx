@@ -443,7 +443,7 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	if err != nil {
 		return err
 	}
-	cxprogram.CurrentPackage = cxprogram.Packages[packageName]
+	cxprogram.CurrentPackage = cxast.CXPackageIndex(pkg.Index)
 	fn, err := FindFunction(cxprogram, functionName)
 	if err != nil {
 		return err

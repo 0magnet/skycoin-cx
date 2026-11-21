@@ -46,18 +46,20 @@ func FunctionHeader(prgrm *ast.CXProgram, fnName string, receiver []*ast.CXArgum
 			panic("method has multiple receivers")
 		}
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-			fnName := prgrm.CXProgramNameText(receiver[0].StructType.Name) + "." + fnName
+			receiverName := receiver[0].StructType.Name
+			methodName := prgrm.CXProgramNameIntern(fnName)
 
-			if fn, err := prgrm.GetFunction(fnName, prgrm.CXProgramNameText(pkg.Name)); err == nil {
+			if fnIdx, ok := pkg.Methods[ast.CXPackageMethodKey{CXPackageMethodKeyStruct: receiverName, CXPackageMethodKeyMethod: methodName}]; ok {
+				fn := prgrm.GetFunctionFromArray(fnIdx)
 				fn.AddInput(prgrm, receiver[0])
-				pkg.CurrentFunction = ast.CXFunctionIndex(fn.Index)
-				return ast.CXFunctionIndex(fn.Index)
+				pkg.CurrentFunction = fnIdx
+				return fnIdx
 			} else {
 				// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 				// Now a constructor call, site S0723.
-				fn := ast.MakeFunction(prgrm, prgrm.CXProgramNameIntern(fnName), CurrentFile, LineNo)
+				fn := ast.MakeFunction(prgrm, prgrm.CXProgramMethodNameIntern(receiverName, methodName), CurrentFile, LineNo)
 				fn.AddInput(prgrm, receiver[0])
-				_, fnIdx := pkg.AddFunction(prgrm, fn)
+				_, fnIdx := pkg.AddMethod(prgrm, fn, receiverName, methodName)
 				pkg.CurrentFunction = fnIdx
 
 				return fnIdx
@@ -67,13 +69,14 @@ func FunctionHeader(prgrm *ast.CXProgram, fnName string, receiver []*ast.CXArgum
 		}
 	} else {
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-			if fn, err := prgrm.GetFunction(fnName, prgrm.CXProgramNameText(pkg.Name)); err == nil {
+			fnNameGid := prgrm.CXProgramNameIntern(fnName)
+			if fn, err := prgrm.GetFunction(fnNameGid, pkg.Name); err == nil {
 				pkg.CurrentFunction = ast.CXFunctionIndex(fn.Index)
 				return ast.CXFunctionIndex(fn.Index)
 			} else {
 				// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 				// Now a constructor call, site S0724.
-				fn := ast.MakeFunction(prgrm, prgrm.CXProgramNameIntern(fnName), CurrentFile, LineNo)
+				fn := ast.MakeFunction(prgrm, fnNameGid, CurrentFile, LineNo)
 				_, fnIdx := pkg.AddFunction(prgrm, fn)
 				pkg.CurrentFunction = fnIdx
 
@@ -475,7 +478,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			panic(err)
 		}
 
-		if op, err := prgrm.GetFunction(prgrm.CXProgramNameText(opName), prgrm.CXProgramNameText(opPkg.Name)); err == nil {
+		if op, err := prgrm.GetFunction(opName, opPkg.Name); err == nil {
 			expression.Operator = ast.CXFunctionIndex(op.Index)
 		} else if fieldless {
 			// then it's not a possible method call
@@ -623,7 +626,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 							if err != nil {
 								panic(err)
 							}
-							if strct, err := inpExprPkg.GetStruct(prgrm, prgrm.CXProgramNameText(inpExprAtomicOpOperatorOutputArg.StructType.Name)); err == nil {
+							if strct, err := inpExprPkg.GetStruct(prgrm, inpExprAtomicOpOperatorOutputArg.StructType.Name); err == nil {
 								out.Size = strct.GetStructSize(prgrm)
 							}
 						} else {
@@ -1835,14 +1838,14 @@ func lookupSymbol(prgrm *ast.CXProgram, pkgName stringpool.StringGid, ident stri
 	}
 
 	// Checking if `ident` refers to a function.
-	pkg, err := prgrm.GetPackage(prgrm.CXProgramNameText(pkgName))
+	pkg, err := prgrm.GetPackage(pkgName)
 	if err != nil {
 		return nil, err
 	}
 
 	notFound := errors.New("identifier '" + prgrm.CXProgramNameText(ident) + "' does not exist")
 	// We're not checking for that error
-	fn, err := pkg.GetFunction(prgrm, prgrm.CXProgramNameText(ident))
+	fn, err := pkg.GetFunction(prgrm, ident)
 	if err != nil {
 		return nil, errors.New(err.Error() + ":" + notFound.Error() + fmt.Sprintf("--fullName=%s.%s", prgrm.CXProgramNameText(pkgName), prgrm.CXProgramNameText(fullName.SymbolsDataKeyName)))
 	}
@@ -2052,7 +2055,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0888. Also CXArgumentGet, phase 5 #327, site S1694.
-				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.CXProgramNameText(prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(inpIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(inpIdx)).Fields)-1]).Name), prgrm.CXProgramNameText(strct.Name)); err == nil {
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name, prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(inpIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(inpIdx)).Fields)-1]).Name); err == nil {
 					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 				} else {
 					panic(err)
@@ -2111,7 +2114,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0896. Also CXArgumentGet, phase 5 #327, site S1702.
-				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.CXProgramNameText(prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name), prgrm.CXProgramNameText(strct.Name)); err == nil {
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name, prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name); err == nil {
 					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 				} else {
 					panic(err)
@@ -2165,7 +2168,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0902. Also CXArgumentGet, phase 5 #327, site S1711.
-				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.CXProgramNameText(prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name), prgrm.CXProgramNameText(strct.Name)); err == nil {
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name, prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name); err == nil {
 					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 				} else {
 					panic("")
@@ -2231,7 +2234,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0911. Also CXArgumentGet, phase 5 #327, site S1720.
-				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.CXProgramNameText(prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name), prgrm.CXProgramNameText(strct.Name)); err == nil {
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name, prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name); err == nil {
 					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 				} else {
 					panic("")
@@ -2287,7 +2290,7 @@ func ProcessMethodCall(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolsData
 
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0919. Also CXArgumentGet, phase 5 #327, site S1725.
-				if fnIdx, err := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(strct.Name)+"."+prgrm.CXProgramNameText(prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name), prgrm.CXProgramNameText(strct.Name)); err == nil {
+				if fnIdx, err := strctPkg.GetMethod(prgrm, strct.Name, prgrm.GetCXArgFromArray(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields[len(prgrm.GetCXArg(ast.CXArgumentIndex(outIdx)).Fields)-1]).Name); err == nil {
 					prgrm.CXAtomicOps[expr.Index].Operator = fnIdx
 				} else {
 					panic("")
@@ -2964,7 +2967,7 @@ func ProcessSymbolFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignatur
 				methodName := prgrm.GetCXArgFromArray(symFields[len(symFields)-1]).Name
 				receiverType := strct.Name
 
-				if methodIdx, methodErr := strctPkg.GetMethod(prgrm, prgrm.CXProgramNameText(receiverType)+"."+prgrm.CXProgramNameText(methodName), prgrm.CXProgramNameText(receiverType)); methodErr == nil {
+				if methodIdx, methodErr := strctPkg.GetMethod(prgrm, receiverType, methodName); methodErr == nil {
 					// OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
 					// Now an arena getter, site S0970.
 					method := prgrm.GetFunctionFromArray(methodIdx)

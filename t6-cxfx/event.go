@@ -52,6 +52,8 @@ type CXCallback struct {
 	windowName      string
 	packageName     string
 	functionName    string
+	functionIndex   ast.CXFunctionIndex
+	functionFound   bool
 }
 
 func (cb *CXCallback) init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, packageName string) {
@@ -62,6 +64,7 @@ func (cb *CXCallback) init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs [
 	cb.windowNameBytes = windowName[:]
 	cb.functionName = inputs[1].Get_str(prgrm)
 	cb.packageName = packageName
+	cb.functionIndex, cb.functionFound = cxfxFunction(prgrm, packageName, cb.functionName)
 }
 
 func (cb *CXCallback) Init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -77,8 +80,8 @@ func (cb *CXCallback) InitEx(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs
 }
 
 func (cb *CXCallback) Call(prgrm *ast.CXProgram, inputs [][]byte) {
-	if fn, err := prgrm.GetFunction(cb.functionName, cb.packageName); err == nil {
-		execute.Callback(prgrm, fn, inputs)
+	if cb.functionFound {
+		execute.Callback(prgrm, prgrm.GetFunctionFromArray(cb.functionIndex), inputs)
 	}
 }
 
@@ -279,4 +282,22 @@ func PollEvents(prgrm *ast.CXProgram) {
 		}
 	}
 	polled = polled[0:0]
+}
+
+// cxfxFunction finds the function a callback names. The pool is frozen at
+// run time, so the names are found once without interning them.
+func cxfxFunction(prgrm *ast.CXProgram, packageName string, functionName string) (ast.CXFunctionIndex, bool) {
+	packageNameGid, found := prgrm.CXProgramNameFind(packageName)
+	if !found {
+		return -1, false
+	}
+	functionNameGid, found := prgrm.CXProgramNameFind(functionName)
+	if !found {
+		return -1, false
+	}
+	fn, err := prgrm.GetFunction(functionNameGid, packageNameGid)
+	if err != nil {
+		return -1, false
+	}
+	return ast.CXFunctionIndex(fn.Index), true
 }

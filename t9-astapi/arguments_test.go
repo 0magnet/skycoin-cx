@@ -137,7 +137,7 @@ func TestASTAPI_Arguments(t *testing.T) {
 
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S1589.
-		cxpackage, err := cxprogram.GetPackageFromArray(cxprogram.Packages["main"])
+		cxpackage, err := cxprogram.GetPackageFromArray(cxprogram.Packages[cxprogram.CxIrState.CxIrStateNameMain])
 		if err != nil {
 			panic(err)
 		}

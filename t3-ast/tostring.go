@@ -104,7 +104,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 		if fn.Name == prgrm.CxIrState.CxIrStateNameSysInit {
 			continue
 		}
-		_, err := pkg.SelectFunction(prgrm, prgrm.CXProgramNameText(fn.Name))
+		_, err := pkg.SelectFunction(prgrm, fn.Name)
 		if err != nil {
 			panic(err)
 		}
@@ -750,7 +750,7 @@ func getFormattedType_CXArg(prgrm *CXProgram, arg *CXArgument) string {
 						os.Exit(types.CX_COMPILATION_ERROR)
 					}
 
-					fn, err := pkg.GetFunction(prgrm, prgrm.CXProgramNameText(elt.Name))
+					fn, err := pkg.GetFunction(prgrm, elt.Name)
 					if err == nil {
 						// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
 						// os.Exit(CX_COMPILATION_ERROR)

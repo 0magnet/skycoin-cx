@@ -559,7 +559,7 @@ func getTarget(prgrm *ast.CXProgram, inp2 *ast.CXTypeSignature, fp types.Pointer
 		default:
 			switch *tgtElt {
 			case "Pkg":
-				if pkg, err := prgrm.GetPackage(aff); err == nil {
+				if pkg, err := affPackage(prgrm, aff); err == nil {
 					// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 					// Now an object copy, site S1278.
 					*tgtPkg = *pkg
@@ -567,7 +567,7 @@ func getTarget(prgrm *ast.CXProgram, inp2 *ast.CXTypeSignature, fp types.Pointer
 					panic(err)
 				}
 			case "fn":
-				if fn, err := tgtPkg.GetFunction(prgrm, aff); err == nil {
+				if fn, err := affFunction(prgrm, tgtPkg, aff); err == nil {
 					// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 					// Now an object copy, site S1279.
 					*tgtFn = *fn
@@ -686,7 +686,7 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXTypeSignature, fp types.Po
 					panic(err)
 				}
 			case "fn":
-				if fn, err := tgtPkg.GetFunction(prgrm, elt); err == nil {
+				if fn, err := affFunction(prgrm, tgtPkg, elt); err == nil {
 					_ = fn
 					switch tgtElt {
 					case "arg":
@@ -723,7 +723,7 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXTypeSignature, fp types.Po
 					*affs = append(*affs, "Move FS to TP")
 				}
 			case "Pkg":
-				if pkg, err := prgrm.GetPackage(elt); err == nil {
+				if pkg, err := affPackage(prgrm, elt); err == nil {
 					_ = pkg
 					switch tgtElt {
 					case "Pkg":
@@ -862,7 +862,11 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXTypeSignature, fp types.Po
 // }
 
 func readStrctAff(prgrm *ast.CXProgram, aff string, tgtPkg *ast.CXPackage) *ast.CXStruct {
-	strct, err := tgtPkg.GetStruct(prgrm, aff)
+	gid, found := prgrm.CXProgramNameFind(aff)
+	if !found {
+		panic(fmt.Errorf("struct '%s' not found in package '%s'", aff, prgrm.CXProgramNameText(tgtPkg.Name)))
+	}
+	strct, err := tgtPkg.GetStruct(prgrm, gid)
 	if err != nil {
 		panic(err)
 	}
@@ -1270,7 +1274,7 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 				if err != nil {
 					panic(err)
 				}
-				if fn, err := inp1Pkg.GetFunction(prgrm, rule); err == nil {
+				if fn, err := affFunction(prgrm, inp1Pkg, rule); err == nil {
 
 					// arg keyword
 					// argB := encoder.Serialize("arg")
@@ -1362,4 +1366,23 @@ func opAffQuery(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	}
 
 	types.Write_ptr(prgrm.Memory, out1Offset, affOffset)
+}
+
+// affPackage finds the package named by text. The pool is frozen at run
+// time, so a name that was never interned names nothing.
+func affPackage(prgrm *ast.CXProgram, text string) (*ast.CXPackage, error) {
+	gid, found := prgrm.CXProgramNameFind(text)
+	if !found {
+		return nil, fmt.Errorf("package '%s' not found", text)
+	}
+	return prgrm.GetPackage(gid)
+}
+
+// affFunction finds the function named by text in pkg or its imports.
+func affFunction(prgrm *ast.CXProgram, pkg *ast.CXPackage, text string) (*ast.CXFunction, error) {
+	gid, found := prgrm.CXProgramNameFind(text)
+	if !found {
+		return nil, fmt.Errorf("function '%s' not found in package '%s' or its imports", text, prgrm.CXProgramNameText(pkg.Name))
+	}
+	return pkg.GetFunction(prgrm, gid)
 }

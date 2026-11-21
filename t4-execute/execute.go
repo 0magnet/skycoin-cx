@@ -38,7 +38,7 @@ func runSysInitFunc(cxprogram *ast.CXProgram, mod *ast.CXPackage) error {
 	var inputs []ast.CXValue
 	var outputs []ast.CXValue
 
-	fn, err := mod.SelectFunction(cxprogram, constants.SYS_INIT_FUNC)
+	fn, err := mod.SelectFunction(cxprogram, cxprogram.CxIrState.CxIrStateNameSysInit)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func runSysInitFunc(cxprogram *ast.CXProgram, mod *ast.CXPackage) error {
 }
 
 func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
-	if osPkg, err := cxprogram.SelectPackage(constants.OS_PKG); err == nil {
+	if osPkg, err := cxprogram.SelectPackage(cxprogram.CxIrState.CxIrStateNameOs); err == nil {
 		argsOffset := types.Pointer(0)
 		if osGlbl, err := osPkg.GetGlobal(cxprogram, cxprogram.CxIrState.CxIrStateNameOsArgs); err == nil {
 			for _, arg := range args {
@@ -96,7 +96,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 	// cxprogram.Stacks = append(cxprogram.Stacks, MakeStack(1024))
 
 	if cxprogram.CallStack[0].Operator == nil {
-		mod, err := cxprogram.SelectPackage(constants.MAIN_PKG)
+		mod, err := cxprogram.SelectPackage(cxprogram.CxIrState.CxIrStateNameMain)
 		if err != nil {
 			return err
 		}
@@ -107,7 +107,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 			return err
 		}
 
-		fn, err := mod.SelectFunction(cxprogram, constants.MAIN_FUNC)
+		fn, err := mod.SelectFunction(cxprogram, cxprogram.CxIrState.CxIrStateNameMain)
 		if err != nil {
 			return err
 		}

@@ -169,13 +169,13 @@ func Program(prgrm *ast.CXProgram) (ir.Image, []Failure) {
 	image.ImageEntryInit = ir.ImageFuncNone
 	image.ImageEntryMain = ir.ImageFuncNone
 
-	if packageIndex, found := prgrm.Packages[constants.MAIN_PKG]; found {
+	if packageIndex, found := prgrm.Packages[prgrm.CxIrState.CxIrStateNameMain]; found {
 		mainPackage, err := prgrm.GetPackageFromArray(packageIndex)
 		assert.AssertInvariantTrue(err == nil, "lower: main package index out of range")
-		if functionIndex, found := mainPackage.Functions[constants.SYS_INIT_FUNC]; found {
+		if functionIndex, found := mainPackage.Functions[prgrm.CxIrState.CxIrStateNameSysInit]; found {
 			image.ImageEntryInit = uint32(functionIndex)
 		}
-		if functionIndex, found := mainPackage.Functions[constants.MAIN_FUNC]; found {
+		if functionIndex, found := mainPackage.Functions[prgrm.CxIrState.CxIrStateNameMain]; found {
 			image.ImageEntryMain = uint32(functionIndex)
 		}
 	}

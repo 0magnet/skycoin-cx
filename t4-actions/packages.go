@@ -14,17 +14,18 @@ import (
 //	prgrm - a CXProgram that contains all the data and arrays of the program.
 //	pkgName - name of the package to declare.
 func DeclarePackage(prgrm *ast.CXProgram, pkgName string) {
+	pkgNameGid := prgrm.CXProgramNameIntern(pkgName)
 	// Add a new package to the program if it's not previously defined.
-	if _, err := prgrm.GetPackage(pkgName); err != nil {
+	if _, err := prgrm.GetPackage(pkgNameGid); err != nil {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now a constructor call, site S1088.
-		pkg := ast.MakePackage(prgrm.CXProgramNameIntern(pkgName))
+		pkg := ast.MakePackage(pkgNameGid)
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now an arena insert, site S1089.
 		prgrm.AddPackage(pkg)
 	}
 
-	_, err := prgrm.SelectPackage(pkgName)
+	_, err := prgrm.SelectPackage(pkgNameGid)
 	if err != nil {
 		panic(err)
 	}
@@ -71,14 +72,16 @@ func DeclareImport(prgrm *ast.CXProgram, impName string, currentFile string, lin
 		ident = impName
 	}
 
+	identGid := prgrm.CXProgramNameIntern(ident)
+
 	// If the package is already imported, then there is nothing more to be done.
-	if _, err := pkg.GetImport(prgrm, ident); err == nil {
+	if _, err := pkg.GetImport(prgrm, identGid); err == nil {
 		return
 	}
 
 	// If the package is already defined in the program, just add it to
 	// the importing package.
-	if imp, err := prgrm.GetPackage(ident); err == nil {
+	if imp, err := prgrm.GetPackage(identGid); err == nil {
 		pkg.AddImport(prgrm, imp)
 		return
 	}
@@ -89,7 +92,7 @@ func DeclareImport(prgrm *ast.CXProgram, impName string, currentFile string, lin
 	if cxpackages.IsDefaultPackage(ident) {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now a constructor call, site S1090.
-		imp := ast.MakePackage(prgrm.CXProgramNameIntern(ident))
+		imp := ast.MakePackage(identGid)
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now an arena insert, site S1091.
 		impIdx := prgrm.AddPackage(imp)

@@ -123,12 +123,12 @@ func MakePointer(arg *CXArgument) *CXArgument {
 // OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 // Now a constructor, site S0072.
 func MakeStructParameter(prgrm *CXProgram, pkgName, strctName, argName string) *CXArgument {
-	pkg, err := prgrm.GetPackage(pkgName)
+	pkg, err := prgrm.GetPackage(prgrm.CXProgramNameIntern(pkgName))
 	if err != nil {
 		panic(err)
 	}
 
-	strct, err := pkg.GetStruct(prgrm, strctName)
+	strct, err := pkg.GetStruct(prgrm, prgrm.CXProgramNameIntern(strctName))
 	if err != nil {
 		panic(err)
 	}
