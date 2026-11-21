@@ -1,10 +1,12 @@
 package ast
 
+import stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
+
 // CXPackage is used to represent a CX package.
 type CXPackage struct {
 	// Metadata
-	Name  string // Name of the package
-	Index int    // Index of package inside the CXPackage array
+	Name  stringpool.StringGid // Name of the package
+	Index int                  // Index of package inside the CXPackage array
 
 	// Contents
 	Imports   map[string]CXPackageIndex  // imported packages

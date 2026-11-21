@@ -85,7 +85,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 func initMainPkg(prgrm *ast.CXProgram) {
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now a constructor call, site S0058.
-	mod := ast.MakePackage(constants.MAIN_PKG)
+	mod := ast.MakePackage(prgrm.CxIrState.CxIrStateNameMain)
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now an arena insert, site S0059.
 	modIdx := prgrm.AddPackage(mod)
@@ -97,7 +97,7 @@ func initMainPkg(prgrm *ast.CXProgram) {
 	}
 	// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 	// Now a constructor call, site S0061.
-	fn := ast.MakeFunction(constants.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
+	fn := ast.MakeFunction(prgrm, prgrm.CxIrState.CxIrStateNameMain, actions.CurrentFile, actions.LineNo)
 	modPkg.AddFunction(prgrm, fn)
 }
 

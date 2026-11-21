@@ -41,6 +41,7 @@ func TestRunCompiledMaxOps(t *testing.T) {
 	if err := cxparsing.AddInitFunction(actions.AST); err != nil {
 		t.Fatal(err)
 	}
+	actions.AST.CxIrState.StringPool.StringPoolFreeze()
 	before := len(actions.AST.CXAtomicOps)
 	out := captureStdout(t, func() {
 		if err := execute.RunCompiled(actions.AST, 1000, nil); err != nil {

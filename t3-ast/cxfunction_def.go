@@ -1,13 +1,16 @@
 package ast
 
-import "github.com/skycoin/skycoin-cx/t0-types"
+import (
+	"github.com/skycoin/skycoin-cx/t0-types"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
+)
 
 // CXFunction is used to represent a CX function.
 type CXFunction struct {
 	// Metadata
 	Index        int
-	Name         string         // Name of the function
-	Package      CXPackageIndex // The package it's a member of
+	Name         stringpool.StringGid // Name of the function
+	Package      CXPackageIndex       // The package it's a member of
 	AtomicOPCode int
 
 	// Contents

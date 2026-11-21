@@ -26,7 +26,7 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1505.
-			newPkg := ast.MakePackage(fun.PackageID)
+			newPkg := ast.MakePackage(actions.AST.CXProgramNameIntern(fun.PackageID))
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1506.
 			pkgIdx := actions.AST.AddPackage(newPkg)

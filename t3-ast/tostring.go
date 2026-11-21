@@ -38,7 +38,7 @@ func buildStrImports(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 		if err != nil {
 			panic(err)
 		}
-		*ast += fmt.Sprintf("\t\t%d.- Import: %s\n", count, impPkg.Name)
+		*ast += fmt.Sprintf("\t\t%d.- Import: %s\n", count, prgrm.CXProgramNameText(impPkg.Name))
 		count++
 	}
 }
@@ -69,7 +69,7 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 	count := 0
 	for _, strctIdx := range pkg.Structs {
 		strct := prgrm.CXStructs[strctIdx]
-		*ast += fmt.Sprintf("\t\t%d.- Struct: %s\n", count, strct.Name)
+		*ast += fmt.Sprintf("\t\t%d.- Struct: %s\n", count, prgrm.CXProgramNameText(strct.Name))
 
 		for k, typeSignatureIdx := range strct.Fields {
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
@@ -100,10 +100,10 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 		// Now an arena getter, site S0479.
 		fn := prgrm.GetFunctionFromArray(fnIdx)
 
-		if fn.Name == constants.SYS_INIT_FUNC {
+		if fn.Name == prgrm.CxIrState.CxIrStateNameSysInit {
 			continue
 		}
-		_, err := pkg.SelectFunction(prgrm, fn.Name)
+		_, err := pkg.SelectFunction(prgrm, prgrm.CXProgramNameText(fn.Name))
 		if err != nil {
 			panic(err)
 		}
@@ -115,7 +115,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 		getFormattedParam(prgrm, fn.GetOutputs(prgrm), pkg, &outs)
 
 		*ast1 += fmt.Sprintf("\t\t%d.- Function: %s (%s) (%s)\n",
-			j, fn.Name, inps.String(), outs.String())
+			j, prgrm.CXProgramNameText(fn.Name), inps.String(), outs.String())
 
 		for k, expr := range fn.Expressions {
 			var inps bytes.Buffer
@@ -146,7 +146,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 
 					opName1 = OpNames[cxAtomicOpOperator.AtomicOPCode]
 				} else {
-					opName1 = cxAtomicOpOperator.Name
+					opName1 = prgrm.CXProgramNameText(cxAtomicOpOperator.Name)
 				}
 			}
 
@@ -209,11 +209,11 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 			panic(err)
 		}
 
-		if cxpackages.IsDefaultPackage(pkg.Name) {
+		if cxpackages.IsDefaultPackage(prgrm.CXProgramNameText(pkg.Name)) {
 			continue
 		}
 
-		*ast += fmt.Sprintf("%d.- Package: %s\n", i, pkg.Name)
+		*ast += fmt.Sprintf("%d.- Package: %s\n", i, prgrm.CXProgramNameText(pkg.Name))
 
 		buildStrImports(prgrm, pkg, ast)
 		buildStrGlobals(prgrm, pkg, ast)
@@ -256,7 +256,7 @@ func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex
 
 			// TODO: Check if external pkg and pkg name shown are correct
 			if externalPkg {
-				name = fmt.Sprintf("%s.%s", pkg.Name, name)
+				name = fmt.Sprintf("%s.%s", prgrm.CXProgramNameText(pkg.Name), name)
 			}
 
 			buf.WriteString(fmt.Sprintf("%s %s", name, GetFormattedType(prgrm, paramTypeSig)))
@@ -278,7 +278,7 @@ func SignatureStringOfFunction(prgrm *CXProgram, pkg *CXPackage, f *CXFunction) 
 	getFormattedParam(prgrm, f.GetOutputs(prgrm), pkg, &outs)
 
 	return fmt.Sprintf("func %s(%s) (%s)",
-		f.Name, ins.String(), outs.String())
+		prgrm.CXProgramNameText(f.Name), ins.String(), outs.String())
 }
 
 // valueAt prints the value of type typ with dimensions dims at addr. A zero
@@ -486,7 +486,7 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg 
 	argPkg := pkg
 	// Checking if we should include `arg`'s package name.
 	if includePkg {
-		name = fmt.Sprintf("%s.%s", argPkg.Name, arg.Name)
+		name = fmt.Sprintf("%s.%s", prgrm.CXProgramNameText(argPkg.Name), arg.Name)
 	} else {
 		name = arg.Name
 	}
@@ -663,7 +663,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			// dependent on CXArg.
 			typ = getFormattedType_CXArg(prgrm, fld)
 		} else {
-			typ = structDetails.StructType.Name
+			typ = prgrm.CXProgramNameText(structDetails.StructType.Name)
 
 			if typeSig.PassBy == constants.PASSBY_REFERENCE {
 				typ = "*" + typ
@@ -686,7 +686,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			// dependent on CXArg.
 			typ = getFormattedType_CXArg(prgrm, fld)
 		} else {
-			typ = structDetails.StructType.Name
+			typ = prgrm.CXProgramNameText(structDetails.StructType.Name)
 
 			if !typeSig.IsDeref {
 				typ = "*" + typ
@@ -723,7 +723,7 @@ func getFormattedType_CXArg(prgrm *CXProgram, arg *CXArgument) string {
 			// base type
 			if elt.StructType != nil {
 				// then it's struct type
-				typ += elt.StructType.Name
+				typ += prgrm.CXProgramNameText(elt.StructType.Name)
 			} else {
 				if elt.Type == types.POINTER {
 					typ += elt.PointerTargetType.Name()
@@ -776,7 +776,7 @@ func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 		fields += fmt.Sprintf(" %s %s;", typeSignature.Name, GetFormattedType(prgrm, typeSignature))
 	}
 
-	return fmt.Sprintf("%s struct {%s }", s.Name, fields)
+	return fmt.Sprintf("%s struct {%s }", prgrm.CXProgramNameText(s.Name), fields)
 }
 
 // GetArgSizeFromTypeName ...

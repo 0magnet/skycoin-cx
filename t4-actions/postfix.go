@@ -830,7 +830,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			// not sure about this next line
 			prgrm.CXAtomicOps[lastExpressionIdx].Outputs = nil
 			prgrm.CXAtomicOps[lastExpressionIdx].Operator = ast.CXFunctionIndex(fn.Index)
-		} else if strct, err := prgrm.GetStruct(ident, imp.Name); err == nil {
+		} else if strct, err := prgrm.GetStruct(ident, prgrm.CXProgramNameText(imp.Name)); err == nil {
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 			// Now an arena getter, site S1196.
 			lastExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[lastExpressionIdx].GetOutputs(prgrm)[0])
@@ -849,11 +849,11 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			if details := leftExprOutputTypeSig.ArgDetails; details != ast.CXArgumentDebugGidNil {
 				file, line = ast.CXArgumentDebugFileLine(prgrm, details)
 			}
-			if msg, renamed := renamedOpcodeMessage(imp.Name + "." + ident); renamed {
+			if msg, renamed := renamedOpcodeMessage(prgrm.CXProgramNameText(imp.Name) + "." + ident); renamed {
 				println(ast.CompilationError(file, line), msg)
 				return nil
 			}
-			println(ast.CompilationError(file, line), fmt.Sprintf("identifier '%s.%s' does not exist", imp.Name, ident))
+			println(ast.CompilationError(file, line), fmt.Sprintf("identifier '%s.%s' does not exist", prgrm.CXProgramNameText(imp.Name), ident))
 			return nil
 		}
 	} else {

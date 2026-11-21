@@ -244,7 +244,7 @@ function_header:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 				// Now a constructor call, site S1400.
-				fn := ast.MakeFunction($2, CurrentFileName, lineNo)
+				fn := ast.MakeFunction(Program, Program.CXProgramNameIntern($2), CurrentFileName, lineNo)
 				_,fnIdx:=pkg.AddFunction(Program,fn)
                                 pkg.CurrentFunction=fnIdx
 
@@ -259,12 +259,12 @@ function_header:
 				panic("method has multiple receivers")
 			}
 
-			fnName := $3[0].StructType.Name + "." + $5
+			fnName := Program.CXProgramNameText($3[0].StructType.Name) + "." + $5
 
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 				// Now a constructor call, site S1401.
-				fn := ast.MakeFunction(fnName, CurrentFileName, lineNo)
+				fn := ast.MakeFunction(Program, Program.CXProgramNameIntern(fnName), CurrentFileName, lineNo)
 				_,fnIdx:=pkg.AddFunction(Program,fn)
                                 // OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
                                 // Now an arena getter, site S1402.

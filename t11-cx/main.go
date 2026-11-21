@@ -230,6 +230,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 	}
 
 	actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
+	actions.AST.CxIrState.StringPool.StringPoolFreeze()
 
 	if options.executor != executorOld {
 		image, _, outside := executorLower(actions.AST)

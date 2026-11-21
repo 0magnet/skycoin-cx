@@ -27,7 +27,7 @@ func GetPackagesNameList(cxprogram *cxast.CXProgram) (list []string) {
 			panic(err)
 		}
 
-		list = append(list, pkg.Name)
+		list = append(list, cxprogram.CXProgramNameText(pkg.Name))
 	}
 	return list
 }
@@ -48,7 +48,7 @@ func GetPackagesNameList(cxprogram *cxast.CXProgram) (list []string) {
 func AddEmptyPackage(cxprogram *cxast.CXProgram, pkgName string) error {
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now a constructor call, site S1611.
-	pkg := cxast.MakePackage(pkgName)
+	pkg := cxast.MakePackage(cxprogram.CXProgramNameIntern(pkgName))
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now an arena insert, site S1612.
 	cxprogram.AddPackage(pkg)

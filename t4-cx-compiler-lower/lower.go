@@ -183,7 +183,7 @@ func Program(prgrm *ast.CXProgram) (ir.Image, []Failure) {
 	var failures []Failure
 	for functionIndex := range prgrm.CXFunctions {
 		fn := &prgrm.CXFunctions[functionIndex]
-		image.ImageFuncNames[functionIndex] = fn.Name
+		image.ImageFuncNames[functionIndex] = prgrm.CXProgramNameText(fn.Name)
 		if fn.IsBuiltIn() {
 			continue
 		}
@@ -218,7 +218,9 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 	}
 
 	lineCount := fn.LineCount
-	assert.AssertInvariantTrue(lineCount >= 0 && lineCount <= len(fn.Expressions), "lower: LineCount outside the expressions of "+fn.Name)
+	if lineCount < 0 || lineCount > len(fn.Expressions) {
+		assert.AssertInvariantTrue(false, "lower: LineCount outside the expressions of "+s.statePrgrm.CXProgramNameText(fn.Name))
+	}
 	expressionPc := make([]uint32, lineCount+1)
 	var code []ir.Instr
 	var fixups []jumpFixup

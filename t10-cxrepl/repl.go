@@ -104,6 +104,7 @@ func unsafeEval(code string) (out string) {
 	}
 
 	actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
+	actions.AST.CxIrState.StringPool.StringPoolFreeze()
 	//err = actions.AST.RunCompiled(0, nil);
 	err = execute.RunCompiled(actions.AST, 0, nil)
 	if err != nil {

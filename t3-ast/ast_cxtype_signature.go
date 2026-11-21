@@ -279,7 +279,7 @@ func (typeSignature *CXTypeSignature) GetTypeString(prgrm *CXProgram) string {
 
 			if elt.StructType != nil {
 				// then it's custom type
-				typeString = elt.StructType.Name
+				typeString = prgrm.CXProgramNameText(elt.StructType.Name)
 			} else {
 				// then it's native type
 				typeString = elt.Type.Name()
@@ -289,7 +289,7 @@ func (typeSignature *CXTypeSignature) GetTypeString(prgrm *CXProgram) string {
 				}
 			}
 		} else {
-			typeString = structDetails.StructType.Name
+			typeString = prgrm.CXProgramNameText(structDetails.StructType.Name)
 		}
 
 	case TYPE_POINTER_STRUCT:
@@ -306,7 +306,7 @@ func (typeSignature *CXTypeSignature) GetTypeString(prgrm *CXProgram) string {
 
 			if elt.StructType != nil {
 				// then it's custom type
-				typeString = elt.StructType.Name
+				typeString = prgrm.CXProgramNameText(elt.StructType.Name)
 			} else {
 				// then it's native type
 				typeString = elt.Type.Name()
@@ -316,7 +316,7 @@ func (typeSignature *CXTypeSignature) GetTypeString(prgrm *CXProgram) string {
 				}
 			}
 		} else {
-			typeString = structDetails.StructType.Name
+			typeString = prgrm.CXProgramNameText(structDetails.StructType.Name)
 		}
 	default:
 		panic("type is not known")
@@ -333,7 +333,7 @@ func (typeSignature *CXTypeSignature) GetValueTypeName(prgrm *CXProgram) string 
 	case TYPE_CXARGUMENT_DEPRECATE:
 		element := prgrm.GetCXArgFromArray(CXArgumentIndex(typeSignature.Meta)).GetAssignmentElement(prgrm)
 		if element.StructType != nil {
-			return element.StructType.Name
+			return prgrm.CXProgramNameText(element.StructType.Name)
 		}
 		return element.Type.Name()
 	case TYPE_ATOMIC, TYPE_POINTER_ATOMIC, TYPE_ARRAY_ATOMIC, TYPE_POINTER_ARRAY_ATOMIC,

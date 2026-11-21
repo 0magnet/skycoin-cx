@@ -178,6 +178,7 @@ func compileRunSources(tb testing.TB, names []string, sources []string) {
 		tb.Fatalf("%s: %v", names, err)
 	}
 	actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
+	actions.AST.CxIrState.StringPool.StringPoolFreeze()
 }
 
 // discardStdout points os.Stdout at the null device until the test ends.

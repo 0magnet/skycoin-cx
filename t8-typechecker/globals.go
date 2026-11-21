@@ -27,7 +27,7 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1510.
-			newPkg := ast.MakePackage(global.PackageID)
+			newPkg := ast.MakePackage(actions.AST.CXProgramNameIntern(global.PackageID))
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1511.
 			pkgIdx := actions.AST.AddPackage(newPkg)

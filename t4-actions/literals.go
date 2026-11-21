@@ -216,7 +216,7 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 	var result []ast.CXExpression
 
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		if strct, err := prgrm.GetStruct(structName, pkg.Name); err == nil {
+		if strct, err := prgrm.GetStruct(structName, prgrm.CXProgramNameText(pkg.Name)); err == nil {
 			for _, expr := range structFields {
 				if expr.Type == ast.CX_LINE {
 					continue

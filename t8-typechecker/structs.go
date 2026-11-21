@@ -23,7 +23,7 @@ func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDe
 
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1522.
-			newPkg := ast.MakePackage(strct.PackageID)
+			newPkg := ast.MakePackage(actions.AST.CXProgramNameIntern(strct.PackageID))
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1523.
 			pkgIdx := actions.AST.AddPackage(newPkg)
@@ -44,7 +44,7 @@ func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDe
 
 		// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 		// Now a constructor call, site S1525.
-		structCX := ast.MakeStruct(strct.StructName)
+		structCX := ast.MakeStruct(actions.AST.CXProgramNameIntern(strct.StructName))
 		structCX.Package = ast.CXPackageIndex(pkg.Index)
 
 		pkg = pkg.AddStruct(actions.AST, structCX)

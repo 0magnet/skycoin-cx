@@ -136,13 +136,13 @@ func TestTypeChecker_ParseDeclarationSpecifier(t *testing.T) {
 
 				// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 				// Now a constructor call, site S1530.
-				pkg := ast.MakePackage(tc.pkgName)
+				pkg := ast.MakePackage(actions.AST.CXProgramNameIntern(tc.pkgName))
 				// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 				// Now an arena insert, site S1531.
 				pkgIdx := actions.AST.AddPackage(pkg)
 				// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 				// Now a constructor call, site S1532.
-				strct := ast.MakeStruct(tc.strctName)
+				strct := ast.MakeStruct(actions.AST.CXProgramNameIntern(tc.strctName))
 				strct.Package = ast.CXPackageIndex(pkgIdx)
 				pkg = pkg.AddStruct(actions.AST, strct)
 
@@ -260,7 +260,7 @@ func TestTypeChecker_ParseParameterDeclaration(t *testing.T) {
 			var pkg *ast.CXPackage
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1535.
-			pkg = ast.MakePackage(tc.pkgName)
+			pkg = ast.MakePackage(actions.AST.CXProgramNameIntern(tc.pkgName))
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1536.
 			pkgIdx := actions.AST.AddPackage(pkg)
@@ -268,7 +268,7 @@ func TestTypeChecker_ParseParameterDeclaration(t *testing.T) {
 			if tc.strctName != "" {
 				// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 				// Now a constructor call, site S1537.
-				strct := ast.MakeStruct(tc.strctName)
+				strct := ast.MakeStruct(actions.AST.CXProgramNameIntern(tc.strctName))
 				strct.Package = ast.CXPackageIndex(pkgIdx)
 				pkg = pkg.AddStruct(actions.AST, strct)
 			}
@@ -364,7 +364,7 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 						panic(err)
 					}
 
-					if cxpackages.IsDefaultPackage(pkg.Name) {
+					if cxpackages.IsDefaultPackage(actions.AST.CXProgramNameText(pkg.Name)) {
 						continue
 					}
 
@@ -376,7 +376,7 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 							panic(err)
 						}
 
-						gotImport = impPkg.Name
+						gotImport = actions.AST.CXProgramNameText(impPkg.Name)
 
 						if gotImport == wantImport {
 							match = true
@@ -730,16 +730,16 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 						t.Log(err)
 					}
 
-					if cxpackages.IsDefaultPackage(pkg.Name) {
+					if cxpackages.IsDefaultPackage(actions.AST.CXProgramNameText(pkg.Name)) {
 						continue
 					}
 
 					for _, structIdx := range pkg.Structs {
 						gotStruct = program.CXStructs[structIdx]
 
-						if gotStruct.Name == wantStruct.Name &&
-							gotPkgName == wantStruct.Package {
-							ast3 += fmt.Sprintf("want %s %d. %s, got %s %d. %s\n", wantStruct.Package, wantStruct.Index, wantStruct.Name, gotPkgName, gotStruct.Index-firstStruct, gotStruct.Name)
+						if actions.AST.CXProgramNameText(gotStruct.Name) == wantStruct.Name &&
+							actions.AST.CXProgramNameText(gotPkgName) == wantStruct.Package {
+							ast3 += fmt.Sprintf("want %s %d. %s, got %s %d. %s\n", wantStruct.Package, wantStruct.Index, wantStruct.Name, actions.AST.CXProgramNameText(gotPkgName), gotStruct.Index-firstStruct, actions.AST.CXProgramNameText(gotStruct.Name))
 
 							if gotStruct.Index-firstStruct != wantStruct.Index || len(gotStruct.Fields) != len(wantStruct.Fields) {
 								ast3 += fmt.Sprintf("want %d fields, got %d fields", len(wantStruct.Fields), len(gotStruct.Fields))
@@ -919,7 +919,7 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 						// OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
 						// Now an arena getter, site S1553.
 						gotFunc = program.GetFunctionFromArray(gotFuncIdx)
-						gotFuncName = gotFunc.Name
+						gotFuncName = actions.AST.CXProgramNameText(gotFunc.Name)
 
 						var inps bytes.Buffer
 						var outs bytes.Buffer
@@ -932,7 +932,7 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 
 						if gotFuncName == wantFuncName &&
 							gotFunc.Index == wantFunc.Index &&
-							pkg.Name == wantFunc.Package {
+							actions.AST.CXProgramNameText(pkg.Name) == wantFunc.Package {
 							if gotFuncInputs == wantFuncInputs && gotFuncOutputs == wantFuncOutputs {
 								match = true
 							}
@@ -1234,7 +1234,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				if cxpackages.IsDefaultPackage(gotPkg.Name) {
+				if cxpackages.IsDefaultPackage(actions.AST.CXProgramNameText(gotPkg.Name)) {
 					continue
 				}
 
@@ -1263,7 +1263,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					}
 
 					if !match {
-						t.Errorf("want global %s %s %s, got %s %s %s", wantPkg.Name, wantGlobal.Name, wantGlobal.Type, gotPkg.Name, gotGlobalName, gotGlobalType)
+						t.Errorf("want global %s %s %s, got %s %s %s", wantPkg.Name, wantGlobal.Name, wantGlobal.Type, actions.AST.CXProgramNameText(gotPkg.Name), gotGlobalName, gotGlobalType)
 					}
 				}
 
@@ -1277,7 +1277,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					for _, structIdx := range gotPkg.Structs {
 						gotStruct = program.CXStructs[structIdx]
 
-						if gotStruct.Name == wantStruct.Name {
+						if actions.AST.CXProgramNameText(gotStruct.Name) == wantStruct.Name {
 
 							var fieldMatch int
 							for _, wantField := range wantStruct.Fields {
@@ -1314,7 +1314,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 					}
 					if !match {
-						t.Errorf("want %s %s, got %s %s\n%s", wantPkg.Name, wantStruct.Name, gotPkg.Name, gotStruct.Name, fields)
+						t.Errorf("want %s %s, got %s %s\n%s", wantPkg.Name, wantStruct.Name, actions.AST.CXProgramNameText(gotPkg.Name), actions.AST.CXProgramNameText(gotStruct.Name), fields)
 					}
 
 				}
@@ -1335,7 +1335,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 						// OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
 						// Now an arena getter, site S1557.
 						gotFunc := program.GetFunctionFromArray(gotFuncIdx)
-						gotFuncName = gotFunc.Name
+						gotFuncName = actions.AST.CXProgramNameText(gotFunc.Name)
 
 						var inps bytes.Buffer
 						var outs bytes.Buffer
@@ -1395,7 +1395,7 @@ func getFormattedParam(prgrm *ast.CXProgram, paramTypeSigIdxs []ast.CXTypeSignat
 
 			// TODO: Check if external pkg and pkg name shown are correct
 			if externalPkg {
-				name = fmt.Sprintf("%s.%s", pkg.Name, name)
+				name = fmt.Sprintf("%s.%s", prgrm.CXProgramNameText(pkg.Name), name)
 			}
 
 			buf.WriteString(fmt.Sprintf("%s %s", name, ast.GetFormattedType(prgrm, paramTypeSig)))

@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	types "github.com/skycoin/skycoin-cx/t0-types"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 )
 
 type CXStructIndex int
@@ -24,7 +25,7 @@ func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXTypeSignature
 		}
 	}
 
-	return nil, fmt.Errorf("field '%s' not found in struct '%s'", name, strct.Name)
+	return nil, fmt.Errorf("field '%s' not found in struct '%s'", name, prgrm.CXProgramNameText(strct.Name))
 }
 
 // ----------------------------------------------------------------
@@ -33,7 +34,7 @@ func (strct *CXStruct) GetField(prgrm *CXProgram, name string) (*CXTypeSignature
 // MakeStruct ...
 // OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 // Now a constructor, site S0261.
-func MakeStruct(name string) *CXStruct {
+func MakeStruct(name stringpool.StringGid) *CXStruct {
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a heap literal, site S0262.
 	return &CXStruct{
