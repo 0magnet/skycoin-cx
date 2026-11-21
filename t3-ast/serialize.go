@@ -219,9 +219,9 @@ func serializeExpression(prgrm *CXProgram, expr *CXExpression, s *SerializedCXPr
 		}
 
 		sExpr.ExpressionType = int64(expr.ExpressionType)
-		sExpr.FileName = cxLine.FileName
+		sExpr.FileName = prgrm.CXProgramSourceFileText(cxLine.FileName)
 		sExpr.LineNumber = int64(cxLine.LineNumber)
-		sExpr.LineStr = cxLine.LineStr
+		sExpr.LineStr = prgrm.CXProgramNameText(cxLine.LineStr)
 
 	case CX_ATOMIC_OPERATOR:
 		// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
@@ -1203,9 +1203,9 @@ func deserializeExpression(sExpr *serializedExpression, s *SerializedCXProgram, 
 	case int64(CX_LINE):
 		lineGid := prgrm.CxIrState.CXLineMng.CXLineAlloc()
 		cxLine := prgrm.CxIrState.CXLineMng.CXLineGet(lineGid)
-		cxLine.FileName = sExpr.FileName
+		cxLine.FileName = prgrm.CXProgramSourceFileIntern(sExpr.FileName)
 		cxLine.LineNumber = int(sExpr.LineNumber)
-		cxLine.LineStr = sExpr.LineStr
+		cxLine.LineStr = prgrm.CXProgramNameIntern(sExpr.LineStr)
 		expr.Index = int(objmodel.GidIndex(int64(lineGid)))
 		expr.Type = CX_LINE
 	case int64(CX_ATOMIC_OPERATOR):

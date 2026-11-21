@@ -849,7 +849,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0592.
-	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	exprCXLine := MakeCXLineExpressionCurrent(prgrm)
 	switch assignOp {
 	case ":=":
 		shortDeclExprs := shortDeclarationAssignment(prgrm, pkg, toExprs, fromExprs)

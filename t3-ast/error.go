@@ -49,7 +49,7 @@ func RuntimeErrorInfo(prgrm *CXProgram, r interface{}, printStack bool, defaultE
 
 	cxLine, _ := prgrm.GetPreviousCXLine(call.Operator.Expressions, call.Line)
 
-	fmt.Printf("%s, %s, %v", ErrorHeader(cxLine.FileName, cxLine.LineNumber), ErrorString(code), r)
+	fmt.Printf("%s, %s, %v", ErrorHeader(prgrm.CXProgramSourceFileText(cxLine.FileName), cxLine.LineNumber), ErrorString(code), r)
 
 	if printStack {
 		prgrm.PrintStack()

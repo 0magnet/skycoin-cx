@@ -10,13 +10,13 @@ import (
 )
 
 // VIOLATION: state outside State. Owner: t5-cxpartialparsing; moves to ParseMng in phase 2.
-var CurrentFileName string
+var CurrentFile ast.SourceFileGid
 
 func (yylex Lexer) Error(e string) {
 	if inREPL {
 		fmt.Printf("syntax error: %s\n", e)
 	} else {
-		fmt.Printf("%s:%d: syntax error: %s\n", CurrentFileName, yylex.l+1, e)
+		fmt.Printf("%s:%d: syntax error: %s\n", Program.CXProgramSourceFileText(CurrentFile), yylex.l+1, e)
 	}
 
 	yylex.stop()
@@ -40,7 +40,7 @@ func NewLexer(rdr io.Reader) *Lexer {
 		if ast.InREPL {
 			panic(fmt.Sprintf("[%d:%d] %s\n", l, c, msg))
 		}
-		println(ast.CompilationError(CurrentFileName, l), msg)
+		println(ast.CompilationError(Program.CXProgramSourceFileText(CurrentFile), l), msg)
 		os.Exit(types.CX_COMPILATION_ERROR)
 	})
 	return lx

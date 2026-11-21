@@ -36,7 +36,7 @@ type CXFunction struct {
 	Size types.Pointer // automatic memory size
 
 	// Debugging
-	FileName string
+	FileName SourceFileGid
 	FileLine int
 
 	// Used by the GC

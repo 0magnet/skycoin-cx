@@ -16,14 +16,14 @@ import (
 	"github.com/skycoin/skycoin-cx/t4-actions"
 )
 
-func ParseParameterDeclaration(prgrm *ast.CXProgram, parameterString []byte, pkg *ast.CXPackage, fileName string, lineno int) (*ast.CXArgument, error) {
+func ParseParameterDeclaration(prgrm *ast.CXProgram, parameterString []byte, pkg *ast.CXPackage, fileName ast.SourceFileGid, lineno int) (*ast.CXArgument, error) {
 	var parameterDeclaration *ast.CXArgument
 	reParameterDeclaration := regexp.MustCompile(`(\w+)\s+(.+)`)
 	parameterDeclarationTokens := reParameterDeclaration.FindSubmatch(parameterString)
 
 	// Check if the tokenized result is empty
 	if parameterDeclarationTokens == nil || len(parameterDeclarationTokens[0]) == 0 {
-		return nil, fmt.Errorf("%s: %d: parameter declaration error", filepath.Base(fileName), lineno)
+		return nil, fmt.Errorf("%s: %d: parameter declaration error", filepath.Base(prgrm.CXProgramSourceFileText(fileName)), lineno)
 	}
 
 	// Set the declarator or the name of the param
@@ -49,7 +49,7 @@ func ParseParameterDeclaration(prgrm *ast.CXProgram, parameterString []byte, pkg
 	return parameterDeclaration, nil
 }
 
-func ParseDeclarationSpecifier(prgrm *ast.CXProgram, declarationSpecifierByte []byte, fileName string, lineno int, declarationSpecifier *ast.CXArgument) (*ast.CXArgument, error) {
+func ParseDeclarationSpecifier(prgrm *ast.CXProgram, declarationSpecifierByte []byte, fileName ast.SourceFileGid, lineno int, declarationSpecifier *ast.CXArgument) (*ast.CXArgument, error) {
 	// Base case if all parts are parsed
 	if declarationSpecifierByte == nil || len(declarationSpecifierByte) == 0 {
 		return declarationSpecifier, nil
@@ -130,7 +130,7 @@ func ParseDeclarationSpecifier(prgrm *ast.CXProgram, declarationSpecifierByte []
 	}
 
 	// If bytes don't match any of the cases
-	return nil, fmt.Errorf("%v: %d: declaration specifier error", fileName, lineno)
+	return nil, fmt.Errorf("%v: %d: declaration specifier error", prgrm.CXProgramSourceFileText(fileName), lineno)
 }
 
 // Finds the SourceBytes from the files array

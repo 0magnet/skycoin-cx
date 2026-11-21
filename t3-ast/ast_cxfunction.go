@@ -24,7 +24,7 @@ func (cxf CXFunction) IsAtomic() bool {
 // Later, parameters and contents can be added.
 // OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 // Now a constructor, site S0133.
-func MakeFunction(prgrm *CXProgram, name stringpool.StringGid, fileName string, fileLine int) *CXFunction {
+func MakeFunction(prgrm *CXProgram, name stringpool.StringGid, fileName SourceFileGid, fileLine int) *CXFunction {
 	// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 	// Now a heap literal, site S0134.
 	return &CXFunction{
@@ -313,7 +313,7 @@ func MakeAtomicOperatorExpression(prgrm *CXProgram, op *CXNativeFunction) *CXExp
 // MakeCXLineExpression ...
 // OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 // Now a constructor, site S0153.
-func MakeCXLineExpression(prgrm *CXProgram, fileName string, lineNo int, lineStr string) *CXExpression {
+func MakeCXLineExpression(prgrm *CXProgram, fileName SourceFileGid, lineNo int, lineStr stringpool.StringGid) *CXExpression {
 	lineGid := prgrm.CxIrState.CXLineMng.CXLineAlloc()
 	line := prgrm.CxIrState.CXLineMng.CXLineGet(lineGid)
 	line.FileName = fileName

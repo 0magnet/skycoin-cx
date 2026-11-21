@@ -25,7 +25,7 @@ func TestCXPackageMethods(t *testing.T) {
 	if got := prgrm.CXProgramNameText(fullName); got != "Point.dist" {
 		t.Fatalf("method name %q, want Point.dist", got)
 	}
-	_, fnIdx := pkg.AddMethod(prgrm, MakeFunction(prgrm, fullName, "", 0), point, dist)
+	_, fnIdx := pkg.AddMethod(prgrm, MakeFunction(prgrm, fullName, SourceFileGidNil, 0), point, dist)
 
 	if got, err := pkg.GetMethod(prgrm, point, dist); err != nil || got != fnIdx {
 		t.Errorf("GetMethod(Point, dist) = %d, %v, want %d", got, err, fnIdx)

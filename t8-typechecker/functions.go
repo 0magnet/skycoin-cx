@@ -55,7 +55,7 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 		funcMethod := reFuncMethod.FindSubmatch(funcDeclarationLine)
 
 		if funcMethod != nil {
-			receiverArg, err := ParseParameterDeclaration(prgrm, funcMethod[1], pkg, fun.FileID, fun.LineNumber)
+			receiverArg, err := ParseParameterDeclaration(prgrm, funcMethod[1], pkg, prgrm.CXProgramSourceFileIntern(fun.FileID), fun.LineNumber)
 			if err != nil {
 				return err
 			}
@@ -68,14 +68,14 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 			var outputs []*ast.CXArgument
 
 			if funcMethod[2] != nil && len(funcMethod[2]) != 0 {
-				inputs, err = ParseFuncParameters(prgrm, funcMethod[2], pkg, fun.FileID, fun.LineNumber)
+				inputs, err = ParseFuncParameters(prgrm, funcMethod[2], pkg, prgrm.CXProgramSourceFileIntern(fun.FileID), fun.LineNumber)
 				if err != nil {
 					return err
 				}
 			}
 
 			if funcMethod[3] != nil && len(funcMethod[3]) != 0 {
-				outputs, err = ParseFuncParameters(prgrm, funcMethod[3], pkg, fun.FileID, fun.LineNumber)
+				outputs, err = ParseFuncParameters(prgrm, funcMethod[3], pkg, prgrm.CXProgramSourceFileIntern(fun.FileID), fun.LineNumber)
 				if err != nil {
 					return err
 				}
@@ -94,14 +94,14 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 			var outputs []*ast.CXArgument
 
 			if funcRegular[1] != nil && len(funcRegular[1]) != 0 {
-				inputs, err = ParseFuncParameters(prgrm, funcRegular[1], pkg, fun.FileID, fun.LineNumber)
+				inputs, err = ParseFuncParameters(prgrm, funcRegular[1], pkg, prgrm.CXProgramSourceFileIntern(fun.FileID), fun.LineNumber)
 				if err != nil {
 					return err
 				}
 			}
 
 			if funcRegular[2] != nil && len(funcRegular[2]) != 0 {
-				outputs, err = ParseFuncParameters(prgrm, funcRegular[2], pkg, fun.FileID, fun.LineNumber)
+				outputs, err = ParseFuncParameters(prgrm, funcRegular[2], pkg, prgrm.CXProgramSourceFileIntern(fun.FileID), fun.LineNumber)
 				if err != nil {
 					return err
 				}
@@ -114,7 +114,7 @@ func ParseFuncHeaders(files []*loader.File, funcs []declaration_extractor.FuncDe
 	return nil
 }
 
-func ParseFuncParameters(prgrm *ast.CXProgram, paramBytes []byte, pkg *ast.CXPackage, fileName string, lineno int) ([]*ast.CXArgument, error) {
+func ParseFuncParameters(prgrm *ast.CXProgram, paramBytes []byte, pkg *ast.CXPackage, fileName ast.SourceFileGid, lineno int) ([]*ast.CXArgument, error) {
 	var parameterList []*ast.CXArgument
 
 	tokens := bytes.Split(paramBytes, []byte(","))

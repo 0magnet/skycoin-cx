@@ -105,7 +105,7 @@ func WritePrimaryExprs(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, i
 	return []ast.CXExpression{*expr}
 }
 
-func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile string, lineNo int) {
+func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile ast.SourceFileGid, lineNo int) {
 	// Argument type
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1058.
@@ -114,13 +114,13 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1059.
-	_, argFldName := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Name"), types.STR, "", 0)
+	_, argFldName := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Name"), types.STR, ast.SourceFileGidNil, 0)
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1060.
-	_, argFldIndex := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Index"), types.I32, "", 0)
+	_, argFldIndex := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Index"), types.I32, ast.SourceFileGidNil, 0)
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1061.
-	_, argFldType := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Type"), types.STR, "", 0)
+	_, argFldType := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Type"), types.STR, ast.SourceFileGidNil, 0)
 
 	argStrct.AddField(prgrm, argFldName)
 	argStrct.AddField(prgrm, argFldIndex)
@@ -136,7 +136,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1063.
-	_, exprFldOperator := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Operator"), types.STR, "", 0)
+	_, exprFldOperator := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Operator"), types.STR, ast.SourceFileGidNil, 0)
 
 	exprStrct.AddField(prgrm, exprFldOperator)
 
@@ -150,17 +150,17 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1065.
-	_, fnFldName := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Name"), types.STR, "", 0)
+	_, fnFldName := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Name"), types.STR, ast.SourceFileGidNil, 0)
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1066.
-	_, fnFldInpSig := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("InputSignature"), types.STR, "", 0)
+	_, fnFldInpSig := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("InputSignature"), types.STR, ast.SourceFileGidNil, 0)
 	fnFldInpSig.Size = types.STR.Size()
 	fnFldInpSig = DeclarationSpecifiers(fnFldInpSig, []types.Pointer{0}, constants.DECL_SLICE)
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1067.
-	_, fnFldOutSig := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("OutputSignature"), types.STR, "", 0)
+	_, fnFldOutSig := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("OutputSignature"), types.STR, ast.SourceFileGidNil, 0)
 	fnFldOutSig.Size = types.STR.Size()
 	fnFldOutSig = DeclarationSpecifiers(fnFldOutSig, []types.Pointer{0}, constants.DECL_SLICE)
 
@@ -179,7 +179,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1069.
-	_, strctFldName := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Name"), types.STR, "", 0)
+	_, strctFldName := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Name"), types.STR, ast.SourceFileGidNil, 0)
 
 	strctStrct.AddField(prgrm, strctFldName)
 
@@ -193,7 +193,7 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1071.
-	_, pkgFldName := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Name"), types.STR, "", 0)
+	_, pkgFldName := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("Name"), types.STR, ast.SourceFileGidNil, 0)
 
 	pkgStrct.AddField(prgrm, pkgFldName)
 
@@ -207,10 +207,10 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1073.
-	_, callFldFnName := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("FnName"), types.STR, "", 0)
+	_, callFldFnName := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("FnName"), types.STR, ast.SourceFileGidNil, 0)
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1074.
-	_, callFldFnSize := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("FnSize"), types.I32, "", 0)
+	_, callFldFnSize := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("FnSize"), types.I32, ast.SourceFileGidNil, 0)
 
 	callStrct.AddField(prgrm, callFldFnName)
 	callStrct.AddField(prgrm, callFldFnSize)
@@ -225,10 +225,10 @@ func AffordanceStructs(prgrm *ast.CXProgram, pkg *ast.CXPackage, currentFile str
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1076.
-	_, prgrmFldCallCounter := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("CallCounter"), types.I32, "", 0)
+	_, prgrmFldCallCounter := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("CallCounter"), types.I32, ast.SourceFileGidNil, 0)
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1077.
-	_, prgrmFldFreeHeap := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("HeapUsed"), types.I64, "", 0)
+	_, prgrmFldFreeHeap := ast.MakeField(prgrm, prgrm.CXProgramNameIntern("HeapUsed"), types.I64, ast.SourceFileGidNil, 0)
 
 	// prgrmFldCaller := cxcore.MakeField("Caller", cxcore.TYPE_STRUCT, "", 0)
 	// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.

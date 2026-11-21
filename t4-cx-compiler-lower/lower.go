@@ -134,7 +134,7 @@ type state struct {
 	statePrintf      int
 	statePrintLine   int
 	stateImage       ir.Image
-	stateFiles       map[string]uint32
+	stateFiles       map[ast.SourceFileGid]uint32
 }
 
 // jumpFixup is a jump target still in expression indexes.
@@ -153,7 +153,7 @@ func Program(prgrm *ast.CXProgram) (ir.Image, []Failure) {
 		statePrgrm:     prgrm,
 		stateStackSize: pointerToUint32(prgrm.Stack.Size),
 		stateDataStart: pointerToUint32(prgrm.Data.StartsAt),
-		stateFiles:     map[string]uint32{},
+		stateFiles:     map[ast.SourceFileGid]uint32{},
 	}
 	s.stateDataEnd = s.stateDataStart + pointerToUint32(prgrm.Data.Size)
 	opcodeTableBuild(&s.stateTable)
@@ -949,14 +949,15 @@ func operandSet(in *ir.Instr, i int, lowered operand) {
 	}
 }
 
-// file returns the index of name in ImageFileNames, adding it when new.
-func (s *state) file(name string) uint32 {
-	if index, found := s.stateFiles[name]; found {
+// file returns the index of the path of file in ImageFileNames, adding it
+// when new.
+func (s *state) file(file ast.SourceFileGid) uint32 {
+	if index, found := s.stateFiles[file]; found {
 		return index
 	}
 	index := uint32(len(s.stateImage.ImageFileNames))
-	s.stateImage.ImageFileNames = append(s.stateImage.ImageFileNames, name)
-	s.stateFiles[name] = index
+	s.stateImage.ImageFileNames = append(s.stateImage.ImageFileNames, s.statePrgrm.CXProgramSourceFileText(file))
+	s.stateFiles[file] = index
 	return index
 }
 

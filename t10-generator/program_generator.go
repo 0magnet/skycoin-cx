@@ -39,7 +39,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0021.
-		exprCXLine := cxast.MakeCXLineExpression(prgrm, "", -1, "")
+		exprCXLine := cxast.MakeCXLineExpression(prgrm, cxast.SourceFileGidNil, -1, stringpool.StringGidNil)
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0022.
 		expr := cxast.MakeAtomicOperatorExpression(prgrm, op)
@@ -193,7 +193,7 @@ func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) types.Pointer {
 func newSlot(prgrm *cxast.CXProgram, fn *cxast.CXFunction, exprPos int, typ types.Code) cxast.CXTypeSignatureIndex {
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S0032.
-	_, arg := cxast.MakeField(prgrm, prgrm.CXProgramNameIntern(strconv.Itoa(exprPos)), typ, "", -1)
+	_, arg := cxast.MakeField(prgrm, prgrm.CXProgramNameIntern(strconv.Itoa(exprPos)), typ, cxast.SourceFileGidNil, -1)
 	arg.SetType(typ)
 	arg.Package = fn.Package
 	arg.Offset = slotOffset(prgrm, fn, exprPos)
@@ -259,7 +259,7 @@ func addNewExpression(prgrm *cxast.CXProgram, fnIdx cxast.CXFunctionIndex, expre
 	native := cxast.Natives[expressionType]
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0040.
-	newExprCXLine := cxast.MakeCXLineExpression(prgrm, "", -1, "")
+	newExprCXLine := cxast.MakeCXLineExpression(prgrm, cxast.SourceFileGidNil, -1, stringpool.StringGidNil)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0041.
 	newExpr := cxast.MakeAtomicOperatorExpression(prgrm, native)

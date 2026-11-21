@@ -30,7 +30,7 @@ import (
 func AddEmptyFunctionToPackage(cxprogram *cxast.CXProgram, packageName, functionName string) error {
 	// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 	// Now a constructor call, site S1602.
-	fn := cxast.MakeFunction(cxprogram, cxprogram.CXProgramNameIntern(functionName), "", -1)
+	fn := cxast.MakeFunction(cxprogram, cxprogram.CXProgramNameIntern(functionName), cxast.SourceFileGidNil, -1)
 
 	pkg, err := FindPackage(cxprogram, packageName)
 	if err != nil {
@@ -121,7 +121,7 @@ func AddNativeInputToFunction(cxprogram *cxast.CXProgram, packageName, functionN
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1604.
-	_, arg := cxast.MakeField(cxprogram, cxprogram.CXProgramNameIntern(inputName), inputType, "", -1)
+	_, arg := cxast.MakeField(cxprogram, cxprogram.CXProgramNameIntern(inputName), inputType, cxast.SourceFileGidNil, -1)
 	arg.SetType(types.Code(inputType))
 	arg.Package = cxast.CXPackageIndex(pkg.Index)
 	fn.AddInput(cxprogram, arg)
@@ -202,7 +202,7 @@ func AddNativeOutputToFunction(cxprogram *cxast.CXProgram, packageName, function
 	}
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1605.
-	_, arg := cxast.MakeField(cxprogram, cxprogram.CXProgramNameIntern(outputName), outputType, "", -1)
+	_, arg := cxast.MakeField(cxprogram, cxprogram.CXProgramNameIntern(outputName), outputType, cxast.SourceFileGidNil, -1)
 	arg.SetType(types.Code(outputType))
 	arg.Package = cxast.CXPackageIndex(pkg.Index)
 	fn.AddOutput(cxprogram, arg)

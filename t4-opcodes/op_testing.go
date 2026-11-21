@@ -81,9 +81,9 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 		cxLine, _ := prgrm.GetPreviousCXLine(call.Operator.Expressions, call.Line)
 
 		if message != "" {
-			fmt.Printf("%s: %d: result was not equal to the expected value; %s\n", cxLine.FileName, cxLine.LineNumber, message)
+			fmt.Printf("%s: %d: result was not equal to the expected value; %s\n", prgrm.CXProgramSourceFileText(cxLine.FileName), cxLine.LineNumber, message)
 		} else {
-			fmt.Printf("%s: %d: result was not equal to the expected value\n", cxLine.FileName, cxLine.LineNumber)
+			fmt.Printf("%s: %d: result was not equal to the expected value\n", prgrm.CXProgramSourceFileText(cxLine.FileName), cxLine.LineNumber)
 		}
 	}
 
@@ -114,7 +114,7 @@ func panicIf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, 
 		// expr := call.Operator.Expressions[call.Line]
 		cxLine, _ := prgrm.GetPreviousCXLine(call.Operator.Expressions, call.Line)
 
-		fmt.Printf("%s : %d, %s\n", cxLine.FileName, cxLine.LineNumber, str)
+		fmt.Printf("%s : %d, %s\n", prgrm.CXProgramSourceFileText(cxLine.FileName), cxLine.LineNumber, str)
 		panic(types.CX_ASSERT)
 	}
 }

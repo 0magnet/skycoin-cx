@@ -1,7 +1,9 @@
 package ast
 
+import stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
+
 type CXLine struct {
-	FileName   string
+	FileName   SourceFileGid
 	LineNumber int
-	LineStr    string
+	LineStr    stringpool.StringGid
 }

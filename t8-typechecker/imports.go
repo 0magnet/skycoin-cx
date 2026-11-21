@@ -70,7 +70,7 @@ func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
 
 		actions.AST.SelectPackage(pkgNameGid)
 
-		actions.DeclareImport(actions.AST, imprt.ImportName, imprt.FileID, imprt.LineNumber)
+		actions.DeclareImport(actions.AST, imprt.ImportName, actions.AST.CXProgramSourceFileIntern(imprt.FileID), imprt.LineNumber)
 
 	}
 

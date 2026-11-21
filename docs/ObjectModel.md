@@ -52,6 +52,7 @@ free one.
 | `CXTypeSignature_Struct` | `0x0D` | `CxIrState.CXTypeSignature_StructMng` since #321 | `int`, the slot index |
 | `CXCall` | `0x0E` | `CXProgram.CallStack` | `types.Pointer` (`CallCounter`) |
 | `String` | `0x0F` | `CxIrState.StringPool`, see [String pool](#string-pool) | `StringGid` |
+| `SourceFile` | `0x10` | `CxIrState.SourceFileMng`, see [Source files](#source-files) | `SourceFileGid` |
 
 Tags `0x00` and `0x80` to `0xFF` are never used, see
 [Gid](#gid-the-generational-index).
@@ -477,6 +478,22 @@ after the freeze too.
 `CXPackage.Name`, `CXFunction.Name` and `CXStruct.Name` are `StringGid`.
 The other name fields, and the string keyed maps of packages, functions
 and structs, are still strings until the later steps of #413.
+
+### Source files
+
+`SourceFileMng` (`t3-ast`, #413) holds the path of every source file once,
+as a `StringGid`. Like the string pool it is written by hand, because a
+file is never released. `SourceFileGid` has the Gid layout with type tag
+`0x10`, every slot keeps `GidGenerationFirst`, and `SourceFileGidNil` is no
+file. `SourceFileIntern(path)` returns the existing Gid for an equal path
+Gid. A program has few files, so it scans the slots instead of keeping a
+map.
+
+`CXLine.FileName`, `CXArgumentDebug.FileName` and `CXFunction.FileName`
+are `SourceFileGid`, and `CXLine.LineStr` is a `StringGid`. The parsers
+register a file once when they start it. Diagnostics, `PrintStack`,
+lowering, the serializer and the REPL take the path as text through
+`CXProgramSourceFileText`. The serialized format still writes the text.
 
 ## Rules
 

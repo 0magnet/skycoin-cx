@@ -2402,14 +2402,14 @@ yydefault:
 					outTypeSig := actions.AST.GetCXTypeSignatureFromArray(outs[0])
 					println(ast.CompilationError(ast.CXArgumentDebugFileLine(actions.AST, outTypeSig.ArgDetails)), "invalid expression")
 				} else {
-					println(ast.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
+					println(ast.CompilationError(actions.AST.CXProgramSourceFileText(actions.CurrentFile), actions.LineNo), "invalid expression")
 				}
 				yyVAL.expressions = nil
 			} else if len(yyDollar[1].expressions) > 0 && yyDollar[1].expressions[0].Type != ast.CX_LINE {
 				// test() and assert report the CX_LINE before them (skycoin-cx#254)
 				// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 				// Also state.CXExpressionMng (manager storage) or []CXExpressionGid, phase 4 #346. Site S1500 S1501.
-				yyVAL.expressions = append([]ast.CXExpression{*ast.MakeCXLineExpression(actions.AST, actions.CurrentFile, actions.LineNo, actions.LineStr)}, yyDollar[1].expressions...)
+				yyVAL.expressions = append([]ast.CXExpression{*actions.MakeCXLineExpressionCurrent(actions.AST)}, yyDollar[1].expressions...)
 			} else {
 				yyVAL.expressions = yyDollar[1].expressions
 			}
@@ -2551,7 +2551,7 @@ yydefault:
 
 			// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 			// Now a constructor call, site S1502.
-			exprCXLine := ast.MakeCXLineExpression(actions.AST, actions.CurrentFile, actions.LineNo, actions.LineStr)
+			exprCXLine := actions.MakeCXLineExpressionCurrent(actions.AST)
 			// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 			// Now a constructor call, site S1503.
 			expr := ast.MakeAtomicOperatorExpression(actions.AST, ast.Natives[constants.OP_GOTO])

@@ -30,7 +30,7 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 	// PubKey
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1364.
-	_, pubkeyFld := ast.MakeArgument(prgrm, prgrm.CXProgramNameIntern("PubKey"), "", -1)
+	_, pubkeyFld := ast.MakeArgument(prgrm, prgrm.CXProgramNameIntern("PubKey"), ast.SourceFileGidNil, -1)
 	pubkeyFld.SetType(types.UI8).SetPackage(cPkg)
 	pubkeyFld.DeclarationSpecifiers = append(pubkeyFld.DeclarationSpecifiers, constants.DECL_ARRAY)
 	// pubkeyFld.IsArray = true
@@ -40,7 +40,7 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 	// SecKey
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1365.
-	_, seckeyFld := ast.MakeArgument(prgrm, prgrm.CXProgramNameIntern("SecKey"), "", -1)
+	_, seckeyFld := ast.MakeArgument(prgrm, prgrm.CXProgramNameIntern("SecKey"), ast.SourceFileGidNil, -1)
 	seckeyFld.SetType(types.UI8).SetPackage(cPkg)
 	seckeyFld.DeclarationSpecifiers = append(seckeyFld.DeclarationSpecifiers, constants.DECL_ARRAY)
 	// seckeyFld.IsArray = true

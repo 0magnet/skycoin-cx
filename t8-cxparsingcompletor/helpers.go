@@ -55,7 +55,7 @@ func NewLexer(rdr io.Reader) *Lexer {
 		if ast.InREPL {
 			panic(fmt.Sprintf("[%d:%d] %s\n", l, c, msg))
 		}
-		println(ast.CompilationError(actions.CurrentFile, l), msg)
+		println(ast.CompilationError(actions.AST.CXProgramSourceFileText(actions.CurrentFile), l), msg)
 		os.Exit(types.CX_COMPILATION_ERROR)
 	})
 	return lx

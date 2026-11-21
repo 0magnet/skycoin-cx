@@ -13,12 +13,12 @@ import (
 	"time"
 
 	"github.com/skycoin/skycoin-cx/t2-globals"     // thin: only FoundCompileErrors; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-ast"         // thin: only InREPL; no depth gain
+	"github.com/skycoin/skycoin-cx/t3-ast"         // thin: only InREPL, SourceFileGidNil; no depth gain
 	"github.com/skycoin/skycoin-cx/t4-execute"     // thin: only RunCompiled; no depth gain
 	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: only MakeProgram, RegisterPackages; no depth gain
 
 	"github.com/skycoin/skycoin-cx/t4-actions"                               // thin: only AST, LineNo; no depth gain
-	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing"     // thin: only Parse, Program; no depth gain
+	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing"     // thin: only CurrentFile, Parse, Program; no depth gain
 	cxparsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only Lexer, NewLexer, Parse; no depth gain
 	cxparsering "github.com/skycoin/skycoin-cx/t9-cxparsing"                 // thin: only AddInitFunction, ErrCompilation; could move AddInitFunction to t4-actions
 )
@@ -74,6 +74,9 @@ func unsafeEval(code string) (out string) {
 	}()
 
 	actions.LineNo = 0
+	// Eval code has no file, and a file Gid of an earlier program is stale.
+	actions.CurrentFile = ast.SourceFileGidNil
+	cxpartialparsing.CurrentFile = ast.SourceFileGidNil
 	globals.FoundCompileErrors = false
 
 	// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.

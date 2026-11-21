@@ -13,7 +13,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t2-globals"   // thin: only FoundCompileErrors, SRCPATH; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
-	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing" // thin: only CurrentFileName, Parse, Program; no depth gain
+	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing" // thin: only CurrentFile, Parse, Program; no depth gain
 )
 
 // preliminarystage performs a first pass for the CX cxgo. Globals, packages and
@@ -280,7 +280,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 						// then it hasn't been added
 						// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 						// Now a constructor call, site S1627.
-						_, arg := ast.MakeArgument(actions.AST, actions.AST.CXProgramNameIntern(match[len(match)-1]), "", 0)
+						_, arg := ast.MakeArgument(actions.AST, actions.AST.CXProgramNameIntern(match[len(match)-1]), ast.SourceFileGidNil, 0)
 						arg.Offset = types.InvalidPointer
 						arg.Package = ast.CXPackageIndex(prePkg.Index)
 						argIdx := ast.CXArgumentIndex(arg.Index)
@@ -300,8 +300,9 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 		actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
 		profiling.StartProfile(srcNames[i])
 		source = source + "\n"
+		cxpartialparsing.CurrentFile = ast.SourceFileGidNil
 		if len(srcNames) > 0 {
-			cxpartialparsing.CurrentFileName = srcNames[i]
+			cxpartialparsing.CurrentFile = actions.AST.CXProgramSourceFileIntern(srcNames[i])
 		}
 		/*
 			passone

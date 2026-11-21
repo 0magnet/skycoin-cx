@@ -61,7 +61,7 @@ func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDe
 
 			structFieldLine := src[strctFieldDec.StartOffset : strctFieldDec.StartOffset+strctFieldDec.Length]
 
-			structFieldSpecifier, err := ParseParameterDeclaration(prgrm, structFieldLine, pkg, strct.FileID, strctFieldDec.LineNumber)
+			structFieldSpecifier, err := ParseParameterDeclaration(prgrm, structFieldLine, pkg, prgrm.CXProgramSourceFileIntern(strct.FileID), strctFieldDec.LineNumber)
 			if err != nil {
 				return err
 			}

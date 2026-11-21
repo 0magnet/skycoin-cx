@@ -49,9 +49,11 @@ var objmodelgenObjects = []objmodelgenObject{
 }
 
 // objmodelgenTagOnlyObjects are Gid types with a tag and a name in the table
-// but a hand written manager outside t3-ast, such as the string pool of #413.
+// but a hand written manager, such as the string pool and the source files
+// of #413.
 var objmodelgenTagOnlyObjects = []objmodelgenObject{
 	{Obj: "String", TypeTag: 0x0F},
+	{Obj: "SourceFile", TypeTag: 0x10},
 }
 
 // objmodelgenHeader starts every generated file, and -check finds stale

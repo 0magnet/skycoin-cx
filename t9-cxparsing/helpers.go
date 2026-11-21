@@ -3,7 +3,7 @@ package cxparsering
 import (
 	"bytes"
 
-	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing"     // thin: only CurrentFileName, Parse, Program; no depth gain
+	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing"     // thin: only CurrentFile, Parse, Program; no depth gain
 	cxparsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only NewLexer, Parse; the pass two parser, keep
 )
 
