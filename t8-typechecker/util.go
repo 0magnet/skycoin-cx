@@ -11,6 +11,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File; no depth gain
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 )
@@ -28,10 +29,10 @@ func ParseParameterDeclaration(prgrm *ast.CXProgram, parameterString []byte, pkg
 	// Set the declarator or the name of the param
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1560.
-	_, declarator := ast.MakeArgument(prgrm, "", fileName, lineno)
+	_, declarator := ast.MakeArgument(prgrm, stringpool.StringGidNil, fileName, lineno)
 	declarator.SetType(types.UNDEFINED)
 	declarator.Package = ast.CXPackageIndex(pkg.Index)
-	declarator.Name = string(parameterDeclarationTokens[1])
+	declarator.Name = prgrm.CxIrState.StringPool.StringPoolIntern(parameterDeclarationTokens[1])
 
 	//Set the decalaration type
 	parameterDeclaration, err := ParseDeclarationSpecifier(prgrm, parameterDeclarationTokens[2], fileName, lineno, parameterDeclaration)

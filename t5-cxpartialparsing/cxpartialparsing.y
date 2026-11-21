@@ -5,6 +5,7 @@
 	    "github.com/skycoin/skycoin-cx/t3-ast"
 	    "github.com/skycoin/skycoin-cx/t1-constants"
 	    "github.com/skycoin/skycoin-cx/t0-types"
+	    stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 		"github.com/skycoin/skycoin-cx/t4-actions"
 	)
 
@@ -341,9 +342,9 @@ direct_declarator:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 				// Now a constructor call, site S1404.
-				_, arg := ast.MakeArgument(Program, "", actions.CurrentFile, actions.LineNo)
+				_, arg := ast.MakeArgument(Program, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
 				arg.SetType(types.UNDEFINED)
-				arg.Name = $1
+				arg.Name = Program.CXProgramNameIntern($1)
 				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
 			} else {
@@ -396,7 +397,7 @@ declaration_specifiers:
 		{
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now a constructor call, site S1407.
-			_, arg := ast.MakeArgument(Program, "", actions.CurrentFile, actions.LineNo)
+			_, arg := ast.MakeArgument(Program, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
 			arg.SetType(types.FUNC)
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1408.

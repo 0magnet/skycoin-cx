@@ -68,7 +68,7 @@ func runSysInitFunc(cxprogram *ast.CXProgram, mod *ast.CXPackage) error {
 func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
 	if osPkg, err := cxprogram.SelectPackage(constants.OS_PKG); err == nil {
 		argsOffset := types.Pointer(0)
-		if osGlbl, err := osPkg.GetGlobal(cxprogram, constants.OS_ARGS); err == nil {
+		if osGlbl, err := osPkg.GetGlobal(cxprogram, cxprogram.CxIrState.CxIrStateNameOsArgs); err == nil {
 			for _, arg := range args {
 				argOffset := types.AllocWrite_obj_data(cxprogram, cxprogram.Memory, []byte(arg))
 

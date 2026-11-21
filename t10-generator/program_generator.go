@@ -9,6 +9,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	cxconstants "github.com/skycoin/skycoin-cx/t1-constants"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	cxast "github.com/skycoin/skycoin-cx/t3-ast"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"                           // thin: only MakeProgram, RegisterPackages; no depth gain
 	cxparsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only InitCXCore; no depth gain
@@ -192,7 +193,7 @@ func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) types.Pointer {
 func newSlot(prgrm *cxast.CXProgram, fn *cxast.CXFunction, exprPos int, typ types.Code) cxast.CXTypeSignatureIndex {
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S0032.
-	_, arg := cxast.MakeField(prgrm, strconv.Itoa(exprPos), typ, "", -1)
+	_, arg := cxast.MakeField(prgrm, prgrm.CXProgramNameIntern(strconv.Itoa(exprPos)), typ, "", -1)
 	arg.SetType(typ)
 	arg.Package = fn.Package
 	arg.Offset = slotOffset(prgrm, fn, exprPos)
@@ -219,7 +220,7 @@ func findArgOptions(prgrm *cxast.CXProgram, fn *cxast.CXFunction, argTypeToFind 
 	for _, idx := range fn.GetInputs(prgrm) {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0037.
-		if sigType(prgrm, idx) == argTypeToFind && prgrm.GetCXTypeSignatureFromArray(idx).Name != "" {
+		if sigType(prgrm, idx) == argTypeToFind && prgrm.GetCXTypeSignatureFromArray(idx).Name != stringpool.StringGidNil {
 			options = append(options, idx)
 		}
 	}
@@ -231,7 +232,7 @@ func findArgOptions(prgrm *cxast.CXProgram, fn *cxast.CXFunction, argTypeToFind 
 		outputs := getAtomicOp(prgrm, expr.Index).GetOutputs(prgrm)
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0038.
-		if len(outputs) > 0 && sigType(prgrm, outputs[0]) == argTypeToFind && prgrm.GetCXTypeSignatureFromArray(outputs[0]).Name != "" {
+		if len(outputs) > 0 && sigType(prgrm, outputs[0]) == argTypeToFind && prgrm.GetCXTypeSignatureFromArray(outputs[0]).Name != stringpool.StringGidNil {
 			options = append(options, outputs[0])
 		}
 	}

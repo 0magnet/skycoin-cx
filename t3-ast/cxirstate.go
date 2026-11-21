@@ -20,6 +20,7 @@ type CxIrState struct {
 	// frozen pool can still be compared with them.
 	CxIrStateNameMain         stringpool.StringGid
 	CxIrStateNameSysInit      stringpool.StringGid
+	CxIrStateNameOsArgs       stringpool.StringGid
 	CXProgramMng              CXProgramMng
 	CXPackageMng              CXPackageMng
 	CXFunctionMng             CXFunctionMng
@@ -51,6 +52,7 @@ func (state *CxIrState) CxIrStateInit() {
 	state.StringPool.StringPoolInit(1024, 16384)
 	state.CxIrStateNameMain = state.StringPool.StringPoolIntern([]byte(constants.MAIN_PKG))
 	state.CxIrStateNameSysInit = state.StringPool.StringPoolIntern([]byte(constants.SYS_INIT_FUNC))
+	state.CxIrStateNameOsArgs = state.StringPool.StringPoolIntern([]byte(constants.OS_ARGS))
 	state.CXProgramMng.CXProgramMngInit(1, false)
 	state.CXPackageMng.CXPackageMngInit(64, true)
 	state.CXFunctionMng.CXFunctionMngInit(64, true)

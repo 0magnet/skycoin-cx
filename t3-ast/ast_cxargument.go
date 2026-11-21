@@ -3,6 +3,7 @@ package ast
 import (
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t2-globals" // thin: only DBG_GOLANG_STACK_TRACE, FoundCompileErrors, HeapOffset; core globals, keep
 )
 
@@ -135,7 +136,7 @@ func MakeStructParameter(prgrm *CXProgram, pkgName, strctName, argName string) *
 	// Natives are shared by every program, so this argument belongs to none.
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S0073.
-	arg := nativeArgument(argName).SetType(types.STRUCT)
+	arg := nativeArgument(prgrm.CXProgramNameIntern(argName)).SetType(types.STRUCT)
 	// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 	arg.Size = strct.GetStructSize(prgrm)
 	arg.StructType = strct
@@ -172,7 +173,7 @@ func Param(typeCode types.Code) *CXArgument {
 	// Natives are shared by every program, so this argument belongs to none.
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S0077.
-	arg := nativeArgument("").SetType(typeCode)
+	arg := nativeArgument(stringpool.StringGidNil).SetType(typeCode)
 	// arg.IsLocalDeclaration = true
 	return arg
 }
@@ -182,7 +183,7 @@ func Param(typeCode types.Code) *CXArgument {
 // record.
 // OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 // Now a constructor, site S0078.
-func nativeArgument(name string) *CXArgument {
+func nativeArgument(name stringpool.StringGid) *CXArgument {
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a heap literal, site S0079.
 	return &CXArgument{
@@ -194,7 +195,7 @@ func nativeArgument(name string) *CXArgument {
 // MakeArgument allocates an argument named name in the CXArgumentMng of
 // prgrm, with a debug record for fileName and fileLine, and returns its Gid
 // and the pointer to fill it through.
-func MakeArgument(prgrm *CXProgram, name string, fileName string, fileLine int) (CXArgumentGid, *CXArgument) {
+func MakeArgument(prgrm *CXProgram, name stringpool.StringGid, fileName string, fileLine int) (CXArgumentGid, *CXArgument) {
 	argDetailsGid := argumentDebugAlloc(prgrm, fileName, fileLine)
 	gid, arg := prgrm.AllocCXArgument()
 	arg.Name = name
@@ -204,7 +205,7 @@ func MakeArgument(prgrm *CXProgram, name string, fileName string, fileLine int) 
 }
 
 // MakeField allocates an argument of type typeCode like MakeArgument.
-func MakeField(prgrm *CXProgram, name string, typeCode types.Code, fileName string, fileLine int) (CXArgumentGid, *CXArgument) {
+func MakeField(prgrm *CXProgram, name stringpool.StringGid, typeCode types.Code, fileName string, fileLine int) (CXArgumentGid, *CXArgument) {
 	gid, arg := MakeArgument(prgrm, name, fileName, fileLine)
 	arg.Type = typeCode
 	return gid, arg
@@ -212,7 +213,7 @@ func MakeField(prgrm *CXProgram, name string, typeCode types.Code, fileName stri
 
 // MakeGlobal allocates a global of type typeCode like MakeArgument and gives
 // it the next offset in the heap segment.
-func MakeGlobal(prgrm *CXProgram, name string, typeCode types.Code, fileName string, fileLine int) (CXArgumentGid, *CXArgument) {
+func MakeGlobal(prgrm *CXProgram, name stringpool.StringGid, typeCode types.Code, fileName string, fileLine int) (CXArgumentGid, *CXArgument) {
 	gid, global := MakeField(prgrm, name, typeCode, fileName, fileLine)
 	global.Size = typeCode.Size()
 	global.Offset = globals.HeapOffset

@@ -6,6 +6,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	objmodel "github.com/skycoin/skycoin-cx/t1-cx-core-objmodel"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 )
 
 type StackSegmentStruct struct {
@@ -130,7 +131,7 @@ func (cxprogram *CXProgram) AddNativeFunctionInArray(fn *CXNativeFunction) CXFun
 		// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 		// Now a heap literal, site S0196.
 		Outputs:        &CXStruct{},
-		LocalVariables: []string{},
+		LocalVariables: []stringpool.StringGid{},
 	}
 
 	// Add inputs to cx arg array

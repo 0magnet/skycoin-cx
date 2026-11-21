@@ -1,5 +1,7 @@
 package ast
 
+import stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
+
 // ----------------------------------------------------------------
 //                             `CXAtomicOperator` Getters
 
@@ -107,7 +109,7 @@ func (op *CXAtomicOperator) GetOutputs(prgrm *CXProgram) []CXTypeSignatureIndex 
 // }
 
 // AddLabel ...
-func (op *CXAtomicOperator) AddLabel(lbl string) *CXAtomicOperator {
+func (op *CXAtomicOperator) AddLabel(lbl stringpool.StringGid) *CXAtomicOperator {
 	op.Label = lbl
 	return op
 }

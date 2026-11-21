@@ -3,6 +3,7 @@ package actions
 import (
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -60,7 +61,7 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 func DeclarationSpecifiersBasic(prgrm *ast.CXProgram, typeCode types.Code) *ast.CXArgument {
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S0605.
-	_, arg := ast.MakeArgument(prgrm, "", CurrentFile, LineNo)
+	_, arg := ast.MakeArgument(prgrm, stringpool.StringGidNil, CurrentFile, LineNo)
 	arg.SetType(typeCode)
 	if typeCode == types.AFF {
 		// equivalent to slice of strings
@@ -106,7 +107,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S0606.
-	_, arg := ast.MakeArgument(prgrm, "", currentFile, lineNo)
+	_, arg := ast.MakeArgument(prgrm, stringpool.StringGidNil, currentFile, lineNo)
 	arg.Type = types.STRUCT
 	arg.StructType = strct
 	arg.Size = strct.GetStructSize(prgrm)

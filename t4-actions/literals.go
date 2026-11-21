@@ -3,6 +3,7 @@ package actions
 import (
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -22,7 +23,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 		panic(err)
 	}
 
-	symName := generateTempVarName(constants.LOCAL_PREFIX)
+	symName := generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0980.
@@ -118,7 +119,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 
 					// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 					// Now a constructor call, site S0994.
-					_, out := ast.MakeArgument(prgrm, generateTempVarName(constants.LOCAL_PREFIX), exprCXLine.FileName, exprCXLine.LineNumber)
+					_, out := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), exprCXLine.FileName, exprCXLine.LineNumber)
 					out.SetType(outArg.Type)
 					out.PointerTargetType = outArg.PointerTargetType
 					out.StructType = outArg.StructType
@@ -129,7 +130,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 					outTypeSigIdx = ast.AllocCXTypeSignatureOfCXArgBuilder(prgrm, out)
 				} else if outTypeSig.Type == ast.TYPE_ATOMIC || outTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 					_, newTypeSig := prgrm.AllocCXTypeSignatureCopy(outTypeSig)
-					newTypeSig.Name = generateTempVarName(constants.LOCAL_PREFIX)
+					newTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 					newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 					outTypeSigIdx = newTypeSig.Index
 				} else {
@@ -165,7 +166,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 		}
 	}
 
-	symNameOutput := generateTempVarName(constants.LOCAL_PREFIX)
+	symNameOutput := generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1002.
@@ -214,6 +215,7 @@ func SliceLiteralExpression(prgrm *ast.CXProgram, typeCode types.Code, exprs []a
 //	 structFields - fields of the struct.
 func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields []ast.CXExpression) []ast.CXExpression {
 	var result []ast.CXExpression
+	structNameGid := prgrm.CXProgramNameIntern(structName)
 
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		if strct, err := prgrm.GetStruct(structName, prgrm.CXProgramNameText(pkg.Name)); err == nil {
@@ -265,8 +267,8 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 					prgrm.GetCXArg(ast.CXArgumentIndex(cxAtomicOpOutputIdx)).Size = strct.GetStructSize(prgrm)
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1748.
-					prgrm.GetCXArg(ast.CXArgumentIndex(cxAtomicOpOutputIdx)).Name = structName
-					cxAtomicOpOutputTypeSig.Name = structName
+					prgrm.GetCXArg(ast.CXArgumentIndex(cxAtomicOpOutputIdx)).Name = structNameGid
+					cxAtomicOpOutputTypeSig.Name = structNameGid
 
 					fieldIdx := ast.CXArgumentIndex(field.Index)
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
@@ -287,7 +289,7 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 
 					newCXArg.StructType = strct
 					newCXArg.Size = strct.GetStructSize(prgrm)
-					newCXArg.Name = structName
+					newCXArg.Name = structNameGid
 
 					// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 					// Now a constructor call, site S1015.
@@ -299,7 +301,7 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 					newCXArg.Fields = append(newCXArg.Fields, fieldIdx)
 					newCXArgIdx := ast.CXArgumentIndex(newCXArg.Index)
 
-					cxAtomicOpOutputTypeSig.Name = structName
+					cxAtomicOpOutputTypeSig.Name = structNameGid
 					cxAtomicOpOutputTypeSig.Type = ast.TYPE_CXARGUMENT_DEPRECATE
 					cxAtomicOpOutputTypeSig.Meta = int(newCXArgIdx)
 				} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
@@ -318,7 +320,7 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 
 					newCXArg.StructType = strct
 					newCXArg.Size = strct.GetStructSize(prgrm)
-					newCXArg.Name = structName
+					newCXArg.Name = structNameGid
 
 					// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 					// Now a constructor call, site S1020.
@@ -330,7 +332,7 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 					newCXArg.Fields = append(newCXArg.Fields, fieldIdx)
 					newCXArgIdx := ast.CXArgumentIndex(newCXArg.Index)
 
-					cxAtomicOpOutputTypeSig.Name = structName
+					cxAtomicOpOutputTypeSig.Name = structNameGid
 					cxAtomicOpOutputTypeSig.Type = ast.TYPE_CXARGUMENT_DEPRECATE
 					cxAtomicOpOutputTypeSig.Meta = int(newCXArgIdx)
 				} else {
@@ -360,6 +362,7 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, structFields 
 //	 structFields - fields of the struct.
 func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, structName string, structFields []ast.CXExpression) []ast.CXExpression {
 	var result []ast.CXExpression
+	structNameGid := prgrm.CXProgramNameIntern(structName)
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		if _, err := pkg.GetImport(prgrm, importName); err == nil {
 			if strct, err := prgrm.GetStruct(structName, importName); err == nil {
@@ -381,7 +384,7 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 						cxAtomicOpOutputIdx := cxAtomicOpOutputTypeSig.Meta
 						// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 						// Now a constructor call, site S1025.
-						_, field := ast.MakeArgument(prgrm, "", CurrentFile, LineNo)
+						_, field := ast.MakeArgument(prgrm, stringpool.StringGidNil, CurrentFile, LineNo)
 						field.SetType(types.IDENTIFIER)
 						// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 						// Now an arena getter, site S1750.
@@ -402,8 +405,8 @@ func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, struc
 						prgrm.GetCXArg(ast.CXArgumentIndex(cxAtomicOpOutputIdx)).Size = strct.GetStructSize(prgrm)
 						// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 						// Now an arena getter, site S1754.
-						prgrm.GetCXArg(ast.CXArgumentIndex(cxAtomicOpOutputIdx)).Name = structName
-						cxAtomicOpOutputTypeSig.Name = structName
+						prgrm.GetCXArg(ast.CXArgumentIndex(cxAtomicOpOutputIdx)).Name = structNameGid
+						cxAtomicOpOutputTypeSig.Name = structNameGid
 
 						fieldIdx := ast.CXArgumentIndex(field.Index)
 						// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
@@ -447,7 +450,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 		panic(err)
 	}
 
-	symName := generateTempVarName(constants.LOCAL_PREFIX)
+	symName := generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1027.
@@ -557,7 +560,7 @@ func ArrayLiteralExpression(prgrm *ast.CXProgram, arraySizes []types.Pointer, ty
 		}
 	}
 
-	symNameOutput := generateTempVarName(constants.LOCAL_PREFIX)
+	symNameOutput := generateTempVarName(prgrm, constants.LOCAL_PREFIX)
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1042.
@@ -616,9 +619,9 @@ func StructLiteralFields(prgrm *ast.CXProgram, structName string) ast.CXExpressi
 
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S1048.
-	_, arg := ast.MakeArgument(prgrm, "", CurrentFile, LineNo)
+	_, arg := ast.MakeArgument(prgrm, stringpool.StringGidNil, CurrentFile, LineNo)
 	arg.SetType(types.IDENTIFIER)
-	arg.Name = structName
+	arg.Name = prgrm.CXProgramNameIntern(structName)
 	arg.Package = ast.CXPackageIndex(pkg.Index)
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.

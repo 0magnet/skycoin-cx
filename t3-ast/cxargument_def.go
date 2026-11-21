@@ -1,6 +1,9 @@
 package ast
 
-import "github.com/skycoin/skycoin-cx/t0-types"
+import (
+	"github.com/skycoin/skycoin-cx/t0-types"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
+)
 
 // CXArgument is used to define local variables, global variables,
 // literals (strings, numbers), inputs and outputs to function
@@ -12,7 +15,7 @@ type CXArgument struct {
 	// of a variable or parameter in source code, but some
 	// exceptions exist, such as in the case of literals
 	// (e.g. `4`, `"Hello world!"`, `[3]i32{1, 2, 3}`.)
-	Name  string
+	Name  stringpool.StringGid
 	Index int
 
 	Package CXPackageIndex

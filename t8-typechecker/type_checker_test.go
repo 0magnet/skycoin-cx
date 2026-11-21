@@ -10,6 +10,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-util"
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: tests use only LoadCXProgram; no depth gain
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t5-plfileoutput" // thin: tests use only GetImportFiles; no depth gain
@@ -567,7 +568,7 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 					// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 					// Now an arena getter, site S1544.
 					gotGlobal := program.GetCXTypeSignatureFromArray(globalIdx)
-					if gotGlobal.Name == wantGlobal.Name {
+					if program.CXProgramNameText(gotGlobal.Name) == wantGlobal.Name {
 						gotIndex = i
 						gotGlobalType = ast.GetFormattedType(actions.AST, gotGlobal)
 						break
@@ -756,11 +757,11 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 									var gotFieldType string
 									var gotFieldIndex int
 
-									if gotField.Name == wantField.Name {
+									if program.CXProgramNameText(gotField.Name) == wantField.Name {
 
 										gotFieldType = ast.GetFormattedType(actions.AST, gotField)
 
-										ast3 += fmt.Sprintf("want field %d. %s %s, got %d. %s %s\n", wantField.Index, wantField.Name, wantField.Type, gotFieldIndex, gotField.Name, gotFieldType)
+										ast3 += fmt.Sprintf("want field %d. %s %s, got %d. %s %s\n", wantField.Index, wantField.Name, wantField.Type, gotFieldIndex, program.CXProgramNameText(gotField.Name), gotFieldType)
 
 										if gotFieldIndex == wantField.Index &&
 											gotFieldType == wantField.Type {
@@ -1247,7 +1248,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 						// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 						// Now an arena getter, site S1554.
 						gotGlobal := program.GetCXTypeSignatureFromArray(globalIdx)
-						gotGlobalName = gotGlobal.Name
+						gotGlobalName = program.CXProgramNameText(gotGlobal.Name)
 
 						if gotGlobalName == wantGlobal.Name {
 
@@ -1291,7 +1292,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 									gotFieldType = ast.GetFormattedType(program, gotField)
 
-									if gotField.Name == wantField.Name {
+									if program.CXProgramNameText(gotField.Name) == wantField.Name {
 
 										if gotFieldType == wantField.Type {
 											fieldMatch++
@@ -1299,7 +1300,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 										}
 									}
 
-									fields += fmt.Sprintf("want field %s %s, got %s %s\n", wantField.Name, wantField.Type, gotField.Name, gotFieldType)
+									fields += fmt.Sprintf("want field %s %s, got %s %s\n", wantField.Name, wantField.Type, program.CXProgramNameText(gotField.Name), gotFieldType)
 
 								}
 
@@ -1386,10 +1387,10 @@ func getFormattedParam(prgrm *ast.CXProgram, paramTypeSigIdxs []ast.CXTypeSignat
 
 			buf.WriteString(fmt.Sprintf("%s %s", ast.GetFormattedName(prgrm, param, externalPkg, pkg), ast.GetFormattedType(prgrm, paramTypeSig)))
 		} else {
-			name := paramTypeSig.Name
+			name := prgrm.CXProgramNameText(paramTypeSig.Name)
 
 			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
-			if paramTypeSig.Name == "" {
+			if paramTypeSig.Name == stringpool.StringGidNil {
 				name = constants.LITERAL_PLACEHOLDER
 			}
 

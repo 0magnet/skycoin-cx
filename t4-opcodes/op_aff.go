@@ -8,6 +8,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 )
 
 var onMessages = map[string]string{
@@ -138,7 +139,7 @@ func queryParam(prgrm *ast.CXProgram, fn *ast.CXFunction, argsIdx []ast.CXArgume
 		// Name
 		// argNameB := encoder.Serialize(arg.Name)
 		// argNameOffset := int32(WriteObjectRetOff(argNameB))
-		argNameOffset := types.AllocWrite_str_data(prgrm, prgrm.Memory, arg.Name)
+		argNameOffset := types.AllocWrite_str_data(prgrm, prgrm.Memory, prgrm.CXProgramNameText(arg.Name))
 
 		argOffset := ast.AllocateSeq(prgrm, types.OBJECT_HEADER_SIZE+types.STR_SIZE+types.I32_SIZE+types.STR_SIZE)
 		types.Write_ptr(prgrm.Memory, argOffset+types.OBJECT_HEADER_SIZE, argNameOffset)
@@ -187,7 +188,7 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 			panic(err)
 		}
 
-		if exCXAtomicOp.Label == "" {
+		if exCXAtomicOp.Label == stringpool.StringGidNil {
 			// it's a non-labeled expression
 			continue
 		}
@@ -203,7 +204,7 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 				panic("type is not type cx argument deprecate\n\n")
 			}
 		}
-		queryParam(prgrm, fn, inputCXArgsIdxs, exCXAtomicOp.Label+".Input", argOffsetB, affOffset)
+		queryParam(prgrm, fn, inputCXArgsIdxs, prgrm.CXProgramNameText(exCXAtomicOp.Label)+".Input", argOffsetB, affOffset)
 
 		var outputCXArgsIdxs []ast.CXArgumentIndex
 		for _, outputIdx := range exCXAtomicOp.GetOutputs(prgrm) {
@@ -216,7 +217,7 @@ func QueryArgument(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpress
 				panic("type is not type cx argument deprecate\n\n")
 			}
 		}
-		queryParam(prgrm, fn, outputCXArgsIdxs, exCXAtomicOp.Label+".Output", argOffsetB, affOffset)
+		queryParam(prgrm, fn, outputCXArgsIdxs, prgrm.CXProgramNameText(exCXAtomicOp.Label)+".Output", argOffsetB, affOffset)
 	}
 }
 
@@ -244,7 +245,7 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 		// Now an arena getter, site S1265.
 		exCXAtomicOpOperator := prgrm.GetFunctionFromArray(exCXAtomicOp.Operator)
 
-		if exCXAtomicOpOperator == nil || exCXAtomicOp.Label == "" {
+		if exCXAtomicOpOperator == nil || exCXAtomicOp.Label == stringpool.StringGidNil {
 			// then it's a variable declaration
 			// or it's a non-labeled expression
 			continue
@@ -271,7 +272,7 @@ func QueryExpressions(prgrm *ast.CXProgram, fn *ast.CXFunction, expr *ast.CXExpr
 
 			// lblNameB := encoder.Serialize(ex.Label)
 			// lblNameOffset := AllocateSeq(len(lblNameB))
-			lblNameOffset := types.AllocWrite_str_data(prgrm, prgrm.Memory, exCXAtomicOp.Label)
+			lblNameOffset := types.AllocWrite_str_data(prgrm, prgrm.Memory, prgrm.CXProgramNameText(exCXAtomicOp.Label))
 			// WriteMemory(lblNameOffset, lblNameB)
 			var lblNameOffsetB [4]byte
 			types.Write_ptr(lblNameOffsetB[:], 0, lblNameOffset)
@@ -643,11 +644,11 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXTypeSignature, fp types.Po
 			case "arg":
 				if tgtArgType == "inp" {
 					if msg, ok := affMsgs["prgrm-arg-input"]; ok {
-						*affs = append(*affs, fmt.Sprintf(msg, tgtExprAtomicOp.Label, tgtArgIndex))
+						*affs = append(*affs, fmt.Sprintf(msg, prgrm.CXProgramNameText(tgtExprAtomicOp.Label), tgtArgIndex))
 					}
 				} else {
 					if msg, ok := affMsgs["prgrm-arg-output"]; ok {
-						*affs = append(*affs, fmt.Sprintf(msg, tgtExprAtomicOp.Label, tgtArgIndex))
+						*affs = append(*affs, fmt.Sprintf(msg, prgrm.CXProgramNameText(tgtExprAtomicOp.Label), tgtArgIndex))
 					}
 				}
 			case "prgrm":
@@ -660,11 +661,11 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXTypeSignature, fp types.Po
 				case "arg":
 					if tgtArgType == "inp" {
 						if msg, ok := affMsgs["arg-arg-input"]; ok {
-							*affs = append(*affs, fmt.Sprintf(msg, tgtExprAtomicOp.Label, tgtArgIndex, elt))
+							*affs = append(*affs, fmt.Sprintf(msg, prgrm.CXProgramNameText(tgtExprAtomicOp.Label), tgtArgIndex, elt))
 						}
 					} else {
 						if msg, ok := affMsgs["arg-arg-output"]; ok {
-							*affs = append(*affs, fmt.Sprintf(msg, tgtExprAtomicOp.Label, tgtArgIndex, elt))
+							*affs = append(*affs, fmt.Sprintf(msg, prgrm.CXProgramNameText(tgtExprAtomicOp.Label), tgtArgIndex, elt))
 						}
 					}
 				case "prgrm":
@@ -705,15 +706,15 @@ func getAffordances(prgrm *ast.CXProgram, inp1 *ast.CXTypeSignature, fp types.Po
 				switch tgtElt {
 				case "arg":
 					if msg, ok := affMsgs["arg-strct"]; ok {
-						*affs = append(*affs, fmt.Sprintf(msg, tgtExprAtomicOp.Label, tgtArgIndex, elt))
+						*affs = append(*affs, fmt.Sprintf(msg, prgrm.CXProgramNameText(tgtExprAtomicOp.Label), tgtArgIndex, elt))
 					}
 					if tgtArgType == "inp" {
 						if msg, ok := affMsgs["strct-arg-input"]; ok {
-							*affs = append(*affs, fmt.Sprintf(msg, tgtExprAtomicOp.Label, tgtArgIndex, elt))
+							*affs = append(*affs, fmt.Sprintf(msg, prgrm.CXProgramNameText(tgtExprAtomicOp.Label), tgtArgIndex, elt))
 						}
 					} else {
 						if msg, ok := affMsgs["strct-arg-output"]; ok {
-							*affs = append(*affs, fmt.Sprintf(msg, tgtExprAtomicOp.Label, tgtArgIndex, elt))
+							*affs = append(*affs, fmt.Sprintf(msg, prgrm.CXProgramNameText(tgtExprAtomicOp.Label), tgtArgIndex, elt))
 						}
 					}
 				case "fn":
@@ -889,7 +890,7 @@ func readArgAff(prgrm *ast.CXProgram, aff string, tgtFn *ast.CXFunction) *ast.CX
 					panic(err)
 				}
 
-				if exprLbl == cxAtomicOp.Label {
+				if exprLbl == prgrm.CXProgramNameText(cxAtomicOp.Label) {
 					affExpr = &expr
 					rIdx++
 					break

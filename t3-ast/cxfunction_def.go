@@ -27,7 +27,7 @@ type CXFunction struct {
 	// contains the name of its local variables
 	// Used to determine if the variables are to be added to the symbols array
 	// Used for local scoping
-	LocalVariables []string
+	LocalVariables []stringpool.StringGid
 
 	//TODO: Better Comment for this
 	LineCount int // number of expressions, pre-computed for performance

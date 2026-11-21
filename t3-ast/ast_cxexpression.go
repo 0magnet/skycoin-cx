@@ -1,6 +1,9 @@
 package ast
 
-import "github.com/skycoin/skycoin-cx/t1-constants"
+import (
+	"github.com/skycoin/skycoin-cx/t1-constants"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
+)
 
 /*
  * CXEXPR_TYPE enum contains CX expressions types for CXExpression struct
@@ -95,7 +98,7 @@ func (cxe CXExpression) IsScopeDel() bool {
 // ----------------------------------------------------------------
 //                             `CXExpression` Getters
 
-func (cxe CXExpression) GetLabel(prgrm *CXProgram) string {
+func (cxe CXExpression) GetLabel(prgrm *CXProgram) stringpool.StringGid {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S0126.
 	expression, err := prgrm.GetCXAtomicOp(cxe.Index)
