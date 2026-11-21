@@ -3,9 +3,7 @@ package parsingcompletor
 import (
 	"fmt"
 	"io"
-	"os"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 
 	"github.com/skycoin/skycoin-cx/t4-actions"
@@ -55,8 +53,8 @@ func NewLexer(rdr io.Reader) *Lexer {
 		if ast.InREPL {
 			panic(fmt.Sprintf("[%d:%d] %s\n", l, c, msg))
 		}
-		println(ast.CompilationError(actions.AST.CXProgramSourceFileText(actions.CurrentFile), l), msg)
-		os.Exit(types.CX_COMPILATION_ERROR)
+		actions.AST.CXProgramCompileErrorAdd(ast.CompileErrorCodeMessage, actions.CurrentFile, l, ast.CompileErrorOperands{actions.AST.CXProgramCompileErrorText(msg)})
+		actions.AST.CXProgramCompileErrorExit()
 	})
 	return lx
 }

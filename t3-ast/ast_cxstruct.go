@@ -2,7 +2,6 @@ package ast
 
 import (
 	"fmt"
-	"os"
 
 	types "github.com/skycoin/skycoin-cx/t0-types"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
@@ -51,8 +50,8 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, cxArgument *CXArgument) *CXStr
 		// Now an arena getter, site S0263.
 		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 		if typeSignature.Name == cxArgument.Name {
-			fmt.Printf("%s : duplicate field", CompilationError(CXArgumentDebugFileLine(prgrm, typeSignature.ArgDetails)))
-			os.Exit(types.CX_COMPILATION_ERROR)
+			prgrm.CXProgramCompileErrorAddDebug(CompileErrorCodeStructFieldDuplicate, typeSignature.ArgDetails, CompileErrorOperands{})
+			prgrm.CXProgramCompileErrorExit()
 		}
 	}
 
@@ -97,8 +96,8 @@ func (strct *CXStruct) AddField_TypeSignature(prgrm *CXProgram, fieldIdx CXTypeS
 		// Now an arena getter, site S0266.
 		field := prgrm.GetCXTypeSignatureFromArray(fieldIdx)
 		if typeSignature.Name == field.Name {
-			fmt.Printf("%s : duplicate field", CompilationError(CXArgumentDebugFileLine(prgrm, typeSignature.ArgDetails)))
-			os.Exit(types.CX_COMPILATION_ERROR)
+			prgrm.CXProgramCompileErrorAddDebug(CompileErrorCodeStructFieldDuplicate, typeSignature.ArgDetails, CompileErrorOperands{})
+			prgrm.CXProgramCompileErrorExit()
 		}
 	}
 
@@ -124,8 +123,8 @@ func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx C
 		// Now an arena getter, site S0268.
 		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
 		if typeSignature.Name == cxArgument.Name {
-			fmt.Printf("%s : duplicate field", CompilationError(CXArgumentDebugFileLine(prgrm, typeSignature.ArgDetails)))
-			os.Exit(types.CX_COMPILATION_ERROR)
+			prgrm.CXProgramCompileErrorAddDebug(CompileErrorCodeStructFieldDuplicate, typeSignature.ArgDetails, CompileErrorOperands{})
+			prgrm.CXProgramCompileErrorExit()
 		}
 	}
 

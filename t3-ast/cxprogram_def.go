@@ -39,6 +39,10 @@ type CXProgram struct {
 	// the printer package once the loop has returned.
 	RuntimeError RuntimeErrorRecord
 
+	// CompileErrorPrint prints the compile errors in CxIrState that are not
+	// printed yet. The printer package sets it, see #413.
+	CompileErrorPrint func(prgrm *CXProgram)
+
 	// ProgramSandboxRoot is the directory every program file opcode resolves
 	// in, opened once at run start, see #433. Nil means file opcodes fail.
 	ProgramSandboxRoot *os.Root

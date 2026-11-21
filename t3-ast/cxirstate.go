@@ -18,6 +18,8 @@ type CxIrState struct {
 	StringPool stringpool.StringPool
 	// SourceFileMng holds every source file path once, see #413.
 	SourceFileMng SourceFileMng
+	// CompileErrorList holds the compile errors found so far, see #413.
+	CompileErrorList CompileErrorList
 	// Names the compiler and the run start look up, interned by CxIrStateInit
 	// so that they work on a frozen pool. Main names the main package and main.
 	CxIrStateNameMain         stringpool.StringGid
@@ -54,6 +56,7 @@ type CxIrStateManagerLen struct {
 func (state *CxIrState) CxIrStateInit() {
 	state.StringPool.StringPoolInit(1024, 16384)
 	state.SourceFileMng.SourceFileMngInit(16)
+	state.CompileErrorList.CompileErrorListInit(16)
 	state.CxIrStateNameMain = state.StringPool.StringPoolIntern([]byte(constants.MAIN_PKG))
 	state.CxIrStateNameSysInit = state.StringPool.StringPoolIntern([]byte(constants.SYS_INIT_FUNC))
 	state.CxIrStateNameOsArgs = state.StringPool.StringPoolIntern([]byte(constants.OS_ARGS))

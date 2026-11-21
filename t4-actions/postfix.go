@@ -1,8 +1,6 @@
 package actions
 
 import (
-	"fmt"
-	"os"
 	"strings"
 
 	cxpackages "github.com/skycoin/skycoin-cx/t0-packages" // thin: only IsDefaultPackage, SysPrefix; no depth gain
@@ -341,12 +339,10 @@ func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCod
 	// these will always be native functions
 	opCode, ok := ast.OpCodes[typeCode.Name()+"."+opStrCode]
 	if !ok {
-		if msg, renamed := renamedOpcodeMessage(typeCode.Name() + "." + opStrCode); renamed {
-			println(ast.CompilationError(prgrm.CXProgramSourceFileText(CurrentFile), LineNo), msg)
+		if renamedOpcodeRecord(prgrm, CurrentFile, LineNo, typeCode.Name()+"."+opStrCode) {
 			return nil
 		}
-		println(ast.CompilationError(prgrm.CXProgramSourceFileText(CurrentFile), LineNo) + " function '" +
-			typeCode.Name() + "." + opStrCode + "' does not exist")
+		prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeFunctionMissing, CurrentFile, LineNo, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(typeCode.Name() + "." + opStrCode)})
 		return nil
 		// panic(ok)
 	}
@@ -846,24 +842,21 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 			lastExpressionOutputArg.StructType = strct
 		} else {
-			file, line := prgrm.CXProgramSourceFileText(CurrentFile), LineNo
+			file, line := CurrentFile, LineNo
 			if details := leftExprOutputTypeSig.ArgDetails; details != ast.CXArgumentDebugGidNil {
-				file, line = ast.CXArgumentDebugFileLine(prgrm, details)
+				file, line = ast.CXArgumentDebugFileGidLine(prgrm, details)
 			}
-			if msg, renamed := renamedOpcodeMessage(prgrm.CXProgramNameText(imp.Name) + "." + ident); renamed {
-				println(ast.CompilationError(file, line), msg)
+			if renamedOpcodeRecord(prgrm, file, line, prgrm.CXProgramNameText(imp.Name)+"."+ident) {
 				return nil
 			}
-			println(ast.CompilationError(file, line), fmt.Sprintf("identifier '%s.%s' does not exist", prgrm.CXProgramNameText(imp.Name), ident))
+			prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodePackageIdentifierMissing, file, line, ast.CompileErrorOperands{int64(imp.Name), prgrm.CXProgramCompileErrorText(ident)})
 			return nil
 		}
 	} else {
 		// then left is not a package name
 		if cxpackages.IsDefaultPackage(prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)) {
-			println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, leftExprOutputTypeSig.ArgDetails)),
-				fmt.Sprintf("built-in package %s is used without importing it, add import \"%s%s\"",
-					prgrm.CXProgramNameText(leftExprOutputTypeSig.Name), cxpackages.SysPrefix, prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)))
-			os.Exit(types.CX_COMPILATION_ERROR)
+			prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeBuiltinPackageNotImported, leftExprOutputTypeSig.ArgDetails, ast.CompileErrorOperands{int64(leftExprOutputTypeSig.Name), int64(leftExprOutputTypeSig.Name)})
+			prgrm.CXProgramCompileErrorExit()
 		}
 
 		// then it's a struct
@@ -920,17 +913,20 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	return prevExprs
 }
 
-// renamedOpcodeMessage returns the compile error for name when it is a former
-// opcode name, see constants.OpcodeRenameTable.
-func renamedOpcodeMessage(name string) (string, bool) {
+// renamedOpcodeRecord records the compile error for name at file and line
+// when it is a former opcode name, see constants.OpcodeRenameTable.
+func renamedOpcodeRecord(prgrm *ast.CXProgram, file ast.SourceFileGid, line int, name string) bool {
 	rename, found := constants.OpcodeRenamed(name)
 	if !found {
-		return "", false
+		return false
 	}
-	msg := fmt.Sprintf("%s was renamed to %s in language version %d", name, rename.NewName, rename.Version)
+	operands := ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(name), prgrm.CXProgramCompileErrorText(rename.NewName), rename.Version}
 	oldPkg, _, _ := strings.Cut(name, ".")
 	if pkg, _, cut := strings.Cut(rename.NewName, "."); cut && pkg != oldPkg && cxpackages.IsDefaultPackage(pkg) {
-		msg += fmt.Sprintf(", import \"%s%s\"", cxpackages.SysPrefix, pkg)
+		operands[3] = prgrm.CXProgramCompileErrorText(pkg)
+		prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeOpcodeRenamedImport, file, line, operands)
+		return true
 	}
-	return msg, true
+	prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeOpcodeRenamed, file, line, operands)
+	return true
 }

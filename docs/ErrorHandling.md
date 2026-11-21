@@ -89,7 +89,7 @@ A new area takes the next free block and is added here in the same change.
 | 4000 - 4999 | Package store database | `PackageStoreError` | `t0-plbolt` |
 | 5000 - 5999 | Package loader | `PackageLoaderError` | `t1-plloader` |
 | 6000 - 6999 | LZ4 compression | `LZ4CodecError` | `t0-lz4codec` |
-| 7000 - 7999 | Compiler | `CompilerError`, returned as a list | assigned in #202 |
+| 7000 - 7999 | Compiler | `CompileErrorRecord`, held as a list | `t3-ast` |
 
 In the block starting at B, failure codes run from B+1 to B+499 and operation
 codes from B+500 to B+999, so files use 1001 to 1499 and 1500 to 1999. No
@@ -223,6 +223,16 @@ Class B failures in a CX program crash it. Division by zero, an index out of
 range, a failed cast, stack overflow and heap exhaustion print the CX file and
 line, the CX call stack and the message to stderr, then end the process with
 the matching `CX_RUNTIME_*` exit code. The CX `assert`, `test` and `panic`
+A compile error is data too. The compiler appends a `CompileErrorRecord`, a
+`CompileErrorCode`, a `SourceFileGid`, a line and up to four `StringGid` or
+integer operands, to `CxIrState.CompileErrorList` without building text.
+`printer.PrinterCompileErrorsPrint` prints the records through a table of
+formats indexed by the code when compilation returns. A compile error the
+compiler cannot go on after calls `CXProgramCompileErrorExit`, which prints
+through the printer the program registered and exits, see #413. A Go error
+or lexer message that has no code of its own is the operand of
+`CompileErrorCodeMessage`.
+
 builtins do the same with `CX_ASSERT` or `CX_PANIC`. This holds under the REPL
 and any embedding host too.
 

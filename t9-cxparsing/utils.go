@@ -13,6 +13,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t2-globals"   // thin: only FoundCompileErrors, SRCPATH; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t5-cx-runtime-printer"                // thin: only PrinterCompileErrorsPrint; no depth gain
 	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing" // thin: only CurrentFile, Parse, Program; no depth gain
 )
 
@@ -113,8 +114,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 
 				if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
 					if prePkg == nil {
-						println(ast.CompilationError(srcName, lineno),
-							"No package defined")
+						cxpartialparsing.Program.CXProgramCompileErrorAdd(ast.CompileErrorCodeNoPackageDefined, cxpartialparsing.Program.CXProgramSourceFileIntern(srcName), lineno, ast.CompileErrorOperands{})
 					} else if _, err := cxpartialparsing.Program.GetStruct(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]), prePkg.Name); err != nil {
 						// then it hasn't been added
 						// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
@@ -179,6 +179,7 @@ func Preliminarystage(srcStrs, srcNames []string) int {
 					if _, err := cxpartialparsing.Program.GetPackage(cxpartialparsing.Program.CXProgramNameIntern(pkgName)); err != nil && !cxpackages.IsBuiltinImport(pkgName) {
 						_, sourceCode, fileNames, err := util.ParseArgsForCX([]string{filepath.Join(globals.SRCPATH, pkgName)}, false)
 						if err != nil {
+							printer.PrinterCompileErrorsPrint(cxpartialparsing.Program)
 							println(err.Error())
 							return parseErrors + 1
 						}

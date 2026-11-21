@@ -3,12 +3,9 @@ package partialparsing
 import (
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 	"unicode"
 	"unicode/utf8"
-
-	"github.com/skycoin/skycoin-cx/t0-types"
 )
 
 type Lexer struct {
@@ -160,7 +157,7 @@ func (s *Lexer) next() {
 	s.nlsemi = false
 	if s.eof {
 		if s.crash {
-			os.Exit(types.CX_COMPILATION_ERROR)
+			Program.CXProgramCompileErrorExit()
 		}
 		s.tok.yys = -1
 		return
@@ -185,7 +182,7 @@ redonext:
 		s.eof = true
 		s.tok.yys = -1
 		if s.crash {
-			os.Exit(types.CX_COMPILATION_ERROR)
+			Program.CXProgramCompileErrorExit()
 		}
 	case '\n':
 		s.nextch()

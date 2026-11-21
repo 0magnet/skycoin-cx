@@ -15,7 +15,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t2-globals"            // thin: only FoundCompileErrors; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"                // thin: only InREPL, SourceFileGidNil; no depth gain
 	"github.com/skycoin/skycoin-cx/t4-execute"            // thin: only RunCompiled; no depth gain
-	"github.com/skycoin/skycoin-cx/t5-cx-runtime-printer" // thin: only PrinterRuntimeErrorPrint; no depth gain
+	"github.com/skycoin/skycoin-cx/t5-cx-runtime-printer" // thin: only PrinterCompileErrorsPrint, PrinterRuntimeErrorPrint; no depth gain
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"        // thin: only MakeProgram, RegisterPackages; no depth gain
 
 	"github.com/skycoin/skycoin-cx/t4-actions"                               // thin: only AST, LineNo; no depth gain
@@ -68,6 +68,7 @@ func unsafeEval(code string) (out string) {
 
 	defer func() {
 		if r := recover(); r != nil {
+			printer.PrinterCompileErrorsPrint(actions.AST)
 			restore()
 			out = fmt.Sprintf("%v", r)
 			// lexer.Stop()
@@ -93,6 +94,7 @@ func unsafeEval(code string) (out string) {
 
 	lexer = cxparsingcompletor.NewLexer(bytes.NewBufferString(code))
 	parseErrors += cxparsingcompletor.Parse(lexer)
+	printer.PrinterCompileErrorsPrint(actions.AST)
 	if parseErrors > 0 || globals.FoundCompileErrors {
 		restore()
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
@@ -195,6 +197,7 @@ func Repl() {
 			b := bytes.NewBufferString(inp)
 
 			cxparsingcompletor.Parse(cxparsingcompletor.NewLexer(b))
+			printer.PrinterCompileErrorsPrint(actions.AST)
 			//yyParse(NewLexer(b))
 		} else {
 			if ReplTargetFn != "" {

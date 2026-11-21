@@ -19,6 +19,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t2-globals"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t5-cx-runtime-printer"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"             // thin: only MakeProgram, RegisterPackages; no depth gain
 	cxgo "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only DebugLexer, Tokenize; no depth gain
 	cxparsing "github.com/skycoin/skycoin-cx/t9-cxparsing"     // thin: only AddInitFunction, ParseSourceCode; no depth gain
@@ -47,6 +48,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 
 	profiling.StartProfile("parse")
 	defer profiling.StopProfile("parse")
+	defer func() { printer.PrinterCompileErrorsPrint(actions.AST) }()
 
 	if actions.AST == nil {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
@@ -75,6 +77,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	actions.LineNo = 0
 
 	if globals.FoundCompileErrors {
+		printer.PrinterCompileErrorsPrint(actions.AST)
 		profiling.CleanupAndExit(types.CX_COMPILATION_ERROR)
 	}
 

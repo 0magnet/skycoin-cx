@@ -3,7 +3,6 @@ package ast
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"strings"
 
 	cxpackages "github.com/skycoin/skycoin-cx/t0-packages" // thin: only IsDefaultPackage; no depth gain
@@ -746,14 +745,12 @@ func getFormattedType_CXArg(prgrm *CXProgram, arg *CXArgument) string {
 					// Now an arena getter, site S0510.
 					pkg, err := prgrm.GetPackageFromArray(arg.Package)
 					if err != nil {
-						println(CompilationError(CXArgumentDebugFileLine(prgrm, elt.ArgDetails)), err.Error())
-						os.Exit(types.CX_COMPILATION_ERROR)
+						prgrm.CXProgramCompileErrorAddDebug(CompileErrorCodeMessage, elt.ArgDetails, CompileErrorOperands{prgrm.CXProgramCompileErrorText(err.Error())})
+						prgrm.CXProgramCompileErrorExit()
 					}
 
 					fn, err := pkg.GetFunction(prgrm, elt.Name)
 					if err == nil {
-						// println(CompilationError(elt.FileName, elt.FileLine), err.ProgramError())
-						// os.Exit(CX_COMPILATION_ERROR)
 						// Adding list of inputs and outputs types.
 						typ += formatParameters(prgrm, fn.GetInputs(prgrm))
 						typ += formatParameters(prgrm, fn.GetOutputs(prgrm))

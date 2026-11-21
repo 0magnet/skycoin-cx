@@ -1,8 +1,6 @@
 package actions
 
 import (
-	"os"
-
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
@@ -813,8 +811,8 @@ func checkIfFunctionCallNeedsAnOutput(prgrm *ast.CXProgram, fromExpressionOperat
 		// Now an arena getter, site S0590.
 		toExpressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(toExpressionOutputs[0])
 
-		println(ast.CompilationError(ast.CXArgumentDebugFileLine(prgrm, toExpressionOutputTypeSig.ArgDetails)), "trying to use an outputless operator in an assignment")
-		os.Exit(types.CX_COMPILATION_ERROR)
+		prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeAssignOutputlessOperator, toExpressionOutputTypeSig.ArgDetails, ast.CompileErrorOperands{})
+		prgrm.CXProgramCompileErrorExit()
 	}
 }
 

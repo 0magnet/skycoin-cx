@@ -199,7 +199,7 @@ func (pkg *CXPackage) RemoveImport(impName stringpool.StringGid) {
 // AddFunction ...
 func (pkg *CXPackage) AddFunction(prgrm *CXProgram, fn *CXFunction) (*CXPackage, CXFunctionIndex) {
 	if _, ok := pkg.Functions[fn.Name]; ok {
-		println(CompilationError(prgrm.CXProgramSourceFileText(fn.FileName), fn.FileLine), "function redeclaration")
+		prgrm.CXProgramCompileErrorAdd(CompileErrorCodeFunctionRedeclaration, fn.FileName, fn.FileLine, CompileErrorOperands{})
 	}
 
 	fn.Package = CXPackageIndex(pkg.Index)

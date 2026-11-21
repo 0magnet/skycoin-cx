@@ -2400,9 +2400,9 @@ yydefault:
 					// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 					// Now an arena getter, site S1499.
 					outTypeSig := actions.AST.GetCXTypeSignatureFromArray(outs[0])
-					println(ast.CompilationError(ast.CXArgumentDebugFileLine(actions.AST, outTypeSig.ArgDetails)), "invalid expression")
+					actions.AST.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeInvalidExpression, outTypeSig.ArgDetails, ast.CompileErrorOperands{})
 				} else {
-					println(ast.CompilationError(actions.AST.CXProgramSourceFileText(actions.CurrentFile), actions.LineNo), "invalid expression")
+					actions.AST.CXProgramCompileErrorAdd(ast.CompileErrorCodeInvalidExpression, actions.CurrentFile, actions.LineNo, ast.CompileErrorOperands{})
 				}
 				yyVAL.expressions = nil
 			} else if len(yyDollar[1].expressions) > 0 && yyDollar[1].expressions[0].Type != ast.CX_LINE {
