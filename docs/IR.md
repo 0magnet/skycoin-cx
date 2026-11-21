@@ -735,10 +735,9 @@ as `execute.RunCompiled` does.
 * `StopIndexNegative` is a negative index, `CX_RUNTIME_INVALID_CAST` as in
   `types.Cast_i32_to_ptr`. `StopAddressInvalid` is a computed address or str
   outside the stack and data segment, where the old loop would read the heap.
-* `StopDivideByZero` and `StopStackOverflow` end the run. t11-cx prints them
-  as `ast.RuntimeErrorInfo` does, the line from `ir.LineAt` and the call
-  stack by copying the memory and frames into the program for
-  `PrintStack`. `vm.StopExitCodes` gives the exit code.
+* `StopDivideByZero` and `StopStackOverflow` end the run. `printer.PrinterVmErrorPrint` prints them as
+  the old loop does, the line from `ir.LineAt` and the call stack by copying
+  the memory and frames into the program for `PrinterStackPrint`. `vm.StopExitCodes` gives the exit code.
 * The loop has no call in it. Prints, `test`, float mod, max and min, address
   dereferences, loads and stores other than 4 bytes and every address error
   return to a slow path outside the loop, which runs the instruction and

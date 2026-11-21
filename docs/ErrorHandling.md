@@ -224,8 +224,14 @@ range, a failed cast, stack overflow and heap exhaustion print the CX file and
 line, the CX call stack and the message to stderr, then end the process with
 the matching `CX_RUNTIME_*` exit code. The CX `assert`, `test` and `panic`
 builtins do the same with `CX_ASSERT` or `CX_PANIC`. This holds under the REPL
-and any embedding host too, since nothing recovers. The failing opcode prints
-and exits itself, instead of panicking up to a recover at the run boundary.
+and any embedding host too.
+
+A runtime error is data until the run has returned. The old loop records the
+exit code, the panic value and the call stack position in
+`CXProgram.RuntimeError`, and vm returns a `Stop`. Package
+`t5-cx-runtime-printer` then prints the text and the caller exits with the
+code, see #413. The old loop still unwinds by panic to the one recover at
+the run boundary, which the phases of #196 remove.
 
 Class A failures in a CX program are returned to it. A CX library call that
 touches a file, a path or the network, such as `os.Open`, `os.ReadStr`,

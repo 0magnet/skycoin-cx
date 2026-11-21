@@ -1,31 +1,33 @@
-package ast
+package printer
 
 import (
 	"fmt"
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
+	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
-// stackValueBadIndex is printed for a value whose index is out of range.
-const stackValueBadIndex = "<index out of range>"
+// printerStackValueBadIndex is printed for a value whose index is out of range.
+const printerStackValueBadIndex = "<index out of range>"
 
-func stackValueHeader(fileName string, fileLine int) string {
+func printerStackValueHeader(fileName string, fileLine int) string {
 	return fmt.Sprintf("%s:%d", fileName, fileLine)
 }
 
-// stackValuePrintable is GetPrintableValue for the call stack of a runtime
+// printerStackValuePrintable is ast.GetPrintableValue for the call stack of a runtime
 // error. A value whose index is bad, often the one that failed, prints as a
 // placeholder instead of panicking again.
-func stackValuePrintable(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignature) string {
-	if offset, valid := finalOffsetChecked(prgrm, fp, argTypeSig); !valid || int(offset) >= len(prgrm.Memory) {
-		return stackValueBadIndex
+func printerStackValuePrintable(prgrm *ast.CXProgram, fp types.Pointer, argTypeSig *ast.CXTypeSignature) string {
+	if offset, valid := ast.FinalOffsetChecked(prgrm, fp, argTypeSig); !valid || int(offset) >= len(prgrm.Memory) {
+		return printerStackValueBadIndex
 	}
-	return GetPrintableValue(prgrm, fp, argTypeSig)
+	return ast.GetPrintableValue(prgrm, fp, argTypeSig)
 }
 
-// PrintStack ...
-func (cxprogram *CXProgram) PrintStack() {
+// PrinterStackPrint prints the CX call stack of cxprogram from the current
+// call down to the entry point, with the values of its arguments.
+func PrinterStackPrint(cxprogram *ast.CXProgram) {
 	fmt.Println()
 	fmt.Println("===Callstack===")
 
@@ -47,7 +49,7 @@ func (cxprogram *CXProgram) PrintStack() {
 			input := cxprogram.GetCXTypeSignatureFromArray(inputIdx)
 
 			fmt.Println("ProgramInput")
-			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(CXArgumentDebugFileLine(cxprogram, input.ArgDetails)), cxprogram.CXProgramNameText(op.Name), stackValuePrintable(cxprogram, fp, input))
+			fmt.Printf("\t%s : %s() : %s\n", printerStackValueHeader(ast.CXArgumentDebugFileLine(cxprogram, input.ArgDetails)), cxprogram.CXProgramNameText(op.Name), printerStackValuePrintable(cxprogram, fp, input))
 
 			// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 			// Now an arena getter, site S0466.
@@ -65,7 +67,7 @@ func (cxprogram *CXProgram) PrintStack() {
 			output := cxprogram.GetCXTypeSignatureFromArray(outputIdx)
 
 			fmt.Println("ProgramOutput")
-			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(CXArgumentDebugFileLine(cxprogram, output.ArgDetails)), cxprogram.CXProgramNameText(op.Name), stackValuePrintable(cxprogram, fp, output))
+			fmt.Printf("\t%s : %s() : %s\n", printerStackValueHeader(ast.CXArgumentDebugFileLine(cxprogram, output.ArgDetails)), cxprogram.CXProgramNameText(op.Name), printerStackValuePrintable(cxprogram, fp, output))
 
 			// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 			// Now an arena getter, site S0468.
@@ -116,8 +118,8 @@ func (cxprogram *CXProgram) PrintStack() {
 				}
 
 				// fmt.Println("\t", inp.Name, "\t", ":", "\t", GetPrintableValue(fp, inp))
-				// exprs += fmt.Sprintln("\t", stackValueHeader(inp.FileName, inp.FileLine), "\t", ":", "\t", GetPrintableValue(fp, inp))
-				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(CXArgumentDebugFileLine(cxprogram, input.ArgDetails)), cxAtomicOp.GetOperatorName(cxprogram), stackValuePrintable(cxprogram, fp, input))
+				// exprs += fmt.Sprintln("\t", printerStackValueHeader(inp.FileName, inp.FileLine), "\t", ":", "\t", GetPrintableValue(fp, inp))
+				exprs += fmt.Sprintf("\t%s : %s() : %s\n", printerStackValueHeader(ast.CXArgumentDebugFileLine(cxprogram, input.ArgDetails)), cxAtomicOp.GetOperatorName(cxprogram), printerStackValuePrintable(cxprogram, fp, input))
 
 				dupNames = append(dupNames, cxprogram.CXProgramNameText(inpPkg.Name)+cxprogram.CXProgramNameText(input.Name))
 			}
@@ -127,7 +129,7 @@ func (cxprogram *CXProgram) PrintStack() {
 				// Now an arena getter, site S0473.
 				output := cxprogram.GetCXTypeSignatureFromArray(outputIdx)
 
-				if output.Type == TYPE_CXARGUMENT_DEPRECATE {
+				if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 					if output.Name == stringpool.StringGidNil || cxAtomicOpOperator == nil {
 						continue
 					}
@@ -150,12 +152,12 @@ func (cxprogram *CXProgram) PrintStack() {
 					}
 
 					// fmt.Println("\t", out.Name, "\t", ":", "\t", GetPrintableValue(fp, out))
-					// exprs += fmt.Sprintln("\t", stackValueHeader(out.FileName, out.FileLine), ":", GetPrintableValue(fp, out))
+					// exprs += fmt.Sprintln("\t", printerStackValueHeader(out.FileName, out.FileLine), ":", GetPrintableValue(fp, out))
 
-					exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(CXArgumentDebugFileLine(cxprogram, output.ArgDetails)), cxAtomicOp.GetOperatorName(cxprogram), stackValuePrintable(cxprogram, fp, output))
+					exprs += fmt.Sprintf("\t%s : %s() : %s\n", printerStackValueHeader(ast.CXArgumentDebugFileLine(cxprogram, output.ArgDetails)), cxAtomicOp.GetOperatorName(cxprogram), printerStackValuePrintable(cxprogram, fp, output))
 
 					dupNames = append(dupNames, cxprogram.CXProgramNameText(outPkg.Name)+cxprogram.CXProgramNameText(output.Name))
-				} else if output.Type == TYPE_ATOMIC || output.Type == TYPE_POINTER_ATOMIC || output.Type == TYPE_ARRAY_ATOMIC || output.Type == TYPE_POINTER_ARRAY_ATOMIC || output.Type == TYPE_SLICE_ATOMIC || output.Type == TYPE_POINTER_SLICE_ATOMIC {
+				} else if output.Type == ast.TYPE_ATOMIC || output.Type == ast.TYPE_POINTER_ATOMIC || output.Type == ast.TYPE_ARRAY_ATOMIC || output.Type == ast.TYPE_POINTER_ARRAY_ATOMIC || output.Type == ast.TYPE_SLICE_ATOMIC || output.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
 					if output.Name == stringpool.StringGidNil || cxAtomicOpOperator == nil {
 						continue
 					}
@@ -179,7 +181,7 @@ func (cxprogram *CXProgram) PrintStack() {
 					}
 
 					// TODO: Make GetPrintableValue() and other functions receive CXTypeSignature instead of CXArgument
-					exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(CXArgumentDebugFileLine(cxprogram, output.ArgDetails)), cxAtomicOp.GetOperatorName(cxprogram), stackValuePrintable(cxprogram, fp, output))
+					exprs += fmt.Sprintf("\t%s : %s() : %s\n", printerStackValueHeader(ast.CXArgumentDebugFileLine(cxprogram, output.ArgDetails)), cxAtomicOp.GetOperatorName(cxprogram), printerStackValuePrintable(cxprogram, fp, output))
 
 					dupNames = append(dupNames, cxprogram.CXProgramNameText(outputPkg.Name)+cxprogram.CXProgramNameText(output.Name))
 

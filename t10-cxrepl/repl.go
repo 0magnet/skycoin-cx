@@ -12,10 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t2-globals"     // thin: only FoundCompileErrors; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-ast"         // thin: only InREPL, SourceFileGidNil; no depth gain
-	"github.com/skycoin/skycoin-cx/t4-execute"     // thin: only RunCompiled; no depth gain
-	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: only MakeProgram, RegisterPackages; no depth gain
+	"github.com/skycoin/skycoin-cx/t2-globals"            // thin: only FoundCompileErrors; no depth gain
+	"github.com/skycoin/skycoin-cx/t3-ast"                // thin: only InREPL, SourceFileGidNil; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-execute"            // thin: only RunCompiled; no depth gain
+	"github.com/skycoin/skycoin-cx/t5-cx-runtime-printer" // thin: only PrinterRuntimeErrorPrint; no depth gain
+	cxinit "github.com/skycoin/skycoin-cx/t7-init"        // thin: only MakeProgram, RegisterPackages; no depth gain
 
 	"github.com/skycoin/skycoin-cx/t4-actions"                               // thin: only AST, LineNo; no depth gain
 	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing"     // thin: only CurrentFile, Parse, Program; no depth gain
@@ -110,6 +111,9 @@ func unsafeEval(code string) (out string) {
 	actions.AST.CxIrState.StringPool.StringPoolFreeze()
 	//err = actions.AST.RunCompiled(0, nil);
 	err = execute.RunCompiled(actions.AST, 0, nil)
+	if actions.AST.RuntimeError.RuntimeErrorRecordRaised {
+		os.Exit(printer.PrinterRuntimeErrorPrint(actions.AST))
+	}
 	if err != nil {
 		restore()
 		// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.

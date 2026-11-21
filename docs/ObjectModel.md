@@ -491,7 +491,7 @@ map.
 
 `CXLine.FileName`, `CXArgumentDebug.FileName` and `CXFunction.FileName`
 are `SourceFileGid`, and `CXLine.LineStr` is a `StringGid`. The parsers
-register a file once when they start it. Diagnostics, `PrintStack`,
+register a file once when they start it. Diagnostics, `PrinterStackPrint`,
 lowering, the serializer and the REPL take the path as text through
 `CXProgramSourceFileText`. The serialized format still writes the text.
 

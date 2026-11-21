@@ -1,8 +1,6 @@
 package ast
 
 import (
-	"fmt"
-	"os"
 	"runtime/debug"
 	"strconv"
 
@@ -11,15 +9,36 @@ import (
 	"github.com/skycoin/skycoin-cx/t2-globals" // thin: only DBG_GOLANG_STACK_TRACE, FoundCompileErrors, HeapOffset; core globals, keep
 )
 
-// ErrorHeader ...
-func ErrorHeader(currentFile string, lineNo int) string {
-	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
+// RuntimeErrorRecord is a runtime error of the old loop as data. The loop
+// fills it without building text and the printer package prints it after
+// the loop has returned, see #413.
+type RuntimeErrorRecord struct {
+	// RuntimeErrorRecordRaised is set once a runtime error ended the loop.
+	RuntimeErrorRecordRaised bool
+	// RuntimeErrorRecordCode is the CX exit code, a CX_RUNTIME_* or CX_ASSERT.
+	RuntimeErrorRecordCode int
+	// RuntimeErrorRecordPanicValue is the value the panic carried. A Go
+	// runtime error formats its own message only when it is printed.
+	RuntimeErrorRecordPanicValue interface{}
+	// RuntimeErrorRecordCall is the call stack position of the failure.
+	RuntimeErrorRecordCall types.Pointer
+	// RuntimeErrorRecordLine is the expression index in that call.
+	RuntimeErrorRecordLine int
+	// RuntimeErrorRecordStackPrint is false for a stack overflow at the
+	// entry point, which prints no call stack.
+	RuntimeErrorRecordStackPrint bool
+	// RuntimeErrorRecordAssertLine is set by panicIf, which prints the line
+	// and the message in RuntimeErrorRecordAssertMessage before the error.
+	RuntimeErrorRecordAssertLine bool
+	// RuntimeErrorRecordAssertMessage is the heap offset of the CX string.
+	RuntimeErrorRecordAssertMessage types.Pointer
 }
 
-// CompilationError is a helper function that concatenates the `currentFile` and `lineNo` data to a error header and returns the full error string.
+// CompilationError returns the error header of a compile error at the file
+// and line, and records that the program has a compile error.
 func CompilationError(currentFile string, lineNo int) string {
 	globals.FoundCompileErrors = true
-	return ErrorHeader(currentFile, lineNo)
+	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
 }
 
 // ErrorString ...
@@ -39,30 +58,31 @@ func errorCode(r interface{}) int {
 	}
 }
 
-func RuntimeErrorInfo(prgrm *CXProgram, r interface{}, printStack bool, defaultError int) {
+// runtimeErrorRecordSet records the panic value r with the call the program
+// stopped in. stackPrint is false for an overflow at the entry point.
+func runtimeErrorRecordSet(prgrm *CXProgram, r interface{}, stackPrint bool, defaultError int) {
 	call := prgrm.CallStack[prgrm.CallCounter]
-	// expr := call.Operator.Expressions[call.Line]
 	code := errorCode(r)
 	if code == types.CX_RUNTIME_ERROR {
 		code = defaultError
 	}
 
-	cxLine, _ := prgrm.GetPreviousCXLine(call.Operator.Expressions, call.Line)
+	record := &prgrm.RuntimeError
+	record.RuntimeErrorRecordRaised = true
+	record.RuntimeErrorRecordCode = code
+	record.RuntimeErrorRecordPanicValue = r
+	record.RuntimeErrorRecordCall = prgrm.CallCounter
+	record.RuntimeErrorRecordLine = call.Line
+	record.RuntimeErrorRecordStackPrint = stackPrint
 
-	fmt.Printf("%s, %s, %v", ErrorHeader(prgrm.CXProgramSourceFileText(cxLine.FileName), cxLine.LineNumber), ErrorString(code), r)
-
-	if printStack {
-		prgrm.PrintStack()
-	}
-
+	// The Go stack of the panic exists only here, so it is printed here.
 	if globals.DBG_GOLANG_STACK_TRACE {
 		debug.PrintStack()
 	}
-
-	os.Exit(code)
 }
 
-// RuntimeError ...
+// RuntimeError is deferred by the run loop. It turns a panic into a
+// RuntimeErrorRecord on prgrm and lets the loop return.
 func RuntimeError(prgrm *CXProgram) {
 	if r := recover(); r != nil {
 		switch r {
@@ -71,15 +91,15 @@ func RuntimeError(prgrm *CXProgram) {
 			if prgrm.CallCounter > 0 {
 				prgrm.CallCounter--
 				prgrm.Stack.Pointer = call.FramePointer
-				RuntimeErrorInfo(prgrm, r, true, types.CX_RUNTIME_STACK_OVERFLOW_ERROR)
+				runtimeErrorRecordSet(prgrm, r, true, types.CX_RUNTIME_STACK_OVERFLOW_ERROR)
 			} else {
 				// error at entry point
-				RuntimeErrorInfo(prgrm, r, false, types.CX_RUNTIME_STACK_OVERFLOW_ERROR)
+				runtimeErrorRecordSet(prgrm, r, false, types.CX_RUNTIME_STACK_OVERFLOW_ERROR)
 			}
 		case constants.HEAP_EXHAUSTED_ERROR:
-			RuntimeErrorInfo(prgrm, r, true, types.CX_RUNTIME_HEAP_EXHAUSTED_ERROR)
+			runtimeErrorRecordSet(prgrm, r, true, types.CX_RUNTIME_HEAP_EXHAUSTED_ERROR)
 		default:
-			RuntimeErrorInfo(prgrm, r, true, types.CX_RUNTIME_ERROR)
+			runtimeErrorRecordSet(prgrm, r, true, types.CX_RUNTIME_ERROR)
 		}
 	}
 }

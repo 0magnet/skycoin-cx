@@ -9,9 +9,16 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
+// RunCxAst runs cxprogram. A runtime error ends the run with nil and is left
+// in cxprogram.RuntimeError for the printer package, see #413.
 func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall types.Pointer) error {
 	defer ast.RuntimeError(cxprogram)
+	return runLoop(cxprogram, untilEnd, maxOps, untilCall)
+}
 
+// runLoop is RunCxAst without the deferred RuntimeError. A panic goes up to
+// the RunCxAst that runs the opcode which called Callback.
+func runLoop(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall types.Pointer) error {
 	var inputs []ast.CXValue
 	var outputs []ast.CXValue
 	var opCount int = 0
@@ -138,6 +145,9 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 
 	if err := RunCxAst(cxprogram, untilEnd, maxOps, types.InvalidPointer); err != nil {
 		return err
+	}
+	if cxprogram.RuntimeError.RuntimeErrorRecordRaised {
+		return nil
 	}
 
 	if cxprogram.Terminated {
