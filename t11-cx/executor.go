@@ -1,18 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"runtime/debug"
-	"strconv"
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
-	"github.com/skycoin/skycoin-cx/t2-globals"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	lower "github.com/skycoin/skycoin-cx/t4-cx-compiler-lower"
+	"github.com/skycoin/skycoin-cx/t5-cx-runtime-printer"
 )
 
 // The --executor values. auto runs a program on vm when every function
@@ -25,16 +22,6 @@ const (
 
 // executorOutputSize is the output buffer of a vm run.
 const executorOutputSize = 64 << 10
-
-// executorStopMessages is what the old loop prints after the error string
-// for each vm error, the value its panic carried.
-var executorStopMessages = [vm.StopCount]string{
-	vm.StopDivideByZero:   "runtime error: integer divide by zero",
-	vm.StopStackOverflow:  constants.STACK_OVERFLOW_ERROR,
-	vm.StopOpcodeInvalid:  "invalid image opcode",
-	vm.StopIndexNegative:  strconv.Itoa(types.CX_RUNTIME_INVALID_CAST),
-	vm.StopAddressInvalid: "address outside the stack and data segment",
-}
 
 // executorLower lowers prgrm. It returns "" when the program can run on vm:
 // every function lowered, there is a main function, and the frames of *init
@@ -72,7 +59,7 @@ func executorFailureDescribe(prgrm *ast.CXProgram, failure lower.Failure) string
 // executorVmRun runs image on vm as execute.RunCompiled and runProgram run
 // prgrm, writing to os.Stdout. It returns the exit code: CX_SUCCESS,
 // CX_ASSERT after a failed test, or the code of a runtime error, which it
-// prints like ast.RuntimeErrorInfo.
+// prints like printer.PrinterRuntimeErrorPrint.
 func executorVmRun(prgrm *ast.CXProgram, image *ir.Image) int32 {
 	return executorVmRunMachine(prgrm, vm.MachineNew(image, executorOutputSize))
 }
@@ -107,9 +94,9 @@ func executorVmRunEntry(prgrm *ast.CXProgram, machine *vm.Machine, entry uint32,
 		case stop == vm.StopReturn:
 			return types.CX_SUCCESS
 		case stop == vm.StopTestFailed:
-			executorTestFailurePrint(machine)
+			printer.PrinterVmTestFailurePrint(machine)
 		case !vm.Resumable(stop):
-			executorErrorPrint(prgrm, machine, stop)
+			printer.PrinterVmErrorPrint(prgrm, machine, stop)
 			return vm.StopExitCodes[stop]
 		}
 		stop, _ = machine.Resume()
@@ -125,53 +112,4 @@ func executorOutputFlush(machine *vm.Machine) {
 	// ignores it.
 	os.Stdout.Write(machine.MachineOutput)
 	machine.MachineOutput = machine.MachineOutput[:0]
-}
-
-// executorStopLine returns the file and line of the instruction machine
-// stopped at, "" and 0 when it has none, as GetPreviousCXLine gives them.
-func executorStopLine(machine *vm.Machine) (string, int) {
-	image := machine.MachineImage
-	line, found := ir.LineAt(image, machine.MachineFunction, machine.MachinePc)
-	if !found {
-		return "", 0
-	}
-	return image.ImageFileNames[line.LineFile], int(line.LineNumber)
-}
-
-// executorTestFailurePrint prints a failed test as assert in t4-opcodes does.
-func executorTestFailurePrint(machine *vm.Machine) {
-	fileName, lineNumber := executorStopLine(machine)
-	message := machine.TestMessage()
-	if len(message) > 0 {
-		fmt.Printf("%s: %d: result was not equal to the expected value; %s\n", fileName, lineNumber, message)
-	} else {
-		fmt.Printf("%s: %d: result was not equal to the expected value\n", fileName, lineNumber)
-	}
-}
-
-// executorErrorPrint prints a runtime error as ast.RuntimeError and
-// RuntimeErrorInfo do, the call stack included. PrintStack reads the old
-// program state, so the vm memory and frames are copied into prgrm first.
-func executorErrorPrint(prgrm *ast.CXProgram, machine *vm.Machine, stop vm.Stop) {
-	image := machine.MachineImage
-	fileName, lineNumber := executorStopLine(machine)
-	code := int(vm.StopExitCodes[stop])
-	fmt.Printf("%s, %s, %v", ast.ErrorHeader(fileName, lineNumber), ast.ErrorString(code), executorStopMessages[stop])
-
-	copy(prgrm.Memory, machine.MachineMemory[:ir.ImageDataEnd(image)])
-	depth := machine.MachineDepth
-	for i := uint32(0); i < depth; i++ {
-		frame := &machine.MachineFrames[i]
-		prgrm.CallStack[i].Operator = &prgrm.CXFunctions[frame.FrameFunction]
-		prgrm.CallStack[i].FramePointer = types.Pointer(frame.FramePointer)
-	}
-	prgrm.CallStack[depth].Operator = &prgrm.CXFunctions[machine.MachineFunction]
-	prgrm.CallStack[depth].FramePointer = types.Pointer(machine.MachineFramePointer)
-	prgrm.CallCounter = types.Pointer(depth)
-	prgrm.Stack.Pointer = types.Pointer(machine.MachineStackPointer)
-	prgrm.PrintStack()
-
-	if globals.DBG_GOLANG_STACK_TRACE {
-		debug.PrintStack()
-	}
 }

@@ -35,6 +35,10 @@ type CXProgram struct {
 	Terminated  bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
 	Version     int64         // Language version, constants.LanguageVersionCurrent when built.
 
+	// RuntimeError is the runtime error that ended the old loop, printed by
+	// the printer package once the loop has returned.
+	RuntimeError RuntimeErrorRecord
+
 	// ProgramSandboxRoot is the directory every program file opcode resolves
 	// in, opened once at run start, see #433. Nil means file opcodes fail.
 	ProgramSandboxRoot *os.Root

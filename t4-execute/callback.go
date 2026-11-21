@@ -40,8 +40,7 @@ func Callback(cxprogram *ast.CXProgram, fn *ast.CXFunction, inputs [][]byte) (ou
 
 	var maxOps = 0
 
-	//err := cxprogram.Run(true, maxOps, previousCall)
-	err := RunCxAst(cxprogram, true, maxOps, previousCall)
+	err := runLoop(cxprogram, true, maxOps, previousCall)
 	if err != nil {
 		os.Exit(types.CX_INTERNAL_ERROR)
 	}

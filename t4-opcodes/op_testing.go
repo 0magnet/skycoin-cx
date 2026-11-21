@@ -108,13 +108,10 @@ func opPanic(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 
 // panicIf/panicIfNot implementation
 func panicIf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, condition bool) {
-	str := inputs[1].Get_str(prgrm)
 	if inputs[0].Get_bool(prgrm) == condition {
-		call := prgrm.GetCurrentCall()
-		// expr := call.Operator.Expressions[call.Line]
-		cxLine, _ := prgrm.GetPreviousCXLine(call.Operator.Expressions, call.Line)
-
-		fmt.Printf("%s : %d, %s\n", prgrm.CXProgramSourceFileText(cxLine.FileName), cxLine.LineNumber, str)
+		// The printer prints the line and the message after the loop.
+		prgrm.RuntimeError.RuntimeErrorRecordAssertLine = true
+		prgrm.RuntimeError.RuntimeErrorRecordAssertMessage = inputs[1].Get_ptr(prgrm)
 		panic(types.CX_ASSERT)
 	}
 }

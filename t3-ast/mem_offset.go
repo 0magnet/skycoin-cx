@@ -145,9 +145,9 @@ func GetFinalOffset(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, argT
 	return finalOffsetCompute(prgrm, fp, oldArg, argTypeSig, nil)
 }
 
-// finalOffsetChecked is GetFinalOffset that returns false where it would
+// FinalOffsetChecked is GetFinalOffset that returns false where it would
 // panic, so the call stack of a runtime error can print the other values.
-func finalOffsetChecked(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignature) (types.Pointer, bool) {
+func FinalOffsetChecked(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignature) (types.Pointer, bool) {
 	var fault bool
 	offset := finalOffsetCompute(prgrm, fp, nil, argTypeSig, &fault)
 	return offset, !fault

@@ -14,7 +14,8 @@ import (
 	repl "github.com/skycoin/skycoin-cx/t10-cxrepl" // thin: only Repl, ReplTargetFn; only user of cxrepl, could merge it here, max tier 11 to 10
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
-	"github.com/skycoin/skycoin-cx/t4-execute"                             // thin: only RunCompiled; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-execute" // thin: only RunCompiled; no depth gain
+	"github.com/skycoin/skycoin-cx/t5-cx-runtime-printer"
 	"github.com/skycoin/skycoin-cx/t5-cxos"                                // thin: only InitConstants; no depth gain
 	"github.com/skycoin/skycoin-cx/t6-cxfx"                                // thin: only InitConstants; no depth gain
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"                         // thin: only MakeProgram, RegisterPackages; no depth gain
@@ -250,6 +251,9 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 
 	if err != nil {
 		panic(err)
+	}
+	if actions.AST.RuntimeError.RuntimeErrorRecordRaised {
+		os.Exit(printer.PrinterRuntimeErrorPrint(actions.AST))
 	}
 
 	if opcodes.AssertFailed() {

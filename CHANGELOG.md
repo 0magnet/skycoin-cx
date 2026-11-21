@@ -15,6 +15,7 @@
 
 #### Added
 
+- `t5-cx-runtime-printer` prints runtime errors after the run has returned. The old loop records the code, the panic value and the call stack position in `CXProgram.RuntimeError` instead of printing inside its recover, and `PrintStack`, `ErrorHeader` and `RuntimeErrorInfo` moved there as `PrinterStackPrint`, `PrinterErrorHeader` and `PrinterRuntimeErrorPrint`. The `debug` opcode is registered by the printer. Output and exit codes are unchanged (#413)
 - `t3-cx-runtime-vm` runs a lowered `ir.Image` in one switch loop with no allocation. cx runs a program on it when every function lowers and on the old loop otherwise, and `cx --executor=auto|old|vm` chooses. 71 of the 451 programs `TestLowerCompare` checks run on it (#408)
 - The vm subset takes array indexes, struct fields and pointer dereferences into the stack and data segment, taking addresses, struct and array values, `string.PrintLine` and `printf` with a literal format. 149 of the 455 programs `TestLowerCompare` checks run on vm (#408)
 - `BenchmarkRun` in `t11-cx` times `execute.RunCompiled` alone over count, fib and bubble sort programs and the `BenchmarkCompile` programs, compiling outside the timer. `TestRunAllocs` fails when the allocations per run of any of them go above the counts recorded when it was added. The target is 0 (#407, #417)
