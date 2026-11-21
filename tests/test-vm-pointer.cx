@@ -1,0 +1,59 @@
+// Pointers into the stack and the data segment, read and written through,
+// to scalars, struct fields and array elements, run the same on both loops
+// (skycoin-cx#408).
+package main
+
+type pair struct {
+	a i32
+	b i32
+}
+
+var global i32
+
+func increment(p *i32) {
+	*p = *p + 1
+}
+
+func setPair(p *pair, value i32) {
+	p.b = value
+}
+
+func main() {
+	var x i32
+	var p *i32
+	x = 41
+	p = &x
+	*p = *p + 1
+	i32.print(x)
+	increment(&x)
+	i32.print(*p)
+
+	p = &global
+	increment(p)
+	increment(&global)
+	i32.print(global)
+
+	var values [4]i32
+	values[2] = 30
+	var element *i32
+	element = &values[2]
+	*element = *element + 3
+	i32.print(values[2])
+
+	var s pair
+	var ps *pair
+	ps = &s
+	ps.a = 7
+	setPair(ps, 8)
+	var next i32
+	next = s.b + 1
+	setPair(ps, next)
+	i32.print(s.a)
+	i32.print(s.b)
+	test(ps.b, 9, "through a pointer")
+
+	var inner *i32
+	inner = &s.a
+	increment(inner)
+	i32.print(s.a)
+}

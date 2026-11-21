@@ -1,9 +1,11 @@
-// Package lower turns a compiled CXProgram into an ir.Image, step 4 of
-// skycoin/skycoin-cx#408. It lowers the scalar subset: integer, float and
-// bool operators, conversions, print, identity, declarations, jumps, test and
-// calls to other functions, with every operand a plain variable or literal.
-// A function using anything else is reported as a Failure with a reason
-// code, and its ir.Func gets no code.
+// Package lower turns a compiled CXProgram into an ir.Image, steps 4 and 6
+// of skycoin/skycoin-cx#408. It lowers integer, float and bool operators,
+// conversions, print, string.PrintLine, printf with a literal format,
+// identity, declarations, jumps, test and calls to other functions. An
+// operand may index arrays, select struct fields and dereference pointers
+// into the stack and data segment, as GetFinalOffset does. Slices and the
+// heap stay outside. A function using anything else is reported as a Failure
+// with a reason code, and its ir.Func gets no code.
 package lower
 
 import (
@@ -24,23 +26,22 @@ const (
 	// ReasonOpcodeOutsideSubset is a built-in outside the subset,
 	// FailureOpcode names it.
 	ReasonOpcodeOutsideSubset
-	// ReasonOperandNotScalar is an operand of pointer, array, slice or
-	// struct type.
+	// ReasonOperandNotScalar is an operand of a type signature the lowering
+	// does not know.
 	ReasonOperandNotScalar
-	// ReasonOperandIndexed is an operand with an index, a field or a
-	// dereference.
+	// ReasonOperandIndexed is an index, field or dereference the lowering
+	// does not follow, for example more indexes than array dimensions.
 	ReasonOperandIndexed
 	// ReasonOperandOutsideData is an absolute operand outside the data
 	// segment.
 	ReasonOperandOutsideData
-	// ReasonOperandByReference is an operand passed by reference.
+	// ReasonOperandByReference is a reference to an inner element through a
+	// pointer, which the old loop moves back by the object header.
 	ReasonOperandByReference
 	// ReasonOperandString is a str compared by test.
 	ReasonOperandString
 	// ReasonOperandCount is an operator with an unexpected operand count.
 	ReasonOperandCount
-	// ReasonOutputPointer is identity into a pointer.
-	ReasonOutputPointer
 	// ReasonDeclarationType is a declaration of a type the old loop panics on.
 	ReasonDeclarationType
 	// ReasonExpressionType is an expression that is neither an atomic
@@ -52,6 +53,15 @@ const (
 	// ReasonParameterLayout is a function whose own inputs or outputs are
 	// not plain frame variables.
 	ReasonParameterLayout
+	// ReasonOperandHeap is an operand whose address goes through a slice,
+	// which lives on the heap.
+	ReasonOperandHeap
+	// ReasonPrintfFormat is a printf whose format is not a str literal, or a
+	// verb and value the machine does not print as buildString does.
+	ReasonPrintfFormat
+	// ReasonOperandOutsideFrame is a stack operand that does not fit the frame
+	// of its function.
+	ReasonOperandOutsideFrame
 	// ReasonCount is one past the last reason.
 	ReasonCount
 )
@@ -66,11 +76,13 @@ var ReasonNames = [ReasonCount]string{
 	ReasonOperandByReference:  "operand by reference",
 	ReasonOperandString:       "operand string",
 	ReasonOperandCount:        "operand count",
-	ReasonOutputPointer:       "output pointer",
 	ReasonDeclarationType:     "declaration type",
 	ReasonExpressionType:      "expression type",
 	ReasonCalleeLayout:        "callee layout",
 	ReasonParameterLayout:     "parameter layout",
+	ReasonOperandHeap:         "operand heap",
+	ReasonPrintfFormat:        "printf format",
+	ReasonOperandOutsideFrame: "operand outside frame",
 }
 
 // Failure is one function that did not lower. FailureExpression indexes its
@@ -83,22 +95,46 @@ type Failure struct {
 	FailureOpcode     uint32
 }
 
-// operand is one lowered operand.
+// operand is one lowered operand, a byte offset the instruction reads or
+// writes directly.
 type operand struct {
 	operandOffset uint32
 	operandFrame  bool
 	operandSize   uint32
 }
 
-// state is one Program call.
+// place is where the value of an operand is. A static place is an offset,
+// relative to the frame when placeFrame is set. A computed place is the
+// address held in the scratch slot placeOffset, plus placeConstant.
+type place struct {
+	placeOffset   uint32
+	placeFrame    bool
+	placeComputed bool
+	placeConstant uint32
+	placeSize     uint32
+}
+
+// pendingStore is the copy from scratch to a computed output place, made
+// after the instruction that writes the output.
+type pendingStore struct {
+	pendingStoreActive bool
+	pendingStoreInstr  ir.Instr
+}
+
+// state is one Program call. stateScratchUsed is the scratch the current
+// expression uses, stateFrameSize the frame of the current function.
 type state struct {
-	statePrgrm     *ast.CXProgram
-	stateTable     opcodeTable
-	stateStackSize uint32
-	stateDataStart uint32
-	stateDataEnd   uint32
-	stateImage     ir.Image
-	stateFiles     map[string]uint32
+	statePrgrm       *ast.CXProgram
+	stateTable       opcodeTable
+	stateStackSize   uint32
+	stateDataStart   uint32
+	stateDataEnd     uint32
+	stateScratchUsed uint32
+	stateFrameSize   uint32
+	statePrintf      int
+	statePrintLine   int
+	stateImage       ir.Image
+	stateFiles       map[string]uint32
 }
 
 // jumpFixup is a jump target still in expression indexes.
@@ -121,6 +157,8 @@ func Program(prgrm *ast.CXProgram) (ir.Image, []Failure) {
 	}
 	s.stateDataEnd = s.stateDataStart + pointerToUint32(prgrm.Data.Size)
 	opcodeTableBuild(&s.stateTable)
+	s.statePrintf = opcodeNumber("printf")
+	s.statePrintLine = opcodeNumber("string.PrintLine")
 
 	image := &s.stateImage
 	image.ImageStackSize = s.stateStackSize
@@ -156,17 +194,25 @@ func Program(prgrm *ast.CXProgram) (ir.Image, []Failure) {
 	return s.stateImage, failures
 }
 
+// opcodeNumber returns the language number of a live opcode name.
+func opcodeNumber(name string) int {
+	row, found := constants.OpcodeLifecycleLiveByName(name)
+	assert.AssertInvariantTrue(found, "lower: opcode "+name+" is not live")
+	return row.Number
+}
+
 // function lowers fn into stateImage.ImageFuncs[functionIndex].
 func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, bool) {
 	failure := Failure{FailureFunction: functionIndex}
 	lowered := ir.Func{FuncFrameSize: pointerToUint32(fn.Size)}
+	s.stateFrameSize = lowered.FuncFrameSize
 
 	var reason ReasonCode
-	if lowered.FuncInputs, reason = s.slots(fn.GetInputs(s.statePrgrm)); reason != ReasonNone {
+	if lowered.FuncInputs, reason = s.slots(fn.GetInputs(s.statePrgrm), lowered.FuncFrameSize); reason != ReasonNone {
 		failure.FailureReason = ReasonParameterLayout
 		return failure, true
 	}
-	if lowered.FuncOutputs, reason = s.slots(fn.GetOutputs(s.statePrgrm)); reason != ReasonNone {
+	if lowered.FuncOutputs, reason = s.slots(fn.GetOutputs(s.statePrgrm), lowered.FuncFrameSize); reason != ReasonNone {
 		failure.FailureReason = ReasonParameterLayout
 		return failure, true
 	}
@@ -181,6 +227,7 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 	for line := 0; line < lineCount; line++ {
 		expressionPc[line] = uint32(len(code))
 		failure.FailureExpression = uint32(line)
+		s.stateScratchUsed = 0
 		expr := &fn.Expressions[line]
 
 		switch expr.Type {
@@ -277,28 +324,31 @@ func (s *state) declaration(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator) (
 	}), ReasonNone
 }
 
-// builtIn lowers a built-in operator. A jump returns its fixup.
+// builtIn lowers a built-in operator. A jump returns its fixup. The old loop
+// computes every operand address before it runs the operator, and so does
+// the lowered code.
 func (s *state) builtIn(code []ir.Instr, line int, cxAtomicOp *ast.CXAtomicOperator, operator *ast.CXFunction) ([]ir.Instr, jumpFixup, bool, ReasonCode, uint32) {
 	inputs := cxAtomicOp.GetInputs(s.statePrgrm)
 	outputs := cxAtomicOp.GetOutputs(s.statePrgrm)
 	opcode := operator.AtomicOPCode
-	pc := uint32(len(code))
 	noFixup := jumpFixup{}
 
 	switch opcode {
 	case constants.OP_NOP:
 		return code, noFixup, false, ReasonNone, 0
 	case constants.OP_GOTO, constants.OP_BREAK, constants.OP_CONTINUE:
+		pc := uint32(len(code))
 		code = append(code, ir.Instr{InstrOpcode: ir.OpcodeJump})
 		return code, jumpFixup{jumpFixupPc: pc, jumpFixupTrue: line + cxAtomicOp.ThenLines + 1}, true, ReasonNone, 0
 	case constants.OP_JMP, constants.OP_ABS_JMP:
 		if len(inputs) != 1 {
 			return code, noFixup, false, ReasonOperandCount, 0
 		}
-		condition, reason := s.operand(inputs[0])
+		code, condition, reason := s.read(code, inputs[0])
 		if reason != ReasonNone {
 			return code, noFixup, false, reason, 0
 		}
+		pc := uint32(len(code))
 		in := ir.Instr{InstrOpcode: ir.OpcodeJumpIf}
 		operandSet(&in, 0, condition)
 		fixup := jumpFixup{
@@ -318,6 +368,20 @@ func (s *state) builtIn(code []ir.Instr, line int, cxAtomicOp *ast.CXAtomicOpera
 	case constants.OP_TEST:
 		code, reason := s.test(code, inputs)
 		return code, noFixup, false, reason, 0
+	case s.statePrintLine:
+		if len(inputs) != 1 || len(outputs) != 0 {
+			return code, noFixup, false, ReasonOperandCount, 0
+		}
+		code, str, reason := s.read(code, inputs[0])
+		if reason != ReasonNone {
+			return code, noFixup, false, reason, 0
+		}
+		in := ir.Instr{InstrOpcode: ir.OpcodePrintStr, InstrN: uint32(ir.PrintStrModeLine)}
+		operandSet(&in, 0, str)
+		return append(code, in), noFixup, false, ReasonNone, 0
+	case s.statePrintf:
+		code, reason := s.printf(code, inputs, outputs)
+		return code, noFixup, false, reason, 0
 	}
 
 	entry := opcodeEntry{}
@@ -332,59 +396,131 @@ func (s *state) builtIn(code []ir.Instr, line int, cxAtomicOp *ast.CXAtomicOpera
 	}
 	in := ir.Instr{InstrOpcode: entry.opcodeEntryOpcode}
 	for i, signatureIndex := range inputs {
-		lowered, reason := s.operand(signatureIndex)
+		var lowered operand
+		var reason ReasonCode
+		code, lowered, reason = s.read(code, signatureIndex)
 		if reason != ReasonNone {
 			return code, noFixup, false, reason, 0
 		}
 		operandSet(&in, i, lowered)
 	}
+	var store pendingStore
 	if len(outputs) == 1 {
-		lowered, reason := s.operand(outputs[0])
+		var lowered operand
+		var reason ReasonCode
+		code, lowered, store, reason = s.writeBegin(code, outputs[0], 0)
 		if reason != ReasonNone {
 			return code, noFixup, false, reason, 0
 		}
 		operandSet(&in, 2, lowered)
 	}
-	return append(code, in), noFixup, false, ReasonNone, 0
+	code = append(code, in)
+	return writeEnd(code, store), noFixup, false, ReasonNone, 0
 }
 
-// identity lowers opIdentity for a copy by value. Taking an address, into a
-// pointer or by reference, stays outside the subset.
+// identity lowers opIdentity. It either copies the input by value or writes
+// its address as a pointer, by the same type tests opIdentity makes.
 func (s *state) identity(code []ir.Instr, inputs []ast.CXTypeSignatureIndex, outputs []ast.CXTypeSignatureIndex) ([]ir.Instr, ReasonCode) {
 	if len(inputs) != 1 || len(outputs) != 1 {
 		return code, ReasonOperandCount
 	}
-	output := s.statePrgrm.GetCXTypeSignatureFromArray(outputs[0])
-	if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE && s.statePrgrm.GetCXArgFromArray(ast.CXArgumentIndex(output.Meta)).IsPointer() {
-		return code, ReasonOutputPointer
+	prgrm := s.statePrgrm
+	input := prgrm.GetCXTypeSignatureFromArray(inputs[0])
+	output := prgrm.GetCXTypeSignatureFromArray(outputs[0])
+	var address bool
+	switch output.Type {
+	case ast.TYPE_CXARGUMENT_DEPRECATE:
+		element := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(output.Meta)).GetAssignmentElement(prgrm)
+		address = element.IsPointer() && element.PointerTargetType != types.STR && element.Type != types.AFF || element.PassBy == constants.PASSBY_REFERENCE
+	case ast.TYPE_ATOMIC, ast.TYPE_SLICE_ATOMIC, ast.TYPE_STRUCT:
+		address = output.PassBy == constants.PASSBY_REFERENCE
+	case ast.TYPE_POINTER_ATOMIC:
+		address = true
+	case ast.TYPE_ARRAY_ATOMIC:
+	case ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
+		address = input.PassBy == constants.PASSBY_REFERENCE
+	case ast.TYPE_POINTER_STRUCT:
+		address = !output.IsDeref
+	default:
+		return code, ReasonOperandNotScalar
 	}
-	source, reason := s.operand(inputs[0])
+
+	var source place
+	var reason ReasonCode
+	if code, source, reason = s.placeOf(code, inputs[0]); reason != ReasonNone {
+		return code, reason
+	}
+	if address {
+		code, in, reason := s.addressOf(code, source)
+		if reason != ReasonNone {
+			return code, reason
+		}
+		code, destination, store, reason := s.writeBegin(code, outputs[0], machinePointerSize)
+		if reason != ReasonNone {
+			return code, reason
+		}
+		operandSet(&in, 2, destination)
+		return writeEnd(append(code, in), store), ReasonNone
+	}
+	code, value, reason := s.placeRead(code, source)
 	if reason != ReasonNone {
 		return code, reason
 	}
-	destination, reason := s.operand(outputs[0])
+	code, destination, store, reason := s.writeBegin(code, outputs[0], value.operandSize)
 	if reason != ReasonNone {
 		return code, reason
 	}
-	in := ir.Instr{InstrOpcode: ir.OpcodeMove, InstrN: source.operandSize}
-	operandSet(&in, 0, source)
+	in := ir.Instr{InstrOpcode: ir.OpcodeMove, InstrN: value.operandSize}
+	operandSet(&in, 0, value)
 	operandSet(&in, 2, destination)
-	return append(code, in), ReasonNone
+	return writeEnd(append(code, in), store), ReasonNone
+}
+
+// machinePointerSize is the size of a pointer in memory.
+const machinePointerSize = uint32(types.POINTER_SIZE)
+
+// addressOf returns an instruction that writes the address of p as a
+// pointer, its output operand still to set.
+func (s *state) addressOf(code []ir.Instr, p place) ([]ir.Instr, ir.Instr, ReasonCode) {
+	if p.placeComputed {
+		return code, ir.Instr{InstrOpcode: ir.OpcodeAddressPointer, InstrA: p.placeOffset, InstrM: p.placeConstant}, ReasonNone
+	}
+	lowered, reason := s.placeStatic(p)
+	if reason != ReasonNone {
+		return code, ir.Instr{}, reason
+	}
+	in := ir.Instr{InstrOpcode: ir.OpcodeAddressOf}
+	operandSet(&in, 0, lowered)
+	return code, in, ReasonNone
 }
 
 // test lowers opTest. assert compares a str argument by its characters,
-// which needs the heap, so that stays outside the subset.
+// which stays outside the subset. The str tests are the ones assert makes.
 func (s *state) test(code []ir.Instr, inputs []ast.CXTypeSignatureIndex) ([]ir.Instr, ReasonCode) {
 	if len(inputs) != 3 {
 		return code, ReasonOperandCount
 	}
-	first := s.statePrgrm.GetCXTypeSignatureFromArray(inputs[0])
-	if first.Type == ast.TYPE_CXARGUMENT_DEPRECATE && s.statePrgrm.GetCXArgFromArray(ast.CXArgumentIndex(first.Meta)).IsString() {
-		return code, ReasonOperandString
+	prgrm := s.statePrgrm
+	first := prgrm.GetCXTypeSignatureFromArray(inputs[0])
+	switch first.Type {
+	case ast.TYPE_CXARGUMENT_DEPRECATE:
+		if prgrm.GetCXArgFromArray(ast.CXArgumentIndex(first.Meta)).IsString() {
+			return code, ReasonOperandString
+		}
+	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
+		fields := prgrm.GetCXTypeSignatureStructFromArray(first.Meta).Fields
+		if len(fields) > 0 && prgrm.GetCXArgFromArray(fields[len(fields)-1]).IsString() {
+			return code, ReasonOperandString
+		}
+	case ast.TYPE_ATOMIC, ast.TYPE_POINTER_ATOMIC, ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_SLICE_ATOMIC:
+	default:
+		return code, ReasonOperandNotScalar
 	}
 	in := ir.Instr{InstrOpcode: ir.OpcodeTestEqual}
 	for i, signatureIndex := range inputs {
-		lowered, reason := s.operand(signatureIndex)
+		var lowered operand
+		var reason ReasonCode
+		code, lowered, reason = s.read(code, signatureIndex)
 		if reason != ReasonNone {
 			return code, reason
 		}
@@ -400,33 +536,52 @@ func (s *state) test(code []ir.Instr, inputs []ast.CXTypeSignatureIndex) ([]ir.I
 }
 
 // call lowers a call of a function, as processNonAtomicOperators and
-// popStack do: wipe the callee frame, copy the inputs, call, then copy the
-// outputs the caller receives.
+// popStack do: wipe the callee frame, copy the inputs or their addresses,
+// call, then copy the outputs the caller receives. The addresses of the
+// outputs are computed after the call, as popStack computes them.
 func (s *state) call(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator, callee *ast.CXFunction) ([]ir.Instr, ReasonCode) {
-	inputs := cxAtomicOp.GetInputs(s.statePrgrm)
-	outputs := cxAtomicOp.GetOutputs(s.statePrgrm)
-	calleeInputs := callee.GetInputs(s.statePrgrm)
-	calleeOutputs := callee.GetOutputs(s.statePrgrm)
+	prgrm := s.statePrgrm
+	inputs := cxAtomicOp.GetInputs(prgrm)
+	outputs := cxAtomicOp.GetOutputs(prgrm)
+	calleeInputs := callee.GetInputs(prgrm)
+	calleeOutputs := callee.GetOutputs(prgrm)
 	if len(inputs) > len(calleeInputs) {
 		return code, ReasonOperandCount
 	}
 
-	code = append(code, ir.Instr{InstrOpcode: ir.OpcodeCallFrame, InstrN: pointerToUint32(callee.Size)})
+	calleeFrameSize := pointerToUint32(callee.Size)
+	code = append(code, ir.Instr{InstrOpcode: ir.OpcodeCallFrame, InstrN: calleeFrameSize})
 	for i, signatureIndex := range inputs {
-		signature := s.statePrgrm.GetCXTypeSignatureFromArray(signatureIndex)
-		if signature.PassBy == constants.PASSBY_REFERENCE {
-			return code, ReasonOperandByReference
-		}
-		source, reason := s.operand(signatureIndex)
+		destination, reason := s.slot(calleeInputs[i], calleeFrameSize)
 		if reason != ReasonNone {
-			return code, reason
-		}
-		destination, reason := s.operand(calleeInputs[i])
-		if reason != ReasonNone || !destination.operandFrame {
 			return code, ReasonCalleeLayout
 		}
-		in := ir.Instr{InstrOpcode: ir.OpcodeCallArg, InstrC: destination.operandOffset, InstrN: source.operandSize}
-		operandSet(&in, 0, source)
+		signature := prgrm.GetCXTypeSignatureFromArray(signatureIndex)
+		byReference := signature.PassBy == constants.PASSBY_REFERENCE
+		if signature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			byReference = byReference || prgrm.GetCXArgFromArray(ast.CXArgumentIndex(signature.Meta)).PassBy == constants.PASSBY_REFERENCE
+		}
+		var source place
+		if code, source, reason = s.placeOf(code, signatureIndex); reason != ReasonNone {
+			return code, reason
+		}
+		var value operand
+		if byReference {
+			if signature.IsInnerReference(prgrm) {
+				return code, ReasonOperandByReference
+			}
+			var in ir.Instr
+			if code, in, reason = s.addressOf(code, source); reason != ReasonNone {
+				return code, reason
+			}
+			value = operand{operandOffset: s.scratch(machinePointerSize), operandSize: machinePointerSize}
+			operandSet(&in, 2, value)
+			code = append(code, in)
+		} else if code, value, reason = s.placeRead(code, source); reason != ReasonNone {
+			return code, reason
+		}
+		in := ir.Instr{InstrOpcode: ir.OpcodeCallArg, InstrC: destination.SlotOffset, InstrN: value.operandSize}
+		operandSet(&in, 0, value)
 		code = append(code, in)
 	}
 
@@ -435,79 +590,337 @@ func (s *state) call(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator, callee *
 		if i >= len(outputs) {
 			continue
 		}
-		source, reason := s.operand(signatureIndex)
-		if reason != ReasonNone || !source.operandFrame {
+		source, reason := s.slot(signatureIndex, calleeFrameSize)
+		if reason != ReasonNone {
 			return code, ReasonCalleeLayout
 		}
-		destination, reason := s.operand(outputs[i])
-		if reason != ReasonNone {
+		var tail []ir.Instr
+		var destination place
+		if tail, destination, reason = s.placeOf(nil, outputs[i]); reason != ReasonNone {
 			return code, reason
 		}
-		in := ir.Instr{InstrOpcode: ir.OpcodeCallResult, InstrA: source.operandOffset, InstrN: source.operandSize}
-		operandSet(&in, 2, destination)
+		in := ir.Instr{InstrOpcode: ir.OpcodeCallResult, InstrA: source.SlotOffset, InstrN: source.SlotSize}
+		if !destination.placeComputed {
+			lowered, reason := s.placeStatic(destination)
+			if reason != ReasonNone {
+				return code, reason
+			}
+			operandSet(&in, 2, lowered)
+			code = append(code, in)
+			continue
+		}
+		value := operand{operandOffset: s.scratch(source.SlotSize), operandSize: source.SlotSize}
+		operandSet(&in, 2, value)
 		code = append(code, in)
+		code = append(code, tail...)
+		code = append(code, ir.Instr{
+			InstrOpcode: ir.OpcodeAddressStore,
+			InstrD:      1,
+			InstrA:      value.operandOffset,
+			InstrC:      destination.placeOffset,
+			InstrM:      destination.placeConstant,
+			InstrN:      source.SlotSize,
+		})
 	}
 	return code, ReasonNone
 }
 
 // slots lowers the inputs or outputs of a function to frame slots.
-func (s *state) slots(signatures []ast.CXTypeSignatureIndex) ([]ir.Slot, ReasonCode) {
+func (s *state) slots(signatures []ast.CXTypeSignatureIndex, frameSize uint32) ([]ir.Slot, ReasonCode) {
 	slots := make([]ir.Slot, len(signatures))
 	for i, signatureIndex := range signatures {
-		lowered, reason := s.operand(signatureIndex)
+		slot, reason := s.slot(signatureIndex, frameSize)
 		if reason != ReasonNone {
 			return nil, reason
 		}
-		if !lowered.operandFrame {
-			return nil, ReasonOperandOutsideData
-		}
-		slots[i] = ir.Slot{SlotOffset: lowered.operandOffset, SlotSize: lowered.operandSize}
+		slots[i] = slot
 	}
 	return slots, ReasonNone
 }
 
-// operand lowers an operand whose address GetFinalOffset computes from its
-// offset and the frame pointer alone, a plain variable or literal.
-func (s *state) operand(signatureIndex ast.CXTypeSignatureIndex) (operand, ReasonCode) {
-	signature := s.statePrgrm.GetCXTypeSignatureFromArray(signatureIndex)
-	var offset types.Pointer
-	switch signature.Type {
-	case ast.TYPE_ATOMIC:
-		if signature.PassBy == constants.PASSBY_REFERENCE {
-			return operand{}, ReasonOperandByReference
-		}
-		offset = signature.Offset
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
-		arg := s.statePrgrm.GetCXArg(ast.CXArgumentIndex(signature.Meta))
-		if arg.PassBy == constants.PASSBY_REFERENCE {
-			return operand{}, ReasonOperandByReference
-		}
-		if len(arg.Fields) > 0 || len(arg.Indexes) > 0 {
-			return operand{}, ReasonOperandIndexed
-		}
-		for _, deref := range arg.DereferenceOperations {
-			if deref == constants.DEREF_POINTER {
-				return operand{}, ReasonOperandIndexed
-			}
-		}
-		if arg.IsPointer() || arg.IsStruct() || len(arg.Lengths) > 0 {
-			return operand{}, ReasonOperandNotScalar
-		}
-		offset = arg.Offset
-	default:
-		return operand{}, ReasonOperandNotScalar
+// slot lowers a function input or output, which must be a plain variable
+// inside a frame of frameSize bytes.
+func (s *state) slot(signatureIndex ast.CXTypeSignatureIndex, frameSize uint32) (ir.Slot, ReasonCode) {
+	code, p, reason := s.placeOf(nil, signatureIndex)
+	if reason != ReasonNone {
+		return ir.Slot{}, reason
 	}
+	if len(code) > 0 || p.placeComputed || !p.placeFrame || uint64(p.placeOffset)+uint64(p.placeSize) > uint64(frameSize) {
+		return ir.Slot{}, ReasonOperandOutsideData
+	}
+	return ir.Slot{SlotOffset: p.placeOffset, SlotSize: p.placeSize}, ReasonNone
+}
 
-	lowered := operand{
-		operandOffset: pointerToUint32(offset),
-		operandSize:   pointerToUint32(signature.GetSize(s.statePrgrm, false)),
+// read lowers an input operand. A computed place is loaded into scratch.
+func (s *state) read(code []ir.Instr, signatureIndex ast.CXTypeSignatureIndex) ([]ir.Instr, operand, ReasonCode) {
+	code, p, reason := s.placeOf(code, signatureIndex)
+	if reason != ReasonNone {
+		return code, operand{}, reason
 	}
-	if lowered.operandOffset < s.stateStackSize {
-		lowered.operandFrame = true
-	} else if lowered.operandOffset < s.stateDataStart || lowered.operandOffset+lowered.operandSize > s.stateDataEnd {
+	return s.placeRead(code, p)
+}
+
+// placeRead returns p as an operand, loading a computed place into scratch.
+func (s *state) placeRead(code []ir.Instr, p place) ([]ir.Instr, operand, ReasonCode) {
+	if !p.placeComputed {
+		lowered, reason := s.placeStatic(p)
+		return code, lowered, reason
+	}
+	lowered := operand{operandOffset: s.scratch(p.placeSize), operandSize: p.placeSize}
+	return append(code, ir.Instr{
+		InstrOpcode: ir.OpcodeAddressLoad,
+		InstrA:      p.placeOffset,
+		InstrM:      p.placeConstant,
+		InstrN:      p.placeSize,
+		InstrC:      lowered.operandOffset,
+	}), lowered, ReasonNone
+}
+
+// writeBegin lowers an output operand that an instruction writes size bytes
+// to, or as many bytes as the operand has when size is 0. A computed place
+// is written to scratch and copied to its address by writeEnd.
+func (s *state) writeBegin(code []ir.Instr, signatureIndex ast.CXTypeSignatureIndex, size uint32) ([]ir.Instr, operand, pendingStore, ReasonCode) {
+	code, p, reason := s.placeOf(code, signatureIndex)
+	if reason != ReasonNone {
+		return code, operand{}, pendingStore{}, reason
+	}
+	if size != 0 {
+		p.placeSize = size
+	}
+	if !p.placeComputed {
+		lowered, reason := s.placeStatic(p)
+		return code, lowered, pendingStore{}, reason
+	}
+	lowered := operand{operandOffset: s.scratch(p.placeSize), operandSize: p.placeSize}
+	return code, lowered, pendingStore{
+		pendingStoreActive: true,
+		pendingStoreInstr: ir.Instr{
+			InstrOpcode: ir.OpcodeAddressStore,
+			InstrD:      1,
+			InstrA:      lowered.operandOffset,
+			InstrC:      p.placeOffset,
+			InstrM:      p.placeConstant,
+			InstrN:      p.placeSize,
+		},
+	}, ReasonNone
+}
+
+// writeEnd adds the store of writeBegin, if any.
+func writeEnd(code []ir.Instr, store pendingStore) []ir.Instr {
+	if !store.pendingStoreActive {
+		return code
+	}
+	return append(code, store.pendingStoreInstr)
+}
+
+// scratch reserves size bytes of scratch for the current expression and
+// returns their absolute address.
+func (s *state) scratch(size uint32) uint32 {
+	address := s.stateDataEnd + s.stateScratchUsed
+	s.stateScratchUsed += size
+	if s.stateScratchUsed > s.stateImage.ImageScratchSize {
+		s.stateImage.ImageScratchSize = s.stateScratchUsed
+	}
+	return address
+}
+
+// placeStatic checks a static place and returns it as an operand. A stack
+// offset is relative to the frame and must be inside the frame of the
+// current function. The old loop lets a larger one run into the data
+// segment. An absolute place must be inside the data segment.
+func (s *state) placeStatic(p place) (operand, ReasonCode) {
+	lowered := operand{operandOffset: p.placeOffset, operandFrame: p.placeFrame, operandSize: p.placeSize}
+	if p.placeFrame && uint64(p.placeOffset)+uint64(p.placeSize) > uint64(s.stateFrameSize) {
+		return operand{}, ReasonOperandOutsideFrame
+	}
+	if !p.placeFrame && (p.placeOffset < s.stateDataStart || uint64(p.placeOffset)+uint64(p.placeSize) > uint64(s.stateDataEnd)) {
 		return operand{}, ReasonOperandOutsideData
 	}
 	return lowered, ReasonNone
+}
+
+// placeOf lowers the address computation of an operand, the steps
+// GetFinalOffset takes for its type signature. Each index, dereference and
+// field becomes code. A place without index or dereference stays static,
+// with its field offsets added.
+func (s *state) placeOf(code []ir.Instr, signatureIndex ast.CXTypeSignatureIndex) ([]ir.Instr, place, ReasonCode) {
+	prgrm := s.statePrgrm
+	signature := prgrm.GetCXTypeSignatureFromArray(signatureIndex)
+	size := pointerToUint32(signature.GetSize(prgrm, false))
+	var reason ReasonCode
+	switch signature.Type {
+	case ast.TYPE_ATOMIC:
+		p := s.placeBase(signature.Offset, size)
+		return code, p, ReasonNone
+	case ast.TYPE_POINTER_ATOMIC:
+		if signature.IsDeref {
+			return code, place{}, ReasonOperandIndexed
+		}
+		return code, s.placeBase(signature.Offset, size), ReasonNone
+	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC:
+		p := s.placeBase(signature.Offset, size)
+		if signature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
+			if !signature.IsDeref {
+				return code, p, ReasonNone
+			}
+			if code, reason = s.placeDeref(code, &p); reason != ReasonNone {
+				return code, p, reason
+			}
+		}
+		details := prgrm.GetCXTypeSignatureArrayFromArray(signature.Meta)
+		elementSize := pointerToUint32(types.Code(details.Meta).Size())
+		for i, indexSignature := range details.Indexes {
+			if i >= len(details.Lengths) {
+				return code, p, ReasonOperandIndexed
+			}
+			stride := pointerToUint32(types.TotalLength(details.Lengths[i+1:])) * elementSize
+			if code, reason = s.placeIndex(code, &p, indexSignature, stride); reason != ReasonNone {
+				return code, p, reason
+			}
+		}
+		return code, p, ReasonNone
+	case ast.TYPE_SLICE_ATOMIC:
+		if len(prgrm.GetCXTypeSignatureArrayFromArray(signature.Meta).Indexes) > 0 {
+			return code, place{}, ReasonOperandHeap
+		}
+		return code, s.placeBase(signature.Offset, size), ReasonNone
+	case ast.TYPE_POINTER_SLICE_ATOMIC:
+		if signature.IsDeref {
+			return code, place{}, ReasonOperandHeap
+		}
+		return code, s.placeBase(signature.Offset, size), ReasonNone
+	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
+		p := s.placeBase(signature.Offset, size)
+		if signature.Type == ast.TYPE_POINTER_STRUCT && signature.IsDeref {
+			if code, reason = s.placeDeref(code, &p); reason != ReasonNone {
+				return code, p, reason
+			}
+		}
+		for _, fieldIndex := range prgrm.GetCXTypeSignatureStructFromArray(signature.Meta).Fields {
+			field := prgrm.GetCXArgFromArray(fieldIndex)
+			placeAdd(&p, pointerToUint32(field.Offset))
+			if code, reason = s.placeDereferences(code, &p, field); reason != ReasonNone {
+				return code, p, reason
+			}
+		}
+		return code, p, ReasonNone
+	case ast.TYPE_CXARGUMENT_DEPRECATE:
+		arg := prgrm.GetCXArg(ast.CXArgumentIndex(signature.Meta))
+		p := s.placeBase(arg.Offset, size)
+		if code, reason = s.placeDereferences(code, &p, arg); reason != ReasonNone {
+			return code, p, reason
+		}
+		for _, fieldIndex := range arg.Fields {
+			field := prgrm.GetCXArgFromArray(fieldIndex)
+			placeAdd(&p, pointerToUint32(field.Offset))
+			if code, reason = s.placeDereferences(code, &p, field); reason != ReasonNone {
+				return code, p, reason
+			}
+		}
+		return code, p, ReasonNone
+	}
+	return code, place{}, ReasonOperandNotScalar
+}
+
+// placeBase is a static place at offset, relative to the frame when offset
+// is inside the stack.
+func (s *state) placeBase(offset types.Pointer, size uint32) place {
+	base := pointerToUint32(offset)
+	return place{placeOffset: base, placeFrame: base < s.stateStackSize, placeSize: size}
+}
+
+// placeAdd adds a field offset to p.
+func placeAdd(p *place, offset uint32) {
+	if p.placeComputed {
+		p.placeConstant += offset
+	} else {
+		p.placeOffset += offset
+	}
+}
+
+// placeDereferences follows the DereferenceOperations of arg as
+// CalculateDereferences does. Array and slice steps are skipped when arg has
+// no indexes.
+func (s *state) placeDereferences(code []ir.Instr, p *place, arg *ast.CXArgument) ([]ir.Instr, ReasonCode) {
+	indexCount := 0
+	derefPointer := false
+	var reason ReasonCode
+	for _, operation := range arg.DereferenceOperations {
+		if len(arg.Indexes) == 0 && operation != constants.DEREF_POINTER {
+			continue
+		}
+		switch operation {
+		case constants.DEREF_SLICE:
+			return code, ReasonOperandHeap
+		case constants.DEREF_ARRAY:
+			if indexCount >= len(arg.Indexes) || indexCount >= len(arg.Lengths) {
+				return code, ReasonOperandIndexed
+			}
+			elementSize := ast.GetDerefSize(s.statePrgrm, arg, indexCount, derefPointer, true)
+			stride := pointerToUint32(types.TotalLength(arg.Lengths[indexCount+1:]) * elementSize)
+			derefPointer = false
+			if code, reason = s.placeIndex(code, p, arg.Indexes[indexCount], stride); reason != ReasonNone {
+				return code, reason
+			}
+			indexCount++
+		case constants.DEREF_POINTER:
+			if code, reason = s.placeDeref(code, p); reason != ReasonNone {
+				return code, reason
+			}
+			derefPointer = true
+		}
+	}
+	return code, ReasonNone
+}
+
+// placeIndex adds the i32 at indexSignature times stride to p, which
+// becomes computed. The old loop reads 4 bytes at the index whatever its
+// type.
+func (s *state) placeIndex(code []ir.Instr, p *place, indexSignature ast.CXTypeSignatureIndex, stride uint32) ([]ir.Instr, ReasonCode) {
+	code, indexPlace, reason := s.placeOf(code, indexSignature)
+	if reason != ReasonNone {
+		return code, reason
+	}
+	indexPlace.placeSize = 4
+	code, index, reason := s.placeRead(code, indexPlace)
+	if reason != ReasonNone {
+		return code, reason
+	}
+	in := ir.Instr{InstrN: stride}
+	operandSet(&in, 1, index)
+	if p.placeComputed {
+		in.InstrOpcode = ir.OpcodeAddressIndex
+		in.InstrA = p.placeOffset
+		in.InstrM = p.placeConstant
+		in.InstrC = p.placeOffset
+	} else {
+		base, reason := s.placeStatic(place{placeOffset: p.placeOffset, placeFrame: p.placeFrame})
+		if reason != ReasonNone {
+			return code, reason
+		}
+		in.InstrOpcode = ir.OpcodeAddressIndexStatic
+		operandSet(&in, 0, base)
+		in.InstrC = s.scratch(4)
+	}
+	*p = place{placeOffset: in.InstrC, placeComputed: true, placeSize: p.placeSize}
+	return append(code, in), ReasonNone
+}
+
+// placeDeref replaces p by the pointer stored at p.
+func (s *state) placeDeref(code []ir.Instr, p *place) ([]ir.Instr, ReasonCode) {
+	var in ir.Instr
+	if p.placeComputed {
+		in = ir.Instr{InstrOpcode: ir.OpcodeAddressDeref, InstrA: p.placeOffset, InstrM: p.placeConstant, InstrC: p.placeOffset}
+	} else {
+		pointer, reason := s.placeStatic(place{placeOffset: p.placeOffset, placeFrame: p.placeFrame, placeSize: machinePointerSize})
+		if reason != ReasonNone {
+			return code, reason
+		}
+		in = ir.Instr{InstrOpcode: ir.OpcodeAddressDerefStatic, InstrC: s.scratch(4)}
+		operandSet(&in, 0, pointer)
+	}
+	*p = place{placeOffset: in.InstrC, placeComputed: true, placeSize: p.placeSize}
+	return append(code, in), ReasonNone
 }
 
 // operandSet puts lowered in operand slot i of in, 0 to 3 for A to D.

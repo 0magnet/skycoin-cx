@@ -239,6 +239,21 @@ func runTestCases(t *runner.TestRunner) {
 	t.RunWant("test-vm-init-divide.cx", types.CX_RUNTIME_ERROR, "a division by zero in a global initializer is a runtime error (skycoin-cx#408)",
 		"error: test-vm-init-divide.cx:7, CX_RUNTIME_ERROR, runtime error: integer divide by zero\n===Callstack===\n>>> *init()",
 	)
+	t.RunWant("test-vm-array.cx", types.CX_SUCCESS, "arrays in the stack and data segment (skycoin-cx#408)",
+		"16\n30\n23\n23\n7\n5\n",
+	)
+	t.RunWant("test-vm-struct.cx", types.CX_SUCCESS, "struct fields, arrays of structs and struct parameters (skycoin-cx#408)",
+		"12\n9\n6\n11\n12\n5\n9\n",
+	)
+	t.RunWant("test-vm-pointer.cx", types.CX_SUCCESS, "pointers to scalars, fields and elements in the stack and data segment (skycoin-cx#408)",
+		"42\n43\n2\n33\n7\n9\n8\n",
+	)
+	t.RunWant("test-vm-print.cx", types.CX_SUCCESS, "string.PrintLine and printf (skycoin-cx#408)",
+		"hello\nfrom a global\nfrom a field\n\n",
+		"-12 1234567890123 200\n1.5000000 2.2500000000000000\n-12 1.5 2.25 true from a field\n",
+		"from a field has 3\ntrue false\n100% done, a \n escape\nmissing -12 and %!d(MISSING)\n",
+		"-12 on a float is empty: []\nelement 77\nthrough a pointer 77 77\n",
+	)
 	t.RunWant("test-test-type-line.cx", types.CX_COMPILATION_ERROR, "a test(), panic or operator type error names the line of the call (skycoin-cx#259)",
 		"test-test-type-line.cx:8 first and second input arguments' types are not equal in 'test' call",
 		"test-test-type-line.cx:11 first and second input arguments' types are not equal in 'panic' call",

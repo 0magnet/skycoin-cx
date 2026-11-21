@@ -3,6 +3,8 @@ package vm
 import (
 	"encoding/binary"
 	"math"
+
+	"github.com/skycoin/skycoin-cx/t0-types"
 )
 
 // The memory accessors read and write little endian values at a byte
@@ -73,4 +75,40 @@ func memoryZero(mem []byte, offset uint32, size uint32) {
 	for i := size &^ 7; i < size; i++ {
 		mem[offset+i] = 0
 	}
+}
+
+// rPointer reads a pointer of types.POINTER_SIZE bytes.
+func rPointer(mem []byte, offset uint32) uint64 {
+	if types.POINTER_SIZE == 4 {
+		return uint64(rUI32(mem, offset))
+	}
+	return rUI64(mem, offset)
+}
+
+// wPointer writes address as a pointer of types.POINTER_SIZE bytes.
+func wPointer(mem []byte, offset uint32, address uint32) {
+	if types.POINTER_SIZE == 4 {
+		wUI32(mem, offset, address)
+		return
+	}
+	wUI64(mem, offset, uint64(address))
+}
+
+// memoryStrRead returns the bytes of the str at address as types.Read_str
+// reads them, nil for a null str. It returns false when the object is not
+// inside the first end bytes, where the old loop would read the heap or
+// panic.
+func memoryStrRead(mem []byte, address uint32, end uint32) ([]byte, bool) {
+	object := rPointer(mem, address)
+	if object == 0 || object == uint64(types.InvalidPointer) {
+		return nil, true
+	}
+	if object+uint64(types.OBJECT_HEADER_SIZE) > uint64(end) {
+		return nil, false
+	}
+	objectSize := uint64(types.Read_obj_size(mem, types.Pointer(object)))
+	if objectSize < uint64(types.OBJECT_HEADER_SIZE) || object+objectSize > uint64(end) {
+		return nil, false
+	}
+	return mem[object+uint64(types.OBJECT_HEADER_SIZE) : object+objectSize], true
 }

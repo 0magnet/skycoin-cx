@@ -28,6 +28,12 @@ const (
 	StopStackOverflow
 	// StopOpcodeInvalid is an opcode the machine does not run.
 	StopOpcodeInvalid
+	// StopIndexNegative is an array index below 0, which the old loop
+	// rejects in types.Cast_i32_to_ptr.
+	StopIndexNegative
+	// StopAddressInvalid is a computed address or a str outside the stack
+	// and data segment. The machine has no heap.
+	StopAddressInvalid
 	// StopCount is one past the last Stop.
 	StopCount
 )
@@ -39,12 +45,14 @@ const stopSlow = StopCount
 // StopExitCodes is the process exit code of each Stop, the code the old loop
 // exits with for the same failure. Read only.
 var StopExitCodes = [StopCount]int32{
-	StopReturn:        types.CX_SUCCESS,
-	StopOutputFull:    types.CX_SUCCESS,
-	StopTestFailed:    types.CX_SUCCESS,
-	StopDivideByZero:  types.CX_RUNTIME_ERROR,
-	StopStackOverflow: types.CX_RUNTIME_STACK_OVERFLOW_ERROR,
-	StopOpcodeInvalid: types.CX_RUNTIME_NOT_IMPLEMENTED,
+	StopReturn:         types.CX_SUCCESS,
+	StopOutputFull:     types.CX_SUCCESS,
+	StopTestFailed:     types.CX_SUCCESS,
+	StopDivideByZero:   types.CX_RUNTIME_ERROR,
+	StopStackOverflow:  types.CX_RUNTIME_STACK_OVERFLOW_ERROR,
+	StopOpcodeInvalid:  types.CX_RUNTIME_NOT_IMPLEMENTED,
+	StopIndexNegative:  types.CX_RUNTIME_INVALID_CAST,
+	StopAddressInvalid: types.CX_RUNTIME_ERROR,
 }
 
 // Resumable reports whether the caller may Resume after stop.
@@ -60,11 +68,15 @@ type Frame struct {
 }
 
 // MachineOutputMin is the smallest output buffer. Every print fits in it.
-const MachineOutputMin = 64
+const MachineOutputMin = 512
 
 // machinePrintMax is the most bytes one print appends, a float64 in the
-// shortest form and a new line.
-const machinePrintMax = 32
+// printf %f form with 16 decimals, 327 bytes, and a new line. A str or text
+// print writes what fits and goes on after the caller drains the output.
+const machinePrintMax = 336
+
+// machinePointerSize is the size of a pointer in memory.
+const machinePointerSize = uint32(types.POINTER_SIZE)
 
 // Machine runs one image. MachineFrames[:MachineDepth] are the callers of
 // MachineFunction. After a stop, MachineFunction, MachinePc,
@@ -80,6 +92,8 @@ type Machine struct {
 	MachineFramePointer uint32
 	MachineStackPointer uint32
 	machineResumePc     uint32
+	machineDataEnd      uint32
+	machinePrintCursor  uint32
 	MachineFrames       [ir.ImageCallDepthMax]Frame
 }
 
@@ -87,7 +101,8 @@ type Machine struct {
 // buffer of outputSize bytes, at least MachineOutputMin.
 func MachineNew(image *ir.Image, outputSize int) *Machine {
 	machine := &Machine{MachineImage: image}
-	machine.MachineMemory = make([]byte, int(image.ImageDataStart)+len(image.ImageData))
+	machine.machineDataEnd = ir.ImageDataEnd(image)
+	machine.MachineMemory = make([]byte, int(machine.machineDataEnd)+int(image.ImageScratchSize))
 	machine.MachineOutput = make([]byte, 0, max(outputSize, MachineOutputMin))
 	machine.Reset()
 	return machine
@@ -98,8 +113,9 @@ func MachineNew(image *ir.Image, outputSize int) *Machine {
 func (machine *Machine) Reset() {
 	image := machine.MachineImage
 	clear(machine.MachineMemory[:image.ImageDataStart])
-	copy(machine.MachineMemory[image.ImageDataStart:], image.ImageData)
+	copy(machine.MachineMemory[image.ImageDataStart:machine.machineDataEnd], image.ImageData)
 	machine.MachineOutput = machine.MachineOutput[:0]
+	machine.machinePrintCursor = 0
 	machine.MachineTestFailures = 0
 	machine.MachineDepth = 0
 }

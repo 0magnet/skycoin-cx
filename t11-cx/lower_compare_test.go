@@ -21,6 +21,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-actions"
@@ -386,10 +387,11 @@ func lowerCompareChild(t *testing.T, program string) {
 }
 
 // lowerCompareDiff describes the first difference between the memory after
-// the old loop and after vm, or returns "".
+// the old loop and after vm, or returns "". The vm scratch after the data
+// segment has no counterpart in the old loop and is not compared.
 func lowerCompareDiff(prgrm *ast.CXProgram, machine *vm.Machine) string {
 	oldMemory := prgrm.Memory
-	memory := machine.MachineMemory
+	memory := machine.MachineMemory[:ir.ImageDataEnd(machine.MachineImage)]
 	if len(oldMemory) < len(memory) {
 		return fmt.Sprintf("the old memory is %d bytes, vm %d", len(oldMemory), len(memory))
 	}

@@ -5,6 +5,7 @@ import (
 	"math"
 	"strconv"
 
+	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
 
@@ -102,6 +103,35 @@ func (machine *Machine) loop() Stop {
 			default:
 				return machine.stopAt(stopSlow, pc, fp, sp)
 			}
+		case ir.OpcodeAddressIndexStatic:
+			index := rI32(mem, b)
+			if index < 0 {
+				return machine.stopAt(StopIndexNegative, pc, fp, sp)
+			}
+			wUI32(mem, c, a+uint32(index)*in.InstrN)
+		case ir.OpcodeAddressIndex:
+			index := rI32(mem, b)
+			if index < 0 {
+				return machine.stopAt(StopIndexNegative, pc, fp, sp)
+			}
+			wUI32(mem, c, rUI32(mem, a)+in.InstrM+uint32(index)*in.InstrN)
+		case ir.OpcodeAddressLoad, ir.OpcodeAddressStore:
+			// 4 bytes here, the other sizes and every error in the slow path.
+			// More code here, or reading the opcode again, makes Go spill the
+			// loop state.
+			source, destination := a, c
+			store := in.InstrD != 0
+			if store {
+				source = c
+			}
+			address := uint64(rUI32(mem, source)) + uint64(in.InstrM)
+			if in.InstrN != 4 || address+4 > uint64(machine.machineDataEnd) {
+				return machine.stopAt(stopSlow, pc, fp, sp)
+			}
+			if source = uint32(address); store {
+				source, destination = a, uint32(address)
+			}
+			wUI32(mem, destination, rUI32(mem, source))
 		case ir.OpcodeBoolNot:
 			wBool(mem, c, !rBool(mem, a))
 		case ir.OpcodeBoolAnd:
@@ -826,6 +856,48 @@ func (machine *Machine) slow() Stop {
 	case ir.OpcodeCallResult:
 		sp := machine.MachineStackPointer
 		copy(mem[c:c+in.InstrN], mem[sp+in.InstrA:sp+in.InstrA+in.InstrN])
+	case ir.OpcodeAddressLoad:
+		source, valid := machine.address(rUI32(mem, a), in.InstrM, in.InstrN)
+		if !valid {
+			return machine.slowStop(StopAddressInvalid)
+		}
+		copy(mem[c:c+in.InstrN], mem[source:source+in.InstrN])
+	case ir.OpcodeAddressStore:
+		destination, valid := machine.address(rUI32(mem, c), in.InstrM, in.InstrN)
+		if !valid {
+			return machine.slowStop(StopAddressInvalid)
+		}
+		copy(mem[destination:destination+in.InstrN], mem[a:a+in.InstrN])
+	case ir.OpcodeAddressDerefStatic:
+		pointer := rPointer(mem, a)
+		if pointer >= uint64(machine.machineDataEnd) {
+			return machine.slowStop(StopAddressInvalid)
+		}
+		wUI32(mem, c, uint32(pointer))
+	case ir.OpcodeAddressDeref:
+		address, valid := machine.address(rUI32(mem, a), in.InstrM, machinePointerSize)
+		if !valid {
+			return machine.slowStop(StopAddressInvalid)
+		}
+		pointer := rPointer(mem, address)
+		if pointer >= uint64(machine.machineDataEnd) {
+			return machine.slowStop(StopAddressInvalid)
+		}
+		wUI32(mem, c, uint32(pointer))
+	case ir.OpcodeAddressOf:
+		wPointer(mem, c, a)
+	case ir.OpcodeAddressPointer:
+		wPointer(mem, c, rUI32(mem, a)+in.InstrM)
+	case ir.OpcodePrintText:
+		return machine.printBytes(machine.MachineImage.ImageText[in.InstrN:in.InstrN+in.InstrM], ir.PrintStrModeRaw)
+	case ir.OpcodePrintStr:
+		str, valid := memoryStrRead(mem, a, machine.machineDataEnd)
+		if !valid {
+			return machine.slowStop(StopAddressInvalid)
+		}
+		return machine.printBytes(str, ir.PrintStrMode(in.InstrN))
+	case ir.OpcodePrintValue:
+		machine.MachineOutput = printValue(machine.MachineOutput, mem, a, types.Code(in.InstrM), byte(in.InstrN))
 	case ir.OpcodeTestEqual:
 		if !bytes.Equal(mem[a:a+in.InstrN], mem[b:b+in.InstrM]) {
 			machine.MachineTestFailures++
@@ -881,4 +953,106 @@ func (machine *Machine) slow() Stop {
 		return StopOpcodeInvalid
 	}
 	return stopSlow
+}
+
+// printBytes writes src to the output, from machinePrintCursor on. When the
+// output fills up first it keeps the cursor and stops with StopOutputFull at
+// the same instruction, which runs again after the caller drains the output.
+func (machine *Machine) printBytes(src []byte, mode ir.PrintStrMode) Stop {
+	out := machine.MachineOutput
+	cursor := int(machine.machinePrintCursor)
+	for cursor < len(src) {
+		if len(out) == cap(out) {
+			return machine.printFull(out, cursor)
+		}
+		if mode != ir.PrintStrModeEscaped {
+			n := copy(out[len(out):cap(out)], src[cursor:])
+			out = out[:len(out)+n]
+			cursor += n
+			continue
+		}
+		ch := src[cursor]
+		if ch == '\\' && cursor+1 < len(src) {
+			switch src[cursor+1] {
+			case '%':
+				ch = '%'
+				cursor++
+			case 'n':
+				ch = '\n'
+				cursor++
+			}
+		}
+		out = append(out, ch)
+		cursor++
+	}
+	if mode == ir.PrintStrModeLine {
+		if len(out) == cap(out) {
+			return machine.printFull(out, cursor)
+		}
+		out = append(out, '\n')
+	}
+	machine.MachineOutput = out
+	machine.machinePrintCursor = 0
+	return stopSlow
+}
+
+// printFull saves a print that did not fit, to go on at cursor.
+func (machine *Machine) printFull(out []byte, cursor int) Stop {
+	machine.MachineOutput = out
+	machine.machinePrintCursor = uint32(cursor)
+	machine.machineResumePc = machine.MachinePc
+	return StopOutputFull
+}
+
+// printValue appends the value of type typ at a in the printf verb, as
+// buildString in t4-opcodes formats it. The lowering only emits the verb and
+// type pairs handled here.
+func printValue(out []byte, mem []byte, a uint32, typ types.Code, verb byte) []byte {
+	switch typ {
+	case types.BOOL:
+		return strconv.AppendBool(out, rBool(mem, a))
+	case types.I8:
+		return strconv.AppendInt(out, int64(rI8(mem, a)), 10)
+	case types.I16:
+		return strconv.AppendInt(out, int64(rI16(mem, a)), 10)
+	case types.I32:
+		return strconv.AppendInt(out, int64(rI32(mem, a)), 10)
+	case types.I64:
+		return strconv.AppendInt(out, rI64(mem, a), 10)
+	case types.UI8:
+		return strconv.AppendUint(out, uint64(rUI8(mem, a)), 10)
+	case types.UI16:
+		return strconv.AppendUint(out, uint64(rUI16(mem, a)), 10)
+	case types.UI32:
+		return strconv.AppendUint(out, uint64(rUI32(mem, a)), 10)
+	case types.UI64:
+		return strconv.AppendUint(out, rUI64(mem, a), 10)
+	case types.F32:
+		if verb == 'f' {
+			return strconv.AppendFloat(out, float64(rF32(mem, a)), 'f', 7, 32)
+		}
+		return strconv.AppendFloat(out, float64(rF32(mem, a)), 'g', -1, 32)
+	case types.F64:
+		if verb == 'f' {
+			return strconv.AppendFloat(out, rF64(mem, a), 'f', 16, 64)
+		}
+		return strconv.AppendFloat(out, rF64(mem, a), 'g', -1, 64)
+	}
+	return out
+}
+
+// address returns base plus offset when size bytes from there are inside
+// the stack and data segment.
+func (machine *Machine) address(base uint32, offset uint32, size uint32) (uint32, bool) {
+	address := uint64(base) + uint64(offset)
+	if address+uint64(size) > uint64(machine.machineDataEnd) {
+		return 0, false
+	}
+	return uint32(address), true
+}
+
+// slowStop ends a slow instruction with a stop at that instruction.
+func (machine *Machine) slowStop(stop Stop) Stop {
+	machine.machineResumePc = machine.MachinePc
+	return stop
 }
