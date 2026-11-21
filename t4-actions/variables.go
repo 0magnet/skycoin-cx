@@ -307,7 +307,7 @@ func processLocalInitialization(prgrm *ast.CXProgram, pkg *ast.CXPackage, initia
 
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S1230.
-		exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+		exprCXLine := MakeCXLineExpressionCurrent(prgrm)
 
 		// we need to create an expression that links the initializer expressions
 		// with the declared variable
@@ -414,7 +414,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1239.
-	declCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	declCXLine := MakeCXLineExpressionCurrent(prgrm)
 	// Declaration expression to handle the inline initialization.
 	// For example, `var foo i32 = 11` needs to be divided into two expressions:
 	// one that declares `foo`, and another that assigns 11 to `foo`

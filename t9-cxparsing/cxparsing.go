@@ -13,7 +13,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t1-profiling" // thin: only CleanupAndExit, StartProfile, StopProfile; no depth gain
 	"github.com/skycoin/skycoin-cx/t4-actions"
-	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing" // thin: only CurrentFileName, Parse, Program; no depth gain
+	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing" // thin: only CurrentFile, Parse, Program; no depth gain
 )
 
 /*
@@ -82,13 +82,13 @@ func ParseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
 		if _, err := osPkg.GetGlobal(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs); err != nil {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now a constructor call, site S1618.
-			_, arg0 := ast.MakeArgument(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs, "", -1)
+			_, arg0 := ast.MakeArgument(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs, ast.SourceFileGidNil, -1)
 			arg0.SetType(types.UNDEFINED)
 			arg0.Package = ast.CXPackageIndex(osPkg.Index)
 
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now a constructor call, site S1619.
-			_, arg1 := ast.MakeArgument(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs, "", -1)
+			_, arg1 := ast.MakeArgument(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs, ast.SourceFileGidNil, -1)
 			arg1.SetType(types.STR)
 			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_BASIC)
 			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_SLICE)
@@ -117,15 +117,16 @@ func ParseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
 
 		b := bytes.NewBufferString(source)
 
+		actions.CurrentFile = ast.SourceFileGidNil
 		if len(fileNames) > 0 {
-			actions.CurrentFile = fileNames[i]
+			actions.CurrentFile = actions.AST.CXProgramSourceFileIntern(fileNames[i])
 		}
 
-		profiling.StartProfile(actions.CurrentFile)
+		profiling.StartProfile(actions.AST.CXProgramSourceFileText(actions.CurrentFile))
 
 		parseErrors += Passtwo(b)
 
-		profiling.StopProfile(actions.CurrentFile)
+		profiling.StopProfile(actions.AST.CXProgramSourceFileText(actions.CurrentFile))
 	}
 
 	profiling.StopProfile("4. passtwo")

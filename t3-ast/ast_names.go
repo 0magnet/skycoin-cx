@@ -38,3 +38,15 @@ func (prgrm *CXProgram) CXProgramMethodNameIntern(receiverName stringpool.String
 	name = append(name, method...)
 	return prgrm.CxIrState.StringPool.StringPoolIntern(name)
 }
+
+// CXProgramSourceFileIntern returns the Gid of the source file at path,
+// registering it on first use. It is called while compiling only.
+func (prgrm *CXProgram) CXProgramSourceFileIntern(path string) SourceFileGid {
+	return prgrm.CxIrState.SourceFileMng.SourceFileIntern(prgrm.CxIrState.StringPool.StringPoolIntern([]byte(path)))
+}
+
+// CXProgramSourceFileText returns the path of a source file as a Go string
+// that views the pool, for diagnostics, printing and the serializer.
+func (prgrm *CXProgram) CXProgramSourceFileText(gid SourceFileGid) string {
+	return prgrm.CxIrState.StringPool.StringPoolText(prgrm.CxIrState.SourceFileMng.SourceFilePath(gid))
+}

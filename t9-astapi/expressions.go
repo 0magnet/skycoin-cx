@@ -1,6 +1,7 @@
 package astapi
 
 import (
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	cxast "github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -31,7 +32,7 @@ import (
 func AddNativeExpressionToFunction(cxprogram *cxast.CXProgram, functionName string, expressionType int) error {
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1591.
-	expCXLine := cxast.MakeCXLineExpression(cxprogram, "", -1, "")
+	expCXLine := cxast.MakeCXLineExpression(cxprogram, cxast.SourceFileGidNil, -1, stringpool.StringGidNil)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1592.
 	exp := cxast.MakeAtomicOperatorExpression(cxprogram, cxast.Natives[expressionType])
@@ -123,7 +124,7 @@ func RemoveExpressionFromFunction(cxprogram *cxast.CXProgram, functionName strin
 func AddNativeExpressionToFunctionByLineNumber(cxprogram *cxast.CXProgram, functionName string, expressionType, lineNumber int) error {
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1595.
-	expCXLine := cxast.MakeCXLineExpression(cxprogram, "", -1, "")
+	expCXLine := cxast.MakeCXLineExpression(cxprogram, cxast.SourceFileGidNil, -1, stringpool.StringGidNil)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1596.
 	exp := cxast.MakeAtomicOperatorExpression(cxprogram, cxast.Natives[expressionType])

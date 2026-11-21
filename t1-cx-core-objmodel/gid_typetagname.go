@@ -20,4 +20,5 @@ var GidTypeTagNameTable = [256]string{
 	0x0D: "CXTypeSignature_Struct",
 	0x0E: "CXCall",
 	0x0F: "String",
+	0x10: "SourceFile",
 }

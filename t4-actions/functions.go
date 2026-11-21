@@ -482,7 +482,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, args []ast.CXE
 			expression.Operator = ast.CXFunctionIndex(op.Index)
 		} else if fieldless {
 			// then it's not a possible method call
-			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
+			println(ast.CompilationError(prgrm.CXProgramSourceFileText(CurrentFile), LineNo), err.Error())
 			return nil
 		} else {
 			exprs[len(exprs)-1].ExpressionType = ast.CXEXPR_METHOD_CALL
@@ -763,7 +763,7 @@ func ProcessOperatorExpression(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 	if expressionOperator != nil && ast.IsOperator(expressionOperator.AtomicOPCode) {
 		if err := checkSameNativeType(prgrm, expr); err != nil {
-			println(ast.CompilationError(CurrentFile, LineNo), err.Error())
+			println(ast.CompilationError(prgrm.CXProgramSourceFileText(CurrentFile), LineNo), err.Error())
 		}
 	}
 	if expr.IsUndType(prgrm) {
@@ -1358,14 +1358,14 @@ func checkMatchExprNumOfInputs(prgrm *ast.CXProgram, expression *ast.CXAtomicOpe
 	}
 
 	// then we need to be strict in the number of inputs
-	println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects %d input/s, but %d input argument\n were provided", opName, len(expressionOperatorInputs), len(expression.GetInputs(prgrm))))
+	println(ast.CompilationError(prgrm.CXProgramSourceFileText(exprCXLine.FileName), exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects %d input/s, but %d input argument\n were provided", opName, len(expressionOperatorInputs), len(expression.GetInputs(prgrm))))
 	os.Exit(types.CX_COMPILATION_ERROR)
 }
 
 func checkMatchExprNumOfOutputs(prgrm *ast.CXProgram, expression *ast.CXAtomicOperator, expressionOperatorOutputs []ast.CXTypeSignatureIndex, opName string, exprCXLine *ast.CXLine) {
 	// checking if number of outputs is not the same as the required number of outputs
 	if len(expression.GetOutputs(prgrm)) != len(expressionOperatorOutputs) {
-		println(ast.CompilationError(exprCXLine.FileName, exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects to return %d output/s, but %d receiving argument/s were provided", opName, len(expressionOperatorOutputs), len(expression.GetOutputs(prgrm))))
+		println(ast.CompilationError(prgrm.CXProgramSourceFileText(exprCXLine.FileName), exprCXLine.LineNumber), fmt.Sprintf("operator '%s' expects to return %d output/s, but %d receiving argument/s were provided", opName, len(expressionOperatorOutputs), len(expression.GetOutputs(prgrm))))
 		os.Exit(types.CX_COMPILATION_ERROR)
 	}
 }
@@ -1539,7 +1539,7 @@ func ProcessStringAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 // 		if elt.PassBy == constants.PASSBY_REFERENCE &&
 // 			!hasDeclSpec(elt, constants.DECL_POINTER) &&
 // 			elt.PointerTargetType != types.STR && elt.Type != types.STR && !elt.IsSlice {
-// 			println(ast.CompilationError(CurrentFile, LineNo), "invalid reference assignment", elt.Name)
+// 			println(ast.CompilationError(prgrm.CXProgramSourceFileText(CurrentFile), LineNo), "invalid reference assignment", elt.Name)
 // 		}
 // 	}
 
@@ -3170,9 +3170,9 @@ func GetGlobalSymbol(prgrm *ast.CXProgram, symbolsData *SymbolsData, symPkg *ast
 // It falls back to the parser position, which is the end of the function once the body is parsed.
 func exprLine(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) (string, int) {
 	if cxLine, err := prgrm.GetPreviousCXLine(exprs, currIndex); err == nil && cxLine.LineNumber > 0 {
-		return cxLine.FileName, cxLine.LineNumber
+		return prgrm.CXProgramSourceFileText(cxLine.FileName), cxLine.LineNumber
 	}
-	return CurrentFile, LineNo
+	return prgrm.CXProgramSourceFileText(CurrentFile), LineNo
 }
 
 // releaseFunctionSymbols releases the signatures that lookupSymbol made for

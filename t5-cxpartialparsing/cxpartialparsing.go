@@ -1286,7 +1286,7 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:237
 		{
-			actions.DeclareImport(Program, yyDollar[2].tok, CurrentFileName, lineNo)
+			actions.DeclareImport(Program, yyDollar[2].tok, CurrentFile, lineNo)
 		}
 	case 17:
 		yyDollar = yyS[yypt-2 : yypt+1]
@@ -1295,7 +1295,7 @@ yydefault:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 				// Now a constructor call, site S1400.
-				fn := ast.MakeFunction(Program, Program.CXProgramNameIntern(yyDollar[2].tok), CurrentFileName, lineNo)
+				fn := ast.MakeFunction(Program, Program.CXProgramNameIntern(yyDollar[2].tok), CurrentFile, lineNo)
 				_, fnIdx := pkg.AddFunction(Program, fn)
 				pkg.CurrentFunction = fnIdx
 
@@ -1318,7 +1318,7 @@ yydefault:
 			if pkg, err := Program.GetCurrentPackage(); err == nil {
 				// OBJMODEL: state.CXFunctionMng.CXFunctionAlloc(), phase 4 #351.
 				// Now a constructor call, site S1401.
-				fn := ast.MakeFunction(Program, Program.CXProgramMethodNameIntern(receiverName, methodName), CurrentFileName, lineNo)
+				fn := ast.MakeFunction(Program, Program.CXProgramMethodNameIntern(receiverName, methodName), CurrentFile, lineNo)
 				_, fnIdx := pkg.AddMethod(Program, fn, receiverName, methodName)
 				// OBJMODEL: state.CXFunctionMng.CXFunctionGet(gid), phase 5 #352.
 				// Now an arena getter, site S1402.
@@ -1484,7 +1484,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:428
 		{
-			yyVAL.argument = actions.DeclarationSpecifiersStruct(Program, yyDollar[1].tok, "", false, CurrentFileName, lineNo)
+			yyVAL.argument = actions.DeclarationSpecifiersStruct(Program, yyDollar[1].tok, "", false, CurrentFile, lineNo)
 		}
 	case 43:
 		yyDollar = yyS[yypt-2 : yypt+1]
@@ -1504,13 +1504,13 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:442
 		{
-			yyVAL.argument = actions.DeclarationSpecifiersStruct(Program, yyDollar[3].tok, yyDollar[1].tok, true, CurrentFileName, lineNo)
+			yyVAL.argument = actions.DeclarationSpecifiersStruct(Program, yyDollar[3].tok, yyDollar[1].tok, true, CurrentFile, lineNo)
 		}
 	case 46:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:446
 		{
-			yyVAL.argument = actions.DeclarationSpecifiersStruct(Program, yyDollar[3].tok, types.Code(yyDollar[1].i).Name(), true, CurrentFileName, lineNo)
+			yyVAL.argument = actions.DeclarationSpecifiersStruct(Program, yyDollar[3].tok, types.Code(yyDollar[1].i).Name(), true, CurrentFile, lineNo)
 		}
 	case 47:
 		yyDollar = yyS[yypt-1 : yypt+1]

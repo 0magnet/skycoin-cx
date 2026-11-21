@@ -73,7 +73,7 @@ func DeclarationSpecifiersBasic(prgrm *ast.CXProgram, typeCode types.Code) *ast.
 
 // DeclarationSpecifiersStruct() declares a struct
 func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName string,
-	isExternal bool, currentFile string, lineNo int) *ast.CXArgument {
+	isExternal bool, currentFile ast.SourceFileGid, lineNo int) *ast.CXArgument {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -85,14 +85,14 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		// custom type in an imported package
 		imp, err := pkg.GetImport(prgrm, prgrm.CXProgramNameIntern(pkgName))
 		if err != nil {
-			println(ast.CompilationError(currentFile, lineNo), err.Error())
+			println(ast.CompilationError(prgrm.CXProgramSourceFileText(currentFile), lineNo), err.Error())
 
 			return nil
 		}
 
 		strct, err = prgrm.GetStruct(identGid, imp.Name)
 		if err != nil {
-			println(ast.CompilationError(currentFile, lineNo), err.Error())
+			println(ast.CompilationError(prgrm.CXProgramSourceFileText(currentFile), lineNo), err.Error())
 
 			return nil
 		}
@@ -100,7 +100,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		// custom type in the current package
 		strct, err = prgrm.GetStruct(identGid, pkg.Name)
 		if err != nil {
-			println(ast.CompilationError(currentFile, lineNo), err.Error())
+			println(ast.CompilationError(prgrm.CXProgramSourceFileText(currentFile), lineNo), err.Error())
 
 			return nil
 		}

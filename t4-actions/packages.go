@@ -37,9 +37,9 @@ func DeclarePackage(prgrm *ast.CXProgram, pkgName string) {
 //
 //	prgrm - a CXProgram that contains all the data and arrays of the program.
 //	impName - name of the import to declare.
-//	currentFile - name of the current cx source code file.
+//	currentFile - the current cx source code file.
 //	lineNo - the current line number from the source code.
-func DeclareImport(prgrm *ast.CXProgram, impName string, currentFile string, lineNo int) {
+func DeclareImport(prgrm *ast.CXProgram, impName string, currentFile ast.SourceFileGid, lineNo int) {
 	// Make sure we are inside a package
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
@@ -48,7 +48,7 @@ func DeclareImport(prgrm *ast.CXProgram, impName string, currentFile string, lin
 	}
 
 	if err := cxpackages.CheckImport(impName); err != nil {
-		println(ast.CompilationError(currentFile, lineNo), err.Error())
+		println(ast.CompilationError(prgrm.CXProgramSourceFileText(currentFile), lineNo), err.Error())
 		return
 	}
 
@@ -111,6 +111,6 @@ func DeclareImport(prgrm *ast.CXProgram, impName string, currentFile string, lin
 		}
 	} else {
 		// This should never happen.
-		panic(fmt.Sprintf("%v: unkown error when trying to read package '%s'", ast.CompilationError(currentFile, lineNo), ident))
+		panic(fmt.Sprintf("%v: unkown error when trying to read package '%s'", ast.CompilationError(prgrm.CXProgramSourceFileText(currentFile), lineNo), ident))
 	}
 }

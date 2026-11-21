@@ -161,7 +161,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				*ast1 += fmt.Sprintf("\t\t\t%d.- Line: %v: %s\n",
 					k,
 					cxLine.LineNumber,
-					strings.TrimSpace(cxLine.LineStr))
+					strings.TrimSpace(prgrm.CXProgramNameText(cxLine.LineStr)))
 			} else if cxAtomicOpOperator != nil {
 				assignOp := ""
 				if outs.Len() > 0 {

@@ -46,7 +46,7 @@ func IterationExpressions(prgrm *ast.CXProgram,
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0608.
-	upExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	upExprCXLine := MakeCXLineExpressionCurrent(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0609.
 	upExpr := ast.MakeAtomicOperatorExpression(prgrm, jmpFn)
@@ -66,7 +66,7 @@ func IterationExpressions(prgrm *ast.CXProgram,
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0611.
-	downExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	downExprCXLine := MakeCXLineExpressionCurrent(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0612.
 	downExpr := ast.MakeAtomicOperatorExpression(prgrm, jmpFn)
@@ -81,7 +81,7 @@ func IterationExpressions(prgrm *ast.CXProgram,
 	lastCondExpressionOperatorOutputs := lastCondExpressionOperator.GetOutputs(prgrm)
 	if len(prgrm.CXAtomicOps[lastCondExpressionIdx].GetOutputs(prgrm)) < 1 {
 		if len(lastCondExpressionOperatorOutputs) == 0 {
-			println(ast.CompilationError(CurrentFile, LineNo), "loop condition has no value")
+			println(ast.CompilationError(prgrm.CXProgramSourceFileText(CurrentFile), LineNo), "loop condition has no value")
 			os.Exit(types.CX_COMPILATION_ERROR)
 		}
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
@@ -194,7 +194,7 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []ast.CXExpression {
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0625.
-	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	exprCXLine := MakeCXLineExpressionCurrent(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0626.
 	expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[opcode])
@@ -251,7 +251,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0629.
-	ifExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	ifExprCXLine := MakeCXLineExpressionCurrent(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0630.
 	ifExpr := ast.MakeAtomicOperatorExpression(prgrm, jmpFn)
@@ -316,7 +316,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0636.
-	skipExprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	skipExprCXLine := MakeCXLineExpressionCurrent(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0637.
 	skipExpr := ast.MakeAtomicOperatorExpression(prgrm, jmpFn)
@@ -589,7 +589,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0670.
-	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	exprCXLine := MakeCXLineExpressionCurrent(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0671.
 	expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[opcode])
@@ -678,7 +678,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 	}
 
 	if len(lastPrevExpression.GetOutputs(prgrm)) == 0 {
-		println(ast.CompilationError(CurrentFile, LineNo), "invalid indirection")
+		println(ast.CompilationError(prgrm.CXProgramSourceFileText(CurrentFile), LineNo), "invalid indirection")
 		// needs to be stopped immediately
 		os.Exit(types.CX_COMPILATION_ERROR)
 	}
@@ -925,7 +925,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 	} else if len(lastExpression.GetOutputs(prgrm)) > 0 {
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0716.
-		exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+		exprCXLine := MakeCXLineExpressionCurrent(prgrm)
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0717.
 		expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[constants.OP_IDENTITY])
@@ -985,12 +985,12 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 			plural3 = "was"
 		}
 
-		println(ast.CompilationError(lastExprCXLine.FileName, lastExprCXLine.LineNumber), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", prgrm.CXProgramNameText(fn.Name), len(fnOutputs), plural1, exprs.Size, plural2, plural3))
+		println(ast.CompilationError(prgrm.CXProgramSourceFileText(lastExprCXLine.FileName), lastExprCXLine.LineNumber), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", prgrm.CXProgramNameText(fn.Name), len(fnOutputs), plural1, exprs.Size, plural2, plural3))
 	}
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0719.
-	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	exprCXLine := MakeCXLineExpressionCurrent(prgrm)
 	// expression to jump to the end of the embedding function
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0720.

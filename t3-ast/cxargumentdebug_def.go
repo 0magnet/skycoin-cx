@@ -2,6 +2,6 @@ package ast
 
 // CXArgumentDebug ...
 type CXArgumentDebug struct {
-	FileName string
+	FileName SourceFileGid
 	FileLine int
 }

@@ -1282,14 +1282,14 @@ expression_statement:
                                         outTypeSig:=actions.AST.GetCXTypeSignatureFromArray(outs[0])
 					println(ast.CompilationError( ast.CXArgumentDebugFileLine(actions.AST, outTypeSig.ArgDetails)), "invalid expression")
 				} else {
-					println(ast.CompilationError(actions.CurrentFile, actions.LineNo), "invalid expression")
+					println(ast.CompilationError(actions.AST.CXProgramSourceFileText(actions.CurrentFile), actions.LineNo), "invalid expression")
 				}
 				$$ = nil
 			} else if len($1) > 0 && $1[0].Type != ast.CX_LINE {
 				// test() and assert report the CX_LINE before them (skycoin-cx#254)
 				// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 				// Also state.CXExpressionMng (manager storage) or []CXExpressionGid, phase 4 #346. Site S1500 S1501.
-				$$ = append([]ast.CXExpression{*ast.MakeCXLineExpression(actions.AST, actions.CurrentFile, actions.LineNo, actions.LineStr)}, $1...)
+				$$ = append([]ast.CXExpression{*actions.MakeCXLineExpressionCurrent(actions.AST)}, $1...)
 			} else {
 				$$ = $1
 			}
@@ -1407,7 +1407,7 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
                         
                         // OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
                         // Now a constructor call, site S1502.
-                        exprCXLine := ast.MakeCXLineExpression(actions.AST, actions.CurrentFile, actions.LineNo, actions.LineStr)
+                        exprCXLine := actions.MakeCXLineExpressionCurrent(actions.AST)
                         // OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
                         // Now a constructor call, site S1503.
                         expr := ast.MakeAtomicOperatorExpression(actions.AST,ast.Natives[constants.OP_GOTO])

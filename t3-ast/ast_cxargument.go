@@ -195,7 +195,7 @@ func nativeArgument(name stringpool.StringGid) *CXArgument {
 // MakeArgument allocates an argument named name in the CXArgumentMng of
 // prgrm, with a debug record for fileName and fileLine, and returns its Gid
 // and the pointer to fill it through.
-func MakeArgument(prgrm *CXProgram, name stringpool.StringGid, fileName string, fileLine int) (CXArgumentGid, *CXArgument) {
+func MakeArgument(prgrm *CXProgram, name stringpool.StringGid, fileName SourceFileGid, fileLine int) (CXArgumentGid, *CXArgument) {
 	argDetailsGid := argumentDebugAlloc(prgrm, fileName, fileLine)
 	gid, arg := prgrm.AllocCXArgument()
 	arg.Name = name
@@ -205,7 +205,7 @@ func MakeArgument(prgrm *CXProgram, name stringpool.StringGid, fileName string, 
 }
 
 // MakeField allocates an argument of type typeCode like MakeArgument.
-func MakeField(prgrm *CXProgram, name stringpool.StringGid, typeCode types.Code, fileName string, fileLine int) (CXArgumentGid, *CXArgument) {
+func MakeField(prgrm *CXProgram, name stringpool.StringGid, typeCode types.Code, fileName SourceFileGid, fileLine int) (CXArgumentGid, *CXArgument) {
 	gid, arg := MakeArgument(prgrm, name, fileName, fileLine)
 	arg.Type = typeCode
 	return gid, arg
@@ -213,7 +213,7 @@ func MakeField(prgrm *CXProgram, name stringpool.StringGid, typeCode types.Code,
 
 // MakeGlobal allocates a global of type typeCode like MakeArgument and gives
 // it the next offset in the heap segment.
-func MakeGlobal(prgrm *CXProgram, name stringpool.StringGid, typeCode types.Code, fileName string, fileLine int) (CXArgumentGid, *CXArgument) {
+func MakeGlobal(prgrm *CXProgram, name stringpool.StringGid, typeCode types.Code, fileName SourceFileGid, fileLine int) (CXArgumentGid, *CXArgument) {
 	gid, global := MakeField(prgrm, name, typeCode, fileName, fileLine)
 	global.Size = typeCode.Size()
 	global.Offset = globals.HeapOffset
@@ -313,7 +313,7 @@ func IsTypePointerStruct(arg *CXArgument) bool {
 
 // argumentDebugAlloc allocates the debug record of an argument in prgrm's
 // CXArgumentDebugMng. A nil prgrm, for a native, gets CXArgumentDebugGidNil.
-func argumentDebugAlloc(prgrm *CXProgram, fileName string, fileLine int) CXArgumentDebugGid {
+func argumentDebugAlloc(prgrm *CXProgram, fileName SourceFileGid, fileLine int) CXArgumentDebugGid {
 	if prgrm == nil {
 		return CXArgumentDebugGidNil
 	}
@@ -326,11 +326,12 @@ func argumentDebugAlloc(prgrm *CXProgram, fileName string, fileLine int) CXArgum
 }
 
 // CXArgumentDebugFileLine returns the file name and line that gid names in
-// prgrm. A native parameter has none and gets "" and -1, as Param gave it.
+// prgrm, the name as text for diagnostics. A native parameter has none and
+// gets "" and -1, as Param gave it.
 func CXArgumentDebugFileLine(prgrm *CXProgram, gid CXArgumentDebugGid) (string, int) {
 	if gid == CXArgumentDebugGidNil {
 		return "", -1
 	}
 	details := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet(gid)
-	return details.FileName, details.FileLine
+	return prgrm.CXProgramSourceFileText(details.FileName), details.FileLine
 }

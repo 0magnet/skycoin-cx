@@ -342,10 +342,10 @@ func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCod
 	opCode, ok := ast.OpCodes[typeCode.Name()+"."+opStrCode]
 	if !ok {
 		if msg, renamed := renamedOpcodeMessage(typeCode.Name() + "." + opStrCode); renamed {
-			println(ast.CompilationError(CurrentFile, LineNo), msg)
+			println(ast.CompilationError(prgrm.CXProgramSourceFileText(CurrentFile), LineNo), msg)
 			return nil
 		}
-		println(ast.CompilationError(CurrentFile, LineNo) + " function '" +
+		println(ast.CompilationError(prgrm.CXProgramSourceFileText(CurrentFile), LineNo) + " function '" +
 			typeCode.Name() + "." + opStrCode + "' does not exist")
 		return nil
 		// panic(ok)
@@ -353,7 +353,7 @@ func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCod
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1144.
-	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	exprCXLine := MakeCXLineExpressionCurrent(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1145.
 	expr := ast.MakeAtomicOperatorExpression(prgrm, ast.Natives[opCode])
@@ -519,7 +519,7 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression,
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1160.
-	exprCXLine := ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, LineStr)
+	exprCXLine := MakeCXLineExpressionCurrent(prgrm)
 	var expr *ast.CXExpression
 	if isInc {
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
@@ -846,7 +846,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 			lastExpressionOutputArg.StructType = strct
 		} else {
-			file, line := CurrentFile, LineNo
+			file, line := prgrm.CXProgramSourceFileText(CurrentFile), LineNo
 			if details := leftExprOutputTypeSig.ArgDetails; details != ast.CXArgumentDebugGidNil {
 				file, line = ast.CXArgumentDebugFileLine(prgrm, details)
 			}
