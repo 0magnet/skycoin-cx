@@ -14,6 +14,12 @@ func (prgrm *CXProgram) CXProgramNameFind(text string) (stringpool.StringGid, bo
 	return prgrm.CxIrState.StringPool.StringPoolFind([]byte(text))
 }
 
+// CXProgramNameFindBytes is CXProgramNameFind for a name read from program
+// memory, so the caller needs no Go string.
+func (prgrm *CXProgram) CXProgramNameFindBytes(text []byte) (stringpool.StringGid, bool) {
+	return prgrm.CxIrState.StringPool.StringPoolFind(text)
+}
+
 // CXProgramNameBytes returns the bytes of a name. Only boundary code calls it,
 // diagnostics, printing, the serializer and the REPL. The caller must not
 // write to them.

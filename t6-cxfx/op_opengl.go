@@ -727,7 +727,7 @@ func opGlBindAttribLocation(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs 
 	cxglBindAttribLocation(
 		uint32(inputs[0].Get_i32(prgrm)),
 		uint32(inputs[1].Get_i32(prgrm)),
-		inputs[2].Get_str(prgrm))
+		ast.ProgramStringBytesRead(prgrm, &inputs[2]))
 }
 
 func opGlCompileShader(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -765,7 +765,7 @@ func opGlEnableVertexAttribArray(prgrm *ast.CXProgram, inputs []ast.CXValue, out
 func opGlGetAttribLocation(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := cxglGetAttribLocation(
 		uint32(inputs[0].Get_i32(prgrm)),
-		inputs[1].Get_str(prgrm))
+		ast.ProgramStringBytesRead(prgrm, &inputs[1]))
 	outputs[0].Set_i32(prgrm, outV0)
 }
 
@@ -800,7 +800,7 @@ func opGlGetShaderInfoLog(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []
 func opGlGetUniformLocation(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0 := cxglGetUniformLocation(
 		uint32(inputs[0].Get_i32(prgrm)),
-		inputs[1].Get_str(prgrm))
+		ast.ProgramStringBytesRead(prgrm, &inputs[1]))
 	outputs[0].Set_i32(prgrm, outV0)
 }
 
@@ -813,7 +813,7 @@ func opGlShaderSource(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 	cxglShaderSource(
 		uint32(inputs[0].Get_i32(prgrm)),
 		inputs[1].Get_i32(prgrm),
-		inputs[2].Get_str(prgrm))
+		ast.ProgramStringBytesRead(prgrm, &inputs[2]))
 }
 
 func opGlUseProgram(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
