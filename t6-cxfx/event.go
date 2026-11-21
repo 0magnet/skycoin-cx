@@ -3,10 +3,12 @@
 package cxfx
 
 import (
+	"bytes"
 	"sync"
 	"time"
 
 	"github.com/skycoin/skycoin-cx/t0-types"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-execute" // thin: only Callback; no depth gain
 )
@@ -49,22 +51,19 @@ type Event struct {
 
 type CXCallback struct {
 	windowNameBytes []byte
-	windowName      string
-	packageName     string
-	functionName    string
 	functionIndex   ast.CXFunctionIndex
 	functionFound   bool
 }
 
-func (cb *CXCallback) init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, packageName string) {
-	cb.windowName = inputs[0].Get_str(prgrm)
-	var windowHeapPtr = types.AllocWrite_obj_data(prgrm, prgrm.Memory, []byte(cb.windowName))
-	var windowName [types.POINTER_SIZE]byte
-	types.Write_ptr(windowName[:], 0, windowHeapPtr)
-	cb.windowNameBytes = windowName[:]
-	cb.functionName = inputs[1].Get_str(prgrm)
-	cb.packageName = packageName
-	cb.functionIndex, cb.functionFound = cxfxFunction(prgrm, packageName, cb.functionName)
+// init resolves the callback function when it is registered, so an event
+// calls it by index without a name lookup, see #432.
+func (cb *CXCallback) init(prgrm *ast.CXProgram, inputs []ast.CXValue, packageNameGid stringpool.StringGid, packageFound bool) {
+	windowName := bytes.Clone(ast.ProgramStringBytesRead(prgrm, &inputs[0]))
+	var windowHeapPtr = types.AllocWrite_obj_data(prgrm, prgrm.Memory, windowName)
+	var windowNamePtr [types.POINTER_SIZE]byte
+	types.Write_ptr(windowNamePtr[:], 0, windowHeapPtr)
+	cb.windowNameBytes = windowNamePtr[:]
+	cb.functionIndex, cb.functionFound = cxfxFunction(prgrm, packageNameGid, packageFound, ast.ProgramStringBytesRead(prgrm, &inputs[1]))
 }
 
 func (cb *CXCallback) Init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -72,11 +71,12 @@ func (cb *CXCallback) Init(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs [
 
 	pkg := prgrm.CXPackages[cxAtomicOp.Package]
 
-	cb.init(prgrm, inputs, outputs, prgrm.CXProgramNameText(pkg.Name))
+	cb.init(prgrm, inputs, pkg.Name, true)
 }
 
 func (cb *CXCallback) InitEx(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	cb.init(prgrm, inputs, outputs, inputs[2].Get_str(prgrm))
+	packageNameGid, packageFound := prgrm.CXProgramNameFindBytes(ast.ProgramStringBytesRead(prgrm, &inputs[2]))
+	cb.init(prgrm, inputs, packageNameGid, packageFound)
 }
 
 func (cb *CXCallback) Call(prgrm *ast.CXProgram, inputs [][]byte) {
@@ -284,14 +284,13 @@ func PollEvents(prgrm *ast.CXProgram) {
 	polled = polled[0:0]
 }
 
-// cxfxFunction finds the function a callback names. The pool is frozen at
-// run time, so the names are found once without interning them.
-func cxfxFunction(prgrm *ast.CXProgram, packageName string, functionName string) (ast.CXFunctionIndex, bool) {
-	packageNameGid, found := prgrm.CXProgramNameFind(packageName)
-	if !found {
+// cxfxFunction finds the function a callback names, reading its name from
+// program memory. The pool is frozen at run time, so nothing is interned.
+func cxfxFunction(prgrm *ast.CXProgram, packageNameGid stringpool.StringGid, packageFound bool, functionName []byte) (ast.CXFunctionIndex, bool) {
+	if !packageFound {
 		return -1, false
 	}
-	functionNameGid, found := prgrm.CXProgramNameFind(functionName)
+	functionNameGid, found := prgrm.CXProgramNameFindBytes(functionName)
 	if !found {
 		return -1, false
 	}

@@ -5,6 +5,7 @@ package cxfx
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-util"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -71,7 +72,7 @@ func opGlfwCreateWindow(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []as
 	if win, err := glfw.CreateWindow(
 		int(inputs[1].Get_i32(prgrm)),
 		int(inputs[2].Get_i32(prgrm)),
-		inputs[3].Get_str(prgrm), nil, nil); err == nil {
+		util.ProgramTextStringView(ast.ProgramStringBytesRead(prgrm, &inputs[3])), nil, nil); err == nil {
 		windows[inputs[0].Get_str(prgrm)] = win
 	} else {
 		panic(err)

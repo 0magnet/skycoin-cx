@@ -19,9 +19,8 @@ var freeFns map[string]*func() = make(map[string]*func(), 0)
 var cSources map[string]**uint8 = make(map[string]**uint8, 0)
 
 func opGlfwFuncI32I32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	packageName := inputs[0].Get_str(prgrm)
-	functionName := inputs[1].Get_str(prgrm)
-	functionIndex, functionFound := cxfxFunction(prgrm, packageName, functionName)
+	packageNameGid, packageFound := prgrm.CXProgramNameFindBytes(ast.ProgramStringBytesRead(prgrm, &inputs[0]))
+	functionIndex, functionFound := cxfxFunction(prgrm, packageNameGid, packageFound, ast.ProgramStringBytesRead(prgrm, &inputs[1]))
 	callback := func(a int32, b int32) {
 		var inps [][]byte = make([][]byte, 2)
 		inps[0] = fromI32(a)
