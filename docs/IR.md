@@ -695,15 +695,33 @@ one loop, and vm fails on a program that does not lower.
   `processNonAtomicOperators` and `popStack` make.
 
 The subset is the bool, integer and float operators, conversions and print,
-identity by value, declarations, the jumps, `test` on non-string values and
-calls, with every operand a variable or literal whose address is its offset
-plus, for a stack offset, the frame pointer. Anything else gives a
-`lower.Failure` with a `ReasonCode`. `TestLowerCompare` lowers every program
+`string.PrintLine`, `printf` with a str literal format, identity, declarations,
+the jumps, `test` on non-string values and calls. Anything else gives a
+`lower.Failure` with a `ReasonCode`.
+
+* An operand may index arrays, select struct fields and dereference pointers,
+  the steps `GetFinalOffset` takes. Field offsets fold into a static offset.
+  An index or dereference becomes `OpcodeAddressIndex` or
+  `OpcodeAddressDeref` code that writes the address to a scratch slot, and
+  `OpcodeAddressLoad` or `OpcodeAddressStore` moves the value. The
+  addresses are computed before a built-in runs and after a call returns, as
+  in the old loop. A slice or the heap stays outside the subset.
+* The scratch is `ImageScratchSize` bytes after the data segment, used by one
+  expression at a time. The old loop has no scratch, so it is not compared.
+* A stack operand must fit the frame of its function. The old loop lets a
+  larger one, from a recursive struct type, run into the data segment.
+* Taking an address, in identity or a call by reference, is
+  `OpcodeAddressOf` or `OpcodeAddressPointer`, by the type tests `opIdentity`
+  and `processNonAtomicOperators` make.
+* `printf` reads its format at lower time as `buildString` does. Constant text
+  goes to `ImageText` and `OpcodePrintText`, each value to
+  `OpcodePrintValue` or `OpcodePrintStr`. `%v` on a whole array, struct or
+  pointer stays outside. `TestLowerCompare` lowers every program
 in `tests/` and, for each one that lowers completely, compares the memory
 after the old loop and vm, and stdout and the exit code of `cx
 --executor=old` and `cx --executor=vm`.
 
-`vm.Machine` holds the memory (stack, then the data segment), a fixed array
+`vm.Machine` holds the memory (stack, data segment, then scratch), a fixed array
 of `ir.ImageCallDepthMax` frames and an output buffer, all sized before the
 run. `Run` runs one entry function and returns a `vm.Stop` code and a pc,
 never a string. The caller runs `*init`, then `main` in the frame after it,
@@ -712,14 +730,21 @@ as `execute.RunCompiled` does.
 * `StopOutputFull` and `StopTestFailed` are resumable. The caller writes the
   output buffer, prints a failed test from the line table and
   `Machine.TestMessage`, the str bytes read from memory, then calls `Resume`.
+* A str print that does not fit the output keeps its place and stops with
+  `StopOutputFull`, and the same instruction goes on after `Resume`.
+* `StopIndexNegative` is a negative index, `CX_RUNTIME_INVALID_CAST` as in
+  `types.Cast_i32_to_ptr`. `StopAddressInvalid` is a computed address or str
+  outside the stack and data segment, where the old loop would read the heap.
 * `StopDivideByZero` and `StopStackOverflow` end the run. t11-cx prints them
   as `ast.RuntimeErrorInfo` does, the line from `ir.LineAt` and the call
   stack by copying the memory and frames into the program for
   `PrintStack`. `vm.StopExitCodes` gives the exit code.
-* The loop has no call in it. Prints, `test` and float mod, max and min
+* The loop has no call in it. Prints, `test`, float mod, max and min, address
+  dereferences, loads and stores other than 4 bytes and every address error
   return to a slow path outside the loop, which runs the instruction and
   enters the loop again. A call in the loop makes Go spill the loop state on
-  every instruction.
+  every instruction, and so does a loop past the size where Go stops
+  inlining the memory accessors into it.
 * A run allocates nothing (`TestRunVmAllocs`).
 
 Two programs behave differently on purpose. At the call depth limit the old

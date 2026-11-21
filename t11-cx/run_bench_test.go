@@ -74,8 +74,56 @@ func main() {
 }
 `
 
-// runBenchPrograms are count, fib and bubble sort plus the BenchmarkCompile
-// programs. test-gc is left out because it panics in MarkAndCompact (#13).
+const runArraySource = `package main
+
+func main() {
+	var nums [150]i32
+	var i i32
+	for i = 0; i < 150; i++ {
+		nums[i] = 150 - i
+	}
+	var j i32
+	var t i32
+	for i = 0; i < 149; i++ {
+		for j = 0; j < 149-i; j++ {
+			if nums[j] > nums[j+1] {
+				t = nums[j]
+				nums[j] = nums[j+1]
+				nums[j+1] = t
+			}
+		}
+	}
+}
+`
+
+const runStructSource = `package main
+
+type point struct {
+	x i32
+	y i32
+}
+
+func main() {
+	var points [100]point
+	var i i32
+	for i = 0; i < 100; i++ {
+		points[i].x = i
+		points[i].y = 2 * i
+	}
+	var sum i32
+	var p *point
+	var round i32
+	for round = 0; round < 100; round++ {
+		for i = 0; i < 100; i++ {
+			p = &points[i]
+			sum = sum + p.x + p.y
+		}
+	}
+}
+`
+
+// runBenchPrograms are count, fib, bubble sort, the fixed array sort and the
+// struct walk plus the BenchmarkCompile programs. test-gc is left out because it panics in MarkAndCompact (#13).
 // The ceilings are the counts measured when the test was added. The target
 // is 0, see #407.
 func runBenchPrograms(tb testing.TB) []runBenchProgram {
@@ -83,6 +131,8 @@ func runBenchPrograms(tb testing.TB) []runBenchProgram {
 		{"count", runCountSource, 7},
 		{"fib", runFibSource, 6},
 		{"bubble", runBubbleSource, 7},
+		{"array", runArraySource, 7},
+		{"struct", runStructSource, 7},
 	}
 	ceilings := map[string]float64{
 		"examples/hello-world.cx":                           9,

@@ -1,0 +1,52 @@
+// string.PrintLine and printf write the same bytes on both loops
+// (skycoin-cx#408).
+package main
+
+import "sys/string"
+
+type named struct {
+	name  str
+	count i32
+}
+
+var greeting str
+
+func main() {
+	string.PrintLine("hello")
+	greeting = "from a global"
+	string.PrintLine(greeting)
+	var n named
+	n.name = "from a field"
+	n.count = 3
+	string.PrintLine(n.name)
+	var empty str
+	string.PrintLine(empty)
+
+	var i i32
+	var big i64
+	var small ui8
+	var f f32
+	var d f64
+	var flag bool
+	i = -12
+	big = 1234567890123L
+	small = 200UB
+	f = 1.5
+	d = 2.25D
+	flag = true
+	printf("%d %d %d\n", i, big, small)
+	printf("%f %f\n", f, d)
+	printf("%v %v %v %v %v\n", i, f, d, flag, n.name)
+	printf("%s has %d\n", n.name, n.count)
+	printf("%b %b\n", flag, false)
+	printf("100\\% done, a \\n escape\n")
+	printf("missing %d and %d\n", i)
+	printf("%d on a float is empty: [%d]\n", i, d)
+
+	var values [3]i32
+	values[1] = 77
+	printf("element %d\n", values[1])
+	var p *i32
+	p = &values[1]
+	printf("through a pointer %d %v\n", *p, *p)
+}

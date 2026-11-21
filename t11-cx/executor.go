@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime/debug"
+	"strconv"
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
@@ -28,9 +29,11 @@ const executorOutputSize = 64 << 10
 // executorStopMessages is what the old loop prints after the error string
 // for each vm error, the value its panic carried.
 var executorStopMessages = [vm.StopCount]string{
-	vm.StopDivideByZero:  "runtime error: integer divide by zero",
-	vm.StopStackOverflow: constants.STACK_OVERFLOW_ERROR,
-	vm.StopOpcodeInvalid: "invalid image opcode",
+	vm.StopDivideByZero:   "runtime error: integer divide by zero",
+	vm.StopStackOverflow:  constants.STACK_OVERFLOW_ERROR,
+	vm.StopOpcodeInvalid:  "invalid image opcode",
+	vm.StopIndexNegative:  strconv.Itoa(types.CX_RUNTIME_INVALID_CAST),
+	vm.StopAddressInvalid: "address outside the stack and data segment",
 }
 
 // executorLower lowers prgrm. It returns "" when the program can run on vm:
@@ -150,11 +153,12 @@ func executorTestFailurePrint(machine *vm.Machine) {
 // RuntimeErrorInfo do, the call stack included. PrintStack reads the old
 // program state, so the vm memory and frames are copied into prgrm first.
 func executorErrorPrint(prgrm *ast.CXProgram, machine *vm.Machine, stop vm.Stop) {
+	image := machine.MachineImage
 	fileName, lineNumber := executorStopLine(machine)
 	code := int(vm.StopExitCodes[stop])
 	fmt.Printf("%s, %s, %v", ast.ErrorHeader(fileName, lineNumber), ast.ErrorString(code), executorStopMessages[stop])
 
-	copy(prgrm.Memory, machine.MachineMemory)
+	copy(prgrm.Memory, machine.MachineMemory[:ir.ImageDataEnd(image)])
 	depth := machine.MachineDepth
 	for i := uint32(0); i < depth; i++ {
 		frame := &machine.MachineFrames[i]

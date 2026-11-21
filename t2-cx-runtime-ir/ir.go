@@ -66,19 +66,43 @@ type Func struct {
 
 // Image is a program ready to run. ImageFuncs is indexed like the compiler's
 // function list, so a function id is the same in both. Memory is the stack,
-// ImageStackSize bytes from 0, then ImageData at ImageDataStart. An entry is a
+// ImageStackSize bytes from 0, then ImageData at ImageDataStart, then
+// ImageScratchSize bytes of scratch that only the machine sees. The scratch
+// holds computed addresses and loaded values for one expression at a time.
+// ImageText holds the constant bytes OpcodePrintText writes. An entry is a
 // function id or ImageFuncNone. ImageFuncNames[i] names ImageFuncs[i].
 type Image struct {
-	ImageFuncs     []Func
-	ImageData      []byte
-	ImageDataStart uint32
-	ImageStackSize uint32
-	ImageEntryInit uint32
-	ImageEntryMain uint32
-	ImageLines     []Line
-	ImageFileNames []string
-	ImageFuncNames []string
+	ImageFuncs       []Func
+	ImageData        []byte
+	ImageDataStart   uint32
+	ImageStackSize   uint32
+	ImageScratchSize uint32
+	ImageText        []byte
+	ImageEntryInit   uint32
+	ImageEntryMain   uint32
+	ImageLines       []Line
+	ImageFileNames   []string
+	ImageFuncNames   []string
 }
+
+// ImageDataEnd returns the first byte after the data segment, where the
+// scratch starts.
+func ImageDataEnd(image *Image) uint32 {
+	return image.ImageDataStart + uint32(len(image.ImageData))
+}
+
+// PrintStrMode is how OpcodePrintStr writes a str.
+type PrintStrMode uint32
+
+const (
+	// PrintStrModeRaw writes the bytes as they are, printf %v.
+	PrintStrModeRaw PrintStrMode = iota
+	// PrintStrModeEscaped turns \% into % and \n into a new line, printf %s
+	// as CheckForEscapedChars does.
+	PrintStrModeEscaped
+	// PrintStrModeLine writes the bytes and a new line, string.PrintLine.
+	PrintStrModeLine
+)
 
 // ImageFuncNone is the entry id of a missing entry function.
 const ImageFuncNone = ^uint32(0)
@@ -138,6 +162,39 @@ const (
 	// OpcodeTestEqual compares N bytes at A with M bytes at B and counts a
 	// failed test when they differ. C is the message string.
 	OpcodeTestEqual
+	// OpcodeAddressIndexStatic writes the address A plus N times the i32 at
+	// B to the address slot C. A negative index stops the run. An address
+	// slot is a uint32 in the scratch area.
+	OpcodeAddressIndexStatic
+	// OpcodeAddressIndex writes the address in slot A plus M, plus N times
+	// the i32 at B, to slot C.
+	OpcodeAddressIndex
+	// OpcodeAddressDerefStatic writes the pointer at A to slot C. A pointer
+	// outside the stack and data segment stops the run.
+	OpcodeAddressDerefStatic
+	// OpcodeAddressDeref writes the pointer at the address in slot A plus M
+	// to slot C, checked as OpcodeAddressDerefStatic.
+	OpcodeAddressDeref
+	// OpcodeAddressLoad copies N bytes from the address in slot A plus M to
+	// C.
+	OpcodeAddressLoad
+	// OpcodeAddressStore copies N bytes from A to the address in slot C plus
+	// M. D is 1, so the loop tells it from OpcodeAddressLoad without
+	// reading the opcode again.
+	OpcodeAddressStore
+	// OpcodeAddressOf writes the address A as a pointer at C.
+	OpcodeAddressOf
+	// OpcodeAddressPointer writes the address in slot A plus M as a pointer
+	// at C.
+	OpcodeAddressPointer
+	// OpcodePrintText writes M bytes of ImageText from N to the output.
+	OpcodePrintText
+	// OpcodePrintValue writes the value at A, of types.Code M, to the
+	// output in the printf verb N, one of d, f, b and v.
+	OpcodePrintValue
+	// OpcodePrintStr writes the bytes of the str at A to the output. N is a
+	// PrintStrMode.
+	OpcodePrintStr
 	// OpcodeBoolNot and the rest of the bool family read A and B and write C.
 	OpcodeBoolNot
 	OpcodeBoolAnd

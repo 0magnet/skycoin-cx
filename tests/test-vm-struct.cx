@@ -1,0 +1,55 @@
+// Struct fields, nested structs, arrays of structs and struct parameters and
+// results run the same on both loops (skycoin-cx#408).
+package main
+
+type point struct {
+	x i32
+	y i32
+}
+
+type box struct {
+	low  point
+	high point
+	tags [3]i32
+}
+
+var origin point
+
+func area(b box) (out i32) {
+	out = (b.high.x - b.low.x) * (b.high.y - b.low.y)
+}
+
+func shifted(p point, by i32) (out point) {
+	out = p
+	out.x = out.x + by
+	out.y = out.y + by
+}
+
+func main() {
+	var b box
+	b.low.x = 1
+	b.low.y = 2
+	b.high.x = 4
+	b.high.y = 6
+	b.tags[1] = 9
+	i32.print(area(b))
+	i32.print(b.tags[1])
+
+	var points [4]point
+	var i i32
+	for i = 0; i < 4; i++ {
+		points[i].x = i
+		points[i].y = i * 2
+	}
+	i32.print(points[3].y)
+	points[2] = shifted(points[1], 10)
+	i32.print(points[2].x)
+	i32.print(points[2].y)
+	test(points[2].y, 12, "shifted")
+
+	origin.x = 5
+	b.low = origin
+	i32.print(b.low.x)
+	b.high = shifted(b.low, 3)
+	i32.print(area(b))
+}

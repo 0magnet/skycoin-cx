@@ -1,0 +1,50 @@
+// Arrays in the stack and the data segment, indexed by literals, variables
+// and other array elements, run the same on both loops (skycoin-cx#408).
+package main
+
+var grid [3][4]i32
+var order [4]i32
+
+func sum(values [5]i32) (total i32) {
+	var i i32
+	for i = 0; i < 5; i++ {
+		total = total + values[i]
+	}
+}
+
+func main() {
+	var values [5]i32
+	var i i32
+	for i = 0; i < 5; i++ {
+		values[i] = i * i
+	}
+	i32.print(values[4])
+	i32.print(sum(values))
+
+	var row i32
+	var column i32
+	for row = 0; row < 3; row++ {
+		for column = 0; column < 4; column++ {
+			grid[row][column] = row*10 + column
+		}
+	}
+	i32.print(grid[2][3])
+	test(grid[1][2], 12, "grid")
+
+	order[0] = 3
+	order[1] = 0
+	order[2] = 2
+	order[3] = 1
+	i32.print(grid[order[2]][order[0]])
+
+	var copied [5]i32
+	copied = values
+	copied[0] = 7
+	i32.print(copied[0] + values[0])
+
+	var floats [3]f64
+	floats[1] = 2.5D
+	floats[2] = floats[1] * 2.0D
+	f64.print(floats[2])
+	test(floats[2], 5.0D, "floats")
+}
