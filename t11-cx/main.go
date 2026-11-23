@@ -85,6 +85,11 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 	if options.executor != executorOld {
 		image, _, outside := executorLower(actions.AST)
 		switch {
+		case outside == "" && options.target != "":
+			os.Exit(buildTarget(options, actions.AST, &image))
+		case options.target != "":
+			fmt.Fprintf(os.Stderr, "cannot build for %s: %s\n", options.target, outside)
+			os.Exit(types.CX_RUNTIME_NOT_IMPLEMENTED)
 		case outside == "":
 			if code := executorVmRun(actions.AST, &image); code != types.CX_SUCCESS {
 				os.Exit(int(code))

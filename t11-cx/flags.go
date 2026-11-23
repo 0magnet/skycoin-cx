@@ -27,6 +27,10 @@ type cxCmdFlags struct {
 	cxpath           string
 	sandbox          string
 	executor         string
+	target           string
+	output           string
+	llvmStats        bool
+	llvmExact        bool
 
 	// Debug flags for the CX developers
 	debugFileAccess bool
@@ -91,6 +95,10 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	commandLine.StringVar(&options.cxpath, "cxpath", options.cxpath, "Workspace directory, used instead of the CXPATH environment variable")
 	commandLine.StringVar(&options.sandbox, "sandbox", options.sandbox, "Directory a running program's file opcodes are confined to. Program paths must be relative and stay inside it. Defaults to the working directory.")
 	commandLine.StringVar(&options.executor, "executor", options.executor, "Loop that runs the program: auto runs it on the flat vm when every function lowers and on the old loop otherwise, old and vm force one loop. vm fails on a program that does not lower.")
+	commandLine.StringVar(&options.target, "target", options.target, "Prototype: build the program instead of running it. llvmir writes LLVM IR, native also compiles it with clang (CC). Needs a program that runs on vm.")
+	commandLine.StringVar(&options.output, "o", options.output, "Output file of -target, a.ll or a.out by default")
+	commandLine.BoolVar(&options.llvmStats, "llvm-stats", options.llvmStats, "Print how -target emitted each opcode, directly or as a runtime call")
+	commandLine.BoolVar(&options.llvmExact, "llvm-exact", options.llvmExact, "Do not turn loads of literals into constants under -target")
 
 	// Debug flags
 	commandLine.BoolVar(&options.debugFileAccess, "debug-file-access", options.debugFileAccess, "Print each file the compiler opens, creates or stats")

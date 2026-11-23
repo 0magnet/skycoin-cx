@@ -1,0 +1,267 @@
+// Runtime of the llvmir prototype target. It prints the way the cx vm prints,
+// see t3-cx-runtime-vm/vm_loop.go, and holds the opcodes that have no direct
+// IR template. Build it with the emitted module: clang -O2 prog.ll runtime.c
+#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+static char out[1 << 16];
+static size_t outLen;
+static uint32_t testFailures;
+
+static void flush(void) {
+	fwrite(out, 1, outLen, stdout);
+	outLen = 0;
+}
+
+static void put(const char *s, size_t n) {
+	while (n > 0) {
+		if (outLen == sizeof out)
+			flush();
+		size_t room = sizeof out - outLen;
+		size_t k = n < room ? n : room;
+		memcpy(out + outLen, s, k);
+		outLen += k;
+		s += k;
+		n -= k;
+	}
+}
+
+static void putc1(char c) { put(&c, 1); }
+
+static void putI64(int64_t v) {
+	char b[24];
+	put(b, (size_t)snprintf(b, sizeof b, "%lld", (long long)v));
+}
+
+static void putU64(uint64_t v) {
+	char b[24];
+	put(b, (size_t)snprintf(b, sizeof b, "%llu", (unsigned long long)v));
+}
+
+// putFloat writes v as strconv.AppendFloat(v, 'g', -1, bits) does: the
+// shortest digits that read back as the same value, %e form when the decimal
+// exponent is below -4 or at least 6 (eprec 6 for the shortest form).
+static void putFloat(double v, int bits) {
+	if (isnan(v)) {
+		put("NaN", 3);
+		return;
+	}
+	if (isinf(v)) {
+		put(v > 0 ? "+Inf" : "-Inf", 4);
+		return;
+	}
+	char e[64];
+	int prec;
+	for (prec = 1; prec <= 17; prec++) {
+		snprintf(e, sizeof e, "%.*e", prec - 1, v);
+		if (bits == 32 ? strtof(e, NULL) == (float)v : strtod(e, NULL) == v)
+			break;
+	}
+	// e is [-]d[.ddd]e[+-]xx
+	char digits[32];
+	int nd = 0, neg = 0;
+	const char *p = e;
+	if (*p == '-') {
+		neg = 1;
+		p++;
+	}
+	for (; *p && *p != 'e'; p++)
+		if (*p >= '0' && *p <= '9')
+			digits[nd++] = *p;
+	int exp = atoi(p + 1);
+	while (nd > 1 && digits[nd - 1] == '0')
+		nd--;
+	if (v == 0)
+		nd = 1, exp = 0;
+	if (neg)
+		putc1('-');
+	if (exp < -4 || exp >= 6) {
+		putc1(digits[0]);
+		if (nd > 1) {
+			putc1('.');
+			put(digits + 1, (size_t)nd - 1);
+		}
+		char x[8];
+		put(x, (size_t)snprintf(x, sizeof x, "e%c%02d", exp < 0 ? '-' : '+', exp < 0 ? -exp : exp));
+		return;
+	}
+	int dp = exp + 1; // digits before the point
+	if (dp <= 0) {
+		put("0.", 2);
+		for (int i = 0; i < -dp; i++)
+			putc1('0');
+		put(digits, (size_t)nd);
+		return;
+	}
+	for (int i = 0; i < dp; i++)
+		putc1(i < nd ? digits[i] : '0');
+	if (nd > dp) {
+		putc1('.');
+		put(digits + dp, (size_t)(nd - dp));
+	}
+}
+
+void cx_rt_print_text(const char *s, int32_t n) { put(s, (size_t)n); }
+
+void cx_rt_bool_print(int8_t v) {
+	if (v)
+		put("true\n", 5);
+	else
+		put("false\n", 6);
+}
+void cx_rt_i8_print(int8_t v) { putI64(v), putc1('\n'); }
+void cx_rt_i16_print(int16_t v) { putI64(v), putc1('\n'); }
+void cx_rt_i32_print(int32_t v) { putI64(v), putc1('\n'); }
+void cx_rt_i64_print(int64_t v) { putI64(v), putc1('\n'); }
+void cx_rt_ui8_print(uint8_t v) { putU64(v), putc1('\n'); }
+void cx_rt_ui16_print(uint16_t v) { putU64(v), putc1('\n'); }
+void cx_rt_ui32_print(uint32_t v) { putU64(v), putc1('\n'); }
+void cx_rt_ui64_print(uint64_t v) { putU64(v), putc1('\n'); }
+void cx_rt_f32_print(float v) { putFloat(v, 32), putc1('\n'); }
+void cx_rt_f64_print(double v) { putFloat(v, 64), putc1('\n'); }
+
+void cx_rt_print_value_bool(int8_t v, int32_t verb) {
+	(void)verb;
+	if (v)
+		put("true", 4);
+	else
+		put("false", 5);
+}
+void cx_rt_print_value_i8(int8_t v, int32_t verb) { (void)verb, putI64(v); }
+void cx_rt_print_value_i16(int16_t v, int32_t verb) { (void)verb, putI64(v); }
+void cx_rt_print_value_i32(int32_t v, int32_t verb) { (void)verb, putI64(v); }
+void cx_rt_print_value_i64(int64_t v, int32_t verb) { (void)verb, putI64(v); }
+void cx_rt_print_value_ui8(uint8_t v, int32_t verb) { (void)verb, putU64(v); }
+void cx_rt_print_value_ui16(uint16_t v, int32_t verb) { (void)verb, putU64(v); }
+void cx_rt_print_value_ui32(uint32_t v, int32_t verb) { (void)verb, putU64(v); }
+void cx_rt_print_value_ui64(uint64_t v, int32_t verb) { (void)verb, putU64(v); }
+void cx_rt_print_value_f32(float v, int32_t verb) {
+	if (verb == 'f') {
+		char b[400];
+		put(b, (size_t)snprintf(b, sizeof b, "%.7f", (double)v));
+		return;
+	}
+	putFloat(v, 32);
+}
+void cx_rt_print_value_f64(double v, int32_t verb) {
+	if (verb == 'f') {
+		char b[400];
+		put(b, (size_t)snprintf(b, sizeof b, "%.16f", v));
+		return;
+	}
+	putFloat(v, 64);
+}
+
+static uint64_t readPtr(const uint8_t *mem, uint64_t at, uint32_t ptrSize) {
+	uint64_t v = 0;
+	memcpy(&v, mem + at, ptrSize);
+	return v;
+}
+
+// strBytes finds the bytes of the str object at address object as
+// memoryStrRead does. It returns 0 for an object outside the data end.
+static int strBytes(const uint8_t *mem, uint32_t end, uint32_t ptrSize, uint64_t object, const uint8_t **s, uint64_t *n) {
+	uint64_t header = 1 + 2 * (uint64_t)ptrSize;
+	uint64_t invalid = ptrSize == 4 ? 0xffffffffu : ~0ull;
+	*s = NULL, *n = 0;
+	if (object == 0 || object == invalid)
+		return 1;
+	if (object + header > end)
+		return 0;
+	uint64_t size = readPtr(mem, object + header - ptrSize, ptrSize);
+	if (size < header || object + size > end)
+		return 0;
+	*s = mem + object + header, *n = size - header;
+	return 1;
+}
+
+int32_t cx_rt_print_str(const uint8_t *mem, uint32_t end, uint32_t ptrSize, uint32_t object, int32_t mode) {
+	const uint8_t *s;
+	uint64_t n;
+	if (!strBytes(mem, end, ptrSize, object, &s, &n))
+		return 0;
+	if (mode == 1) {
+		for (uint64_t i = 0; i < n; i++) {
+			char c = (char)s[i];
+			if (c == '\\' && i + 1 < n && (s[i + 1] == '%' || s[i + 1] == 'n')) {
+				c = s[i + 1] == '%' ? '%' : '\n';
+				i++;
+			}
+			putc1(c);
+		}
+	} else {
+		put((const char *)s, n);
+	}
+	if (mode == 2)
+		putc1('\n');
+	return 1;
+}
+
+void cx_rt_test_equal(const uint8_t *a, int32_t n, const uint8_t *b, int32_t m, const uint8_t *mem, uint32_t end, uint32_t ptrSize, uint32_t message, const char *where) {
+	if (n == m && memcmp(a, b, (size_t)n) == 0)
+		return;
+	testFailures++;
+	const uint8_t *s;
+	uint64_t len;
+	put(where, strlen(where));
+	put(": result was not equal to the expected value", 44);
+	if (strBytes(mem, end, ptrSize, message, &s, &len) && len > 0) {
+		put("; ", 2);
+		put((const char *)s, len);
+	}
+	putc1('\n');
+}
+
+void cx_rt_stop(int32_t code, const char *text) {
+	put(text, strlen(text));
+	putc1('\n');
+	flush();
+	fflush(stdout);
+	exit(code);
+}
+
+int32_t cx_rt_finish(void) {
+	flush();
+	fflush(stdout);
+	return testFailures > 0 ? 4 : 0; // CX_ASSERT
+}
+
+// The opcodes without a template, as t3-cx-runtime-vm computes them.
+
+static double goMax(double x, double y) {
+	if (isinf(x) && x > 0)
+		return x;
+	if (isinf(y) && y > 0)
+		return y;
+	if (isnan(x) || isnan(y))
+		return NAN;
+	if (x == 0 && x == y)
+		return signbit(x) ? y : x;
+	return x > y ? x : y;
+}
+
+static double goMin(double x, double y) {
+	if (isinf(x) && x < 0)
+		return x;
+	if (isinf(y) && y < 0)
+		return y;
+	if (isnan(x) || isnan(y))
+		return NAN;
+	if (x == 0 && x == y)
+		return signbit(x) ? x : y;
+	return x < y ? x : y;
+}
+
+// goMod is math.Mod: fmod, except that Go returns NaN for an infinite x, a
+// zero y or a NaN, which fmod also does.
+static double goMod(double x, double y) { return fmod(x, y); }
+
+float cx_rt_f32_mod(float a, float b) { return (float)goMod(a, b); }
+float cx_rt_f32_max(float a, float b) { return (float)goMax(a, b); }
+float cx_rt_f32_min(float a, float b) { return (float)goMin(a, b); }
+double cx_rt_f64_mod(double a, double b) { return goMod(a, b); }
+double cx_rt_f64_max(double a, double b) { return goMax(a, b); }
+double cx_rt_f64_min(double a, double b) { return goMin(a, b); }
