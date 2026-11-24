@@ -249,18 +249,22 @@ func TestNetTCPBackpressure(t *testing.T) {
 		_, found := testFind(entries, listener, NetTriggerAccepted)
 		return found
 	}), listener, NetTriggerAccepted)
-	const total = 8 << 20
-	written := make(chan error, 1)
-	go func() {
-		_, err := peer.Write(bytes.Repeat([]byte{'x'}, total))
-		written <- err
-	}()
-	time.Sleep(100 * time.Millisecond)
-	select {
-	case <-written:
-		t.Fatal("8 MiB were written to a program that does not update")
-	default:
+	// The peer writes until a write stalls. Socket buffers differ by system,
+	// and Windows grows them to megabytes, so the stall point is not fixed.
+	chunk := bytes.Repeat([]byte{'x'}, 64<<10)
+	total := 0
+	for {
+		peer.SetWriteDeadline(time.Now().Add(200 * time.Millisecond))
+		written, err := peer.Write(chunk)
+		total += written
+		if err != nil {
+			break
+		}
+		if total > 512<<20 {
+			t.Fatal("512 MiB were written to a program that does not update")
+		}
 	}
+	t.Logf("the peer stalled after %d bytes", total)
 	received := 0
 	deadline := time.Now().Add(20 * time.Second)
 	for received < total && time.Now().Before(deadline) {
@@ -270,7 +274,7 @@ func TestNetTCPBackpressure(t *testing.T) {
 			}
 		}
 	}
-	if received != total || <-written != nil {
+	if received != total {
 		t.Fatalf("received %d of %d bytes", received, total)
 	}
 }
@@ -378,21 +382,40 @@ func testPairs(t testing.TB, count int) map[int32]net.Conn {
 		}
 	}()
 	address := listener.Addr().String()
-	handles := make([]int32, count)
-	for i := range handles {
-		handles[i] = NetTCPDial(address)
-	}
-	connected := 0
+	// The dials go out 64 at a time, inside the listen backlog of every
+	// system, Windows included.
+	// A dial the loopback refuses under load, as on the Windows runners, is
+	// closed and made again.
+	const dialBatch = 64
+	const dialRetries = 64
+	handles := make([]int32, 0, count)
+	connected, dialing, retries := 0, 0, 0
 	deadline := time.Now().Add(20 * time.Second)
 	for connected < count && time.Now().Before(deadline) {
+		for dialing < min(count-connected, dialBatch) {
+			NetTCPDial(address)
+			dialing++
+		}
 		NetUpdate(20)
 		for {
-			_, trigger, _, _ := NetReadyNext()
+			handle, trigger, _, detail := NetReadyNext()
 			if trigger == NetTriggerNone {
 				break
 			}
-			if trigger == NetTriggerConnected {
+			switch trigger {
+			case NetTriggerConnected:
 				connected++
+				dialing--
+				handles = append(handles, handle)
+			case NetTriggerError:
+				retries++
+				if retries > dialRetries {
+					t.Fatalf("%d dials failed, the last with error %d, after %d connected", retries, detail, connected)
+				}
+				t.Logf("a dial failed with error %d after %d connected, dialing again", detail, connected)
+				NetClose(handle)
+				dialing--
+				time.Sleep(10 * time.Millisecond)
 			}
 		}
 	}
