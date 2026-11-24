@@ -79,6 +79,7 @@ func TestRunParseFloatOutput(t *testing.T) {
 	stdout := os.Stdout
 	os.Stdout = out
 	defer func() { os.Stdout = stdout }()
+	defer out.Close()
 	compileRunProgram(t, runBenchProgram{name: "parsefloat", source: runParseFloatSource})
 	execute.RunPrepare(actions.AST)
 	if err := execute.RunCompiled(actions.AST, 0, nil); err != nil {
