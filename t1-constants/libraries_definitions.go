@@ -8,7 +8,7 @@ package constants
 // process library is left here, as the functions of the file, net and
 // cipher libraries are opcodes (decision D119).
 //
-// Handler is the Go function the switch of the old loop calls,
+// GoFunction is the Go function the switch of the old loop calls,
 // package.Function, with the package cxos (t5-cxos, left out by the nocxos
 // tag). Inputs and Outputs are spelled as in OpcodeDefinitionTable. Read
 // only.
@@ -22,7 +22,7 @@ type LibraryFunctionDefinition struct {
 	LibraryNumber int
 	Number        int
 	Name          string
-	Handler       string
+	GoFunction    string
 	Inputs        string
 	Outputs       string
 }

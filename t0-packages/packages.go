@@ -16,8 +16,8 @@ var DefaultPackages = []string{
 // SysPrefix is the import path prefix of the built-in packages.
 const SysPrefix = "sys/"
 
-// IsDefaultPackage reports whether ident is the name of a built-in package.
-func IsDefaultPackage(ident string) bool {
+// PackageDefault reports whether ident is the name of a built-in package.
+func PackageDefault(ident string) bool {
 	for _, core := range DefaultPackages {
 		if core == ident {
 			return true
@@ -26,22 +26,22 @@ func IsDefaultPackage(ident string) bool {
 	return false
 }
 
-// IsBuiltinImport reports whether path refers to a built-in package, correctly
+// ImportBuiltin reports whether path refers to a built-in package, correctly
 // or not, so the loaders must not look for it in the workspace.
-func IsBuiltinImport(path string) bool {
-	return strings.HasPrefix(path, SysPrefix) || IsDefaultPackage(path)
+func ImportBuiltin(path string) bool {
+	return strings.HasPrefix(path, SysPrefix) || PackageDefault(path)
 }
 
 // CheckImport returns an error when path names a built-in package that does
 // not exist or omits SysPrefix.
 func CheckImport(path string) error {
 	if name, found := strings.CutPrefix(path, SysPrefix); found {
-		if !IsDefaultPackage(name) {
+		if !PackageDefault(name) {
 			return fmt.Errorf("unknown built-in package %q", path)
 		}
 		return nil
 	}
-	if IsDefaultPackage(path) {
+	if PackageDefault(path) {
 		return fmt.Errorf("built-in package %s is imported as \"%s%s\"", path, SysPrefix, path)
 	}
 	return nil

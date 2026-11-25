@@ -54,11 +54,11 @@ type site struct {
 
 // function is a declared function of the module with its calls and sites.
 type function struct {
-	name    string
-	calls   []string
-	sites   []site
-	handler bool
-	parent  string // the caller it was first reached from
+	name             string
+	calls            []string
+	sites            []site
+	opcodeGoFunction bool
+	parent           string // the caller it was first reached from
 	// position is file:first line-last line of the declaration.
 	position string
 }
@@ -194,26 +194,26 @@ func load(tags string) (map[string]*function, error) {
 			}
 			files = append(files, f)
 		}
-		info := &types.Info{
+		typeFacts := &types.Info{
 			Types:      map[ast.Expr]types.TypeAndValue{},
 			Defs:       map[*ast.Ident]types.Object{},
 			Uses:       map[*ast.Ident]types.Object{},
 			Selections: map[*ast.SelectorExpr]*types.Selection{},
 		}
 		config := types.Config{Importer: imp}
-		if _, err := config.Check(p.ImportPath, fset, files, info); err != nil {
+		if _, err := config.Check(p.ImportPath, fset, files, typeFacts); err != nil {
 			return nil, fmt.Errorf("type check %s: %w", p.ImportPath, err)
 		}
 		for _, f := range files {
 			rel, _ := filepath.Rel(wd, fset.Position(f.Pos()).Filename)
-			scanFile(fset, info, f, filepath.ToSlash(rel), functions)
+			scanFile(fset, typeFacts, f, filepath.ToSlash(rel), functions)
 		}
 	}
 	return functions, nil
 }
 
 // scanFile adds the functions of f with their calls and string sites.
-func scanFile(fset *token.FileSet, info *types.Info, f *ast.File, rel string, functions map[string]*function) {
+func scanFile(fset *token.FileSet, typeFacts *types.Info, f *ast.File, rel string, functions map[string]*function) {
 	comments := map[int]string{}
 	for _, group := range f.Comments {
 		comments[fset.Position(group.End()).Line] = group.Text()
@@ -223,11 +223,11 @@ func scanFile(fset *token.FileSet, info *types.Info, f *ast.File, rel string, fu
 		if !ok || fd.Body == nil {
 			continue
 		}
-		obj, ok := info.Defs[fd.Name].(*types.Func)
+		obj, ok := typeFacts.Defs[fd.Name].(*types.Func)
 		if !ok {
 			continue
 		}
-		fn := &function{name: obj.FullName(), handler: handlerSignature(obj.Type().(*types.Signature)),
+		fn := &function{name: obj.FullName(), opcodeGoFunction: opcodeGoFunctionSignature(obj.Type().(*types.Signature)),
 			position: fmt.Sprintf("%s:%d-%d", rel, fset.Position(fd.Pos()).Line, fset.Position(fd.End()).Line)}
 		functions[fn.name] = fn
 		funcCode, funcClass := "", ""
@@ -243,11 +243,11 @@ func scanFile(fset *token.FileSet, info *types.Info, f *ast.File, rel string, fu
 			}
 			stack = append(stack, n)
 			if call, ok := n.(*ast.CallExpr); ok {
-				if callee := calleeOf(info, call); callee != nil {
+				if callee := calleeOf(typeFacts, call); callee != nil {
 					fn.calls = append(fn.calls, callee.FullName())
 				}
 			}
-			category := stringOperation(info, n)
+			category := stringOperation(typeFacts, n)
 			if category == "" {
 				return true
 			}
@@ -266,7 +266,7 @@ func scanFile(fset *token.FileSet, info *types.Info, f *ast.File, rel string, fu
 			if code == "" {
 				code, class = funcCode, funcClass
 			}
-			fn.sites = append(fn.sites, site{owner: fn.name, file: rel, line: line, function: short, category: category, class: suggestClass(info, stack), code: code, commentClass: class})
+			fn.sites = append(fn.sites, site{owner: fn.name, file: rel, line: line, function: short, category: category, class: suggestClass(typeFacts, stack), code: code, commentClass: class})
 			return true
 		})
 	}
@@ -289,9 +289,9 @@ func shortName(obj *types.Func) string {
 	return types.TypeString(recv.Type(), func(*types.Package) string { return "" }) + "." + obj.Name()
 }
 
-// handlerSignature reports func(*CXProgram, []CXValue, []CXValue), the
+// opcodeGoFunctionSignature reports func(*CXProgram, []CXValue, []CXValue), the
 // OpcodeHandler type.
-func handlerSignature(sig *types.Signature) bool {
+func opcodeGoFunctionSignature(sig *types.Signature) bool {
 	if sig.Recv() != nil || sig.Results().Len() != 0 || sig.Params().Len() != 3 {
 		return false
 	}
@@ -305,7 +305,7 @@ func handlerSignature(sig *types.Signature) bool {
 }
 
 // calleeOf returns the function a call statically calls, or nil.
-func calleeOf(info *types.Info, call *ast.CallExpr) *types.Func {
+func calleeOf(typeFacts *types.Info, call *ast.CallExpr) *types.Func {
 	fun := ast.Unparen(call.Fun)
 	if index, ok := fun.(*ast.IndexExpr); ok {
 		fun = index.X
@@ -313,15 +313,15 @@ func calleeOf(info *types.Info, call *ast.CallExpr) *types.Func {
 	var obj types.Object
 	switch f := fun.(type) {
 	case *ast.Ident:
-		obj = info.Uses[f]
+		obj = typeFacts.Uses[f]
 	case *ast.SelectorExpr:
-		if sel, ok := info.Selections[f]; ok {
+		if sel, ok := typeFacts.Selections[f]; ok {
 			if sel.Kind() != types.MethodVal || types.IsInterface(sel.Recv()) {
 				return nil
 			}
 			obj = sel.Obj()
 		} else {
-			obj = info.Uses[f.Sel]
+			obj = typeFacts.Uses[f.Sel]
 		}
 	}
 	if fn, ok := obj.(*types.Func); ok {
@@ -347,7 +347,7 @@ func involvesString(t types.Type) bool {
 	return false
 }
 
-func isString(t types.Type) bool {
+func stringType(t types.Type) bool {
 	if t == nil {
 		return false
 	}
@@ -355,15 +355,15 @@ func isString(t types.Type) bool {
 	return ok && b.Info()&types.IsString != 0
 }
 
-func constant(info *types.Info, e ast.Expr) bool {
-	return info.Types[e].Value != nil
+func constant(typeFacts *types.Info, e ast.Expr) bool {
+	return typeFacts.Types[e].Value != nil
 }
 
 // stringOperation returns the category of the string operation n is, or "".
-func stringOperation(info *types.Info, n ast.Node) string {
+func stringOperation(typeFacts *types.Info, n ast.Node) string {
 	switch e := n.(type) {
 	case *ast.BinaryExpr:
-		if constant(info, e) || !isString(info.TypeOf(e.X)) {
+		if constant(typeFacts, e) || !stringType(typeFacts.TypeOf(e.X)) {
 			return ""
 		}
 		if e.Op == token.ADD {
@@ -371,41 +371,41 @@ func stringOperation(info *types.Info, n ast.Node) string {
 		}
 		return "compare"
 	case *ast.SwitchStmt:
-		if e.Tag != nil && isString(info.TypeOf(e.Tag)) {
+		if e.Tag != nil && stringType(typeFacts.TypeOf(e.Tag)) {
 			return "compare"
 		}
 	case *ast.IndexExpr:
-		if m, ok := info.TypeOf(e.X).Underlying().(*types.Map); ok && involvesString(m.Key()) {
+		if m, ok := typeFacts.TypeOf(e.X).Underlying().(*types.Map); ok && involvesString(m.Key()) {
 			return "maplookup"
 		}
-		if isString(info.TypeOf(e.X)) {
+		if stringType(typeFacts.TypeOf(e.X)) {
 			return "index"
 		}
 	case *ast.SliceExpr:
-		if isString(info.TypeOf(e.X)) {
+		if stringType(typeFacts.TypeOf(e.X)) {
 			return "slice"
 		}
 	case *ast.RangeStmt:
-		if isString(info.TypeOf(e.X)) {
+		if stringType(typeFacts.TypeOf(e.X)) {
 			return "range"
 		}
 	case *ast.CallExpr:
-		if constant(info, e) {
+		if constant(typeFacts, e) {
 			return ""
 		}
-		if tv := info.Types[e.Fun]; tv.IsType() {
-			if len(e.Args) == 1 && (isString(tv.Type) || isString(info.TypeOf(e.Args[0]))) && !constant(info, e.Args[0]) {
+		if tv := typeFacts.Types[e.Fun]; tv.IsType() {
+			if len(e.Args) == 1 && (stringType(tv.Type) || stringType(typeFacts.TypeOf(e.Args[0]))) && !constant(typeFacts, e.Args[0]) {
 				return "conv"
 			}
 			return ""
 		}
-		if callee := calleeOf(info, e); callee != nil && callee.Pkg() != nil {
+		if callee := calleeOf(typeFacts, e); callee != nil && callee.Pkg() != nil {
 			switch callee.Pkg().Path() {
 			case "fmt", "strings", "errors", "log":
 				return callee.Pkg().Path()
 			}
 		}
-		sig, ok := info.TypeOf(e.Fun).Underlying().(*types.Signature)
+		sig, ok := typeFacts.TypeOf(e.Fun).Underlying().(*types.Signature)
 		if !ok {
 			return ""
 		}
@@ -414,12 +414,12 @@ func stringOperation(info *types.Info, n ast.Node) string {
 				return "strresult"
 			}
 		}
-		_, builtin := info.Uses[identOf(e.Fun)].(*types.Builtin)
+		_, builtin := typeFacts.Uses[identOf(e.Fun)].(*types.Builtin)
 		for i, arg := range e.Args {
-			if builtin && constant(info, arg) {
+			if builtin && constant(typeFacts, arg) {
 				continue
 			}
-			if involvesString(info.TypeOf(arg)) {
+			if involvesString(typeFacts.TypeOf(arg)) {
 				return "strarg"
 			}
 			if i < sig.Params().Len() && !sig.Variadic() && involvesString(sig.Params().At(i).Type()) {
@@ -432,7 +432,7 @@ func stringOperation(info *types.Info, n ast.Node) string {
 
 // suggestClass guesses E for a site inside a panic, assert or error
 // argument, or in a block that panics, and O otherwise.
-func suggestClass(info *types.Info, stack []ast.Node) string {
+func suggestClass(typeFacts *types.Info, stack []ast.Node) string {
 	for i := len(stack) - 1; i >= 0; i-- {
 		switch n := stack[i].(type) {
 		case *ast.CallExpr:
@@ -448,14 +448,14 @@ func suggestClass(info *types.Info, stack []ast.Node) string {
 			}
 		case *ast.BlockStmt:
 			for _, stmt := range n.List {
-				if failing(info, stmt) {
+				if failing(typeFacts, stmt) {
 					return "E"
 				}
 			}
 			return "O"
 		case *ast.CaseClause:
 			for _, stmt := range n.Body {
-				if failing(info, stmt) {
+				if failing(typeFacts, stmt) {
 					return "E"
 				}
 			}
@@ -466,7 +466,7 @@ func suggestClass(info *types.Info, stack []ast.Node) string {
 }
 
 // failing reports a panic, os.Exit or a return of a non-nil error.
-func failing(info *types.Info, stmt ast.Stmt) bool {
+func failing(typeFacts *types.Info, stmt ast.Stmt) bool {
 	switch s := stmt.(type) {
 	case *ast.ExprStmt:
 		if call, ok := s.X.(*ast.CallExpr); ok {
@@ -479,7 +479,7 @@ func failing(info *types.Info, stmt ast.Stmt) bool {
 		}
 	case *ast.ReturnStmt:
 		for _, r := range s.Results {
-			if t := info.TypeOf(r); t != nil && t.String() == "error" {
+			if t := typeFacts.TypeOf(r); t != nil && t.String() == "error" {
 				if id, ok := r.(*ast.Ident); !ok || id.Name != "nil" {
 					return true
 				}
@@ -503,7 +503,7 @@ func reachable(functions map[string]*function) []*function {
 	}
 	add(runRoot)
 	for name, fn := range functions {
-		if fn.handler {
+		if fn.opcodeGoFunction {
 			add(name)
 		}
 	}

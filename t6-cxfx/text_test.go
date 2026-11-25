@@ -15,7 +15,7 @@ import (
 func textTestProgram(text string) (*ast.CXProgram, ast.CXValue) {
 	memory := make([]byte, 64+len(text))
 	heapOffset := types.Pointer(32)
-	types.Write_obj_data(memory, heapOffset, types.Compute_obj_size([]byte(text)), []byte(text))
+	types.ObjectPayloadWrite(memory, heapOffset, types.Compute_obj_size([]byte(text)), []byte(text))
 	types.Write_ptr(memory, 0, heapOffset)
 	return &ast.CXProgram{Memory: memory}, ast.CXValue{Offset: 0}
 }

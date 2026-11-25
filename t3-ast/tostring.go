@@ -208,7 +208,7 @@ func BuildStrPackages(prgrm *CXProgram, ast *string) {
 			panic(err)
 		}
 
-		if cxpackages.IsDefaultPackage(prgrm.CXProgramNameText(pkg.Name)) {
+		if cxpackages.PackageDefault(prgrm.CXProgramNameText(pkg.Name)) {
 			continue
 		}
 

@@ -48,7 +48,7 @@ func GetSliceOffset(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignat
 
 // GetSliceHeader ...
 func GetSliceHeader(prgrm *CXProgram, offset types.Pointer) []byte {
-	if offset > 0 && offset.IsValid() {
+	if offset > 0 && offset.Valid() {
 		return prgrm.Memory[offset+types.OBJECT_HEADER_SIZE : offset+types.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE]
 	}
 	return nil
@@ -56,7 +56,7 @@ func GetSliceHeader(prgrm *CXProgram, offset types.Pointer) []byte {
 
 // GetSliceLen ...
 func GetSliceLen(prgrm *CXProgram, offset types.Pointer) types.Pointer {
-	if offset > 0 && offset.IsValid() {
+	if offset > 0 && offset.Valid() {
 		sliceHeader := GetSliceHeader(prgrm, offset)
 		return types.Read_ptr(sliceHeader, types.POINTER_SIZE)
 	}
@@ -65,9 +65,9 @@ func GetSliceLen(prgrm *CXProgram, offset types.Pointer) types.Pointer {
 
 // GetSlice ...
 func GetSlice(prgrm *CXProgram, offset types.Pointer, sizeofElement types.Pointer) []byte {
-	if offset > 0 && offset.IsValid() {
+	if offset > 0 && offset.Valid() {
 		sliceLen := GetSliceLen(prgrm, offset)
-		if sliceLen > 0 && sliceLen.IsValid() {
+		if sliceLen > 0 && sliceLen.Valid() {
 			dataOffset := offset + types.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE - types.POINTER_SIZE
 			dataLen := types.POINTER_SIZE + sliceLen*sizeofElement
 			return prgrm.Memory[dataOffset : dataOffset+dataLen]
@@ -91,7 +91,7 @@ func SliceResizeEx(prgrm *CXProgram, outputSliceOffset types.Pointer, count type
 	var outputSliceHeader []byte
 	var outputSliceCap types.Pointer
 
-	if outputSliceOffset > 0 && outputSliceOffset.IsValid() {
+	if outputSliceOffset > 0 && outputSliceOffset.Valid() {
 		outputSliceHeader = GetSliceHeader(prgrm, outputSliceOffset)
 		outputSliceCap = types.Read_ptr(outputSliceHeader, 0)
 	}
@@ -166,11 +166,11 @@ func SliceResize(prgrm *CXProgram, fp types.Pointer, out *CXTypeSignature, inp *
 // SliceCopyEx does the logic required by `SliceCopy`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
 func SliceCopyEx(prgrm *CXProgram, outputSliceOffset types.Pointer, inputSliceOffset types.Pointer, count types.Pointer, sizeofElement types.Pointer) {
 	var inputSliceLen types.Pointer
-	if inputSliceOffset != 0 && inputSliceOffset.IsValid() {
+	if inputSliceOffset != 0 && inputSliceOffset.Valid() {
 		inputSliceLen = GetSliceLen(prgrm, inputSliceOffset)
 	}
 
-	if outputSliceOffset > 0 && outputSliceOffset.IsValid() {
+	if outputSliceOffset > 0 && outputSliceOffset.Valid() {
 		outputSliceData := GetSliceData(prgrm, outputSliceOffset, sizeofElement)
 		if (outputSliceOffset != inputSliceOffset) && inputSliceLen > 0 {
 			copy(outputSliceData, GetSliceData(prgrm, inputSliceOffset, sizeofElement))
@@ -188,7 +188,7 @@ func SliceCopy(prgrm *CXProgram, fp types.Pointer, outputSliceOffset types.Point
 func SliceAppendResize(prgrm *CXProgram, fp types.Pointer, out *CXTypeSignature, inp *CXTypeSignature, sizeofElement types.Pointer, appendLen types.Pointer) types.Pointer {
 	inputSliceOffset := GetSliceOffset(prgrm, fp, inp)
 	var inputSliceLen types.Pointer
-	if inputSliceOffset != 0 && inputSliceOffset.IsValid() {
+	if inputSliceOffset != 0 && inputSliceOffset.Valid() {
 		inputSliceLen = GetSliceLen(prgrm, inputSliceOffset)
 	}
 
@@ -214,7 +214,7 @@ func SliceInsert(prgrm *CXProgram, fp types.Pointer, out *CXTypeSignature, inp *
 	inputSliceOffset := GetSliceOffset(prgrm, fp, inp)
 
 	var inputSliceLen types.Pointer
-	if inputSliceOffset != 0 && inputSliceOffset.IsValid() {
+	if inputSliceOffset != 0 && inputSliceOffset.Valid() {
 		inputSliceLen = GetSliceLen(prgrm, inputSliceOffset)
 	}
 
@@ -237,7 +237,7 @@ func SliceRemove(prgrm *CXProgram, fp types.Pointer, inp *CXTypeSignature, index
 	inputSliceOffset := GetSliceOffset(prgrm, fp, inp)
 
 	var inputSliceLen types.Pointer
-	if inputSliceOffset != 0 && inputSliceOffset.IsValid() {
+	if inputSliceOffset != 0 && inputSliceOffset.Valid() {
 		inputSliceLen = GetSliceLen(prgrm, inputSliceOffset)
 	}
 
@@ -259,7 +259,7 @@ func SliceRemove(prgrm *CXProgram, fp types.Pointer, inp *CXTypeSignature, index
 func WriteToSlice(prgrm *CXProgram, off types.Pointer, inp []byte) types.Pointer {
 	// TODO: Check all these parses from/to int32/int.
 	var inputSliceLen types.Pointer
-	if off != 0 && off.IsValid() {
+	if off != 0 && off.Valid() {
 		inputSliceLen = GetSliceLen(prgrm, off)
 	}
 

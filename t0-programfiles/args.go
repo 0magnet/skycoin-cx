@@ -99,11 +99,11 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 func listDirRecursive(root string) ([]string, error) {
 	var files []string
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(root, func(path string, entryStat os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() {
+		if !entryStat.IsDir() {
 			files = append(files, path)
 		}
 		return nil
@@ -113,12 +113,12 @@ func listDirRecursive(root string) ([]string, error) {
 
 func listDir(root string) ([]string, error) {
 	var files []string
-	fileInfo, err := ioutil.ReadDir(root)
+	entries, err := ioutil.ReadDir(root)
 	if err != nil {
 		return files, err
 	}
 
-	for _, file := range fileInfo {
+	for _, file := range entries {
 		if file.IsDir() {
 			continue
 		}

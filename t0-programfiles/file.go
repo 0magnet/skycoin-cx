@@ -89,13 +89,13 @@ func CXStatFile(path string) (os.FileInfo, error) {
 		fmt.Printf("Stating file : '%s', '%s'\n", workingDir, path)
 	}
 
-	fileInfo, err := os.Stat(cxPath(path))
+	fileStat, err := os.Stat(cxPath(path))
 
 	if logFile && err != nil {
 		fmt.Printf("Failed to stat file : '%s', '%s', err '%v'\n", workingDir, path, err)
 	}
 
-	return fileInfo, err
+	return fileStat, err
 }
 
 // CXMkdirAll ...

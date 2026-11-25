@@ -21,7 +21,7 @@ func TestCheckImport(t *testing.T) {
 
 func TestIsBuiltinImport(t *testing.T) {
 	for path, want := range map[string]bool{"sys/os": true, "sys/nosuch": true, "os": true, "math": false, "math/os": false} {
-		if got := IsBuiltinImport(path); got != want {
+		if got := ImportBuiltin(path); got != want {
 			t.Errorf("IsBuiltinImport(%q) = %v, want %v", path, got, want)
 		}
 	}

@@ -21,7 +21,7 @@ func OpSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 
 		if elt.IsSlice() {
 			sliceOffset := types.Read_ptr(prgrm.Memory, inputs[0].Offset)
-			if sliceOffset > 0 && sliceOffset.IsValid() {
+			if sliceOffset > 0 && sliceOffset.Valid() {
 				sliceLen = ast.GetSliceLen(prgrm, sliceOffset)
 			}
 			// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
@@ -37,7 +37,7 @@ func OpSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		sliceLen = arrDetails.Lengths[len(arrDetails.Indexes)]
 	} else if inputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC || inputs[0].TypeSignature.Type == ast.TYPE_POINTER_SLICE_ATOMIC && inputs[0].TypeSignature.IsDeref {
 		sliceOffset := types.Read_ptr(prgrm.Memory, inputs[0].Offset)
-		if sliceOffset > 0 && sliceOffset.IsValid() {
+		if sliceOffset > 0 && sliceOffset.Valid() {
 			sliceLen = ast.GetSliceLen(prgrm, sliceOffset)
 		}
 	} else if inputs[0].TypeSignature.Type == ast.TYPE_STRUCT || inputs[0].TypeSignature.Type == ast.TYPE_POINTER_STRUCT {
@@ -54,7 +54,7 @@ func OpSliceLen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 
 			if fld.IsSlice() {
 				sliceOffset := types.Read_ptr(prgrm.Memory, inputs[0].Offset)
-				if sliceOffset > 0 && sliceOffset.IsValid() {
+				if sliceOffset > 0 && sliceOffset.Valid() {
 					sliceLen = ast.GetSliceLen(prgrm, sliceOffset)
 				}
 				// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
@@ -183,7 +183,7 @@ func OpSliceAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 
 	var inputSliceLen types.Pointer
 	inputSliceOffset := types.Read_ptr(prgrm.Memory, inputs[0].Offset)
-	if inputSliceOffset != 0 && inputSliceOffset.IsValid() {
+	if inputSliceOffset != 0 && inputSliceOffset.Valid() {
 		inputSliceLen = ast.GetSliceLen(prgrm, inputSliceOffset)
 	}
 

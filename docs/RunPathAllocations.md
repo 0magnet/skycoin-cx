@@ -76,7 +76,7 @@ allocates only when it fails, and is marked by its STRHOT E code instead
 | VMALLOC-010 | fixed (D42) | `ResizeMemory` grows the heap into the memory `EnsureMinimumHeapSize` allocated once for the heap cap |
 | VMALLOC-011 | fixed (D42), one rest | the root table, type cache and scratch of the collector are built before the run. A collection grows `GCStateViews` only when more than memory/512 pointers into objects are pending at once, D97 |
 | VMALLOC-012 | open, boundary | `ReadSlice_*`, used by the serialize and file opcodes |
-| VMALLOC-013 | not on the run path | `Make_obj` and `Write_str_data` run at compile time |
+| VMALLOC-013 | not on the run path | `Make_obj` and `StrPayloadWrite` run at compile time |
 | VMALLOC-014 | failure only | the getters build an error only on a miss |
 | VMALLOC-015 | fixed | `AppendPrintableValue` and the stack dump of the debug opcode and of a runtime error append to the format buffer |
 | VMALLOC-016 | fixed | assert builds its text only when it fails |

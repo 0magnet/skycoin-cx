@@ -15,8 +15,8 @@ func gcTestHeap() (memory []byte, heapStartsAt types.Pointer, heapPointer types.
 	memory = make([]byte, 256)
 	garbage := heapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET
 	live = garbage + size
-	types.Write_obj_data(memory, garbage, size, []byte("dead"))
-	types.Write_obj_data(memory, live, size, []byte("live"))
+	types.ObjectPayloadWrite(memory, garbage, size, []byte("dead"))
+	types.ObjectPayloadWrite(memory, live, size, []byte("live"))
 	types.Write_ptr(memory, 0, live)
 	return memory, heapStartsAt, live + size - heapStartsAt, live
 }
@@ -81,10 +81,10 @@ func gcTestList(state *GCState, count int) (memory []byte, heapStartsAt types.Po
 	c := heapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET
 	previous := types.Pointer(0)
 	for i := 0; i < count; i++ {
-		types.Write_obj_data(memory, c, strSize, []byte{'g'})
+		types.ObjectPayloadWrite(memory, c, strSize, []byte{'g'})
 		c += strSize
 		str := c
-		types.Write_obj_data(memory, str, strSize, []byte{byte('a' + i%26)})
+		types.ObjectPayloadWrite(memory, str, strSize, []byte{byte('a' + i%26)})
 		c += strSize
 		types.Write_obj_size(memory, c, nodeSize)
 		types.Write_ptr(memory, c+types.OBJECT_HEADER_SIZE+types.POINTER_SIZE, str)

@@ -72,7 +72,7 @@ func objmodelgenSitesRead(path string) (*objmodelgenSiteCounts, error) {
 // the total, the Phases 4 and 5 table and the counts table, taken from
 // the sites CSV.
 func objmodelgenSitesDoc(docPath string, csvPath string) ([]byte, error) {
-	data, err := os.ReadFile(docPath)
+	fileBytes, err := os.ReadFile(docPath)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func objmodelgenSitesDoc(docPath string, csvPath string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	lines := strings.Split(strings.ReplaceAll(string(data), "\r\n", "\n"), "\n")
+	lines := strings.Split(strings.ReplaceAll(string(fileBytes), "\r\n", "\n"), "\n")
 	var steps, table []string
 	steps = append(steps, "| Step | Objects (phase 4, phase 5 sites each) | Phase 4 sites | Phase 5 sites |", "| --- | --- | --- | --- |")
 	for i, step := range objmodelgenSiteSteps {
@@ -190,12 +190,12 @@ func objmodelgenSitesCodeCheck(root string, csvPath string) ([]string, error) {
 		if !strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, ".y") {
 			return nil
 		}
-		data, err := os.ReadFile(path)
+		fileBytes, err := os.ReadFile(path)
 		if err != nil {
 			return err
 		}
 		file := filepath.ToSlash(path)
-		for _, line := range strings.Split(string(data), "\n") {
+		for _, line := range strings.Split(string(fileBytes), "\n") {
 			at := strings.Index(line, "//")
 			if at < 0 {
 				continue

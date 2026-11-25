@@ -55,8 +55,8 @@ func (gen *generated) dispatchFiles() map[string][]byte {
 	b.WriteString(")\n\n// CoreOpcodeDispatch runs opcode code of the core on its operands, the\n// handler of its row of constants.OpcodeDefinitionTable, and reports false for\n// an opcode the core does not link (decision D21).\n")
 	b.WriteString("func CoreOpcodeDispatch" + dispatchParameters + " {\n\tswitch code {\n")
 	for _, row := range constants.OpcodeDefinitionTable {
-		pkg, function, _ := strings.Cut(row.Handler, ".")
-		if handlerPackages[pkg] == constants.OpcodeGroupCore && row.Handler != "" {
+		pkg, function, _ := strings.Cut(row.GoFunction, ".")
+		if goFunctionPackages[pkg] == constants.OpcodeGroupCore && row.GoFunction != "" {
 			fmt.Fprintf(&b, "\tcase %d:\n\t\t%s.%s(prgrm, inputs, outputs)\n", row.Number, pkg, function)
 		}
 	}
@@ -79,8 +79,8 @@ func (gen *generated) dispatchFiles() map[string][]byte {
 func (gen *generated) groupNumbers(group constants.OpcodeGroup) []string {
 	var numbers []string
 	for _, row := range constants.OpcodeDefinitionTable {
-		pkg, _, _ := strings.Cut(row.Handler, ".")
-		if row.Handler != "" && handlerPackages[pkg] == group {
+		pkg, _, _ := strings.Cut(row.GoFunction, ".")
+		if row.GoFunction != "" && goFunctionPackages[pkg] == group {
 			numbers = append(numbers, fmt.Sprint(row.Number))
 		}
 	}
@@ -91,11 +91,11 @@ func (gen *generated) dispatchGroupFile(group dispatchGroup) []byte {
 	var cases bytes.Buffer
 	used := map[string]bool{}
 	for _, row := range constants.OpcodeDefinitionTable {
-		pkg, function, _ := strings.Cut(row.Handler, ".")
-		if row.Handler == "" || handlerPackages[pkg] != group.group {
+		pkg, function, _ := strings.Cut(row.GoFunction, ".")
+		if row.GoFunction == "" || goFunctionPackages[pkg] != group.group {
 			continue
 		}
-		if handlerInline(function) {
+		if goFunctionInline(function) {
 			body, _ := inlineCase(row, function)
 			inlinePackages(function, used)
 			used["types"] = true

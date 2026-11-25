@@ -9,7 +9,7 @@ import (
 func popStack(prgrm *CXProgram, call *CXCall) error {
 	// going back to the previous call
 	prgrm.CallCounter--
-	if !prgrm.CallCounter.IsValid() {
+	if !prgrm.CallCounter.Valid() {
 		// then the program finished
 		prgrm.Terminated = true
 		return nil

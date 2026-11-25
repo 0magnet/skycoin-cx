@@ -8,13 +8,13 @@ package constants
 // switch, so the opcode set is fixed when cx is compiled (decision D21).
 // OP_LIBRARY_CALL has no row, the loop runs it and no program names it.
 //
-// Handler is the Go function the switch calls, package.Function, with the
+// GoFunction is the Go function the switch calls, package.Function, with the
 // package one of opcodes (t4-opcodes), printer (t4-cx-runtime-printer),
 // cxoscore (t4-cxos-core, left out by the nocxos tag), regexp (t4-regexp,
 // left out by noregexp) or cxfx (t6-cxfx, only with the cxfx tag). Outside
-// the core a Handler may instead be package.call, a Go call the switch makes
+// the core a GoFunction may instead be package.call, a Go call the switch makes
 // inline (#432), with %N for input N read at its offset and the value of the
-// call written to the one output when there is one. An empty Handler is an opcode the compiler replaces, such as the jumps and the
+// call written to the one output when there is one. An empty GoFunction is an opcode the compiler replaces, such as the jumps and the
 // untyped operators. Inputs and Outputs are type names separated by spaces,
 // as types.Code.Name spells them, with [] before a slice and name:pkg.Struct
 // for a struct. Operator is "type operator" when the row is the typed form
@@ -729,10 +729,10 @@ var OpcodeDefinitionTable = [...]OpcodeDefinition{
 
 // OpcodeDefinition is one row of OpcodeDefinitionTable.
 type OpcodeDefinition struct {
-	Number   int
-	Name     string
-	Handler  string
-	Inputs   string
-	Outputs  string
-	Operator string
+	Number     int
+	Name       string
+	GoFunction string
+	Inputs     string
+	Outputs    string
+	Operator   string
 }

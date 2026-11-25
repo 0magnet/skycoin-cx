@@ -111,7 +111,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// The offset and pass-by of the new data, zero when the offset is valid.
 		var glblArgOffset types.Pointer
 		var glblArgPassBy int
-		if !glbl.Offset.IsValid() {
+		if !glbl.Offset.Valid() {
 			var glblArg *ast.CXArgument
 			if declaration_specifiers.IsSlice() { // TODO:PTR move branch in WritePrimary
 				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
@@ -128,7 +128,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		if ast.IsTypeAtomic(declaration_specifiers) {
 			glbl.Type = ast.TYPE_ATOMIC
 			glbl.Meta = int(declaration_specifiers.Type)
-			if !glbl.Offset.IsValid() {
+			if !glbl.Offset.Valid() {
 				glbl.Offset = glblArgOffset
 			}
 
@@ -136,7 +136,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		} else if ast.IsTypePointerAtomic(declaration_specifiers) {
 			glbl.Type = ast.TYPE_POINTER_ATOMIC
 			glbl.Meta = int(declaration_specifiers.Type)
-			if !glbl.Offset.IsValid() {
+			if !glbl.Offset.Valid() {
 				glbl.Offset = glblArgOffset
 			}
 
@@ -154,7 +154,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 			glbl.PassBy = declaration_specifiers.PassBy
 
-			if !glbl.Offset.IsValid() {
+			if !glbl.Offset.Valid() {
 				glbl.Offset = glblArgOffset
 			}
 		} else if ast.IsTypePointerArrayAtomic(declaration_specifiers) {
@@ -168,7 +168,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Meta = int(objmodel.GidIndex(int64(arrayGid)))
 			glbl.PassBy = declaration_specifiers.PassBy
 
-			if !glbl.Offset.IsValid() {
+			if !glbl.Offset.Valid() {
 				glbl.Offset = glblArgOffset
 			}
 		} else if ast.IsTypeSliceAtomic(declaration_specifiers) {
@@ -184,7 +184,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Meta = int(objmodel.GidIndex(int64(arrayGid)))
 			glbl.PassBy = declaration_specifiers.PassBy
 
-			if !glbl.Offset.IsValid() {
+			if !glbl.Offset.Valid() {
 				glbl.Offset = glblArgOffset
 			}
 		} else if ast.IsTypePointerSliceAtomic(declaration_specifiers) {
@@ -200,7 +200,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			glbl.Meta = int(objmodel.GidIndex(int64(arrayGid)))
 			glbl.PassBy = declaration_specifiers.PassBy
 
-			if !glbl.Offset.IsValid() {
+			if !glbl.Offset.Valid() {
 				glbl.Offset = glblArgOffset
 			}
 		} else {
@@ -492,7 +492,7 @@ func GlobalRedeclarationCheck(prgrm *ast.CXProgram, declarator *ast.CXArgument) 
 	file, line, column := ast.CXArgumentDebugPosition(prgrm, declarator.ArgDetails)
 	firstFile, firstLine, firstColumn := ast.CXArgumentDebugPosition(prgrm, glbl.ArgDetails)
 	if glbl.ArgDetails == ast.CXArgumentDebugGidNil {
-		if !glbl.Offset.IsValid() {
+		if !glbl.Offset.Valid() {
 			return false
 		}
 	} else if firstLine == 0 {
@@ -683,10 +683,10 @@ func globalDeclared(prgrm *ast.CXProgram, name *ast.CXArgument) *ast.CXTypeSigna
 		return nil
 	}
 	if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		if !prgrm.GetCXArg(ast.CXArgumentIndex(glbl.Meta)).Offset.IsValid() {
+		if !prgrm.GetCXArg(ast.CXArgumentIndex(glbl.Meta)).Offset.Valid() {
 			return nil
 		}
-	} else if !glbl.Offset.IsValid() {
+	} else if !glbl.Offset.Valid() {
 		return nil
 	}
 	return glbl

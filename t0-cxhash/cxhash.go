@@ -22,6 +22,6 @@ func CxHashNew() hash.Hash {
 }
 
 // CxHashOfBytes returns the digest of data. It allocates nothing.
-func CxHashOfBytes(data []byte) [CxHashSize]byte {
-	return blake3.Sum256(data)
+func CxHashOfBytes(input []byte) [CxHashSize]byte {
+	return blake3.Sum256(input)
 }

@@ -20,8 +20,8 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-constants"
 )
 
-// handlerPackages maps the package of a Handler to its group.
-var handlerPackages = map[string]constants.OpcodeGroup{
+// goFunctionPackages maps the package of a GoFunction to its group.
+var goFunctionPackages = map[string]constants.OpcodeGroup{
 	"opcodes":  constants.OpcodeGroupCore,
 	"printer":  constants.OpcodeGroupCore,
 	"cxoscore": constants.OpcodeGroupOsCore,
@@ -135,15 +135,15 @@ func generate() (*generated, error) {
 		previous = row.Number
 		defined[row.Number] = true
 		signature := constants.OpcodeSignature{OpcodeSignatureGroup: constants.OpcodeGroupCore}
-		if row.Handler != "" {
-			pkg, function, ok := strings.Cut(row.Handler, ".")
-			group, known := handlerPackages[pkg]
-			if ok && known && group != constants.OpcodeGroupCore && handlerInline(function) {
+		if row.GoFunction != "" {
+			pkg, function, ok := strings.Cut(row.GoFunction, ".")
+			group, known := goFunctionPackages[pkg]
+			if ok && known && group != constants.OpcodeGroupCore && goFunctionInline(function) {
 				if _, err := inlineCase(row, function); err != nil {
 					return nil, err
 				}
 			} else if !ok || !known || function == "" || function[0] < 'A' || function[0] > 'Z' {
-				return nil, fmt.Errorf("definition %q: handler %q is not an exported function of a known package or an inline call", row.Name, row.Handler)
+				return nil, fmt.Errorf("definition %q: handler %q is not an exported function of a known package or an inline call", row.Name, row.GoFunction)
 			}
 			signature.OpcodeSignatureGroup = group
 			signature.OpcodeSignatureHandled = true

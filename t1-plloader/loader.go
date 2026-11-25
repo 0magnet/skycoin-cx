@@ -131,7 +131,7 @@ func addNewPackage(packageListStruct *PackageList, packageName string, fileMap m
 	}
 
 	// Built-in packages are not in the directory
-	if packages.IsBuiltinImport(packageName) {
+	if packages.ImportBuiltin(packageName) {
 		return packages.CheckImport(packageName)
 	}
 

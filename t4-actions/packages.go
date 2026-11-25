@@ -101,7 +101,7 @@ func DeclareImportAt(prgrm *ast.CXProgram, impName string, currentFile ast.Sourc
 	// All packages are read during the first pass of the compilation.  So
 	// if we get here during the 2nd pass, it's either a core package or
 	// something is panic-level wrong.
-	if cxpackages.IsDefaultPackage(ident) {
+	if cxpackages.PackageDefault(ident) {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now a constructor call, site S1090.
 		imp := ast.MakePackage(identGid)

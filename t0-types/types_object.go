@@ -16,13 +16,13 @@ func Get_obj_header(memory []byte, offset Pointer) []byte {
 	return memory[offset : offset+OBJECT_HEADER_SIZE]
 }
 
-func Get_obj_data(memory []byte, offset Pointer, size Pointer) []byte {
+func ObjectPayloadGet(memory []byte, offset Pointer, size Pointer) []byte {
 	offset += OBJECT_HEADER_SIZE
 	return memory[offset : offset+size]
 }
 
-func Compute_obj_size(data []byte) Pointer {
-	return Cast_int_to_ptr(len(data)) + OBJECT_HEADER_SIZE
+func Compute_obj_size(payload []byte) Pointer {
+	return Cast_int_to_ptr(len(payload)) + OBJECT_HEADER_SIZE
 }
 
 func Read_obj_forwarding_address(memory []byte, offset Pointer) Pointer {
@@ -45,21 +45,21 @@ func Write_obj_forwarding_address(memory []byte, offset Pointer, address Pointer
 	Write_ptr(memory, offset+MARK_SIZE, address)
 }
 
-func Make_obj(data []byte) []byte {
-	size := Compute_obj_size(data)
+func Make_obj(payload []byte) []byte {
+	size := Compute_obj_size(payload)
 	obj := make([]byte, size)
 	//fmt.Printf("MAKE_OBJ SIZE %d, LEN_DATA %d, LEN_OBJ %d\n", size, len(data), len(obj))
-	Write_obj_data(obj, 0, size, data)
+	ObjectPayloadWrite(obj, 0, size, payload)
 	return obj
 }
 
-func Write_obj_data(memory []byte, offset Pointer, size Pointer, obj []byte) {
+func ObjectPayloadWrite(memory []byte, offset Pointer, size Pointer, obj []byte) {
 	//size := Cast_int_to_ptr(len(obj))
 	Write_obj_size(memory, offset, size)
 	WriteSlice_byte(memory, offset+OBJECT_HEADER_SIZE, obj)
 }
 
-func Read_obj_data(memory []byte, offset Pointer) []byte {
+func ObjectPayloadRead(memory []byte, offset Pointer) []byte {
 	size := Read_obj_size(memory, offset)
 	size -= OBJECT_HEADER_SIZE
 	obj := GetSlice_byte(memory, offset+OBJECT_HEADER_SIZE, size)
@@ -68,8 +68,8 @@ func Read_obj_data(memory []byte, offset Pointer) []byte {
 
 func Read_obj(memory []byte, offset Pointer) []byte {
 	heapOffset := Read_ptr(memory, offset)
-	if heapOffset != 0 && heapOffset.IsValid() {
-		obj := Read_obj_data(memory, heapOffset)
+	if heapOffset != 0 && heapOffset.Valid() {
+		obj := ObjectPayloadRead(memory, heapOffset)
 		return obj
 	}
 	return nil

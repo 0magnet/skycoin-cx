@@ -154,7 +154,7 @@ func importScopedMember(prgrm *ast.CXProgram, source *ast.CXPackage, name string
 	if importScopedGlobal(prgrm, source, name) {
 		return true
 	}
-	if !cxpackages.IsDefaultPackage(prgrm.CXProgramNameText(source.Name)) {
+	if !cxpackages.PackageDefault(prgrm.CXProgramNameText(source.Name)) {
 		return false
 	}
 	if _, found := prgrm.CXProgramNativeFind(&ast.NativeNames, source.Name, stringpool.StringGidNil, name); found {
@@ -178,7 +178,7 @@ func importScopedMembers(prgrm *ast.CXProgram, source *ast.CXPackage) []stringpo
 		names = append(names, prgrm.GetCXTypeSignatureFromArray(fieldIdx).Name)
 	}
 	sourceText := prgrm.CXProgramNameText(source.Name)
-	if cxpackages.IsDefaultPackage(sourceText) {
+	if cxpackages.PackageDefault(sourceText) {
 		for _, index := range []*ast.NativeNameIndex{&ast.NativeNames, &ConstNames} {
 			for _, entry := range index.NativeNameIndexPackage(sourceText) {
 				names = append(names, prgrm.CXProgramNameIntern(entry.NativeNameEntryText[len(sourceText)+1:]))

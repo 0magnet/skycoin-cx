@@ -42,7 +42,7 @@ func finalOffsetEscapedPointer(prgrm *CXProgram, fp types.Pointer, argTypeSig *C
 		return finalOffset
 	}
 	finalOffset = types.Read_ptr(prgrm.Memory, finalOffset)
-	if finalOffset.IsValid() && finalOffset >= prgrm.Heap.StartsAt {
+	if finalOffset.Valid() && finalOffset >= prgrm.Heap.StartsAt {
 		finalOffset += types.OBJECT_HEADER_SIZE
 	}
 	return finalOffset
@@ -60,7 +60,7 @@ func EscapedAllocate(prgrm *CXProgram, fp types.Pointer, offset types.Pointer, s
 		header[c] = 0
 	}
 	types.Write_obj_size(prgrm.Memory, object, objectSize)
-	data := types.Get_obj_data(prgrm.Memory, object, size)
+	data := types.ObjectPayloadGet(prgrm.Memory, object, size)
 	for c := range data {
 		data[c] = 0
 	}
@@ -70,7 +70,7 @@ func EscapedAllocate(prgrm *CXProgram, fp types.Pointer, offset types.Pointer, s
 // PointerOfAddress returns the pointer to the value at address. A pointer to
 // the heap is the address less the object header, which a dereference adds.
 func PointerOfAddress(prgrm *CXProgram, address types.Pointer) types.Pointer {
-	if address.IsValid() && address >= prgrm.Heap.StartsAt+types.OBJECT_HEADER_SIZE {
+	if address.Valid() && address >= prgrm.Heap.StartsAt+types.OBJECT_HEADER_SIZE {
 		return address - types.OBJECT_HEADER_SIZE
 	}
 	return address
