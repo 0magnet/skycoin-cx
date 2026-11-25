@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: records llvm-clang build release-archives release-notes lint vulncheck build-gui build-debug build-wasm test-wasm build-tests test test-all test-ptr64 test-go vet vet-gui check-tiers check-inits check-ifaces check-json check-recovers check-objmodel check-strhot check-strhot-gui test-gui generate-objmodel names-csv check build-parser bench-compare clean help
+.PHONY: records llvm-clang build release-archives release-notes lint vulncheck build-gui build-debug build-wasm test-wasm build-tests test test-all test-ptr64 test-go vet vet-gui check-tiers check-inits check-ifaces check-json check-recovers check-objmodel check-names check-strhot check-strhot-gui test-gui generate-objmodel names-csv check build-parser bench-compare clean help
 
 CXEXE := cx
 EXE :=
@@ -151,6 +151,9 @@ check-strhot: ## Check that every string operation on the run path of the old lo
 check-strhot-gui: ## check-strhot, failing when the cxfx build of t6-cxfx does not compile (needs cgo and X11/GL/OpenAL headers)
 	CX_STRHOT_CXFX=1 ./check-strhot.sh
 
+check-names: ## Check the Go names against the Naming section of AGENTS.md, see names-allowlist.txt
+	go run ./t0-cx-tools-names -check names-allowlist.txt .
+
 names-csv: ## Write one CSV row per declared Go and CX name to NAMES_CSV, for skycoin-cx and the repositories in REPOS
 	mkdir -p $(dir $(NAMES_CSV))
 	go run ./t0-cx-tools-names -out $(NAMES_CSV) . $(REPOS)
@@ -164,7 +167,7 @@ check-opcodes: ## Check that the opcode and library tables and switches are up t
 generate-objmodel: ## Regenerate the Gid, manager and manager test files of t3-ast and the site counts of docs/ObjectModel.md
 	go run ./t0-cx-core-objmodelgen -dir t3-ast
 
-check: check-tiers llvm-clang check-inits check-ifaces check-json check-recovers check-objmodel check-opcodes check-gcreach check-strhot vet test-go test test-ptr64 ## tier, init, interface, JSON, recover, object model, opcode table, GC reach and STRHOT checks, vet, Go tests and CX program tests (default and ptr64)
+check: check-tiers llvm-clang check-inits check-ifaces check-names check-json check-recovers check-objmodel check-opcodes check-gcreach check-strhot vet test-go test test-ptr64 ## tier, init, interface, naming, JSON, recover, object model, opcode table, GC reach and STRHOT checks, vet, Go tests and CX program tests (default and ptr64)
 
 bench-compare: ## Time the t0-benchmarks/compare programs in cx, C, Python 3 and Bash (needs clang, python3, taskset)
 	go build -tags="$(TAGS)" -o ./bin/$(CXEXE) ./t11-cx
