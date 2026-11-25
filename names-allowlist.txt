@@ -581,11 +581,10 @@ t0-types/types_string.go|function||Read_str
 t0-types/types_string.go|function||Read_str_bytes
 t0-types/types_string.go|function||Read_str_size
 t0-types/types_string.go|function||Write_str_data
-t0-util/args.go|function||ParseArgsForCX
-t0-util/args.go|local_variable|listDir|fileInfo
-t0-util/args.go|parameter|listDirRecursive|info
-t0-util/file.go|local_variable|CXStatFile|fileInfo
-t0-util|package||util
+t0-programfiles/args.go|function||ParseArgsForCX
+t0-programfiles/args.go|local_variable|listDir|fileInfo
+t0-programfiles/args.go|parameter|listDirRecursive|info
+t0-programfiles/file.go|local_variable|CXStatFile|fileInfo
 t10-cxrepl/repl.go|global_variable||ReplTargetFn
 t10-cxrepl/repl.go|global_variable||ReplTargetMod
 t10-cxrepl/repl.go|global_variable||ReplTargetStrct

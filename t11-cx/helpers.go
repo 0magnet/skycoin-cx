@@ -12,7 +12,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t4-opcodes" // thin: only AssertFailed; no depth gain
 
-	"github.com/skycoin/skycoin-cx/t0-util" // thin: only CXCreateFile, CXLogFile, CXOpenFile; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-programfiles" // thin: only CXCreateFile, CXLogFile, CXOpenFile; no depth gain
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	"github.com/skycoin/skycoin-cx/t1-profiling"
 	repl "github.com/skycoin/skycoin-cx/t10-cxrepl" // thin: only Repl, ReplTargetFn; only user of cxrepl, could merge it here, max tier 11 to 10
@@ -139,7 +139,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		if len(fileNames) > 1 {
 			fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
 		}
-		r, err = util.CXOpenFile(sourceFilename)
+		r, err = programfiles.CXOpenFile(sourceFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ProgramError reading:", sourceFilename, err)
 			return
@@ -160,7 +160,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		w = os.Stdout
 	} else {
 		tokenFilename := options.lexerOutput
-		w, err = util.CXCreateFile(tokenFilename)
+		w, err = programfiles.CXCreateFile(tokenFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ProgramError writing:", tokenFilename, err)
 			return

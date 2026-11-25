@@ -5,8 +5,8 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/skycoin/skycoin-cx/t0-programfiles" // thin: only CXCreateFile, CXLogFile, CXOpenFile, ProgramSandboxRootOpen; no depth gain
 	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t0-util" // thin: only CXCreateFile, CXLogFile, CXOpenFile, ProgramSandboxRootOpen; no depth gain
 
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	"github.com/skycoin/skycoin-cx/t1-profiling"
@@ -57,7 +57,7 @@ func Run(args []string) {
 }
 
 func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
-	root, fileError := util.ProgramSandboxRootOpen(options.sandbox)
+	root, fileError := programfiles.ProgramSandboxRootOpen(options.sandbox)
 	if fileError != nil {
 		fmt.Fprintf(os.Stderr, "cannot open the sandbox: %s\n", fileError.FileErrorMessage)
 		os.Exit(types.CX_COMPILATION_ERROR)
@@ -171,7 +171,7 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 	*/
 	globals.DBG_GOLANG_STACK_TRACE = options.debugGoStack
 	if options.debugFileAccess {
-		util.CXLogFile(true)
+		programfiles.CXLogFile(true)
 	}
 
 	/*
@@ -217,7 +217,7 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 	}
 
 	// options, file pointers, filenames
-	cxArgs, sourceCode, fileNames, err := util.ParseArgsForCX(commandLine.Args(), true)
+	cxArgs, sourceCode, fileNames, err := programfiles.ParseArgsForCX(commandLine.Args(), true)
 	if err != nil {
 		println(err.Error())
 		os.Exit(types.CX_COMPILATION_ERROR)

@@ -22,10 +22,10 @@ STRHOT-008 O removed t0-types/types_string.go AllocWrite_str_data not on the run
 STRHOT-009 B removed t0-types/types_string.go Read_str_data deleted, only the affordance opcodes used it, D5 #500
 STRHOT-010 O removed t0-types/types_string.go Write_str not on the run path at dfcc46ab
 STRHOT-011 B open t0-types/types_string.go Read_str O fixed, boundary opcodes only
-STRHOT-012 O removed t0-util/file.go CXOpenFile not on the run path at dfcc46ab
-STRHOT-013 O removed t0-util/file.go CXCreateFile not on the run path at dfcc46ab
-STRHOT-014 O removed t0-util/file.go CXReadFile not on the run path at dfcc46ab
-STRHOT-015 O removed t0-util/file.go cxPath not on the run path at dfcc46ab
+STRHOT-012 O removed t0-programfiles/file.go CXOpenFile not on the run path at dfcc46ab
+STRHOT-013 O removed t0-programfiles/file.go CXCreateFile not on the run path at dfcc46ab
+STRHOT-014 O removed t0-programfiles/file.go CXReadFile not on the run path at dfcc46ab
+STRHOT-015 O removed t0-programfiles/file.go cxPath not on the run path at dfcc46ab
 STRHOT-016 B open t1-profiling/profiling.go StartCPUProfileOnFile
 STRHOT-017 O removed t3-ast/ast_cxfunction.go *CXFunction.AddInput not on the run path at dfcc46ab
 STRHOT-018 O removed t3-ast/ast_cxfunction.go *CXFunction.AddOutput not on the run path at dfcc46ab
@@ -278,11 +278,11 @@ STRHOT-264 E removed t3-ast/error.go RuntimeErrorInfo not on the run path at dfc
 STRHOT-265 B open t3-ast/serialize.go Deserialize
 STRHOT-266 P removed t4-cx-runtime-printer/stack.go printerStackValueHeader folded into printerStackValueLine, which appends bytes
 STRHOT-267 P removed t4-cx-runtime-printer/stack.go PrinterStackPrint appends names viewed from the string pool and the built-in name tables, #412
-STRHOT-268 B open t0-util/file_error.go fileErrorFromFileSystemError
-STRHOT-269 B open t0-util/program_path.go ProgramFileSystemPathFromBytes
-STRHOT-270 B open t0-util/program_path.go ProgramSandboxFileCreate
-STRHOT-271 B open t0-util/program_path.go programSandboxFileError
-STRHOT-272 B open t0-util/program_path.go ProgramSandboxFileOpen
+STRHOT-268 B open t0-programfiles/file_error.go fileErrorFromFileSystemError
+STRHOT-269 B open t0-programfiles/program_path.go ProgramFileSystemPathFromBytes
+STRHOT-270 B open t0-programfiles/program_path.go ProgramSandboxFileCreate
+STRHOT-271 B open t0-programfiles/program_path.go programSandboxFileError
+STRHOT-272 B open t0-programfiles/program_path.go ProgramSandboxFileOpen
 STRHOT-273 E open t1-cx-core-objmodel/gid.go GidAssertFailure
 STRHOT-274 E open t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolBytes
 STRHOT-275 B open t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolFind
@@ -332,7 +332,7 @@ STRHOT-318 O removed t4-opcodes/op_str.go OpStrBytesOfString fixed, byte views o
 STRHOT-319 O removed t4-opcodes/op_str.go OpStrStringOfBytes fixed, byte views of CX memory and the format buffer
 STRHOT-320 P removed t4-cx-runtime-printer/stack.go printerStackValueLine appends names viewed from the string pool, #412
 STRHOT-321 E open t4-regexp/op_regexp.go OpRegexpMustCompile
-STRHOT-322 B cxfx t0-util/program_text.go ProgramTextStringView O fixed, only the t6-cxfx GLFW, gltext and file boundaries call it, D92
+STRHOT-322 B cxfx t0-programfiles/program_text.go ProgramTextStringView O fixed, only the t6-cxfx GLFW, gltext and file boundaries call it, D92
 STRHOT-323 E cxfx t6-cxfx/state.go cxfxHandleAssertFailure
 STRHOT-324 E cxfx t6-cxfx/state.go cxfxTableFullAssertFailure
 STRHOT-325 B removed t6-cxfx/op_opengl.go decodeImg fixed, picks the decoder by the first bytes of the file, #432
@@ -359,8 +359,8 @@ STRHOT-345 B open t1-netbatch/socket.go netErrorOf
 STRHOT-346 B removed t1-netbatch/errno_unix.go netErrorOfSystem folded into netErrorOf, whose code covers it on every system
 STRHOT-347 B open t1-netbatch/socket.go netTCPDialRun
 STRHOT-348 B open t1-netbatch/replay.go netPayloadQuote
-STRHOT-349 B open t0-util/program_path.go ProgramSandboxFileOpenReadWrite
-STRHOT-350 B open t0-util/program_path.go ProgramSandboxFileRemove
+STRHOT-349 B open t0-programfiles/program_path.go ProgramSandboxFileOpenReadWrite
+STRHOT-350 B open t0-programfiles/program_path.go ProgramSandboxFileRemove
 STRHOT-351 B open t3-ast/serialize.go deserializeOpcodeSet
 STRHOT-352 E open t3-ast/cxfunction_mng.go *CXFunctionMng.CXFunctionGet
 STRHOT-353 B open t3-ast/serialize.go deserializeFunctions

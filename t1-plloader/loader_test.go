@@ -10,7 +10,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-packages"
 	"github.com/skycoin/skycoin-cx/t0-plbolt"
-	"github.com/skycoin/skycoin-cx/t0-util"
+	"github.com/skycoin/skycoin-cx/t0-programfiles"
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 	"golang.org/x/crypto/blake2b"
 )
@@ -163,7 +163,7 @@ func TestCreateFileMap(t *testing.T) {
 
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _, perr := util.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			_, sourceCodes, _, perr := programfiles.ParseArgsForCX([]string{testcase.FilesPath}, true)
 			if perr != nil {
 				t.Fatal(perr)
 			}
@@ -273,7 +273,7 @@ func TestAddNewPackage(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _, perr := util.ParseArgsForCX([]string{testcase.FilesPath}, false)
+			_, sourceCodes, _, perr := programfiles.ParseArgsForCX([]string{testcase.FilesPath}, false)
 			if perr != nil {
 				t.Fatal(perr)
 			}
@@ -340,7 +340,7 @@ func TestLoadImportPackages(t *testing.T) {
 
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _, perr := util.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			_, sourceCodes, _, perr := programfiles.ParseArgsForCX([]string{testcase.FilesPath}, true)
 			if perr != nil {
 				t.Fatal(perr)
 			}
@@ -468,7 +468,7 @@ func TestLoadCXProgram(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			_, sourceCodes, _, perr := util.ParseArgsForCX([]string{testcase.FilesPath}, true)
+			_, sourceCodes, _, perr := programfiles.ParseArgsForCX([]string{testcase.FilesPath}, true)
 			if perr != nil {
 				t.Fatal(perr)
 			}
@@ -499,13 +499,13 @@ func TestLoadCXProgram(t *testing.T) {
 }
 
 func TestParseArgsForCXMissingPath(t *testing.T) {
-	if _, _, _, err := util.ParseArgsForCX([]string{"test_folder/does_not_exist"}, true); err == nil {
+	if _, _, _, err := programfiles.ParseArgsForCX([]string{"test_folder/does_not_exist"}, true); err == nil {
 		t.Error("want an error for a missing path, got nil")
 	}
 }
 
 func TestLoadCXProgramImportLoop(t *testing.T) {
-	_, sourceCodes, _, err := util.ParseArgsForCX([]string{TEST_SRC_PATH_LOOP}, true)
+	_, sourceCodes, _, err := programfiles.ParseArgsForCX([]string{TEST_SRC_PATH_LOOP}, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -546,7 +546,7 @@ func TestBlake2HashSurvivesRoundTrip(t *testing.T) {
 }
 
 func TestLoadCXProgramCommentedImport(t *testing.T) {
-	_, sourceCodes, _, err := util.ParseArgsForCX([]string{"test_folder/test_comment_import/src"}, true)
+	_, sourceCodes, _, err := programfiles.ParseArgsForCX([]string{"test_folder/test_comment_import/src"}, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -567,7 +567,7 @@ func TestLoadCXProgramBuiltinImports(t *testing.T) {
 			if err := os.WriteFile(filepath.Join(src, "m.cx"), []byte(content), 0644); err != nil {
 				t.Fatal(err)
 			}
-			_, sourceCodes, _, err := util.ParseArgsForCX([]string{src}, true)
+			_, sourceCodes, _, err := programfiles.ParseArgsForCX([]string{src}, true)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -595,7 +595,7 @@ func TestLoadCXProgramSameFileNames(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	_, sourceCodes, _, err := util.ParseArgsForCX([]string{src}, true)
+	_, sourceCodes, _, err := programfiles.ParseArgsForCX([]string{src}, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -630,7 +630,7 @@ func closeFiles(t *testing.T, files []*os.File) {
 }
 
 func TestReadProgram(t *testing.T) {
-	_, sourceCodes, _, err := util.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, true)
+	_, sourceCodes, _, err := programfiles.ParseArgsForCX([]string{TEST_SRC_PATH_VALID}, true)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,4 +1,4 @@
-package util
+package programfiles
 
 import (
 	"fmt"
@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 )
 
-// VIOLATION: state outside State. Owner: t0-util; moves to ConfigMng in phase 2.
+// VIOLATION: state outside State. Owner: t0-programfiles; moves to ConfigMng in phase 2.
 var workingDir string
 
-// VIOLATION: state outside State. Owner: t0-util; moves to ConfigMng in phase 2.
+// VIOLATION: state outside State. Owner: t0-programfiles; moves to ConfigMng in phase 2.
 var logFile bool
 
 // CXSetWorkingDir ...

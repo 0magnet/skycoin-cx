@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	cxpackages "github.com/skycoin/skycoin-cx/t0-packages" // thin: tests use only IsDefaultPackage; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-util"
+	"github.com/skycoin/skycoin-cx/t0-programfiles"
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: tests use only LoadCXProgram; no depth gain
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
@@ -530,7 +530,7 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 			actions.AST = cxinit.MakeProgram()
 			cxinit.RegisterPackages(actions.AST)
 
-			_, sourceCode, _, perr := util.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _, perr := programfiles.ParseArgsForCX([]string{tc.testDir}, true)
 			if perr != nil {
 				t.Fatal(perr)
 			}
@@ -696,7 +696,7 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 			actions.AST = cxinit.MakeProgram()
 			cxinit.RegisterPackages(actions.AST)
 
-			_, sourceCode, _, perr := util.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _, perr := programfiles.ParseArgsForCX([]string{tc.testDir}, true)
 			if perr != nil {
 				t.Fatal(perr)
 			}
@@ -875,7 +875,7 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 			actions.AST = cxinit.MakeProgram()
 			cxinit.RegisterPackages(actions.AST)
 
-			_, sourceCode, _, perr := util.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _, perr := programfiles.ParseArgsForCX([]string{tc.testDir}, true)
 			if perr != nil {
 				t.Fatal(perr)
 			}
@@ -1209,7 +1209,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 			actions.AST = nil
 
-			_, sourceCode, _, perr := util.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCode, _, perr := programfiles.ParseArgsForCX([]string{tc.testDir}, true)
 			if perr != nil {
 				t.Fatal(perr)
 			}
