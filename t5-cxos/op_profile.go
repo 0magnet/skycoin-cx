@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skycoin/skycoin-cx/t0-util"
+	"github.com/skycoin/skycoin-cx/t0-programfiles"
 	"github.com/skycoin/skycoin-cx/t1-profiling" // thin: only StartCPUProfileOnFile; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
@@ -27,7 +27,7 @@ func OpStartProfile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 	if profRate == 0 {
 		return
 	}
-	file, fileError := util.ProgramSandboxFileCreate(prgrm.ProgramSandboxRoot, programPath)
+	file, fileError := programfiles.ProgramSandboxFileCreate(prgrm.ProgramSandboxRoot, programPath)
 	if fileError != nil {
 		fmt.Fprintln(os.Stderr, fileError.FileErrorMessage)
 		return

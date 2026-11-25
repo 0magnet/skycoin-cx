@@ -5,8 +5,8 @@ package cxfx
 import (
 	"testing"
 
+	"github.com/skycoin/skycoin-cx/t0-programfiles"
 	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t0-util"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -48,12 +48,12 @@ func TestCxfxTextViewAllocations(t *testing.T) {
 	prgrm, value := textTestProgram("Score: 1234")
 	var sink int
 	allocations := testing.AllocsPerRun(100, func() {
-		sink += len(util.ProgramTextStringView(ast.ProgramStringBytesRead(prgrm, &value)))
+		sink += len(programfiles.ProgramTextStringView(ast.ProgramStringBytesRead(prgrm, &value)))
 	})
 	if allocations != 0 {
 		t.Fatalf("reading text allocates %v times", allocations)
 	}
-	if view := util.ProgramTextStringView(ast.ProgramStringBytesRead(prgrm, &value)); view != "Score: 1234" {
+	if view := programfiles.ProgramTextStringView(ast.ProgramStringBytesRead(prgrm, &value)); view != "Score: 1234" {
 		t.Fatalf("text is %q", view)
 	}
 }

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-util"
+	"github.com/skycoin/skycoin-cx/t0-programfiles"
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
@@ -22,7 +22,7 @@ func loadSource(t *testing.T, name string, files map[string]string) {
 			t.Fatal(err)
 		}
 	}
-	_, sourceCodes, _, err := util.ParseArgsForCX([]string{filepath.Join(dir, "src")}, true)
+	_, sourceCodes, _, err := programfiles.ParseArgsForCX([]string{filepath.Join(dir, "src")}, true)
 	if err != nil {
 		t.Fatal(err)
 	}

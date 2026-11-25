@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/skycoin/skycoin-cx/t0-cxfiles"
+	"github.com/skycoin/skycoin-cx/t0-programfiles"
 	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t0-util"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -31,7 +31,7 @@ func ValidFile(handle int32) *os.File {
 }
 
 func OpOsLogFile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	util.CXLogFile(inputs[0].Get_bool(prgrm))
+	programfiles.CXLogFile(inputs[0].Get_bool(prgrm))
 }
 
 // VIOLATION STRHOT-131: B, hands a path or text to Go or the OS, #412.

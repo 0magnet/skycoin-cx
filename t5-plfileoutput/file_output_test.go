@@ -3,7 +3,7 @@ package file_output_test
 import (
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-util"
+	"github.com/skycoin/skycoin-cx/t0-programfiles"
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 	"github.com/skycoin/skycoin-cx/t4-actions" // thin: tests use only AST; tests only set actions.AST = nil, could drop it, tier 5 to 2
 	"github.com/skycoin/skycoin-cx/t5-plfileoutput"
@@ -40,7 +40,7 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 
 			actions.AST = nil
 
-			_, sourceCodes, _, perr := util.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCodes, _, perr := programfiles.ParseArgsForCX([]string{tc.testDir}, true)
 			if perr != nil {
 				t.Fatal(perr)
 			}

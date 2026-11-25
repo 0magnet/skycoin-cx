@@ -36,7 +36,7 @@ Counts are files, not rows.
 | cx | `cx/globals/` | 3 | keep | `t2-globals` | Compiler wide flags and counters, a source of the shared process state |
 | cx | `cx/init/` | 1 | keep | `t7-init` | Builds an empty program and registers the stdlib |
 | cx | `cx/types/` | 5 | keep | `t0-types` | Leaf type codes and pointer size, imported by everything |
-| cx | `cx/util/` | 1 | keep | `t0-util` | Small helpers used by ast, os and profiling |
+| cx | `cx/util/` | 1 | keep | `t0-programfiles` | Small helpers used by ast, os and profiling |
 
 ## Compiler
 

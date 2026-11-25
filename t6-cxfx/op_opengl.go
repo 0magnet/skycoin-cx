@@ -17,8 +17,8 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/skycoin/skycoin-cx/t0-programfiles" // thin: only ProgramFileSystemPathFromBytes, ProgramSandboxFileOpen; no depth gain
 	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t0-util" // thin: only ProgramFileSystemPathFromBytes, ProgramSandboxFileOpen; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 
 	"unsafe"
@@ -333,12 +333,12 @@ func decodeHdr(file *os.File) (data []byte, i32Width int32, i32Height int32) {
 // into CxfxState.CxfxTexturePixelsTable, otherwise -1.
 // VIOLATION STRHOT-198: B, reads the file at a program path and names it in the error text, #432.
 func uploadTexture(prgrm *ast.CXProgram, pathBytes []byte, target uint32, level uint32, cpuCopy bool) int32 {
-	path := util.ProgramTextStringView(pathBytes)
-	programPath, fileError := util.ProgramFileSystemPathFromBytes(pathBytes)
+	path := programfiles.ProgramTextStringView(pathBytes)
+	programPath, fileError := programfiles.ProgramFileSystemPathFromBytes(pathBytes)
 	if fileError != nil {
 		panic(fmt.Sprintf("texture %q: %s\n", path, fileError.FileErrorMessage))
 	}
-	file, fileError := util.ProgramSandboxFileOpen(prgrm.ProgramSandboxRoot, programPath)
+	file, fileError := programfiles.ProgramSandboxFileOpen(prgrm.ProgramSandboxRoot, programPath)
 	if fileError != nil {
 		panic(fmt.Sprintf("texture %q not found on disk: %s\n", path, fileError.FileErrorMessage))
 	}
@@ -445,7 +445,7 @@ func OpGlUploadImageToTexture(prgrm *ast.CXProgram, inputs []ast.CXValue, output
 // CxfxState.CxfxGifTable with its frame count, loop count and size.
 // VIOLATION STRHOT-204: B, reads the file at a program path and names it in the error text, #432.
 func OpGlNewGIF(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	path := util.ProgramTextStringView(ast.ProgramStringBytesRead(prgrm, &inputs[0]))
+	path := programfiles.ProgramTextStringView(ast.ProgramStringBytesRead(prgrm, &inputs[0]))
 	file, fileError := ast.ProgramSandboxFileOpen(prgrm, &inputs[0])
 	if fileError != nil {
 		panic(fmt.Sprintf("file not found %q, %s", path, fileError.FileErrorMessage))

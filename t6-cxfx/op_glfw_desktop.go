@@ -4,7 +4,7 @@ package cxfx
 
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/skycoin/skycoin-cx/t0-util"
+	"github.com/skycoin/skycoin-cx/t0-programfiles"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -37,7 +37,7 @@ func OpGlfwGetCursorPos(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []as
 // VIOLATION STRHOT-170: B, hands the window title to GLFW, #432.
 func OpGlfwCreateWindow(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	window, err := glfw.CreateWindow(int(inputs[0].Get_i32(prgrm)), int(inputs[1].Get_i32(prgrm)),
-		util.ProgramTextStringView(ast.ProgramStringBytesRead(prgrm, &inputs[2])), nil, nil)
+		programfiles.ProgramTextStringView(ast.ProgramStringBytesRead(prgrm, &inputs[2])), nil, nil)
 	if err != nil {
 		panic(err)
 	}
