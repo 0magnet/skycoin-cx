@@ -1,6 +1,8 @@
 // Command t0-cx-tools-names writes one CSV row per declared name in the Go
 // and CX sources of one or more repositories, for the naming review of
 // AGENTS.md. Usage: go run ./t0-cx-tools-names [-out file.csv] repo...
+// With -check allowlist it fails on a Go name that breaks the Naming rules
+// and is not in the allowlist, or on an allowlist entry that is fixed.
 package main
 
 import (
@@ -36,6 +38,7 @@ var NameRowHeader = []string{"repository", "language", "module_or_package", "fil
 
 func main() {
 	outPath := flag.String("out", "", "CSV file to write, standard output when empty")
+	allowlistPath := flag.String("check", "", "allowlist file, check the Go names against it instead of writing CSV")
 	flag.Parse()
 	if flag.NArg() == 0 {
 		fmt.Fprintln(os.Stderr, "usage: t0-cx-tools-names [-out file.csv] repository...")
@@ -51,6 +54,9 @@ func main() {
 		rows = append(rows, repositoryRows...)
 	}
 	NameRowsSort(rows)
+	if *allowlistPath != "" {
+		os.Exit(NameCheckRun(rows, *allowlistPath))
+	}
 	output := io.Writer(os.Stdout)
 	if *outPath != "" {
 		file, err := os.Create(*outPath)
