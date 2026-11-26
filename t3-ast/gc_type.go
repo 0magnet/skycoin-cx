@@ -216,13 +216,13 @@ func gcFrameRoots(prgrm *CXProgram, fn *CXFunction) []gc.GCRoot {
 	}
 	for _, ptr := range fn.ListOfPointers {
 		switch {
-		case ptr.IsPointer():
+		case ptr.PointerTyped():
 			specs, typ, strct, lengths := CXArgumentGCDeclaration(ptr)
 			add(ptr.Offset, 0, GCTypeOf(prgrm, specs, typ, strct, lengths))
 		case len(ptr.Fields) == 1:
 			// A pointer field of a struct local, as s.p.
 			fld := prgrm.GetCXArgFromArray(ptr.Fields[0])
-			if fld.IsPointer() {
+			if fld.PointerTyped() {
 				specs, typ, strct, lengths := CXArgumentGCDeclaration(fld)
 				add(ptr.Offset, fld.Offset, GCTypeOf(prgrm, specs, typ, strct, lengths))
 			}

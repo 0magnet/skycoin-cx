@@ -432,7 +432,7 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 		inp1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
 
 		inpType = inp1.Type
-		inpIsSlice = (inp1.GetAssignmentElement(prgrm)).IsSlice()
+		inpIsSlice = (inp1.GetAssignmentElement(prgrm)).SliceTyped()
 		inpSize = (inp1.GetAssignmentElement(prgrm)).Size
 	} else if inputs[1].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
@@ -451,7 +451,7 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
 
 		outType = out0.Type
-		outIsSlice = (out0.GetAssignmentElement(prgrm)).IsSlice()
+		outIsSlice = (out0.GetAssignmentElement(prgrm)).SliceTyped()
 	} else if outputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S1391.
@@ -489,7 +489,7 @@ func OpOsReadF64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 			values := make([]float64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.GetSliceData(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
 					types.Write_f64(outputSliceData, i*sizeofElement, values[i])
 				}
@@ -510,7 +510,7 @@ func OpOsReadF32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 			values := make([]float32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.GetSliceData(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
 					types.Write_f32(outputSliceData, i*sizeofElement, values[i])
 				}
@@ -531,7 +531,7 @@ func OpOsReadUI64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 			values := make([]uint64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.GetSliceData(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
 					types.Write_ui64(outputSliceData, i*sizeofElement, values[i])
 				}
@@ -552,7 +552,7 @@ func OpOsReadUI32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 			values := make([]uint32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.GetSliceData(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
 					types.Write_ui32(outputSliceData, i*sizeofElement, values[i])
 				}
@@ -573,7 +573,7 @@ func OpOsReadUI16Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 			values := make([]uint16, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.GetSliceData(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
 					types.Write_ui16(outputSliceData, i*sizeofElement, values[i])
 				}
@@ -594,7 +594,7 @@ func OpOsReadUI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 			values := make([]uint8, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.GetSliceData(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
 					types.Write_ui8(outputSliceData, i*sizeofElement, values[i])
 				}
@@ -615,7 +615,7 @@ func OpOsReadI64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 			values := make([]int64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.GetSliceData(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
 					types.Write_i64(outputSliceData, i*sizeofElement, values[i])
 				}
@@ -636,7 +636,7 @@ func OpOsReadI32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 			values := make([]int32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.GetSliceData(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
 					types.Write_i32(outputSliceData, i*sizeofElement, values[i])
 				}
@@ -657,7 +657,7 @@ func OpOsReadI16Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 			values := make([]int16, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.GetSliceData(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
 					types.Write_i16(outputSliceData, i*sizeofElement, values[i])
 				}
@@ -678,7 +678,7 @@ func OpOsReadI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 			values := make([]int8, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.GetSliceData(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
 					types.Write_i8(outputSliceData, i*sizeofElement, values[i])
 				}

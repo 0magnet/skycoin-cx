@@ -30,7 +30,7 @@ func OpSerialize(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 		ast.HeapOutOfMemory(prgrm, uint64(types.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE)+uint64(count))
 	}
 	slice := ast.SliceResizeEx(prgrm, 0, count, 1)
-	copy(ast.GetSliceData(prgrm, slice, 1), byts)
+	copy(ast.SliceElementsGet(prgrm, slice, 1), byts)
 	outputs[0].Set_ptr(prgrm, slice)
 }
 

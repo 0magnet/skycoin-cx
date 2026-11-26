@@ -92,11 +92,11 @@ func (state *CxIrState) CxIrStateInit() {
 // CxIrStateTeardown1 releases the program. Releasing every object the
 // program owns through the owner relations is #300, once they are Gids.
 func (state *CxIrState) CxIrStateTeardown1() {
-	manager := &state.CXProgramMng
-	for index, live := range manager.CXProgramMngLive {
+	programMng := &state.CXProgramMng
+	for index, live := range programMng.CXProgramMngLive {
 		if live {
-			generation := manager.CXProgramMngGenerations[index]
-			manager.CXProgramRelease(CXProgramGid(objmodel.GidCompose(CXProgramGidTypeTag, generation, uint32(index))))
+			generation := programMng.CXProgramMngGenerations[index]
+			programMng.CXProgramRelease(CXProgramGid(objmodel.GidCompose(CXProgramGidTypeTag, generation, uint32(index))))
 		}
 	}
 }

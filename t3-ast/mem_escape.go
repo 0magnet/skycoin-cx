@@ -38,7 +38,7 @@ func FrameAddress(prgrm *CXProgram, fp types.Pointer, offset types.Pointer) type
 // finalOffsetEscapedPointer is GetFinalOffset of an escaped *T variable.
 func finalOffsetEscapedPointer(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignature) types.Pointer {
 	finalOffset := frameAddress(prgrm, fp, argTypeSig.Offset)
-	if !argTypeSig.IsDeref {
+	if !argTypeSig.Deref {
 		return finalOffset
 	}
 	finalOffset = types.Read_ptr(prgrm.Memory, finalOffset)
@@ -60,9 +60,9 @@ func EscapedAllocate(prgrm *CXProgram, fp types.Pointer, offset types.Pointer, s
 		header[c] = 0
 	}
 	types.Write_obj_size(prgrm.Memory, object, objectSize)
-	data := types.ObjectPayloadGet(prgrm.Memory, object, size)
-	for c := range data {
-		data[c] = 0
+	payload := types.ObjectPayloadGet(prgrm.Memory, object, size)
+	for c := range payload {
+		payload[c] = 0
 	}
 	types.Write_ptr(prgrm.Memory, fp+OffsetEscapedSlot(offset), object)
 }

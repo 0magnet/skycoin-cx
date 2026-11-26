@@ -12,9 +12,9 @@ const serializeFormatVersion uint32 = 9
 // and the language version, all fixed width little endian.
 const serializeHeaderSize = len(serializeMagic) + 4 + 4 + 8
 
-// SerializedDataSize is the byte size of each part of a serialized program.
+// SerializedSizes is the byte size of each part of a serialized program.
 // The parts add up to the whole, and each section counts its length prefix.
-type SerializedDataSize struct {
+type SerializedSizes struct {
 	Header         int
 	Program        int
 	Strings        int

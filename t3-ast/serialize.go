@@ -37,10 +37,10 @@ func SerializeCXProgram(prgrm *CXProgram, includeMemory bool, codec SerializeCod
 	return compressCopy(codec, b)
 }
 
-// SerializeDebugInfo returns the byte size of each part of the uncompressed
+// SerializedSizesOf returns the byte size of each part of the uncompressed
 // serialized program. wholeMemory gives the sizes of the bytes that
 // compressed serialization compresses.
-func SerializeDebugInfo(prgrm *CXProgram, includeMemory, wholeMemory bool) (SerializedDataSize, error) {
+func SerializedSizesOf(prgrm *CXProgram, includeMemory, wholeMemory bool) (SerializedSizes, error) {
 	_, sizes, err := encodeCXProgram(prgrm, includeMemory || wholeMemory)
 	return sizes, err
 }
@@ -110,8 +110,8 @@ func SerializedHeaderCheck(b []byte) error {
 
 // encodeCXProgram serializes prgrm without compression and returns the size
 // of each part.
-func encodeCXProgram(prgrm *CXProgram, includeMemory bool) ([]byte, SerializedDataSize, error) {
-	var sizes SerializedDataSize
+func encodeCXProgram(prgrm *CXProgram, includeMemory bool) ([]byte, SerializedSizes, error) {
+	var sizes SerializedSizes
 	if err := serializeUnusedManagersCheck(prgrm.CxIrState); err != nil {
 		return nil, sizes, err
 	}
@@ -162,9 +162,9 @@ func serializeUnusedManagersCheck(state *CxIrState) error {
 		{CXAtomicOperatorGidTypeTag, state.CXAtomicOperatorMng.CXAtomicOperatorMngNext != 0},
 		{CXCallGidTypeTag, state.CXCallMng.CXCallMngNext != 0},
 	}
-	for _, manager := range unused {
-		if manager.used {
-			return fmt.Errorf("cannot serialize the program: %sMng holds objects and the serialized form does not carry them yet", objmodel.GidTypeTagNameTable[manager.typeTag])
+	for _, unusedMng := range unused {
+		if unusedMng.used {
+			return fmt.Errorf("cannot serialize the program: %sMng holds objects and the serialized form does not carry them yet", objmodel.GidTypeTagNameTable[unusedMng.typeTag])
 		}
 	}
 	return nil
@@ -714,10 +714,10 @@ func deserializeStructs(prgrm *CXProgram, decoder *serializeDecoder) {
 //                     Functions section
 
 func serializeFunctions(prgrm *CXProgram, encoder *serializeEncoder) error {
-	manager := &prgrm.CxIrState.CXFunctionMng
-	return serializeManager(encoder, manager.CXFunctionMngObjects, serializeManagerSlots{
-		len(manager.CXFunctionMngObjects), manager.CXFunctionMngGenerations, manager.CXFunctionMngLive, manager.CXFunctionMngFree,
-		manager.CXFunctionMngNext, manager.CXFunctionMngRetired, manager.CXFunctionMngLen, manager.CXFunctionMngGrowable,
+	functionMng := &prgrm.CxIrState.CXFunctionMng
+	return serializeManager(encoder, functionMng.CXFunctionMngObjects, serializeManagerSlots{
+		len(functionMng.CXFunctionMngObjects), functionMng.CXFunctionMngGenerations, functionMng.CXFunctionMngLive, functionMng.CXFunctionMngFree,
+		functionMng.CXFunctionMngNext, functionMng.CXFunctionMngRetired, functionMng.CXFunctionMngLen, functionMng.CXFunctionMngGrowable,
 	}, func(fn *CXFunction) error {
 		return serializeFunction(prgrm, encoder, fn)
 	})
@@ -891,10 +891,10 @@ func serializeExpressions(prgrm *CXProgram, encoder *serializeEncoder) error {
 		encoder.serializeEncoderInt(int64(op.ThenLines))
 		encoder.serializeEncoderInt(int64(op.ElseLines))
 	}
-	manager := &prgrm.CxIrState.CXLineMng
-	return serializeManager(encoder, manager.CXLineMngObjects, serializeManagerSlots{
-		len(manager.CXLineMngObjects), manager.CXLineMngGenerations, manager.CXLineMngLive, manager.CXLineMngFree,
-		manager.CXLineMngNext, manager.CXLineMngRetired, manager.CXLineMngLen, manager.CXLineMngGrowable,
+	lineMng := &prgrm.CxIrState.CXLineMng
+	return serializeManager(encoder, lineMng.CXLineMngObjects, serializeManagerSlots{
+		len(lineMng.CXLineMngObjects), lineMng.CXLineMngGenerations, lineMng.CXLineMngLive, lineMng.CXLineMngFree,
+		lineMng.CXLineMngNext, lineMng.CXLineMngRetired, lineMng.CXLineMngLen, lineMng.CXLineMngGrowable,
 	}, func(line *CXLine) error {
 		encoder.serializeEncoderInt(int64(line.FileName))
 		encoder.serializeEncoderInt(int64(line.LineNumber))
@@ -1068,7 +1068,7 @@ func serializeTypeSignatures(prgrm *CXProgram, encoder *serializeEncoder) error 
 		encoder.serializeEncoderInt(int64(signature.Type))
 		encoder.serializeEncoderInt(int64(signature.Package))
 		encoder.serializeEncoderInt(int64(signature.PassBy))
-		encoder.serializeEncoderBool(signature.IsDeref)
+		encoder.serializeEncoderBool(signature.Deref)
 		encoder.serializeEncoderInt(int64(signature.Meta))
 		encoder.serializeEncoderInt(int64(signature.ArgDetails))
 		return nil
@@ -1117,7 +1117,7 @@ func deserializeTypeSignatures(prgrm *CXProgram, decoder *serializeDecoder) {
 		signature.Type = CXTypeSignature_TYPE(decoder.serializeDecoderIntValue())
 		signature.Package = CXPackageIndex(decoder.serializeDecoderIntValue())
 		signature.PassBy = decoder.serializeDecoderIntValue()
-		signature.IsDeref = decoder.serializeDecoderBool()
+		signature.Deref = decoder.serializeDecoderBool()
 		signature.Meta = decoder.serializeDecoderIntValue()
 		signature.ArgDetails = CXArgumentDebugGid(decoder.serializeDecoderInt())
 	})
@@ -1259,8 +1259,8 @@ func serializeFunctionGidValid(prgrm *CXProgram, gid CXFunctionGid) bool {
 	if gid == CXFunctionGidNil {
 		return true
 	}
-	manager := &prgrm.CxIrState.CXFunctionMng
+	functionMng := &prgrm.CxIrState.CXFunctionMng
 	index := objmodel.GidIndex(int64(gid))
-	return objmodel.GidTypeTag(int64(gid)) == CXFunctionGidTypeTag && index < manager.CXFunctionMngNext &&
-		manager.CXFunctionMngLive[index] && manager.CXFunctionMngGenerations[index] == objmodel.GidGeneration(int64(gid))
+	return objmodel.GidTypeTag(int64(gid)) == CXFunctionGidTypeTag && index < functionMng.CXFunctionMngNext &&
+		functionMng.CXFunctionMngLive[index] && functionMng.CXFunctionMngGenerations[index] == objmodel.GidGeneration(int64(gid))
 }

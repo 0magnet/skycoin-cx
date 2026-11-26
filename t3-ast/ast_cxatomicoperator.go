@@ -9,7 +9,7 @@ import stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 // diagnostics. The stack dump reads GetOperatorNameBytes.
 func (op *CXAtomicOperator) GetOperatorName(prgrm *CXProgram) string {
 	opOperator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(op.Operator)
-	if opOperator.IsBuiltIn() {
+	if opOperator.BuiltIn() {
 		return opOperator.BuiltInName()
 	}
 	return prgrm.CXProgramNameText(opOperator.Name)
@@ -21,7 +21,7 @@ func (op *CXAtomicOperator) GetOperatorName(prgrm *CXProgram) string {
 // to them.
 func (op *CXAtomicOperator) GetOperatorNameBytes(prgrm *CXProgram) []byte {
 	opOperator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(op.Operator)
-	if opOperator.IsBuiltIn() {
+	if opOperator.BuiltIn() {
 		return opOperator.BuiltInNameBytes()
 	}
 	return prgrm.CXProgramNameBytes(opOperator.Name)

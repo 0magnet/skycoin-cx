@@ -4,8 +4,8 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-constants"
 )
 
-// OpcodeHandler is the signature of an opcode or library function handler.
-type OpcodeHandler func(prgrm *CXProgram, inputs []CXValue, outputs []CXValue)
+// OpcodeGoFunction is the signature of an opcode or library function handler.
+type OpcodeGoFunction func(prgrm *CXProgram, inputs []CXValue, outputs []CXValue)
 
 // OpcodeDispatchFunction runs the opcode code on its operands and reports
 // false for an opcode this binary does not link.
@@ -27,16 +27,16 @@ func opcodeDispatchNone(prgrm *CXProgram, code int, inputs []CXValue, outputs []
 // VIOLATION: state outside State. Owner: t3-ast; moves to CXNativeFunctionMng in phase 1.
 var NativeFunctionHost func(prgrm *CXProgram, code int) *CXNativeFunction
 
-// IsOperator reports whether opCode is an untyped operator.
-func IsOperator(opCode int) bool {
+// OpcodeOperator reports whether opCode is an untyped operator.
+func OpcodeOperator(opCode int) bool {
 	return opCode > constants.START_OF_OPERATORS && opCode < constants.END_OF_OPERATORS
 }
 
-func IsArithmeticOperator(opCode int) bool {
+func OpcodeOperatorArithmetic(opCode int) bool {
 	return opCode > constants.START_OF_ARITHMETIC_OPERATORS && opCode < constants.END_OF_ARITHMETIC_OPERATORS
 }
 
-func IsComparisonOperator(opCode int) bool {
+func OpcodeOperatorComparison(opCode int) bool {
 	return opCode > constants.START_OF_COMPARISON_OPERATORS && opCode < constants.END_OF_COMPARISON_OPERATORS
 }
 

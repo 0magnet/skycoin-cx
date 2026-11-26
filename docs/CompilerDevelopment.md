@@ -115,7 +115,7 @@ CXExpressions have the following fields:
 * FileName, FileLine - location in source where this CXExpression was created.
 * ThenLines, ElseLines - used to calculate current line while executing for instructions that jump, like for, if/else, and goto.
 * ScopeOperation - used to either initiate a new scope or exit the existing scope, or nothing if zero. 1 = begin, -1 = end.
-* IsMethodCall, IsStructLiteral, IsArrayLiteral, IsUndType, IsBreak, IsContinue.
+* TypeMethodCall, TypeStructLiteral, TypeArrayLiteral, UndTyped, BreakOperator, ContinueOperator.
 
 CXExpression functions/methods (first one is function, rest are methods):
 * MakeAtomicOperatorExpression(op, fileName, fileLine) - creates CXExpression with Operator op, etc.

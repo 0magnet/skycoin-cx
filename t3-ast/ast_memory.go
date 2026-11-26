@@ -130,7 +130,7 @@ func ProgramMemoryRelease(prgrm *CXProgram) {
 // ResizeMemory sets the heap of prgrm to newMemSize bytes, at most its cap.
 // The heap grows into the capacity of prgrm.Memory, which zeroes the new
 // bytes, and shrinks by reslicing.
-func ResizeMemory(prgrm *CXProgram, newMemSize types.Pointer, isExpand bool) {
+func ResizeMemory(prgrm *CXProgram, newMemSize types.Pointer, expand bool) {
 	heapCap := HeapCap(prgrm)
 	if newMemSize > heapCap {
 		newMemSize = heapCap
@@ -143,7 +143,7 @@ func ResizeMemory(prgrm *CXProgram, newMemSize types.Pointer, isExpand bool) {
 	}
 
 	end := prgrm.Heap.StartsAt + newMemSize
-	if isExpand {
+	if expand {
 		if types.Cast_int_to_ptr(cap(prgrm.Memory)) < end {
 			// A program that EnsureMinimumHeapSize did not size.
 			heapMemoryReserve(prgrm)
@@ -191,11 +191,11 @@ func HeapOutOfMemory(prgrm *CXProgram, request uint64) {
 // GCREACH: allocates through AllocateSeq, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
 // VIOLATION STRHOT-281: B, only the boundary opcodes use Go strings, #412.
-func AllocateStr(prgrm *CXProgram, data string) types.Pointer {
-	size := types.OBJECT_HEADER_SIZE + types.Cast_int_to_ptr(len(data))
+func AllocateStr(prgrm *CXProgram, text string) types.Pointer {
+	size := types.OBJECT_HEADER_SIZE + types.Cast_int_to_ptr(len(text))
 	object := AllocateSeq(prgrm, size)
 	types.Write_obj_size(prgrm.Memory, object, size)
-	copy(prgrm.Memory[object+types.OBJECT_HEADER_SIZE:object+size], data)
+	copy(prgrm.Memory[object+types.OBJECT_HEADER_SIZE:object+size], text)
 	return object
 }
 
@@ -204,8 +204,8 @@ func AllocateStr(prgrm *CXProgram, data string) types.Pointer {
 // GCREACH: allocates through AllocateSeq, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
 // VIOLATION STRHOT-282: B, only the boundary opcodes use Go strings, #412.
-func AllocateStrAt(prgrm *CXProgram, address types.Pointer, data string) {
-	types.Write_ptr(prgrm.Memory, address, AllocateStr(prgrm, data))
+func AllocateStrAt(prgrm *CXProgram, address types.Pointer, text string) {
+	types.Write_ptr(prgrm.Memory, address, AllocateStr(prgrm, text))
 }
 
 // AllocateStrBytesAt writes a new str object holding first followed by second
@@ -217,8 +217,8 @@ func AllocateStrBytesAt(prgrm *CXProgram, address types.Pointer, first []byte, s
 	size := types.OBJECT_HEADER_SIZE + types.Cast_int_to_ptr(len(first)+len(second))
 	object := AllocateSeq(prgrm, size)
 	types.Write_obj_size(prgrm.Memory, object, size)
-	data := prgrm.Memory[object+types.OBJECT_HEADER_SIZE : object+size]
-	copy(data[copy(data, first):], second)
+	payload := prgrm.Memory[object+types.OBJECT_HEADER_SIZE : object+size]
+	copy(payload[copy(payload, first):], second)
 	types.Write_ptr(prgrm.Memory, address, object)
 }
 

@@ -151,7 +151,7 @@ in `CXPackages`, and three name maps, `Imports` (to `CXPackageIndex`),
 
 * `Index`, `Name` and `Package`,
 * `AtomicOPCode`, the opcode number, 0 for a user function.
-  `CXFunction.IsBuiltIn` is `AtomicOPCode != 0`,
+  `CXFunction.BuiltIn` is `AtomicOPCode != 0`,
 * `LibraryNumber` and `LibraryFunctionNumber`, the system library function
   that an `AtomicOPCode` of `constants.OP_LIBRARY_CALL` (795) calls, 0
   otherwise,
@@ -289,7 +289,7 @@ used for many operands. A type signature can point at one.
 
 `ast.CXTypeSignature` (`t3-ast/cxtypesignature_def.go`) has `Index`,
 `Name`, `Offset`, `Type`, `Package`, `PassBy`
-(`constants.PASSBY_VALUE` 0 or `PASSBY_REFERENCE` 1), `IsDeref`, `Meta`
+(`constants.PASSBY_VALUE` 0 or `PASSBY_REFERENCE` 1), `Deref`, `Meta`
 and `ArgDetails`. `Type` is a `CXTypeSignature_TYPE`, and `Meta` depends
 on it.
 
@@ -410,9 +410,9 @@ builds.
 2. A `CX_LINE` expression only increments `Line`.
 3. A declaration zeroes its output and increments `Line`.
 4. A native fills two `[]CXValue` with the operands' type signature,
-   size, final offset and type in `processBuiltInOperators`, calls
+   size, final offset and type in `builtInOperatorRun`, calls
    `OpcodeDispatch(prgrm, AtomicOPCode, inputs, outputs)`, and increments `Line`.
-5. A user call (`processNonAtomicOperators`) increments `CallCounter`,
+5. A user call (`nonAtomicOperatorRun`) increments `CallCounter`,
    sets the new frame at `Stack.Pointer`, adds `Operator.Size` to
    `Stack.Pointer`, zeroes the frame and copies the inputs into the
    callee's parameter offsets. A `PASSBY_REFERENCE` input is copied as its
@@ -521,7 +521,7 @@ per-expression native copies.
 
 `ast.SerializeCXProgram(prgrm, includeMemory, codec)`,
 `ast.Deserialize(b, codec)`, `ast.SerializedHeaderCheck(b)` and
-`ast.SerializeDebugInfo(prgrm, includeMemory, wholeMemory)` are in
+`ast.SerializedSizesOf(prgrm, includeMemory, wholeMemory)` are in
 `t3-ast/serialize.go`.
 
 * A serialized program is a snapshot of the arenas and managers of a
@@ -543,7 +543,7 @@ per-expression native copies.
 * `Deserialize` returns an error, never panics, for bytes that are
   truncated or malformed, and for a program from another format, pointer
   size or language version.
-* `SerializeDebugInfo` returns the byte size of the header and of each
+* `SerializedSizesOf` returns the byte size of the header and of each
   section. They add up to the length of the uncompressed bytes.
 
 The CX functions `serialize(aff) []ui8` and `deserialize([]ui8)`
@@ -813,7 +813,7 @@ one loop, and vm fails on a program that does not lower.
 * A call becomes `OpcodeCallFrame` (zero the callee frame at the stack
   pointer), one `OpcodeCallArg` per input, `OpcodeCall`, then one
   `OpcodeCallResult` per output the caller receives, the same copies
-  `processNonAtomicOperators` and `popStack` make.
+  `nonAtomicOperatorRun` and `popStack` make.
 * A call through `LibraryCall`, `os.Run` of the process library, does not
   lower, `ReasonLibraryFunctionOutsideSubset`. The image has no library call
   opcode (D119).
@@ -848,7 +848,7 @@ the jumps, `test` on non-string values and calls. Anything else gives a
   larger one, from a recursive struct type, run into the data segment.
 * Taking an address, in identity or a call by reference, is
   `OpcodeAddressOf` or `OpcodeAddressPointer`, by the type tests `OpIdentity`
-  and `processNonAtomicOperators` make.
+  and `nonAtomicOperatorRun` make.
 * `printf` reads its format at lower time as `buildString` does. Constant text
   goes to `ImageText` and `OpcodePrintText`, each value to
   `OpcodePrintValue` or `OpcodePrintStr`. `%v` on a whole array, struct or

@@ -37,8 +37,8 @@ func (encoder *serializeEncoder) serializeEncoderPointer(value types.Pointer) {
 
 // serializeEncoderLength writes the length of a slice or map, -1 for nil, so
 // that nil and empty stay apart.
-func (encoder *serializeEncoder) serializeEncoderLength(length int, isNil bool) {
-	if isNil {
+func (encoder *serializeEncoder) serializeEncoderLength(length int, nilValue bool) {
+	if nilValue {
 		encoder.serializeEncoderInt(-1)
 		return
 	}

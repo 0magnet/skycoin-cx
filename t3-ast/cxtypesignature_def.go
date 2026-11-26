@@ -12,8 +12,8 @@ type CXTypeSignature struct {
 	Type    CXTypeSignature_TYPE
 	Package CXPackageIndex
 
-	PassBy  int  // pass by value or reference
-	IsDeref bool // true if it is dereferencing a pointer, array or slice
+	PassBy int  // pass by value or reference
+	Deref  bool // true if it is dereferencing a pointer, array or slice
 
 	// if type is complex, meta is complex id
 	// if type is struct, meta is CXTypeSignature_Struct id

@@ -103,7 +103,7 @@ func wipeDeclarationMemory(prgrm *CXProgram, cxAtomicOp *CXAtomicOperator) error
 	return nil
 }
 
-func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, cxAtomicOp *CXAtomicOperator, cxAtomicOpOperator *CXFunction, globalInputs *[]CXValue, globalOutputs *[]CXValue, fp types.Pointer) error {
+func builtInOperatorRun(prgrm *CXProgram, expr *CXExpression, cxAtomicOp *CXAtomicOperator, cxAtomicOpOperator *CXFunction, globalInputs *[]CXValue, globalOutputs *[]CXValue, fp types.Pointer) error {
 	inputs := cxAtomicOp.GetInputs(prgrm)
 	inputCount := len(inputs)
 	// VIOLATION VMALLOC-002: grows the operand buffers only when RunBuffersPrepare
@@ -197,7 +197,7 @@ func processBuiltInOperators(prgrm *CXProgram, expr *CXExpression, cxAtomicOp *C
 	return nil
 }
 
-func processNonAtomicOperators(prgrm *CXProgram, cxAtomicOp *CXAtomicOperator, cxAtomicOpOperator *CXFunction, fp types.Pointer) error {
+func nonAtomicOperatorRun(prgrm *CXProgram, cxAtomicOp *CXAtomicOperator, cxAtomicOpOperator *CXFunction, fp types.Pointer) error {
 	//TODO: Is this only called for user defined functions?
 	/*
 	   It was not a native, so we need to create another call
@@ -323,9 +323,9 @@ func (call *CXCall) Call(prgrm *CXProgram, fn *CXFunction, globalInputs *[]CXVal
 		}
 
 		call.Line++
-	} else if cxAtomicOpOperator.IsBuiltIn() {
+	} else if cxAtomicOpOperator.BuiltIn() {
 		//TODO: SLICES ARE NON ATOMIC
-		err := processBuiltInOperators(prgrm, expr, cxAtomicOp, cxAtomicOpOperator, globalInputs, globalOutputs, fp)
+		err := builtInOperatorRun(prgrm, expr, cxAtomicOp, cxAtomicOpOperator, globalInputs, globalOutputs, fp)
 		if err != nil {
 			return err
 		}
@@ -333,7 +333,7 @@ func (call *CXCall) Call(prgrm *CXProgram, fn *CXFunction, globalInputs *[]CXVal
 		call.Line++
 	} else {
 		//NON-ATOMIC OPERATOR
-		err := processNonAtomicOperators(prgrm, cxAtomicOp, cxAtomicOpOperator, fp)
+		err := nonAtomicOperatorRun(prgrm, cxAtomicOp, cxAtomicOpOperator, fp)
 		if err != nil {
 			return err
 		}

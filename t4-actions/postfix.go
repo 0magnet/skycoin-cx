@@ -70,7 +70,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			inp.Lengths = prevExpressionOperatorOutput.Lengths
 			inp.PreviouslyDeclared = true
 
-			if ast.IsTypeArrayAtomic(inp) {
+			if ast.CXArgumentTypeArrayAtomic(inp) {
 				typeSigIdx = ast.AllocCXTypeSignatureOfCXArgDeprecate(prgrm, inp)
 			} else {
 				typeSigIdx = ast.AllocCXTypeSignatureOfCXArgBuilder(prgrm, inp)
@@ -177,7 +177,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		elt.DereferenceOperations = append(elt.DereferenceOperations, constants.DEREF_ARRAY)
 		elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, constants.DECL_INDEXING)
 	} else if prevExpressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
-		prevExpressionOutputTypeSig.IsDeref = true
+		prevExpressionOutputTypeSig.Deref = true
 	} else {
 		panic("type is not known")
 	}
@@ -488,7 +488,7 @@ func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression
 
 	if lastPrevExpressionOutputArg != nil && len(lastPrevExpressionOutputArg.Fields) > 0 {
 		// then it's a method
-		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
+		// prevExprs[len(prevExprs) - 1].TypeMethodCall = true
 
 	} else if lastPrevExpressionOperator == nil {
 		if native, ok := prgrm.CXProgramNativeFind(&ast.NativeNames, stringpool.StringGidNil, stringpool.StringGidNil, lastPrevExpressionOutputTypeSig.Name); ok && !functionDeclared(prgrm, lastPrevExpressionOutputTypeSig) {
@@ -880,7 +880,7 @@ func renamedOpcodeRecord(prgrm *ast.CXProgram, file ast.SourceFileGid, line int,
 // MethodCallValue gives the method call that ends exprs a result variable,
 // which ProcessMethodCall types, and appends an expression that reads it.
 func MethodCallValue(prgrm *ast.CXProgram, exprs []ast.CXExpression) []ast.CXExpression {
-	if len(exprs) == 0 || !exprs[len(exprs)-1].IsMethodCall() {
+	if len(exprs) == 0 || !exprs[len(exprs)-1].TypeMethodCall() {
 		return exprs
 	}
 	callOp := &prgrm.CXAtomicOps[exprs[len(exprs)-1].Index]
@@ -918,7 +918,7 @@ func methodCallResultAdd(prgrm *ast.CXProgram, callOp *ast.CXAtomicOperator) str
 // MethodCallStatement undoes MethodCallValue for a method call whose result
 // is not used, so exprs end with the method call again.
 func MethodCallStatement(prgrm *ast.CXProgram, exprs []ast.CXExpression) []ast.CXExpression {
-	if len(exprs) < 2 || !exprs[len(exprs)-2].IsMethodCall() || exprs[len(exprs)-1].Type == ast.CX_LINE {
+	if len(exprs) < 2 || !exprs[len(exprs)-2].TypeMethodCall() || exprs[len(exprs)-1].Type == ast.CX_LINE {
 		return exprs
 	}
 	readOp := &prgrm.CXAtomicOps[exprs[len(exprs)-1].Index]
@@ -951,7 +951,7 @@ func functionCallRepeated(prgrm *ast.CXProgram, prevExprs []ast.CXExpression) bo
 		return false
 	}
 	last := prevExprs[len(prevExprs)-1]
-	if last.ExpressionType != ast.CXEXPR_FUNCTION_CALL && !last.IsMethodCall() {
+	if last.ExpressionType != ast.CXEXPR_FUNCTION_CALL && !last.TypeMethodCall() {
 		return false
 	}
 	prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeCallResultCall, CurrentFile, LineNo, ast.CompileErrorOperands{})

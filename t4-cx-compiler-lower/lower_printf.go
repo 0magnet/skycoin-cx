@@ -216,7 +216,7 @@ func (s *state) printfVerb(verb byte, signatureIndex ast.CXTypeSignatureIndex) (
 	return printfStep{}, false, ReasonNone
 }
 
-// printfType is the CXValue.Type processBuiltInOperators gives an input.
+// printfType is the CXValue.Type builtInOperatorRun gives an input.
 func (s *state) printfType(signatureIndex ast.CXTypeSignatureIndex) types.Code {
 	signature := s.statePrgrm.GetCXTypeSignatureFromArray(signatureIndex)
 	if signature.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
@@ -250,13 +250,13 @@ func (s *state) printfPrintableType(signatureIndex ast.CXTypeSignatureIndex) (ty
 		}
 	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC:
 		details := prgrm.GetCXTypeSignatureArrayFromArray(signature.Meta)
-		if signature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC && !signature.IsDeref || len(details.Indexes) != len(details.Lengths) {
+		if signature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC && !signature.Deref || len(details.Indexes) != len(details.Lengths) {
 			return 0, ReasonPrintfFormat
 		}
 		typ = types.Code(details.Meta)
 	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
 		fields := prgrm.GetCXTypeSignatureStructFromArray(signature.Meta).Fields
-		if signature.Type == ast.TYPE_POINTER_STRUCT && !signature.IsDeref || len(fields) == 0 {
+		if signature.Type == ast.TYPE_POINTER_STRUCT && !signature.Deref || len(fields) == 0 {
 			return 0, ReasonPrintfFormat
 		}
 		var reason ReasonCode
@@ -278,7 +278,7 @@ func (s *state) printfPrintableType(signatureIndex ast.CXTypeSignatureIndex) (ty
 // that is a single value.
 func printfElementType(element *ast.CXArgument) (types.Code, ReasonCode) {
 	typ := element.Type
-	if element.IsPointer() {
+	if element.PointerTyped() {
 		for _, operation := range element.DereferenceOperations {
 			if operation == constants.DEREF_POINTER {
 				typ = element.PointerTargetType

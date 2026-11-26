@@ -161,10 +161,10 @@ func (state *escapeState) escapeExpression(expr *ast.CXExpression) {
 	outputs := op.GetOutputs(prgrm)
 	switch {
 	case operator == nil:
-	case expr.IsMethodCall() && len(inputs) > 0:
+	case expr.TypeMethodCall() && len(inputs) > 0:
 		state.escapeMethodCall(inputs, outputs)
 		state.escapeStoreUnknown(outputs)
-	case !operator.IsBuiltIn():
+	case !operator.BuiltIn():
 		for i, inputIdx := range inputs {
 			state.escapeCallArgument(operator, i, state.escapeSources(inputIdx), outputs)
 		}
@@ -405,7 +405,7 @@ func (state *escapeState) escapeClosure(key escapeKey) map[escapeKey]bool {
 // local, as x, x.f and x[i] on an array do, and goes through no pointer or slice.
 func escapeAccessInside(prgrm *ast.CXProgram, specs []int, strct *ast.CXStruct, sig *ast.CXTypeSignature) bool {
 	if sig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
-		return !sig.IsDeref
+		return !sig.Deref
 	}
 	arg := prgrm.GetCXArg(ast.CXArgumentIndex(sig.Meta))
 	stack, inside := escapeAccessIndexes(specs, arg)
@@ -623,7 +623,7 @@ func (state *escapeState) escapeStructLiteralTemporary(name stringpool.StringGid
 
 // escapeLoopAdd records the loop that a backward jump at expression i closes.
 func (state *escapeState) escapeLoopAdd(i int, op *ast.CXAtomicOperator, operator *ast.CXFunction) {
-	if !operator.IsBuiltIn() {
+	if !operator.BuiltIn() {
 		return
 	}
 	switch operator.AtomicOPCode {

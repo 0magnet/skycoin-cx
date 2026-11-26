@@ -122,9 +122,9 @@ func (cxprogram *CXProgram) GetPackageFromArray(index CXPackageIndex) (*CXPackag
 // sets its Index to the slot and returns its Gid and the pointer to fill it
 // through.
 func (cxprogram *CXProgram) CXProgramFunctionAlloc() (CXFunctionGid, *CXFunction) {
-	manager := &cxprogram.CxIrState.CXFunctionMng
-	gid := manager.CXFunctionAlloc()
-	fn := manager.CXFunctionGet(gid)
+	functionMng := &cxprogram.CxIrState.CXFunctionMng
+	gid := functionMng.CXFunctionAlloc()
+	fn := functionMng.CXFunctionGet(gid)
 	fn.Index = int(objmodel.GidIndex(int64(gid)))
 	return gid, fn
 }
@@ -143,11 +143,11 @@ func (cxprogram *CXProgram) CXProgramFunctionSlotCount() int {
 // CXProgramFunctionSlotLive returns the function in slot index, or nil for a
 // released slot, for a walk over every function.
 func (cxprogram *CXProgram) CXProgramFunctionSlotLive(index int) *CXFunction {
-	manager := &cxprogram.CxIrState.CXFunctionMng
-	if !manager.CXFunctionMngLive[index] {
+	functionMng := &cxprogram.CxIrState.CXFunctionMng
+	if !functionMng.CXFunctionMngLive[index] {
 		return nil
 	}
-	return &manager.CXFunctionMngObjects[index]
+	return &functionMng.CXFunctionMngObjects[index]
 }
 
 // CXProgramFunctionSlotGid returns the Gid of the live function in slot
@@ -281,13 +281,13 @@ func (cxprogram *CXProgram) GetStructFromArray(index CXStructIndex) *CXStruct {
 // expression keeps the slot index, not the Gid, until phase 5 of CXLine.
 // VIOLATION STRHOT-233: E, error or assert text, built on a failure branch only, #412.
 func (cxprogram *CXProgram) GetCXLine(index int) (*CXLine, error) {
-	manager := &cxprogram.CxIrState.CXLineMng
-	if index < 0 || index >= int(manager.CXLineMngNext) {
+	lineMng := &cxprogram.CxIrState.CXLineMng
+	if index < 0 || index >= int(lineMng.CXLineMngNext) {
 		return nil, fmt.Errorf("error: CXLines[%d]: index out of bounds", index)
 	}
 
-	gid := objmodel.GidCompose(CXLineGidTypeTag, manager.CXLineMngGenerations[index], uint32(index))
-	return manager.CXLineGet(CXLineGid(gid)), nil
+	gid := objmodel.GidCompose(CXLineGidTypeTag, lineMng.CXLineMngGenerations[index], uint32(index))
+	return lineMng.CXLineGet(CXLineGid(gid)), nil
 }
 
 // GetCXArg returns the argument in slot index of the program's
@@ -295,13 +295,13 @@ func (cxprogram *CXProgram) GetCXLine(index int) (*CXLine, error) {
 // phase 5 of CXArgument.
 // VIOLATION STRHOT-234: E, error or assert text, built on a failure branch only, #412.
 func (cxprogram *CXProgram) GetCXArg(index CXArgumentIndex) *CXArgument {
-	manager := &cxprogram.CxIrState.CXArgumentMng
-	if index < 0 || int(index) >= int(manager.CXArgumentMngNext) {
+	argumentMng := &cxprogram.CxIrState.CXArgumentMng
+	if index < 0 || int(index) >= int(argumentMng.CXArgumentMngNext) {
 		panic(fmt.Errorf("error: CXArgs[%d]: index out of bounds", index))
 	}
 
-	gid := objmodel.GidCompose(CXArgumentGidTypeTag, manager.CXArgumentMngGenerations[index], uint32(index))
-	return manager.CXArgumentGet(CXArgumentGid(gid))
+	gid := objmodel.GidCompose(CXArgumentGidTypeTag, argumentMng.CXArgumentMngGenerations[index], uint32(index))
+	return argumentMng.CXArgumentGet(CXArgumentGid(gid))
 }
 
 // VIOLATION STRHOT-235: E, error or assert text, built on a failure branch only, #412.
@@ -344,9 +344,9 @@ func (cxprogram *CXProgram) AddCXTypeSignatureInArray(typeSignature *CXTypeSigna
 // CXTypeSignatureMng, sets its Index to the slot and returns its Gid and the
 // pointer to fill it through.
 func (cxprogram *CXProgram) AllocCXTypeSignature() (CXTypeSignatureGid, *CXTypeSignature) {
-	manager := &cxprogram.CxIrState.CXTypeSignatureMng
-	gid := manager.CXTypeSignatureAlloc()
-	typeSignature := manager.CXTypeSignatureGet(gid)
+	typeSignatureMng := &cxprogram.CxIrState.CXTypeSignatureMng
+	gid := typeSignatureMng.CXTypeSignatureAlloc()
+	typeSignature := typeSignatureMng.CXTypeSignatureGet(gid)
 	typeSignature.Index = CXTypeSignatureIndex(objmodel.GidIndex(int64(gid)))
 	return gid, typeSignature
 }
@@ -354,9 +354,9 @@ func (cxprogram *CXProgram) AllocCXTypeSignature() (CXTypeSignatureGid, *CXTypeS
 // AllocCXTypeSignatureCopy allocates a type signature that copies src, which
 // lives in the manager, and returns it like AllocCXTypeSignature.
 func (cxprogram *CXProgram) AllocCXTypeSignatureCopy(src *CXTypeSignature) (CXTypeSignatureGid, *CXTypeSignature) {
-	manager := &cxprogram.CxIrState.CXTypeSignatureMng
-	gid := manager.CXTypeSignatureAlloc()
-	typeSignature := manager.CXTypeSignatureGet(gid)
+	typeSignatureMng := &cxprogram.CxIrState.CXTypeSignatureMng
+	gid := typeSignatureMng.CXTypeSignatureAlloc()
+	typeSignature := typeSignatureMng.CXTypeSignatureGet(gid)
 	*typeSignature = *src
 	typeSignature.Index = CXTypeSignatureIndex(objmodel.GidIndex(int64(gid)))
 	return gid, typeSignature
@@ -371,13 +371,13 @@ func (cxprogram *CXProgram) GetCXTypeSignatureFromArray(index CXTypeSignatureInd
 		return nil
 	}
 
-	manager := &cxprogram.CxIrState.CXTypeSignatureMng
-	if index < 0 || int(index) >= int(manager.CXTypeSignatureMngNext) {
+	typeSignatureMng := &cxprogram.CxIrState.CXTypeSignatureMng
+	if index < 0 || int(index) >= int(typeSignatureMng.CXTypeSignatureMngNext) {
 		panic(fmt.Errorf("error: CXTypeSignature[%d]: index out of bounds", index))
 	}
 
-	gid := objmodel.GidCompose(CXTypeSignatureGidTypeTag, manager.CXTypeSignatureMngGenerations[index], uint32(index))
-	return manager.CXTypeSignatureGet(CXTypeSignatureGid(gid))
+	gid := objmodel.GidCompose(CXTypeSignatureGidTypeTag, typeSignatureMng.CXTypeSignatureMngGenerations[index], uint32(index))
+	return typeSignatureMng.CXTypeSignatureGet(CXTypeSignatureGid(gid))
 }
 
 // ----------------------------------------------------------------
@@ -394,13 +394,13 @@ func (cxprogram *CXProgram) GetCXTypeSignatureArrayFromArray(index int) *CXTypeS
 		return nil
 	}
 
-	manager := &cxprogram.CxIrState.CXTypeSignature_ArrayMng
-	if index < 0 || index >= int(manager.CXTypeSignature_ArrayMngNext) {
+	typeSignatureArrayMng := &cxprogram.CxIrState.CXTypeSignature_ArrayMng
+	if index < 0 || index >= int(typeSignatureArrayMng.CXTypeSignature_ArrayMngNext) {
 		panic(fmt.Errorf("error: TypeSignatureForArrays[%d]: index out of bounds", index))
 	}
 
-	gid := objmodel.GidCompose(CXTypeSignature_ArrayGidTypeTag, manager.CXTypeSignature_ArrayMngGenerations[index], uint32(index))
-	return manager.CXTypeSignature_ArrayGet(CXTypeSignature_ArrayGid(gid))
+	gid := objmodel.GidCompose(CXTypeSignature_ArrayGidTypeTag, typeSignatureArrayMng.CXTypeSignature_ArrayMngGenerations[index], uint32(index))
+	return typeSignatureArrayMng.CXTypeSignature_ArrayGet(CXTypeSignature_ArrayGid(gid))
 }
 
 // ----------------------------------------------------------------
@@ -417,13 +417,13 @@ func (cxprogram *CXProgram) GetCXTypeSignatureStructFromArray(index int) *CXType
 		return nil
 	}
 
-	manager := &cxprogram.CxIrState.CXTypeSignature_StructMng
-	if index < 0 || index >= int(manager.CXTypeSignature_StructMngNext) {
+	typeSignatureStructMng := &cxprogram.CxIrState.CXTypeSignature_StructMng
+	if index < 0 || index >= int(typeSignatureStructMng.CXTypeSignature_StructMngNext) {
 		panic(fmt.Errorf("error: TypeSignatureForStructs[%d]: index out of bounds", index))
 	}
 
-	gid := objmodel.GidCompose(CXTypeSignature_StructGidTypeTag, manager.CXTypeSignature_StructMngGenerations[index], uint32(index))
-	return manager.CXTypeSignature_StructGet(CXTypeSignature_StructGid(gid))
+	gid := objmodel.GidCompose(CXTypeSignature_StructGidTypeTag, typeSignatureStructMng.CXTypeSignature_StructMngGenerations[index], uint32(index))
+	return typeSignatureStructMng.CXTypeSignature_StructGet(CXTypeSignature_StructGid(gid))
 }
 
 // ----------------------------------------------------------------
@@ -434,9 +434,9 @@ func (cxprogram *CXProgram) GetCXTypeSignatureStructFromArray(index int) *CXType
 // its Index to the slot and returns its Gid and the pointer to fill it
 // through.
 func (cxprogram *CXProgram) AllocCXArgument() (CXArgumentGid, *CXArgument) {
-	manager := &cxprogram.CxIrState.CXArgumentMng
-	gid := manager.CXArgumentAlloc()
-	arg := manager.CXArgumentGet(gid)
+	argumentMng := &cxprogram.CxIrState.CXArgumentMng
+	gid := argumentMng.CXArgumentAlloc()
+	arg := argumentMng.CXArgumentGet(gid)
 	arg.Index = int(objmodel.GidIndex(int64(gid)))
 	return gid, arg
 }
@@ -462,9 +462,9 @@ func (cxprogram *CXProgram) AddCXArgInArray(cxArg *CXArgument) CXArgumentIndex {
 // ReleaseCXArg releases the argument in slot index of the program's
 // CXArgumentMng, the counterpart of GetCXArg.
 func (cxprogram *CXProgram) ReleaseCXArg(index CXArgumentIndex) {
-	manager := &cxprogram.CxIrState.CXArgumentMng
-	gid := objmodel.GidCompose(CXArgumentGidTypeTag, manager.CXArgumentMngGenerations[index], uint32(index))
-	manager.CXArgumentRelease(CXArgumentGid(gid))
+	argumentMng := &cxprogram.CxIrState.CXArgumentMng
+	gid := objmodel.GidCompose(CXArgumentGidTypeTag, argumentMng.CXArgumentMngGenerations[index], uint32(index))
+	argumentMng.CXArgumentRelease(CXArgumentGid(gid))
 }
 
 // ReleaseCXArgWithDebug releases the argument in slot index and its debug
@@ -507,9 +507,9 @@ func (cxprogram *CXProgram) ReleaseCXArgUnlessNamed(cxArg *CXArgument, typeSigId
 // program's CXTypeSignatureMng, the counterpart of
 // GetCXTypeSignatureFromArray.
 func (cxprogram *CXProgram) ReleaseCXTypeSignature(index CXTypeSignatureIndex) {
-	manager := &cxprogram.CxIrState.CXTypeSignatureMng
-	gid := objmodel.GidCompose(CXTypeSignatureGidTypeTag, manager.CXTypeSignatureMngGenerations[index], uint32(index))
-	manager.CXTypeSignatureRelease(CXTypeSignatureGid(gid))
+	typeSignatureMng := &cxprogram.CxIrState.CXTypeSignatureMng
+	gid := objmodel.GidCompose(CXTypeSignatureGidTypeTag, typeSignatureMng.CXTypeSignatureMngGenerations[index], uint32(index))
+	typeSignatureMng.CXTypeSignatureRelease(CXTypeSignatureGid(gid))
 }
 
 // cxArgumentManaged reports whether cxArg is the object in its own slot of the
@@ -863,17 +863,17 @@ func (prgrm *CXProgram) ProgramStdinInit(reader io.Reader) {
 // CXProgramFunctionLiveSlots returns which slots of the program's
 // CXFunctionMng hold a live function, for CXProgramFunctionReleaseNew.
 func (cxprogram *CXProgram) CXProgramFunctionLiveSlots() []bool {
-	manager := &cxprogram.CxIrState.CXFunctionMng
-	return append([]bool(nil), manager.CXFunctionMngLive[:manager.CXFunctionMngNext]...)
+	functionMng := &cxprogram.CxIrState.CXFunctionMng
+	return append([]bool(nil), functionMng.CXFunctionMngLive[:functionMng.CXFunctionMngNext]...)
 }
 
 // CXProgramFunctionReleaseNew releases every function allocated since
 // liveBefore was taken, the highest slot first, so the next Allocs take the
 // slots back in ascending order.
 func (cxprogram *CXProgram) CXProgramFunctionReleaseNew(liveBefore []bool) {
-	manager := &cxprogram.CxIrState.CXFunctionMng
-	for index := int(manager.CXFunctionMngNext) - 1; index >= 0; index-- {
-		if manager.CXFunctionMngLive[index] && (index >= len(liveBefore) || !liveBefore[index]) {
+	functionMng := &cxprogram.CxIrState.CXFunctionMng
+	for index := int(functionMng.CXFunctionMngNext) - 1; index >= 0; index-- {
+		if functionMng.CXFunctionMngLive[index] && (index >= len(liveBefore) || !liveBefore[index]) {
 			cxprogram.CXProgramFunctionRelease(cxprogram.CXProgramFunctionSlotGid(uint32(index)))
 		}
 	}

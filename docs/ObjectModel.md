@@ -367,7 +367,7 @@ reaches every type, and the check keeps the copies from drifting.
 
 `<obj>_fon.go` (function-on) holds helpers that write to one object, such as
 `SetType` on a `CXArgument`. `<obj>_fof.go` (function-of) holds helpers that
-only read one object, such as `IsPointer` or a size computed from the
+only read one object, such as `PointerTyped` or a size computed from the
 object's own fields.
 
 * A Fon or Fof function takes the object as a pointer from Get, or a value,

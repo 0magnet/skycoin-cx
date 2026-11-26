@@ -156,12 +156,12 @@ func OpStrBytesOfString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []as
 		ast.HeapOutOfMemory(prgrm, uint64(types.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE)+uint64(count))
 	}
 	slice := ast.SliceResizeEx(prgrm, 0, count, 1)
-	copy(ast.GetSliceData(prgrm, slice, 1), str)
+	copy(ast.SliceElementsGet(prgrm, slice, 1), str)
 	outputs[0].Set_ptr(prgrm, slice)
 }
 
 // OpStrStringOfBytes returns a new str holding the bytes of a []ui8, as
 // string(b) in Go.
 func OpStrStringOfBytes(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_str_bytes(prgrm, ast.GetSliceData(prgrm, inputs[0].Get_ptr(prgrm), 1))
+	outputs[0].Set_str_bytes(prgrm, ast.SliceElementsGet(prgrm, inputs[0].Get_ptr(prgrm), 1))
 }

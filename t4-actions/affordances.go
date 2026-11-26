@@ -63,7 +63,7 @@ func AffordanceLiteralsResolve(prgrm *ast.CXProgram) {
 // package defaults to the one of the literal, and var names a global, or a
 // variable of the function of fn.
 func affordanceLiteralValue(prgrm *ast.CXProgram, literal *ast.AffordanceLiteral) (ast.AffordanceValue, bool) {
-	value := ast.AffordanceValue{AffordanceValuePackage: -1, AffordanceValueItem: -1, AffordanceValueVariable: -1}
+	value := ast.AffordanceValue{AffordanceValuePackage: -1, AffordanceValueTarget: -1, AffordanceValueVariable: -1}
 	clauses := &literal.AffordanceLiteralClauses
 	present := func(clause ast.AffordanceClause) bool {
 		return clauses[clause].AffordanceClauseArgumentName != stringpool.StringGidNil
@@ -85,7 +85,7 @@ func affordanceLiteralValue(prgrm *ast.CXProgram, literal *ast.AffordanceLiteral
 		for segment, segmentName := range ast.AffordanceMemoryNames {
 			if segmentName == name(ast.AffordanceClauseMemory) {
 				value.AffordanceValueKind = ast.AffordanceKindMemory
-				value.AffordanceValueItem = int32(segment)
+				value.AffordanceValueTarget = int32(segment)
 				return value, true
 			}
 		}
@@ -124,7 +124,7 @@ func affordanceLiteralValue(prgrm *ast.CXProgram, literal *ast.AffordanceLiteral
 			return fail(ast.AffordanceClauseStruct, "struct '"+name(ast.AffordanceClauseStruct)+"' is not in package '"+prgrm.CXProgramNameText(pkg.Name)+"'")
 		}
 		value.AffordanceValueKind = ast.AffordanceKindStruct
-		value.AffordanceValueItem = int32(index)
+		value.AffordanceValueTarget = int32(index)
 		return value, true
 	}
 
@@ -136,7 +136,7 @@ func affordanceLiteralValue(prgrm *ast.CXProgram, literal *ast.AffordanceLiteral
 		}
 		fn = prgrm.CxIrState.CXFunctionMng.CXFunctionGet(index)
 		value.AffordanceValueKind = ast.AffordanceKindFunction
-		value.AffordanceValueItem = int32(ast.CXFunctionGidSlot(index))
+		value.AffordanceValueTarget = int32(ast.CXFunctionGidSlot(index))
 	}
 
 	if present(ast.AffordanceClauseVariable) {

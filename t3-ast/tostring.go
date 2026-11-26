@@ -141,7 +141,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 
 			// Determining operator's name.
 			if cxAtomicOpOperator != nil {
-				if cxAtomicOpOperator.IsBuiltIn() {
+				if cxAtomicOpOperator.BuiltIn() {
 
 					opName1 = cxAtomicOpOperator.BuiltInName()
 				} else {
@@ -406,23 +406,23 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 		}
 	} else if typeSig.Type == TYPE_POINTER_ATOMIC {
 		typ = types.Code(typeSig.Meta).Name()
-		if !typeSig.IsDeref {
+		if !typeSig.Deref {
 			typ = "*" + typ
 		}
 	} else if typeSig.Type == TYPE_ARRAY_ATOMIC {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0502.
-		arrayData := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
+		arraySignature := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
 
-		arrLen := len(arrayData.Lengths) - len(arrayData.Indexes)
+		arrLen := len(arraySignature.Lengths) - len(arraySignature.Indexes)
 		if arrLen != 0 {
-			dims := arrayData.Lengths[len(arrayData.Indexes):]
+			dims := arraySignature.Lengths[len(arraySignature.Indexes):]
 			for i := len(dims) - 1; i >= 0; i-- {
 				typ = fmt.Sprintf("[%d]%s", dims[i], typ)
 			}
 		}
 
-		typ += types.Code(arrayData.Meta).Name()
+		typ += types.Code(arraySignature.Meta).Name()
 		if typeSig.PassBy == constants.PASSBY_REFERENCE {
 			typ = "*" + typ
 		}
@@ -440,7 +440,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 		}
 
 		typ += types.Code(arrayData.Meta).Name()
-		if !typeSig.IsDeref {
+		if !typeSig.Deref {
 			typ = "*" + typ
 		}
 
@@ -473,7 +473,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 		}
 
 		typ += types.Code(arrayData.Meta).Name()
-		if !typeSig.IsDeref {
+		if !typeSig.Deref {
 			typ = "*" + typ
 		}
 	} else if typeSig.Type == TYPE_STRUCT {
@@ -517,7 +517,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 		} else {
 			typ = prgrm.CXProgramNameText(structDetails.StructType.Name)
 
-			if !typeSig.IsDeref {
+			if !typeSig.Deref {
 				typ = "*" + typ
 			}
 		}

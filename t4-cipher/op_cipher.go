@@ -43,7 +43,7 @@ func cipherHashTaken(handle int32) hash.Hash {
 // cipherBytesView returns the elements of the []ui8 value, a view of program
 // memory. An allocation may move the slice, so a view is used before one.
 func cipherBytesView(prgrm *ast.CXProgram, value *ast.CXValue) []byte {
-	return ast.GetSliceData(prgrm, value.Get_ptr(prgrm), 1)
+	return ast.SliceElementsGet(prgrm, value.Get_ptr(prgrm), 1)
 }
 
 // cipherBytesOutput writes a new []ui8 holding data to output. data is never
@@ -52,7 +52,7 @@ func cipherBytesView(prgrm *ast.CXProgram, value *ast.CXValue) []byte {
 // see docs/GarbageCollector.md.
 func cipherBytesOutput(prgrm *ast.CXProgram, output *ast.CXValue, data []byte) {
 	slice := ast.SliceResizeEx(prgrm, 0, types.Cast_int_to_ptr(len(data)), 1)
-	copy(ast.GetSliceData(prgrm, slice, 1), data)
+	copy(ast.SliceElementsGet(prgrm, slice, 1), data)
 	output.Set_ptr(prgrm, slice)
 }
 

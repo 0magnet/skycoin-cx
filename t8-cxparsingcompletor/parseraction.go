@@ -21,7 +21,7 @@ func ParserActionAssignmentExpression(left []ast.CXExpression, operator string, 
 	if right != nil {
 		for i := 0; i < len(right); i++ {
 			if right[i].Type != ast.CX_LINE {
-				if right[i].IsArrayLiteral() {
+				if right[i].TypeArrayLiteral() {
 					if operator != "=" && operator != ":=" {
 						panic("")
 					}
@@ -48,7 +48,7 @@ func ParserActionAssignmentExpression(left []ast.CXExpression, operator string, 
 						}
 					}
 					result = actions.ArrayLiteralAssignment(actions.AST, left, right)
-				} else if right[len(right)-1].IsStructLiteral() {
+				} else if right[len(right)-1].TypeStructLiteral() {
 					if operator != "=" && operator != ":=" {
 						panic("")
 					}
@@ -104,7 +104,7 @@ func ParserActionExpressionStatement(exprs []ast.CXExpression) []ast.CXExpressio
 	}
 	lastFirstAtomicOpOperator := actions.AST.CxIrState.CxIrStateFunctionGetOrNil(lastFirstAtomicOp.Operator)
 
-	if len(exprs) > 0 && lastFirstAtomicOpOperator == nil && !exprs[len(exprs)-1].IsMethodCall() && !actions.ExpressionsDeclareInvalid(actions.AST, exprs) {
+	if len(exprs) > 0 && lastFirstAtomicOpOperator == nil && !exprs[len(exprs)-1].TypeMethodCall() && !actions.ExpressionsDeclareInvalid(actions.AST, exprs) {
 		outs := lastFirstAtomicOp.GetOutputs(actions.AST)
 
 		if len(outs) > 0 {
@@ -130,7 +130,7 @@ func ParserActionExpressionStatement(exprs []ast.CXExpression) []ast.CXExpressio
 // ParserActionLoopCondition keeps a literal or variable loop condition as
 // it is, which IterationExpressions reads in place (skycoin-cx#21).
 func ParserActionLoopCondition(exprs []ast.CXExpression) []ast.CXExpression {
-	if len(exprs) > 0 && exprs[len(exprs)-1].Type != ast.CX_LINE && !exprs[len(exprs)-1].IsMethodCall() {
+	if len(exprs) > 0 && exprs[len(exprs)-1].Type != ast.CX_LINE && !exprs[len(exprs)-1].TypeMethodCall() {
 		cxAtomicOp, err := actions.AST.GetCXAtomicOpFromExpressions(exprs, len(exprs)-1)
 		if err != nil {
 			panic(err)

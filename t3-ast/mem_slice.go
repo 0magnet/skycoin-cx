@@ -9,8 +9,8 @@ import (
 // TODO: remove all offset > 0 tests.
 // TODO: panic(types.CX_RUNTIME_*) instead of silent failure.
 
-// IsValidSliceIndex ...
-func IsValidSliceIndex(prgrm *CXProgram, offset types.Pointer, index types.Pointer, sizeofElement types.Pointer) bool {
+// SliceIndexValid ...
+func SliceIndexValid(prgrm *CXProgram, offset types.Pointer, index types.Pointer, sizeofElement types.Pointer) bool {
 	sliceLen := GetSliceLen(prgrm, offset)
 	bytesLen := sliceLen * sizeofElement
 	index -= types.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE + offset
@@ -30,7 +30,7 @@ func GetSliceOffset(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignat
 		arg := prgrm.GetCXArgFromArray(CXArgumentIndex(argTypeSig.Meta))
 		element = arg.GetAssignmentElement(prgrm)
 
-		if element.IsSlice() {
+		if element.SliceTyped() {
 			return types.Read_ptr(prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig))
 		}
 	} else if argTypeSig.Type == TYPE_ATOMIC || argTypeSig.Type == TYPE_POINTER_ATOMIC {
@@ -68,16 +68,16 @@ func GetSlice(prgrm *CXProgram, offset types.Pointer, sizeofElement types.Pointe
 	if offset > 0 && offset.Valid() {
 		sliceLen := GetSliceLen(prgrm, offset)
 		if sliceLen > 0 && sliceLen.Valid() {
-			dataOffset := offset + types.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE - types.POINTER_SIZE
-			dataLen := types.POINTER_SIZE + sliceLen*sizeofElement
-			return prgrm.Memory[dataOffset : dataOffset+dataLen]
+			elementsOffset := offset + types.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE - types.POINTER_SIZE
+			elementsLen := types.POINTER_SIZE + sliceLen*sizeofElement
+			return prgrm.Memory[elementsOffset : elementsOffset+elementsLen]
 		}
 	}
 	return nil
 }
 
-// GetSliceData ...
-func GetSliceData(prgrm *CXProgram, offset types.Pointer, sizeofElement types.Pointer) []byte {
+// SliceElementsGet ...
+func SliceElementsGet(prgrm *CXProgram, offset types.Pointer, sizeofElement types.Pointer) []byte {
 	if slice := GetSlice(prgrm, offset, sizeofElement); slice != nil {
 		return slice[types.POINTER_SIZE:]
 	}
@@ -171,9 +171,9 @@ func SliceCopyEx(prgrm *CXProgram, outputSliceOffset types.Pointer, inputSliceOf
 	}
 
 	if outputSliceOffset > 0 && outputSliceOffset.Valid() {
-		outputSliceData := GetSliceData(prgrm, outputSliceOffset, sizeofElement)
+		outputSliceElements := SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 		if (outputSliceOffset != inputSliceOffset) && inputSliceLen > 0 {
-			copy(outputSliceData, GetSliceData(prgrm, inputSliceOffset, sizeofElement))
+			copy(outputSliceElements, SliceElementsGet(prgrm, inputSliceOffset, sizeofElement))
 		}
 	}
 }
@@ -199,14 +199,14 @@ func SliceAppendResize(prgrm *CXProgram, fp types.Pointer, out *CXTypeSignature,
 // SliceAppendWrite writes `object` to a slice that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
 func SliceAppendWrite(prgrm *CXProgram, outputSliceOffset types.Pointer, object []byte, index types.Pointer) {
 	sizeofElement := types.Cast_int_to_ptr(len(object))
-	outputSliceData := GetSliceData(prgrm, outputSliceOffset, sizeofElement)
-	copy(outputSliceData[index*sizeofElement:], object)
+	outputSliceElements := SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
+	copy(outputSliceElements[index*sizeofElement:], object)
 }
 
 // SliceAppendWriteByte writes `object` to a slice that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
 func SliceAppendWriteByte(prgrm *CXProgram, outputSliceOffset types.Pointer, object []byte, index types.Pointer) {
-	outputSliceData := GetSliceData(prgrm, outputSliceOffset, 1)
-	copy(outputSliceData[index:], object)
+	outputSliceElements := SliceElementsGet(prgrm, outputSliceOffset, 1)
+	copy(outputSliceElements[index:], object)
 }
 
 // SliceInsert ...
@@ -225,9 +225,9 @@ func SliceInsert(prgrm *CXProgram, fp types.Pointer, out *CXTypeSignature, inp *
 	var newLen = inputSliceLen + 1
 	sizeofElement := types.Cast_int_to_ptr(len(object))
 	outputSliceOffset := SliceResize(prgrm, fp, out, inp, newLen, sizeofElement)
-	outputSliceData := GetSliceData(prgrm, outputSliceOffset, sizeofElement)
-	copy(outputSliceData[(index+1)*sizeofElement:], outputSliceData[index*sizeofElement:])
-	copy(outputSliceData[index*sizeofElement:], object)
+	outputSliceElements := SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
+	copy(outputSliceElements[(index+1)*sizeofElement:], outputSliceElements[index*sizeofElement:])
+	copy(outputSliceElements[index*sizeofElement:], object)
 	return outputSliceOffset
 }
 
@@ -245,8 +245,8 @@ func SliceRemove(prgrm *CXProgram, fp types.Pointer, inp *CXTypeSignature, index
 		panic(types.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 	}
 
-	sliceData := GetSliceData(prgrm, inputSliceOffset, sizeofElement)
-	copy(sliceData[index*sizeofElement:], sliceData[(index+1)*sizeofElement:])
+	sliceElements := SliceElementsGet(prgrm, inputSliceOffset, sizeofElement)
+	copy(sliceElements[index*sizeofElement:], sliceElements[(index+1)*sizeofElement:])
 	types.Write_ptr(GetSliceHeader(prgrm, inputSliceOffset), types.POINTER_SIZE, inputSliceLen-1)
 	return inputSliceOffset
 }
