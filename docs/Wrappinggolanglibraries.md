@@ -8,7 +8,7 @@ outside the standard library is a system library instead, see
 
 1. **Give every function an opcode row.** Add a row for each function to
    `constants.OpcodeLifecycleTable` in
-   [t1-constants/opcodes.go](../t1-constants/opcodes.go), taking the next
+   [t1-cx-core-opcodetable/opcodes.go](../t1-cx-core-opcodetable/opcodes.go), taking the next
    number after the highest, and mirror it in [opcodes.csv](opcodes.csv).
    t4-regexp has the `regexp.Compile` row and the rows after it. See
    [Conventions.md](Conventions.md) rules 7 and 8.
@@ -22,7 +22,7 @@ outside the standard library is a system library instead, see
    with `outputs[1].StrSet(prgrm, ...)`.
 
 3. **Define each function.** Add a row to `constants.OpcodeDefinitionTable`
-   in [t1-constants/opcodes_definitions.go](../t1-constants/opcodes_definitions.go)
+   in [t1-cx-core-opcodetable/opcodes_definitions.go](../t1-cx-core-opcodetable/opcodes_definitions.go)
    with the number, name, handler, inputs and outputs, for example
    `{203, "regexp.Compile", "regexp.OpRegexpCompile", "str", "r:regexp.Regexp str", ""}`.
    A new handler package also needs its group in `constants.OpcodeGroup`, an
@@ -43,13 +43,13 @@ outside the standard library is a system library instead, see
    `regexp.PackageRegister(prgrm)`. There is no `func init`.
 
 5. **Make it importable.** Add the package name to `DefaultPackages` in
-   [t0-packages/packages.go](../t0-packages/packages.go). CX code then
+   [t0-cx-core-syspackages/packages.go](../t0-cx-core-syspackages/packages.go). CX code then
    imports it as `sys/<name>`.
 
 6. **Respect the tiers.** The package is named `t<N>-<name>`, where N is one
    more than the highest tier it imports, and it must sit below
    t5-cx-runtime-core, which holds the opcode switch. t4-regexp imports
-   t3-ast, so it is tier 4.
+   t3-cx-core-ast, so it is tier 4.
 
 To make the package optional, give its files a build tag and the
 `PackageRegister` an empty stand in under the opposite tag, as t4-regexp does
@@ -64,7 +64,7 @@ A system library function has no opcode row. It is called through
 [Conventions.md](Conventions.md) rule 16.
 
 1. **Give it a number.** Add a row to `constants.LibraryFunctionLifecycleTable`
-   in [t1-constants/libraries.go](../t1-constants/libraries.go), taking the
+   in [t1-cx-core-opcodetable/libraries.go](../t1-cx-core-opcodetable/libraries.go), taking the
    next number of its library.
 
 2. **Write the handler** as for an opcode, exported, in the package of the
@@ -74,7 +74,7 @@ A system library function has no opcode row. It is called through
    writes its outputs in the block from `block`.
 
 3. **Define it.** Add a row to `constants.LibraryFunctionDefinitionTable` in
-   [t1-constants/libraries_definitions.go](../t1-constants/libraries_definitions.go),
+   [t1-cx-core-opcodetable/libraries_definitions.go](../t1-cx-core-opcodetable/libraries_definitions.go),
    for example
    `{LibraryNumberProcess, 1, "os.Run", "cxos.OpOsRun", "", "str i32 i32 str", "i32 i32 str"}`.
    Run `make generate-opcodes`, which writes the signature tables and adds the

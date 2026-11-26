@@ -66,7 +66,7 @@ The CX AST, or abstract syntax tree, is the intermediate representation of a CX 
 
 ## CXArgument
 
-The atomic unit of data in a program is the [CXArgument](../t3-ast/cxargument_def.go), which stores a symbol and a type, as well as metadata regarding said type and the relationship with other CXArguments. The object is composed of the following fields:
+The atomic unit of data in a program is the [CXArgument](../t3-cx-core-ast/cxargument_def.go), which stores a symbol and a type, as well as metadata regarding said type and the relationship with other CXArguments. The object is composed of the following fields:
 * Lengths - an array of integers which specify the dimensions of a multidimensional array (first element is the outermost array length, etc).
 * DereferenceOperations - an array of integers which specify, in bytes, how much in program memory this CXArgument is offsetted from its base CXArgument. For example, for a struct field, this is the struct field’s offset in bytes. For an array element in an array of an array, this is the first array’s offset times the second array’s size times the second array’s element type size, plus the offset in the second array times the second array’s element type size.
 * DeclarationSpecifiers - an array of integer constants which specify the type of the CXArgument. For type `[][]ui8`, this is `[]int{TYPE_SLICE, TYPE_SLICE, TYPE_UI8}`.
@@ -99,11 +99,11 @@ The methods CXArgument possesses are as follows:
 * AddType (typ) - Checks to see if typ is an existing TypeCode. If so, Type is changed to typ, Size and TotalSize are changed to ArgSizeGet of typ, and DeclarationSpecifiers appends TYPE_BASIC. If not, Type is changed to TYPE_UNDEFINED. Returns updated CXArgument.
 * InputAdd, OutputAdd (inp) - appends inp to Inputs or Outputs, then, if inp.Package is nil, sets inp.Package to Package, and returns updated CXArgument.
 
-It is worth noting that CXArguments contain all the necessary data for calculating dereferences at runtime, making dereference calculations not instructions themselves, but something that is expected to be possible just from the data in a single CXArgument. Moreover, CXArguments comprise the root pointers for the garbage collector, meaning the entire heap object tree for a single CXArgument should fully represent all heap objects referenced currently under this one CXArgument. Albeit the garbage collector relies on CXFunctions to store these root CXArguments in a ListOfPointers, when it comes to traversing these objects, the GC builds a type descriptor (Type in [t3-ast/gc_type.go](../t3-ast/gc_type.go)) from the declared type of each root and walks it in [t3-ast/garbage_collector.go](../t3-ast/garbage_collector.go).
+It is worth noting that CXArguments contain all the necessary data for calculating dereferences at runtime, making dereference calculations not instructions themselves, but something that is expected to be possible just from the data in a single CXArgument. Moreover, CXArguments comprise the root pointers for the garbage collector, meaning the entire heap object tree for a single CXArgument should fully represent all heap objects referenced currently under this one CXArgument. Albeit the garbage collector relies on CXFunctions to store these root CXArguments in a ListOfPointers, when it comes to traversing these objects, the GC builds a type descriptor (Type in [t3-cx-core-ast/gc_type.go](../t3-cx-core-ast/gc_type.go)) from the declared type of each root and walks it in [t3-cx-core-ast/garbage_collector.go](../t3-cx-core-ast/garbage_collector.go).
 
 ## CXExpression
 
-The core of the CX program structure are [CXExpressions](../t3-ast/cxexpression_def.go), which each represent a single instruction (not the operation itself, but the operation, inputs, and outputs) to perform. They comprise user-declared functions, and are the muscles of a CX program. 
+The core of the CX program structure are [CXExpressions](../t3-cx-core-ast/cxexpression_def.go), which each represent a single instruction (not the operation itself, but the operation, inputs, and outputs) to perform. They comprise user-declared functions, and are the muscles of a CX program. 
 
 CXExpressions have the following fields:
 * Inputs - an array of CXArguments which are the inputs to the instruction.
@@ -127,7 +127,7 @@ CXExpression functions/methods (first one is function, rest are methods):
 
 ## CXFunction
 
-[CXFunctions](../t3-ast/cxfunction_def.go) are the operators in CX, whether they be custom operations, internal library operations, opcodes, or functions defined in CX. The Inputs and Outputs of the CXFunction differ from the CXExpression Inputs and Outputs because the ones the CXFunction have are parameters, not arguments. So CXExpressions store CXArguments that represent the actual input and output data during evaluation, while CXFunctions store inputs and outputs corresponding to: what kind of data types they accept; what kind of named parameters to declare; or otherwise, just type.
+[CXFunctions](../t3-cx-core-ast/cxfunction_def.go) are the operators in CX, whether they be custom operations, internal library operations, opcodes, or functions defined in CX. The Inputs and Outputs of the CXFunction differ from the CXExpression Inputs and Outputs because the ones the CXFunction have are parameters, not arguments. So CXExpressions store CXArguments that represent the actual input and output data during evaluation, while CXFunctions store inputs and outputs corresponding to: what kind of data types they accept; what kind of named parameters to declare; or otherwise, just type.
 
 They have the following fields:
 * Name - name of the function, if named.
@@ -154,13 +154,13 @@ Functions/Methods (first two are functions, rest are methods):
 
 ## CXStruct
 
-[CXStructs](../t3-ast/cxstruct_def.go) are the custom struct types in CX, albeit all struct types in CX are currently custom types. They have a Name, a Package they reside in, an array of CXArguments which represent the field names and types, and a Size, which is the precomputed CXStruct’s size in memory. They have a StructMake which takes in a name and outputs a blank CXStruct with said name, and also GetFields(), FieldGet(name), and more:
+[CXStructs](../t3-cx-core-ast/cxstruct_def.go) are the custom struct types in CX, albeit all struct types in CX are currently custom types. They have a Name, a Package they reside in, an array of CXArguments which represent the field names and types, and a Size, which is the precomputed CXStruct’s size in memory. They have a StructMake which takes in a name and outputs a blank CXStruct with said name, and also GetFields(), FieldGet(name), and more:
 * FieldAdd - tries to add the CXArgument input to Fields. If the input’s name shares the name of another field, then CX panics. Otherwise, the input’s Offset is set to the previous field’s Offset (or zero if there are no other fields), plus the last field’s * TotalSize (or zero, if nonexistent). Size is incremented by the size of the input.
 * RemoveField - same thing as previous, but forgets to update the offset, Size, and other things.
 
 ## CXPackage
 
-[CXPackages](../t3-ast/cxpackage_def.go) are just like Go packages, and store globals and other things:
+[CXPackages](../t3-cx-core-ast/cxpackage_def.go) are just like Go packages, and store globals and other things:
 * Name - name of the package.
 * Imports - CXPackages which this CXPackage imports.
 * Functions, Structs, Globals - exactly what you think they are. Globals has CXArguments.
@@ -170,7 +170,7 @@ Additionally, CXPackages have the same behavior as the getters, setters, makers,
 
 ## CXProgram / Runtime
 
-The CX Runtime consists mainly of a [CXProgram](../t3-ast/cxprogram_def.go) object, which itself is composed of:
+The CX Runtime consists mainly of a [CXProgram](../t3-cx-core-ast/cxprogram_def.go) object, which itself is composed of:
 * An array of bytes - the program memory (code, data, stack, heap segments)
 * A callstack of CXCalls, consisting of the operator (a CXFunction) and frame pointer
 * Several state registers:
@@ -200,5 +200,5 @@ Finally, there is PrintAllObjects, a printing algorithm used for printing the pr
 
 Two small makers remain. `temporaryVariableNameGenerate(name)` in [t4-actions/counter.go](../t4-actions/counter.go) returns a unique identifier with the prefix `name_`. `CallMake` in [t4-execute/execute.go](../t4-execute/execute.go) returns a blank CXCall with the given CXFunction as the Operator.
 
-The opcodes used by the CX runtime are in [t4-opcodes](../t4-opcodes), and their numbers are fixed in [t1-constants/opcodes.go](../t1-constants/opcodes.go).
+The opcodes used by the CX runtime are in [t4-opcodes](../t4-opcodes), and their numbers are fixed in [t1-cx-core-opcodetable/opcodes.go](../t1-cx-core-opcodetable/opcodes.go).
 

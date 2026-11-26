@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 )
@@ -26,9 +26,9 @@ var gcBenchPrograms = []string{
 // heap and the collector scratch for the heap cap, are not timed.
 func BenchmarkRunGC(b *testing.B) {
 	initProgram()
-	initHeap := constants.HeapSizeInit
-	constants.HeapSizeInit = 0
-	defer func() { constants.HeapSizeInit = initHeap }()
+	initHeap := opcodetable.HeapSizeInit
+	opcodetable.HeapSizeInit = 0
+	defer func() { opcodetable.HeapSizeInit = initHeap }()
 	for _, programPath := range gcBenchPrograms {
 		source, err := os.ReadFile(filepath.Join("..", "tests", programPath))
 		if err != nil {

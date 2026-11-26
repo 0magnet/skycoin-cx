@@ -5,18 +5,18 @@ package cxfx
 import (
 	"testing"
 
-	types "github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // textTestProgram returns a program whose memory holds a pointer at offset 0
 // to a str object with text, and the value that reads it.
 func textTestProgram(text string) (*ast.CXProgram, ast.CXValue) {
 	memory := make([]byte, 64+len(text))
-	heapOffset := types.Pointer(32)
-	types.ObjectPayloadWrite(memory, heapOffset, types.ObjectSizeCompute([]byte(text)), []byte(text))
-	types.PtrWrite(memory, 0, heapOffset)
+	heapOffset := valuetypes.Pointer(32)
+	valuetypes.ObjectPayloadWrite(memory, heapOffset, valuetypes.ObjectSizeCompute([]byte(text)), []byte(text))
+	valuetypes.PtrWrite(memory, 0, heapOffset)
 	return &ast.CXProgram{Memory: memory}, ast.CXValue{Offset: 0}
 }
 
@@ -86,7 +86,7 @@ func TestCxfxCallbackInputsAllocations(t *testing.T) {
 	if allocations != 0 {
 		t.Fatalf("writing callback inputs allocates %v times", allocations)
 	}
-	if types.I32Read(cxfxState.CxfxCallbackInputs[0], 0) != 3 || types.I64Read(cxfxState.CxfxCallbackInputs[1], 0) != -1 || types.F64Read(cxfxState.CxfxCallbackInputs[2], 0) != 0.5 {
+	if valuetypes.I32Read(cxfxState.CxfxCallbackInputs[0], 0) != 3 || valuetypes.I64Read(cxfxState.CxfxCallbackInputs[1], 0) != -1 || valuetypes.F64Read(cxfxState.CxfxCallbackInputs[2], 0) != 0.5 {
 		t.Fatal("callback inputs read back wrong")
 	}
 }

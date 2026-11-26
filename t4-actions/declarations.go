@@ -3,10 +3,10 @@ package actions
 import (
 	"math/bits"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // DeclarationSpecifiers is called to build a type of a variable or parameter.
@@ -20,38 +20,38 @@ import (
 //	declSpec:     The incoming type
 //	arrayLengths: The lengths of the array if `opTyp` = cxcore.DeclarationArray
 //	opTyp:        The type of modification to `declSpec` (array of, pointer to, ...)
-func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointer, opTyp int) *ast.CXArgument {
+func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []valuetypes.Pointer, opTyp int) *ast.CXArgument {
 	switch opTyp {
-	case constants.DeclarationPointer:
-		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DeclarationPointer)
-		declSpec.Size = types.PointerSize
+	case opcodetable.DeclarationPointer:
+		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, opcodetable.DeclarationPointer)
+		declSpec.Size = valuetypes.PointerSize
 
-		if declSpec.Type == types.STR || declSpec.StructType != nil {
+		if declSpec.Type == valuetypes.STR || declSpec.StructType != nil {
 			declSpec.PointerTargetType = declSpec.Type
-			declSpec.Type = types.POINTER
+			declSpec.Type = valuetypes.POINTER
 		}
 
 		return declSpec
-	case constants.DeclarationArray:
+	case opcodetable.DeclarationArray:
 		for range arrayLengths {
-			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, constants.DeclarationArray)
+			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, opcodetable.DeclarationArray)
 		}
 		// Lengths are outermost first, as written: [2][3]i32 is {2, 3}.
 		arg := declSpec
-		arg.Lengths = append(append([]types.Pointer{}, arrayLengths...), arg.Lengths...)
+		arg.Lengths = append(append([]valuetypes.Pointer{}, arrayLengths...), arg.Lengths...)
 
 		return arg
-	case constants.DeclarationSlice:
+	case opcodetable.DeclarationSlice:
 		arg := declSpec
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DeclarationSlice)
-		arg.Lengths = append([]types.Pointer{0}, arg.Lengths...)
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, opcodetable.DeclarationSlice)
+		arg.Lengths = append([]valuetypes.Pointer{0}, arg.Lengths...)
 
 		return arg
-	case constants.DeclarationBasic:
+	case opcodetable.DeclarationBasic:
 		arg := declSpec
 
 		return arg
-	case constants.DeclarationFunc:
+	case opcodetable.DeclarationFunc:
 		// Creating this case if additional operations are needed in the
 		// future.
 		return declSpec
@@ -61,10 +61,10 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 }
 
 // DeclarationSpecifiersBasic() returns a type specifier created from one of the builtin types.
-func DeclarationSpecifiersBasic(prgrm *ast.CXProgram, typeCode types.Code) *ast.CXArgument {
+func DeclarationSpecifiersBasic(prgrm *ast.CXProgram, typeCode valuetypes.Code) *ast.CXArgument {
 	_, arg := ast.ArgumentMake(prgrm, stringpool.StringGidNil, CurrentFile, LineNo)
 	arg.TypeSet(typeCode)
-	return DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DeclarationBasic)
+	return DeclarationSpecifiers(arg, []valuetypes.Pointer{0}, opcodetable.DeclarationBasic)
 }
 
 // DeclarationSpecifiersStruct() declares a struct. The errors of a missing
@@ -118,11 +118,11 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 	}
 
 	_, arg := ast.ArgumentMake(prgrm, stringpool.StringGidNil, currentFile, lineNo)
-	arg.Type = types.STRUCT
+	arg.Type = valuetypes.STRUCT
 	arg.StructType = strct
 	arg.Size = strct.StructSizeGet(prgrm)
 	arg.Package = ast.CXPackageIndex(pkg.Index)
-	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DeclarationStruct)
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, opcodetable.DeclarationStruct)
 
 	return arg
 }
@@ -132,7 +132,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 // uses report nothing more.
 func declarationSpecifiersMissing(prgrm *ast.CXProgram, currentFile ast.SourceFileGid, lineNo int) *ast.CXArgument {
 	placeholder := declarationSpecifiersPlaceholder(prgrm, currentFile, lineNo)
-	placeholder.Type = types.INVALID
+	placeholder.Type = valuetypes.INVALID
 	return placeholder
 }
 
@@ -140,27 +140,27 @@ func declarationSpecifiersMissing(prgrm *ast.CXProgram, currentFile ast.SourceFi
 // after its compile error is recorded, so parsing goes on without a nil.
 func declarationSpecifiersPlaceholder(prgrm *ast.CXProgram, currentFile ast.SourceFileGid, lineNo int) *ast.CXArgument {
 	_, arg := ast.ArgumentMake(prgrm, stringpool.StringGidNil, currentFile, lineNo)
-	arg.TypeSet(types.UNDEFINED)
+	arg.TypeSet(valuetypes.UNDEFINED)
 	arg.Size = 0
 	return arg
 }
 
 // declarationSizeLimit caps a declaration, a frame and the data segment at the
 // range of 32 bit pointers, so offsets never wrap in either build.
-const declarationSizeLimit = uint64(types.MaxUint32)
+const declarationSizeLimit = uint64(valuetypes.MaxUint32)
 
 // declarationArgSize returns the bytes a declaration of arg takes, and false
 // when they pass declarationSizeLimit. It follows ast.ArgSizeGet.
-func declarationArgSize(arg *ast.CXArgument) (types.Pointer, bool) {
+func declarationArgSize(arg *ast.CXArgument) (valuetypes.Pointer, bool) {
 	// The last specifier is the outermost, so [3]*i32 is an array of pointers.
 	for i := len(arg.DeclarationSpecifiers) - 1; i >= 0; i-- {
 		switch arg.DeclarationSpecifiers[i] {
-		case constants.DeclarationArray:
+		case opcodetable.DeclarationArray:
 			total, lengths := uint64(arg.Size), arg.Lengths
 			if direct, behind := arg.DirectDimensions(); behind {
-				total, lengths = uint64(types.PointerSize), lengths[:direct]
+				total, lengths = uint64(valuetypes.PointerSize), lengths[:direct]
 			} else if dims := arg.ArraySliceDimensions(); dims > 0 {
-				total, lengths = uint64(types.PointerSize), lengths[:dims]
+				total, lengths = uint64(valuetypes.PointerSize), lengths[:dims]
 			}
 			for _, length := range lengths {
 				high, low := bits.Mul64(total, uint64(length))
@@ -169,11 +169,11 @@ func declarationArgSize(arg *ast.CXArgument) (types.Pointer, bool) {
 				}
 				total = low
 			}
-			return types.Pointer(total), true
-		case constants.DeclarationPointer:
+			return valuetypes.Pointer(total), true
+		case opcodetable.DeclarationPointer:
 			return arg.Size, true
-		case constants.DeclarationSlice:
-			return types.PointerSize, true
+		case opcodetable.DeclarationSlice:
+			return valuetypes.PointerSize, true
 		}
 	}
 	return arg.Size, uint64(arg.Size) <= declarationSizeLimit
@@ -181,6 +181,6 @@ func declarationArgSize(arg *ast.CXArgument) (types.Pointer, bool) {
 
 // declarationSizeSumFits reports whether size bytes more after used stay
 // within declarationSizeLimit.
-func declarationSizeSumFits(used types.Pointer, size types.Pointer) bool {
+func declarationSizeSumFits(used valuetypes.Pointer, size valuetypes.Pointer) bool {
 	return uint64(used)+uint64(size) <= declarationSizeLimit
 }

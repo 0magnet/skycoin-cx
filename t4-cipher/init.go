@@ -3,7 +3,7 @@
 package cipher
 
 import (
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // PackageRegister adds the cipher package to prgrm and makes the hash

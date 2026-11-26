@@ -4,5 +4,5 @@
 # t0-cx-tools-* developer tools, which no CX program links.
 found=$(find . -path ./vendor -prune -o -path ./.git -prune -o -path ./.claude -prune -o -path './t0-cx-tools-*' -prune -o -name '*.go' -print |
 	xargs grep -l '"encoding/json"' | sed 's#^\./##' | sort)
-for f in $found; do echo "encoding/json imported in core, use the CX text form of t0-textsections instead: $f"; done
+for f in $found; do echo "encoding/json imported in core, use the CX text form of t0-cx-core-textsections instead: $f"; done
 [ -z "$found" ]

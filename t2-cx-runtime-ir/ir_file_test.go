@@ -3,7 +3,7 @@ package ir
 import (
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 )
 
 func irFileTestImage() Image {
@@ -28,7 +28,7 @@ func irFileTestImage() Image {
 		ImageLines:       []Line{{LinePc: 0, LineFile: 0, LineNumber: 3}},
 		ImageFileNames:   []string{"main.cx"},
 		ImageFuncNames:   []string{"*init", "main"},
-		ImageLocals:      []Local{{LocalOffset: 0, LocalSize: 4, LocalName: 0, LocalTypeName: 1, LocalType: types.I32}, {LocalOffset: 4, LocalSize: 8, LocalType: types.UNDEFINED}},
+		ImageLocals:      []Local{{LocalOffset: 0, LocalSize: 4, LocalName: 0, LocalTypeName: 1, LocalType: valuetypes.I32}, {LocalOffset: 4, LocalSize: 8, LocalType: valuetypes.UNDEFINED}},
 		ImageLocalNames:  []string{"x", "i32", ""},
 		ImageReadOnly:    []Span{{SpanStart: 4096, SpanEnd: 4098}},
 	}
@@ -42,7 +42,7 @@ func TestImageFileRoundTrip(t *testing.T) {
 	if problem != ImageFileProblemNone {
 		t.Fatalf("decode: %s", ImageFileProblemMessages[problem])
 	}
-	if again := ImageFileEncode(&decoded); string(again) != string(ImageFileEncode(&image)) || decoded.ImageEntryMain != 1 || decoded.ImageFuncs[1].FuncCode[0] != image.ImageFuncs[1].FuncCode[0] || decoded.ImageLocals[0].LocalType != types.I32 {
+	if again := ImageFileEncode(&decoded); string(again) != string(ImageFileEncode(&image)) || decoded.ImageEntryMain != 1 || decoded.ImageFuncs[1].FuncCode[0] != image.ImageFuncs[1].FuncCode[0] || decoded.ImageLocals[0].LocalType != valuetypes.I32 {
 		t.Fatalf("decoded image differs:\n%+v\nwant\n%+v", decoded, image)
 	}
 }

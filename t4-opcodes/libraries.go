@@ -1,9 +1,9 @@
 package opcodes
 
 import (
-	// GCREACH: t3-ast owns the heap and the GC. This file links library
+	// GCREACH: t3-cx-core-ast owns the heap and the GC. This file links library
 	// switches and allocates nothing, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // LibraryLink links system library into this binary. The old loop runs its

@@ -1,8 +1,8 @@
 package actions
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // functionReferenceInputsResolve replaces each argument passed where a native
@@ -31,8 +31,8 @@ func functionReferenceInputsResolve(prgrm *ast.CXProgram, expression *ast.CXAtom
 			continue
 		}
 		var literal [8]byte
-		types.I64Write(literal[:], 0, int64(function))
-		received[i] = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, PrimaryWrite(prgrm, types.I64, literal[:], false))
+		valuetypes.I64Write(literal[:], 0, int64(function))
+		received[i] = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, PrimaryWrite(prgrm, valuetypes.I64, literal[:], false))
 	}
 }
 
@@ -43,7 +43,7 @@ func functionReferenceParameter(prgrm *ast.CXProgram, typeSigIdx ast.CXTypeSigna
 	if typeSig.Type != ast.TypeCXArgumentDeprecate {
 		return false
 	}
-	return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta)).Type == types.FUNC
+	return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta)).Type == valuetypes.FUNC
 }
 
 // functionReferenceUnresolved reports a name that is neither a variable nor a
@@ -52,7 +52,7 @@ func functionReferenceUnresolved(prgrm *ast.CXProgram, typeSig *ast.CXTypeSignat
 	if typeSig.Type != ast.TypeCXArgumentDeprecate {
 		return false
 	}
-	return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta)).Type == types.IDENTIFIER
+	return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta)).Type == valuetypes.IDENTIFIER
 }
 
 // functionReferenceTarget returns the function an argument names, the
@@ -62,7 +62,7 @@ func functionReferenceTarget(prgrm *ast.CXProgram, typeSig *ast.CXTypeSignature)
 		return ast.CXFunctionGidNil, false
 	}
 	arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta))
-	if arg.Type != types.FUNC || len(arg.Fields) != 0 || len(arg.Indexes) != 0 {
+	if arg.Type != valuetypes.FUNC || len(arg.Fields) != 0 || len(arg.Indexes) != 0 {
 		return ast.CXFunctionGidNil, false
 	}
 	pkg, err := prgrm.PackageFromArrayGet(arg.Package)

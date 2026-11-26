@@ -3,22 +3,22 @@ package main
 import (
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 )
 
 func TestInlineCase(t *testing.T) {
 	for _, test := range []struct {
-		row  constants.OpcodeDefinition
+		row  opcodetable.OpcodeDefinition
 		call string
 		want string
 	}{
-		{constants.OpcodeDefinition{Name: "gl.Clear", Inputs: "i32"}, "gl.Clear(uint32(%0))",
-			"gl.Clear(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))"},
-		{constants.OpcodeDefinition{Name: "gl.End"}, "gl.End()", "gl.End()"},
-		{constants.OpcodeDefinition{Name: "glfw.ShouldClose", Inputs: "i32", Outputs: "bool"}, "cxfxWindowGet(%0).ShouldClose()",
-			"types.BoolWrite(prgrm.Memory, outputs[0].Offset, cxfxWindowGet(types.I32Read(prgrm.Memory, inputs[0].Offset)).ShouldClose())"},
-		{constants.OpcodeDefinition{Name: "gl.Uniform1f", Inputs: "i32 f32"}, "gl.Uniform1f(%0, %1)",
-			"gl.Uniform1f(types.I32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset))"},
+		{opcodetable.OpcodeDefinition{Name: "gl.Clear", Inputs: "i32"}, "gl.Clear(uint32(%0))",
+			"gl.Clear(uint32(valuetypes.I32Read(prgrm.Memory, inputs[0].Offset)))"},
+		{opcodetable.OpcodeDefinition{Name: "gl.End"}, "gl.End()", "gl.End()"},
+		{opcodetable.OpcodeDefinition{Name: "glfw.ShouldClose", Inputs: "i32", Outputs: "bool"}, "cxfxWindowGet(%0).ShouldClose()",
+			"valuetypes.BoolWrite(prgrm.Memory, outputs[0].Offset, cxfxWindowGet(valuetypes.I32Read(prgrm.Memory, inputs[0].Offset)).ShouldClose())"},
+		{opcodetable.OpcodeDefinition{Name: "gl.Uniform1f", Inputs: "i32 f32"}, "gl.Uniform1f(%0, %1)",
+			"gl.Uniform1f(valuetypes.I32Read(prgrm.Memory, inputs[0].Offset), valuetypes.F32Read(prgrm.Memory, inputs[1].Offset))"},
 	} {
 		got, err := inlineCase(test.row, test.call)
 		if err != nil || got != test.want {
@@ -26,13 +26,13 @@ func TestInlineCase(t *testing.T) {
 		}
 	}
 	for _, test := range []struct {
-		row  constants.OpcodeDefinition
+		row  opcodetable.OpcodeDefinition
 		call string
 	}{
-		{constants.OpcodeDefinition{Name: "past the inputs", Inputs: "i32"}, "f(%1)"},
-		{constants.OpcodeDefinition{Name: "a str input", Inputs: "str"}, "f(%0)"},
-		{constants.OpcodeDefinition{Name: "two outputs", Outputs: "i32 i32"}, "f()"},
-		{constants.OpcodeDefinition{Name: "a slice output", Outputs: "[]i32"}, "f()"},
+		{opcodetable.OpcodeDefinition{Name: "past the inputs", Inputs: "i32"}, "f(%1)"},
+		{opcodetable.OpcodeDefinition{Name: "a str input", Inputs: "str"}, "f(%0)"},
+		{opcodetable.OpcodeDefinition{Name: "two outputs", Outputs: "i32 i32"}, "f()"},
+		{opcodetable.OpcodeDefinition{Name: "a slice output", Outputs: "[]i32"}, "f()"},
 	} {
 		if _, err := inlineCase(test.row, test.call); err == nil {
 			t.Errorf("%s: no error", test.row.Name)

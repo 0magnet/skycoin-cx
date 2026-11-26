@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
 
@@ -16,10 +16,10 @@ func vmTestImage(funcs ...ir.Func) *ir.Image {
 		wI32(data, uint32(4*i), v)
 	}
 	// A str literal points at itself, as a heap str object does.
-	str := make([]byte, types.ObjectHeaderSize+3)
-	types.PtrWrite(str, 0, types.Pointer(80))
-	types.ObjectSizeWrite(str, 0, types.ObjectHeaderSize+3)
-	copy(str[types.ObjectHeaderSize:], "msg")
+	str := make([]byte, valuetypes.ObjectHeaderSize+3)
+	valuetypes.PtrWrite(str, 0, valuetypes.Pointer(80))
+	valuetypes.ObjectSizeWrite(str, 0, valuetypes.ObjectHeaderSize+3)
+	copy(str[valuetypes.ObjectHeaderSize:], "msg")
 	data = append(data, str...)
 	names := make([]string, len(funcs))
 	return &ir.Image{
@@ -115,7 +115,7 @@ func TestRunDivideByZero(t *testing.T) {
 	if machine.MachineFrames[0].FrameFunction != 0 || machine.MachineFrames[0].FramePc != 2 {
 		t.Errorf("caller frame %+v", machine.MachineFrames[0])
 	}
-	if StopExitCodes[stop] != types.CXRuntimeError {
+	if StopExitCodes[stop] != valuetypes.CXRuntimeError {
 		t.Errorf("exit code %d", StopExitCodes[stop])
 	}
 }
@@ -193,7 +193,7 @@ func vmRunCollect(machine *Machine, output []byte) (Stop, []byte) {
 // TestRunAddress writes 7 to a[2] of an i32 array at frame offset 0 through
 // an index, reads it back through a pointer to a[0] plus 8 and prints it.
 func TestRunAddress(t *testing.T) {
-	const scratch = 64 + 16 + uint32(types.ObjectHeaderSize) + 3
+	const scratch = 64 + 16 + uint32(valuetypes.ObjectHeaderSize) + 3
 	frameA := ir.InstrModeFrameA
 	main := ir.Func{FuncFrameSize: 24, FuncCode: []ir.Instr{
 		// index at frame 16 is 2
@@ -227,7 +227,7 @@ func TestRunAddress(t *testing.T) {
 // TestRunAddressStops stops on a negative index and on an address past the
 // data segment.
 func TestRunAddressStops(t *testing.T) {
-	const scratch = 64 + 16 + uint32(types.ObjectHeaderSize) + 3
+	const scratch = 64 + 16 + uint32(valuetypes.ObjectHeaderSize) + 3
 	negative := ir.Func{FuncFrameSize: 4, FuncCode: []ir.Instr{
 		{InstrOpcode: ir.OpcodeI32Sub, InstrMode: ir.InstrModeFrameC, InstrA: vmTestZero, InstrB: vmTestOne, InstrC: 0},
 		{InstrOpcode: ir.OpcodeAddressIndexStatic, InstrMode: ir.InstrModeFrameB, InstrA: vmTestZero, InstrB: 0, InstrN: 4, InstrC: scratch},
@@ -255,10 +255,10 @@ func TestRunAddressStops(t *testing.T) {
 // vmTestStrImage is a 16 byte stack and a data segment holding a str
 // literal with text, which points at itself.
 func vmTestStrImage(text string, code []ir.Instr) *ir.Image {
-	str := make([]byte, types.ObjectHeaderSize+types.Pointer(len(text)))
-	types.PtrWrite(str, 0, types.Pointer(16))
-	types.ObjectSizeWrite(str, 0, types.ObjectHeaderSize+types.Pointer(len(text)))
-	copy(str[types.ObjectHeaderSize:], text)
+	str := make([]byte, valuetypes.ObjectHeaderSize+valuetypes.Pointer(len(text)))
+	valuetypes.PtrWrite(str, 0, valuetypes.Pointer(16))
+	valuetypes.ObjectSizeWrite(str, 0, valuetypes.ObjectHeaderSize+valuetypes.Pointer(len(text)))
+	copy(str[valuetypes.ObjectHeaderSize:], text)
 	return &ir.Image{
 		ImageFuncs:     []ir.Func{{FuncCode: code}},
 		ImageData:      str,
@@ -304,11 +304,11 @@ func TestRunPrintStr(t *testing.T) {
 func TestRunPrintValueText(t *testing.T) {
 	image := vmTestImage(ir.Func{FuncCode: []ir.Instr{
 		{InstrOpcode: ir.OpcodePrintText, InstrN: 0, InstrM: 2},
-		{InstrOpcode: ir.OpcodePrintValue, InstrA: vmTestHundred, InstrM: uint32(types.I32), InstrN: 'd'},
+		{InstrOpcode: ir.OpcodePrintValue, InstrA: vmTestHundred, InstrM: uint32(valuetypes.I32), InstrN: 'd'},
 		{InstrOpcode: ir.OpcodePrintText, InstrN: 2, InstrM: 1},
-		{InstrOpcode: ir.OpcodePrintValue, InstrA: vmTestOne, InstrM: uint32(types.BOOL), InstrN: 'b'},
+		{InstrOpcode: ir.OpcodePrintValue, InstrA: vmTestOne, InstrM: uint32(valuetypes.BOOL), InstrN: 'b'},
 		{InstrOpcode: ir.OpcodePrintText, InstrN: 2, InstrM: 1},
-		{InstrOpcode: ir.OpcodePrintValue, InstrA: vmTestZero, InstrM: uint32(types.F64), InstrN: 'f'},
+		{InstrOpcode: ir.OpcodePrintValue, InstrA: vmTestZero, InstrM: uint32(valuetypes.F64), InstrN: 'f'},
 		{InstrOpcode: ir.OpcodeReturn},
 	}})
 	image.ImageText = []byte("x= ")

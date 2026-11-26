@@ -9,11 +9,11 @@ import (
 	"sort"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-assert"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	// GCREACH: t3-ast owns the heap and the GC roots. core builds the program and
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. core builds the program and
 	// allocates nothing, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
 	"github.com/skycoin/skycoin-cx/t4-regexp"
 )
@@ -40,7 +40,7 @@ func ProgramMake() *ast.CXProgram {
 	return &ast.CXProgram{
 		Packages:       make(map[stringpool.StringGid]ast.CXPackageIndex),
 		CurrentPackage: -1,
-		Version:        constants.LanguageVersionCurrent,
+		Version:        opcodetable.LanguageVersionCurrent,
 		CxIrState:      state,
 	}
 }
@@ -49,10 +49,10 @@ func ProgramMake() *ast.CXProgram {
 // which the loop runs, or an opcode with a handler outside t6-cxfx that the
 // build tags link. The core is built with the tags of cx, so cx can ask.
 func OpcodeLinked(code int) bool {
-	if code == constants.OpLibraryCall {
+	if code == opcodetable.OpLibraryCall {
 		return true
 	}
-	return constants.OpcodeHandled(code) && constants.OpcodeLinked(code) && constants.OpcodeSignatureOf(code).OpcodeSignatureGroup != constants.OpcodeGroupCxfx
+	return opcodetable.OpcodeHandled(code) && opcodetable.OpcodeLinked(code) && opcodetable.OpcodeSignatureOf(code).OpcodeSignatureGroup != opcodetable.OpcodeGroupCxfx
 }
 
 // OpcodesUsed returns the sorted numbers of the opcodes prgrm can call,
@@ -89,7 +89,7 @@ func OpcodesMissing(prgrm *ast.CXProgram) []string {
 // OpcodeName returns the name of opcode number code in
 // constants.OpcodeLifecycleTable.
 func OpcodeName(code int) string {
-	row, found := constants.OpcodeLifecycleLiveByNumber(code)
+	row, found := opcodetable.OpcodeLifecycleLiveByNumber(code)
 	assert.PreconditionTrue(found, "opcode number without a live row")
 	return row.Name
 }
@@ -100,7 +100,7 @@ func OpcodeName(code int) string {
 // ProgramOperationsEnabled, the set the loader checks (decision D119).
 func LibrariesEnabledResolve(prgrm *ast.CXProgram) {
 	for library, used := range prgrm.ProgramLibrariesUsed {
-		if used && constants.LibraryPolicyEnabledWhenImported {
+		if used && opcodetable.LibraryPolicyEnabledWhenImported {
 			prgrm.ProgramLibrariesEnabled[library] = true
 		}
 		if prgrm.ProgramLibrariesEnabled[library] {
@@ -111,8 +111,8 @@ func LibrariesEnabledResolve(prgrm *ast.CXProgram) {
 
 // LibrariesActive returns the libraries prgrm may call: those enabled
 // whole and those with an enabled operation.
-func LibrariesActive(prgrm *ast.CXProgram) [constants.LibraryCount]bool {
-	var active [constants.LibraryCount]bool
+func LibrariesActive(prgrm *ast.CXProgram) [opcodetable.LibraryCount]bool {
+	var active [opcodetable.LibraryCount]bool
 	for library := range active {
 		active[library] = prgrm.ProgramLibrariesEnabled[library] || prgrm.ProgramOperationsEnabled.OpcodeSetLibraryAny(library)
 	}
@@ -123,8 +123,8 @@ func LibrariesActive(prgrm *ast.CXProgram) [constants.LibraryCount]bool {
 // that this binary does not link, in number order. opcodesLinked marks the
 // libraries whose functions are opcodes that the binary links, by its build
 // tags (decision D119), and the other libraries are linked when registered.
-func LibrariesMissing(prgrm *ast.CXProgram, opcodesLinked [constants.LibraryCount]bool) []string {
-	var missing [constants.LibraryCount]bool
+func LibrariesMissing(prgrm *ast.CXProgram, opcodesLinked [opcodetable.LibraryCount]bool) []string {
+	var missing [opcodetable.LibraryCount]bool
 	for library, active := range LibrariesActive(prgrm) {
 		missing[library] = active && !ast.LibraryLinked(library) && !opcodesLinked[library]
 	}
@@ -149,11 +149,11 @@ func OperationRefusalLine(prgrm *ast.CXProgram, code int) string {
 
 // LibraryNames returns the names of the libraries libraries marks, in
 // number order.
-func LibraryNames(libraries [constants.LibraryCount]bool) []string {
+func LibraryNames(libraries [opcodetable.LibraryCount]bool) []string {
 	var names []string
 	for library, marked := range libraries {
 		if marked {
-			names = append(names, constants.LibraryNameOf(library))
+			names = append(names, opcodetable.LibraryNameOf(library))
 		}
 	}
 	return names

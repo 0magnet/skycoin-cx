@@ -8,7 +8,7 @@ import (
 
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 	profiling "github.com/skycoin/skycoin-cx/t1-profiling" // thin: only CPUProfileStartOnFile; no depth gain
-	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // VIOLATION: state outside State. Owner: t5-cxos; moves to OsFileMng in phase 1.

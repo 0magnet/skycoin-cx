@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	llvm "github.com/skycoin/skycoin-cx/t3-cx-compiler-llvm"
 )
 
@@ -207,7 +207,7 @@ func buildLlvmTinygoNative(modulePath string, output string, target string, debu
 	if err := buildLlvmTinygoRun(tinygo, directory, append(args, ".")); err != nil {
 		return buildFail(err.Error())
 	}
-	return types.CXSuccess
+	return valuetypes.CXSuccess
 }
 
 // buildLlvmTinygoRun runs tinygo with args in directory, its output on

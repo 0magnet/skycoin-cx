@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 )
 
 // buildOutputTestExecutable is name as cx build names an executable.
@@ -112,11 +112,11 @@ func TestBuildOutputDefaultBuilds(t *testing.T) {
 	for _, build := range builds {
 		output := filepath.Join(work, buildOutputTestExecutable(build.output))
 		run, stderr := buildTestProcess(t, executable, env, work, append([]string{buildCommand}, build.args...)...)
-		if run.exitCode != types.CXSuccess {
+		if run.exitCode != valuetypes.CXSuccess {
 			t.Fatalf("cx build %s: exit code %d, stderr %q", strings.Join(build.args, " "), run.exitCode, stderr)
 		}
 		run, stderr = buildTestProcess(t, output, nil, work)
-		if run.exitCode != types.CXSuccess || !strings.Contains(string(run.stdout), "Hello World!") {
+		if run.exitCode != valuetypes.CXSuccess || !strings.Contains(string(run.stdout), "Hello World!") {
 			t.Errorf("%s from cx build %s: exit code %d, stdout %q, stderr %q", output, strings.Join(build.args, " "), run.exitCode, run.stdout, stderr)
 		}
 		if build.args[0] == "--target=llvm" {

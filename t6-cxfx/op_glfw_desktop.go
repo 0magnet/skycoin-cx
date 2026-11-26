@@ -6,7 +6,7 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // A window is an i32 handle into State.CxfxWindowTable, returned by

@@ -3,10 +3,10 @@ package actions
 import (
 	"slices"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // Escape analysis runs on the parsed body, before symbols resolve, and moves
@@ -169,7 +169,7 @@ func (state *escapeState) escapeExpression(expr *ast.CXExpression) {
 			state.escapeCallArgument(operator, i, state.escapeSources(inputIdx), outputs)
 		}
 		state.escapeStoreUnknown(outputs)
-	case operator.AtomicOPCode == constants.OpIdentity:
+	case operator.AtomicOPCode == opcodetable.OpIdentity:
 		if len(inputs) == 1 && len(outputs) == 1 {
 			state.escapeStore(outputs[0], state.escapeSources(inputs[0]))
 		}
@@ -187,7 +187,7 @@ func (state *escapeState) escapeExpression(expr *ast.CXExpression) {
 // heap, as append does.
 func escapeOpcodeStores(opcode int) bool {
 	switch opcode {
-	case constants.OpAppend, constants.OpInsert, constants.OpResize, constants.OpRemove, constants.OpCopy:
+	case opcodetable.OpAppend, opcodetable.OpInsert, opcodetable.OpResize, opcodetable.OpRemove, opcodetable.OpCopy:
 		return true
 	}
 	return false
@@ -272,7 +272,7 @@ func (state *escapeState) escapeCallArgument(fn *ast.CXFunction, i int, sources 
 func (state *escapeState) escapeSources(sigIdx ast.CXTypeSignatureIndex) map[escapeKey]bool {
 	prgrm := state.escapeStateProgram
 	sig := prgrm.CXTypeSignatureFromArrayGet(sigIdx)
-	if ast.CXTypeSignaturePassBy(prgrm, sig) == constants.PassByReference {
+	if ast.CXTypeSignaturePassBy(prgrm, sig) == opcodetable.PassByReference {
 		return state.escapeAddressSources(sigIdx)
 	}
 	name := StripNameNumber(prgrm, sig.Name)
@@ -410,7 +410,7 @@ func escapeAccessInside(prgrm *ast.CXProgram, specs []int, strct *ast.CXStruct, 
 	arg := prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta))
 	stack, inside := escapeAccessIndexes(specs, arg)
 	for _, fieldIdx := range arg.Fields {
-		if !inside || strct == nil || len(stack) == 0 || stack[len(stack)-1] != constants.DeclarationStruct {
+		if !inside || strct == nil || len(stack) == 0 || stack[len(stack)-1] != opcodetable.DeclarationStruct {
 			return false
 		}
 		field := prgrm.CXArgFromArrayGet(fieldIdx)
@@ -431,9 +431,9 @@ func escapeAccessIndexes(specs []int, arg *ast.CXArgument) ([]int, bool) {
 	indexing := 0
 	for _, spec := range arg.DeclarationSpecifiers {
 		switch spec {
-		case constants.DeclarationDeref:
+		case opcodetable.DeclarationDeref:
 			return nil, false
-		case constants.DeclarationIndexing:
+		case opcodetable.DeclarationIndexing:
 			indexing++
 		}
 	}
@@ -442,7 +442,7 @@ func escapeAccessIndexes(specs []int, arg *ast.CXArgument) ([]int, bool) {
 		return nil, false
 	}
 	for _, spec := range specs[len(specs)-indexes:] {
-		if spec != constants.DeclarationArray {
+		if spec != opcodetable.DeclarationArray {
 			return nil, false
 		}
 	}
@@ -463,7 +463,7 @@ func escapeSignatureSpecifiers(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) [
 	array := func(base []int) []int {
 		details := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
 		for range details.Lengths {
-			base = append(base, constants.DeclarationArray)
+			base = append(base, opcodetable.DeclarationArray)
 		}
 		return base
 	}
@@ -471,26 +471,26 @@ func escapeSignatureSpecifiers(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) [
 	case ast.TypeCXArgumentDeprecate:
 		return prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta)).DeclarationSpecifiers
 	case ast.TypePointerAtomic:
-		return []int{constants.DeclarationBasic, constants.DeclarationPointer}
+		return []int{opcodetable.DeclarationBasic, opcodetable.DeclarationPointer}
 	case ast.TypeArrayAtomic:
-		return array([]int{constants.DeclarationBasic})
+		return array([]int{opcodetable.DeclarationBasic})
 	case ast.TypePointerArrayAtomic:
-		return append(array([]int{constants.DeclarationBasic}), constants.DeclarationPointer)
+		return append(array([]int{opcodetable.DeclarationBasic}), opcodetable.DeclarationPointer)
 	case ast.TypeSliceAtomic:
-		return []int{constants.DeclarationBasic, constants.DeclarationSlice}
+		return []int{opcodetable.DeclarationBasic, opcodetable.DeclarationSlice}
 	case ast.TypePointerSliceAtomic:
-		return []int{constants.DeclarationBasic, constants.DeclarationSlice, constants.DeclarationPointer}
+		return []int{opcodetable.DeclarationBasic, opcodetable.DeclarationSlice, opcodetable.DeclarationPointer}
 	case ast.TypeStruct:
-		return []int{constants.DeclarationStruct}
+		return []int{opcodetable.DeclarationStruct}
 	case ast.TypePointerStruct:
-		return []int{constants.DeclarationStruct, constants.DeclarationPointer}
+		return []int{opcodetable.DeclarationStruct, opcodetable.DeclarationPointer}
 	}
-	return []int{constants.DeclarationBasic}
+	return []int{opcodetable.DeclarationBasic}
 }
 
 // escapeSlotSize is the frame size of an escaped local, the slot that holds
 // the address of its heap object.
-const escapeSlotSize = types.PointerSize
+const escapeSlotSize = valuetypes.PointerSize
 
 // escapeInputPrefix starts the new name of an escaped input. The body then
 // declares the old name as a local, a copy of the input, which can escape.
@@ -521,7 +521,7 @@ func escapePrologue(prgrm *ast.CXProgram, params []escapeParam, escaped map[stri
 		specs.DereferenceOperations = slices.Clone(source.DereferenceOperations)
 		specs.DeclarationSpecifiers = slices.Clone(source.DeclarationSpecifiers)
 		specs.Offset = 0
-		specs.PassBy = constants.PassByValue
+		specs.PassBy = opcodetable.PassByValue
 		source.Name = hidden
 
 		_, declarator := ast.ArgumentMake(prgrm, param.escapeParamName, CurrentFile, line)
@@ -536,18 +536,18 @@ func escapePrologue(prgrm *ast.CXProgram, params []escapeParam, escaped map[stri
 // escapeSlot is the frame slot of an escaped local, a root for the GC.
 type escapeSlot struct {
 	escapeSlotName   stringpool.StringGid
-	escapeSlotOffset types.Pointer
+	escapeSlotOffset valuetypes.Pointer
 }
 
 // escapeDeclare gives a new escaped local the next frame slot, which holds
 // the address of its heap object.
-func escapeDeclare(prgrm *ast.CXProgram, symbolTable *SymbolTable, typeSig *ast.CXTypeSignature, sym *ast.CXArgument, offset *types.Pointer) {
+func escapeDeclare(prgrm *ast.CXProgram, symbolTable *SymbolTable, typeSig *ast.CXTypeSignature, sym *ast.CXArgument, offset *valuetypes.Pointer) {
 	slot := *offset
 	if sym != nil {
 		sym.Name = typeSig.Name
-		sym.Offset = slot | constants.EscapeOffsetFlag
+		sym.Offset = slot | opcodetable.EscapeOffsetFlag
 	}
-	typeSig.Offset = slot | constants.EscapeOffsetFlag
+	typeSig.Offset = slot | opcodetable.EscapeOffsetFlag
 	updateSymbolsTableOffsetAdd(prgrm, typeSig, offset, escapeSlotSize)
 	symbolTable.escapedSlots = append(symbolTable.escapedSlots, escapeSlot{escapeSlotName: typeSig.Name, escapeSlotOffset: slot})
 }
@@ -611,7 +611,7 @@ func (state *escapeState) escapeStoreUnknown(outputs []ast.CXTypeSignatureIndex)
 func (state *escapeState) escapeStructLiteralTemporary(name stringpool.StringGid, sig *ast.CXTypeSignature) bool {
 	prgrm := state.escapeStateProgram
 	specs := state.escapeStateLocals[name]
-	if !TemporaryVariable(prgrm, name) || state.escapeStateStructs[name] == nil || len(specs) == 0 || specs[len(specs)-1] != constants.DeclarationPointer {
+	if !TemporaryVariable(prgrm, name) || state.escapeStateStructs[name] == nil || len(specs) == 0 || specs[len(specs)-1] != opcodetable.DeclarationPointer {
 		return false
 	}
 	if sig.Type != ast.TypeCXArgumentDeprecate {
@@ -627,7 +627,7 @@ func (state *escapeState) escapeLoopAdd(i int, op *ast.CXAtomicOperator, operato
 		return
 	}
 	switch operator.AtomicOPCode {
-	case constants.OpJmp, constants.OpGoto, constants.OpBreak, constants.OpContinue:
+	case opcodetable.OpJmp, opcodetable.OpGoto, opcodetable.OpBreak, opcodetable.OpContinue:
 	default:
 		return
 	}

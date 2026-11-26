@@ -3,7 +3,7 @@ package packageloader
 import (
 	"errors"
 	"fmt"
-	"github.com/skycoin/skycoin-cx/t0-textsections"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-textsections"
 )
 
 type PackageList struct {

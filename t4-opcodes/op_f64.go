@@ -5,9 +5,9 @@ import (
 	"math/rand"
 	"strconv"
 
-	// GCREACH: t3-ast owns the heap and the GC roots. This file allocates strs, which
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. This file allocates strs, which
 	// adds to the GC pressure, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // The built-in str function returns the base 10 string representation of operand 1.

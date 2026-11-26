@@ -1,6 +1,6 @@
 #!/bin/sh
 # Checks the GC reach rules of docs/GarbageCollector.md. The vm and the IR
-# base import neither t3-ast nor the collector, only t3-ast imports the
+# base import neither t3-cx-core-ast nor the collector, only t3-cx-core-ast imports the
 # collector, and every other reach into the heap and the collector has a
 # GCREACH comment directly above it or above its function. With -l it also
 # lists every reach as path:line, for the table in the document.
@@ -11,25 +11,25 @@ list=0
 for dir in t2-cx-runtime-ir t3-cx-runtime-vm; do
 	for file in "$dir"/*.go; do
 		case "$file" in *_test.go) continue ;; esac
-		if grep -n -e '"github.com/skycoin/skycoin-cx/t3-ast"' -e '"github.com/skycoin/skycoin-cx/t2-cx-runtime-gc"' "$file"; then
-			echo "$file imports t3-ast or the collector. $dir stays GC free."
+		if grep -n -e '"github.com/skycoin/skycoin-cx/t3-cx-core-ast"' -e '"github.com/skycoin/skycoin-cx/t2-cx-runtime-gc"' "$file"; then
+			echo "$file imports t3-cx-core-ast or the collector. $dir stays GC free."
 			rc=1
 		fi
 	done
 done
 importers=$(find . -path ./vendor -prune -o -path ./.git -prune -o -path ./.claude -prune -o -name '*.go' -print |
-	sed 's#^\./##' | grep -v -e '_test\.go$' -e '^t3-ast/' -e '^t2-cx-runtime-gc/' |
+	sed 's#^\./##' | grep -v -e '_test\.go$' -e '^t3-cx-core-ast/' -e '^t2-cx-runtime-gc/' |
 	xargs grep -l '"github.com/skycoin/skycoin-cx/t2-cx-runtime-gc"' /dev/null)
 for file in $importers; do
-	echo "$file imports t2-cx-runtime-gc. Only t3-ast hands the collector its roots."
+	echo "$file imports t2-cx-runtime-gc. Only t3-cx-core-ast hands the collector its roots."
 	rc=1
 done
 find . -path ./vendor -prune -o -path ./.git -prune -o -path ./.claude -prune -o -name '*.go' -print |
 	sed 's#^\./##' | grep -v -e '_test\.go$' -e '^t2-cx-runtime-gc/' |
-	grep -v -x 't3-ast/gc_type.go' | sort |
+	grep -v -x 't3-cx-core-ast/gc_type.go' | sort |
 	xargs awk -v list="$list" '
 function reach(line) {
-	if (line ~ /"github\.com\/skycoin\/skycoin-cx\/t3-ast"/)
+	if (line ~ /"github\.com\/skycoin\/skycoin-cx\/t3-cx-core-ast"/)
 		return FILENAME ~ /^(t4-execute|t5-cx-runtime-core|t4-cx-compiler-lower|t4-opcodes)\//
 	if (line ~ /"github\.com\/skycoin\/skycoin-cx\/t2-cx-runtime-gc"/)
 		return 0

@@ -104,7 +104,7 @@ t6-cxfx/op_opengl.go|function||OpGlGetProgramInfoLog
 t6-cxfx/op_opengl.go|function||OpGlGetShaderInfoLog
 
 # process is the name of the CX system library sys/process.
-t1-constants/libraries.go|constant||LibraryNumberProcess
+t1-cx-core-opcodetable/libraries.go|constant||LibraryNumberProcess
 t5-cxos/init.go|function||LibraryProcessRegister
 t5-cxos/noinit.go|function||LibraryProcessRegister
 
@@ -115,33 +115,33 @@ t0-cx-core-floatparse/uscale.go|field|scaler|s
 
 # The manager is the object model term of docs/ObjectModel.md, and the
 # generated <obj>_mng.go files name their receiver manager.
-t3-ast/cxirstate.go|method|CxIrState|CxIrStateManagerGrowBoundary
-t3-ast/cxirstate.go|method|CxIrState|CxIrStateManagerLens
-t3-ast/cxirstate.go|struct||CxIrStateManagerLen
-t3-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsCapacity
-t3-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsFree
-t3-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsGenerations
-t3-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsGrowable
-t3-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsLen
-t3-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsLive
-t3-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsNext
-t3-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsRetired
-t3-ast/serialize.go|function||deserializeManager
-t3-ast/serialize.go|function||serializeManager
-t3-ast/serialize.go|struct||serializeManagerSlots
-t3-ast/sourcefilemng.go|receiver|SourceFileMng.SourceFileIntern|manager
-t3-ast/sourcefilemng.go|receiver|SourceFileMng.SourceFileLen|manager
-t3-ast/sourcefilemng.go|receiver|SourceFileMng.SourceFileMngInit|manager
-t3-ast/sourcefilemng.go|receiver|SourceFileMng.SourceFilePath|manager
+t3-cx-core-ast/cxirstate.go|method|CxIrState|CxIrStateManagerGrowBoundary
+t3-cx-core-ast/cxirstate.go|method|CxIrState|CxIrStateManagerLens
+t3-cx-core-ast/cxirstate.go|struct||CxIrStateManagerLen
+t3-cx-core-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsCapacity
+t3-cx-core-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsFree
+t3-cx-core-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsGenerations
+t3-cx-core-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsGrowable
+t3-cx-core-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsLen
+t3-cx-core-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsLive
+t3-cx-core-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsNext
+t3-cx-core-ast/serialize.go|field|serializeManagerSlots|serializeManagerSlotsRetired
+t3-cx-core-ast/serialize.go|function||deserializeManager
+t3-cx-core-ast/serialize.go|function||serializeManager
+t3-cx-core-ast/serialize.go|struct||serializeManagerSlots
+t3-cx-core-ast/sourcefilemng.go|receiver|SourceFileMng.SourceFileIntern|manager
+t3-cx-core-ast/sourcefilemng.go|receiver|SourceFileMng.SourceFileLen|manager
+t3-cx-core-ast/sourcefilemng.go|receiver|SourceFileMng.SourceFileMngInit|manager
+t3-cx-core-ast/sourcefilemng.go|receiver|SourceFileMng.SourceFilePath|manager
 
 # The data segment is the memory segment that mem("data") selects in CX,
 # beside the stack and the heap.
 t2-cx-runtime-ir/ir.go|field|Image|ImageData
 t2-cx-runtime-ir/ir.go|field|Image|ImageDataStart
 t2-cx-runtime-ir/ir.go|function||ImageDataEnd
-t3-ast/affordance.go|enum_value||AffordanceMemoryData
-t3-ast/ast_cxprogram.go|struct||DataSegmentStruct
-t3-ast/cxprogram_def.go|field|CXProgram|Data
+t3-cx-core-ast/affordance.go|enum_value||AffordanceMemoryData
+t3-cx-core-ast/ast_cxprogram.go|struct||DataSegmentStruct
+t3-cx-core-ast/cxprogram_def.go|field|CXProgram|Data
 t3-cx-compiler-llvm/llvm.go|field|emitter|dataEnd
 t3-cx-compiler-llvm/llvm.go|method|emitter|dataRuns
 t3-cx-runtime-vm/vm.go|field|Machine|machineDataEnd
@@ -406,10 +406,10 @@ t6-cxfx/constants.go|enum_value||CONST_GL_ZERO
 
 # CXTypeSignature_Array and CXTypeSignature_Struct are object model types,
 # and the generator derives their manager names from them.
-t3-ast/cxirstate.go|field|CxIrState|CXTypeSignature_ArrayMng
-t3-ast/cxirstate.go|field|CxIrState|CXTypeSignature_StructMng
-t3-ast/cxtypesignaturearray_def.go|struct||CXTypeSignature_Array
-t3-ast/cxtypesignaturestruct_def.go|struct||CXTypeSignature_Struct
+t3-cx-core-ast/cxirstate.go|field|CxIrState|CXTypeSignature_ArrayMng
+t3-cx-core-ast/cxirstate.go|field|CxIrState|CXTypeSignature_StructMng
+t3-cx-core-ast/cxtypesignaturearray_def.go|struct||CXTypeSignature_Array
+t3-cx-core-ast/cxtypesignaturestruct_def.go|struct||CXTypeSignature_Struct
 
 # x and y are coordinates, and R, G, B and E the channels of RGBE.
 t0-cx-tools-benchmarkserialize/main.go|field|Point|X
@@ -425,18 +425,10 @@ t6-cxfx/op_opengl.go|constant||R
 # Package directories that are not t<N>-cx-<layer>-<subject> yet, renamed by
 # step 8 of docs/NamingPlan.md.
 t0-cxfiles|directory||t0-cxfiles
-t0-cxhash|directory||t0-cxhash
-t0-lz4codec|directory||t0-lz4codec
-t0-packages|directory||t0-packages
-t0-textsections|directory||t0-textsections
-t0-types|directory||t0-types
 t11-cx|directory||t11-cx
 t1-cipherstate|directory||t1-cipherstate
-t1-constants|directory||t1-constants
 t1-netbatch|directory||t1-netbatch
 t1-profiling|directory||t1-profiling
-t2-globals|directory||t2-globals
-t3-ast|directory||t3-ast
 t4-actions|directory||t4-actions
 t4-cipher|directory||t4-cipher
 t4-cxnet|directory||t4-cxnet
@@ -452,7 +444,6 @@ t7-cxmobile|directory||t7-cxmobile
 t7-init|directory||t7-init
 t8-cxparsingcompletor|directory||t8-cxparsingcompletor
 t8-typechecker|directory||t8-typechecker
-t9-astapi|directory||t9-astapi
 t9-cxparsing|directory||t9-cxparsing
 
 # FuncDecl and GenDecl are the go/ast types these methods read.

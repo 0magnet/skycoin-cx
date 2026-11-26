@@ -7,8 +7,8 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/skycoin/skycoin-cx/t0-types" // thin: only StrRead, STR, Write_str; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes" // thin: only StrRead, STR, Write_str; no depth gain
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // VIOLATION: state outside State. Owner: t4-regexp; moves to RegexpMng in phase 1.
@@ -17,7 +17,7 @@ var regexps map[string]*regexp.Regexp = make(map[string]*regexp.Regexp, 0)
 // expOffset returns the offset of the `exp` field of the CX `regexp.Regexp`
 // held by value. The field holds the expression, which keys `regexps`. exp is
 // the only field PackageRegister gives Regexp, so it starts the struct.
-func expOffset(value ast.CXValue) types.Pointer {
+func expOffset(value ast.CXValue) valuetypes.Pointer {
 	return value.Offset
 }
 
@@ -50,7 +50,7 @@ func OpRegexpMustCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []a
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
-		panic(types.CXRuntimeError)
+		panic(valuetypes.CXRuntimeError)
 	}
 
 }
@@ -74,11 +74,11 @@ func OpRegexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 // VIOLATION STRHOT-144: B, hands a path or text to Go or the OS, #412.
 // VIOLATION VMALLOC-017: compiles and matches with the Go regexp package, #407.
 func OpRegexpFind(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	exp := types.StrRead(prgrm.Memory, expOffset(inputs[0]))
+	exp := valuetypes.StrRead(prgrm.Memory, expOffset(inputs[0]))
 	r, ok := regexps[exp]
 	if !ok {
 		fmt.Fprintln(os.Stderr, "regexp: Find on a Regexp that did not compile: "+exp)
-		panic(types.CXRuntimeError)
+		panic(valuetypes.CXRuntimeError)
 	}
 
 	outputs[0].StrSet(prgrm, string(r.Find([]byte(inputs[1].StrGet(prgrm)))))

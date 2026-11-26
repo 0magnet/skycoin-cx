@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t1-netbatch"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // netUpdate is net.Update. A replay that runs out of updates ends the
@@ -32,7 +32,7 @@ func netReplayEndAssertFailure() {
 // program memory.
 func netBufferView(prgrm *ast.CXProgram, value *ast.CXValue) []byte {
 	signature := value.TypeSignature
-	if signature.Type != ast.TypeArrayAtomic || signature.TypeGet(prgrm) != types.UI8 {
+	if signature.Type != ast.TypeArrayAtomic || signature.TypeGet(prgrm) != valuetypes.UI8 {
 		netBufferAssertFailure()
 	}
 	return prgrm.Memory[value.Offset : value.Offset+signature.ArraySizeGet(prgrm)]

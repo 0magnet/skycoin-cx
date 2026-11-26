@@ -3,8 +3,8 @@
 package cxfx
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"golang.org/x/mobile/exp/audio/al"
 )
 
@@ -103,10 +103,10 @@ func OpAlVersion(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 func OpAlGenBuffers(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	buffers := al.GenBuffers(int(inputs[0].I32Get(prgrm)))
 	outputSlicePointer := outputs[0].Offset
-	outputSliceOffset := types.PtrRead(prgrm.Memory, outputSlicePointer)
+	outputSliceOffset := valuetypes.PtrRead(prgrm.Memory, outputSlicePointer)
 	for _, b := range buffers { // REFACTOR append with copy ?
 		var obj [4]byte
-		types.I32Write(obj[:], 0, int32(b))
+		valuetypes.I32Write(obj[:], 0, int32(b))
 		outputSliceOffset = ast.SliceWrite(prgrm, outputSliceOffset, obj[:])
 	}
 	outputs[0].PtrSet(prgrm, outputSliceOffset)
@@ -123,10 +123,10 @@ func OpAlBufferData(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 func OpAlGenSources(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	sources := al.GenSources(int(inputs[0].I32Get(prgrm)))
 	outputSlicePointer := outputs[0].Offset
-	outputSliceOffset := types.PtrRead(prgrm.Memory, outputSlicePointer)
+	outputSliceOffset := valuetypes.PtrRead(prgrm.Memory, outputSlicePointer)
 	for _, s := range sources { // REFACTOR append with copy ?
 		var obj [4]byte
-		types.I32Write(obj[:], 0, int32(s))
+		valuetypes.I32Write(obj[:], 0, int32(s))
 		outputSliceOffset = ast.SliceWrite(prgrm, outputSliceOffset, obj[:])
 	}
 	outputs[0].PtrSet(prgrm, outputSliceOffset)

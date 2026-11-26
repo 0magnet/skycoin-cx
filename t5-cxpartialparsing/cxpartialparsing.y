@@ -2,9 +2,9 @@
 	package partialparsing
 	import (
 		"bytes"
-	    "github.com/skycoin/skycoin-cx/t3-ast"
-	    "github.com/skycoin/skycoin-cx/t1-constants"
-	    "github.com/skycoin/skycoin-cx/t0-types"
+	    "github.com/skycoin/skycoin-cx/t3-cx-core-ast"
+	    "github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	    "github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	    stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 		"github.com/skycoin/skycoin-cx/t4-actions"
 	)
@@ -349,7 +349,7 @@ function_parameters:
                 { $$ = $2 }
                 ;
 
-// A result list holds names and types, (r i32, s str), or only types,
+// A result list holds names and valuetypes, (r i32, s str), or only valuetypes,
 // (i32, str), as in Go. Unnamed results get hidden names.
 function_results:
                 function_parameters
@@ -430,7 +430,7 @@ direct_declarator:
                 {
 			if pkg, err := Program.CurrentPackageGet(); err == nil {
 				_, arg := ast.ArgumentMake(Program, stringpool.StringGidNil, CurrentFile, lineNo)
-				arg.TypeSet(types.UNDEFINED)
+				arg.TypeSet(valuetypes.UNDEFINED)
 				arg.Name = Program.CXProgramNameIntern($1)
 				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
@@ -451,7 +451,7 @@ id_list:	IDENTIFIER
 		}
 	|	type_specifier
 		{
-			arg := actions.DeclarationSpecifiersBasic(Program, types.Code($1))			 
+			arg := actions.DeclarationSpecifiersBasic(Program, valuetypes.Code($1))			 
 			// OBJMODEL: state.CXArgumentMng (manager storage) or []CXArgumentGid, phase 4 #326.
 			// Now a slice of objects, site S1406.
 			$$ = []*ast.CXArgument{arg}
@@ -463,7 +463,7 @@ id_list:	IDENTIFIER
 		}
 	|	id_list COMMA type_specifier
 		{
-			arg := actions.DeclarationSpecifiersBasic(Program, types.Code($3))
+			arg := actions.DeclarationSpecifiersBasic(Program, valuetypes.Code($3))
 			$$ = append($1, arg)
 		}
 	;
@@ -483,7 +483,7 @@ declaration_specifiers:
                 element_specifiers
         |       indexing_literal array_element
                 {
-			$$ = actions.DeclarationSpecifiers($2, types.SintToSptrCast($1), constants.DeclarationArray)
+			$$ = actions.DeclarationSpecifiers($2, valuetypes.SintToSptrCast($1), opcodetable.DeclarationArray)
                 }
                 ;
 
@@ -491,26 +491,26 @@ element_specifiers:
 		FUNC types_list types_list
 		{
 			_, arg := ast.ArgumentMake(Program, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
-			arg.TypeSet(types.FUNC)
+			arg.TypeSet(valuetypes.FUNC)
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1408.
 			arg.Inputs = Program.PointerArgsToCXArgsArrayAdd($2)
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1409.
 			arg.Outputs = Program.PointerArgsToCXArgsArrayAdd($3)
-			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DeclarationFunc)
+			$$ = actions.DeclarationSpecifiers(arg, []valuetypes.Pointer{0}, opcodetable.DeclarationFunc)
 		}
         |       MUL_OP declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($2, []types.Pointer{0}, constants.DeclarationPointer)
+			$$ = actions.DeclarationSpecifiers($2, []valuetypes.Pointer{0}, opcodetable.DeclarationPointer)
                 }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DeclarationSlice)
+			$$ = actions.DeclarationSpecifiers($3, []valuetypes.Pointer{0}, opcodetable.DeclarationSlice)
                 }
         |       type_specifier
                 {
-			$$ = actions.DeclarationSpecifiersBasic(Program, types.Code($1))
+			$$ = actions.DeclarationSpecifiersBasic(Program, valuetypes.Code($1))
                 }
         |       IDENTIFIER
                 {
@@ -522,7 +522,7 @@ element_specifiers:
                 }
 	|       type_specifier PERIOD IDENTIFIER
 		{
-			$$ = actions.DeclarationSpecifiersStruct(Program,$3, types.Code($1).Name(), true, CurrentFile, $<line>1, $<column>1)
+			$$ = actions.DeclarationSpecifiersStruct(Program,$3, valuetypes.Code($1).Name(), true, CurrentFile, $<line>1, $<column>1)
 		}
                 ;
 
@@ -531,7 +531,7 @@ element_specifiers:
 array_element:
                 type_specifier
                 {
-			$$ = actions.DeclarationSpecifiersBasic(Program, types.Code($1))
+			$$ = actions.DeclarationSpecifiersBasic(Program, valuetypes.Code($1))
                 }
         |       IDENTIFIER
                 {
@@ -543,45 +543,45 @@ array_element:
                 }
         |       type_specifier PERIOD IDENTIFIER
                 {
-			$$ = actions.DeclarationSpecifiersStruct(Program,$3, types.Code($1).Name(), true, CurrentFile, $<line>1, $<column>1)
+			$$ = actions.DeclarationSpecifiersStruct(Program,$3, valuetypes.Code($1).Name(), true, CurrentFile, $<line>1, $<column>1)
                 }
         |       MUL_OP declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($2, []types.Pointer{0}, constants.DeclarationPointer)
+			$$ = actions.DeclarationSpecifiers($2, []valuetypes.Pointer{0}, opcodetable.DeclarationPointer)
                 }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DeclarationSlice)
+			$$ = actions.DeclarationSpecifiers($3, []valuetypes.Pointer{0}, opcodetable.DeclarationSlice)
                 }
                 ;
 
 type_specifier:
                 AFF
-                { $$ = int(types.AFF) }
+                { $$ = int(valuetypes.AFF) }
         |       BOOL
-                { $$ = int(types.BOOL) }
+                { $$ = int(valuetypes.BOOL) }
         |       STR
-                { $$ = int(types.STR) }
+                { $$ = int(valuetypes.STR) }
         |       F32
-                { $$ = int(types.F32) }
+                { $$ = int(valuetypes.F32) }
         |       F64
-                { $$ = int(types.F64) }
+                { $$ = int(valuetypes.F64) }
         |       I8
-                { $$ = int(types.I8) }
+                { $$ = int(valuetypes.I8) }
         |       I16
-                { $$ = int(types.I16) }
+                { $$ = int(valuetypes.I16) }
         |       I32
-                { $$ = int(types.I32) }
+                { $$ = int(valuetypes.I32) }
         |       I64
-                { $$ = int(types.I64) }
+                { $$ = int(valuetypes.I64) }
         |       UI8
-                { $$ = int(types.UI8) }
+                { $$ = int(valuetypes.UI8) }
         |       UI16
-                { $$ = int(types.UI16) }
+                { $$ = int(valuetypes.UI16) }
         |       UI32
-                { $$ = int(types.UI32) }
+                { $$ = int(valuetypes.UI32) }
         |       UI64
-                { $$ = int(types.UI64) }
+                { $$ = int(valuetypes.UI64) }
 	/* |       struct_or_union_specifier */
         /*         { */
         /*             $$ = "struct" */

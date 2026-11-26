@@ -1,25 +1,25 @@
 package type_checker
 
-import "github.com/skycoin/skycoin-cx/t0-types"
+import "github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 
 // Types Map
-var TypesMap map[string]types.Code = map[string]types.Code{
+var TypesMap map[string]valuetypes.Code = map[string]valuetypes.Code{
 
-	"bool": types.BOOL,
+	"bool": valuetypes.BOOL,
 
-	"i8":  types.I8,
-	"i16": types.I16,
-	"i32": types.I32,
-	"i64": types.I64,
+	"i8":  valuetypes.I8,
+	"i16": valuetypes.I16,
+	"i32": valuetypes.I32,
+	"i64": valuetypes.I64,
 
-	"ui8":  types.UI8,
-	"ui16": types.UI16,
-	"ui32": types.UI32,
-	"ui64": types.UI64,
+	"ui8":  valuetypes.UI8,
+	"ui16": valuetypes.UI16,
+	"ui32": valuetypes.UI32,
+	"ui64": valuetypes.UI64,
 
-	"f32": types.F32,
-	"f64": types.F64,
+	"f32": valuetypes.F32,
+	"f64": valuetypes.F64,
 
-	"str": types.STR,
-	"aff": types.AFF,
+	"str": valuetypes.STR,
+	"aff": valuetypes.AFF,
 }

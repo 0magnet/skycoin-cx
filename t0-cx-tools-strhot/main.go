@@ -295,7 +295,7 @@ func opcodeGoFunctionSignature(sig *types.Signature) bool {
 	if sig.Recv() != nil || sig.Results().Len() != 0 || sig.Params().Len() != 3 {
 		return false
 	}
-	want := []string{"*" + modulePath + "/t3-ast.CXProgram", "[]" + modulePath + "/t3-ast.CXValue", "[]" + modulePath + "/t3-ast.CXValue"}
+	want := []string{"*" + modulePath + "/t3-cx-core-ast.CXProgram", "[]" + modulePath + "/t3-cx-core-ast.CXValue", "[]" + modulePath + "/t3-cx-core-ast.CXValue"}
 	for i := range want {
 		if sig.Params().At(i).Type().String() != want[i] {
 			return false

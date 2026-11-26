@@ -17,10 +17,10 @@ import (
 	"path/filepath"
 	"runtime"
 
-	types "github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 
 	"unsafe"
 )
@@ -127,7 +127,7 @@ const (
 	E      = 3
 )
 
-func unpack(file *os.File, width types.Pointer, line []byte) bool {
+func unpack(file *os.File, width valuetypes.Pointer, line []byte) bool {
 	if width < MINLEN || width > MAXLEN {
 		return unpack_(file, width, line)
 	}
@@ -143,19 +143,19 @@ func unpack(file *os.File, width types.Pointer, line []byte) bool {
 	}
 
 	var b [1]byte
-	for i := types.Pointer(0); i < 4; i++ {
-		for j := types.Pointer(0); j < width; {
+	for i := valuetypes.Pointer(0); i < 4; i++ {
+		for j := valuetypes.Pointer(0); j < width; {
 			file.Read(b[:])
-			count := types.Pointer(b[0])
+			count := valuetypes.Pointer(b[0])
 			if count > 128 {
 				count &= 127
 				file.Read(b[:])
 				var value int = int(b[0])
-				for c := types.Pointer(0); c < count; c++ {
+				for c := valuetypes.Pointer(0); c < count; c++ {
 					line[j+c+i] = byte(value)
 				}
 			} else {
-				for c := types.Pointer(0); c < count; c++ {
+				for c := valuetypes.Pointer(0); c < count; c++ {
 					offset := j + c + i
 					file.Read(line[offset : offset+1])
 				}
@@ -165,7 +165,7 @@ func unpack(file *os.File, width types.Pointer, line []byte) bool {
 	return true
 }
 
-func unpack_(file *os.File, width types.Pointer, line []byte) bool {
+func unpack_(file *os.File, width valuetypes.Pointer, line []byte) bool {
 	var rshift uint
 	var repeat [4]byte
 	for width > 0 {
@@ -299,21 +299,21 @@ func decodeHdr(file *os.File) (pixelBytes []byte, i32Width int32, i32Height int3
 	i32Width = int32(iwidth)
 	i32Height = int32(iheight)
 
-	width := types.IntToPtrCast(iwidth)
-	height := types.IntToPtrCast(iheight)
+	width := valuetypes.IntToPtrCast(iwidth)
+	height := valuetypes.IntToPtrCast(iheight)
 
 	//var colors []float32 = make([]float32, width*height*3)
 	var line []byte = make([]byte, width*4)
 	pixelBytes = make([]byte, width*height*3*4)
 
-	for y := types.Pointer(0); y < height; y++ {
+	for y := valuetypes.Pointer(0); y < height; y++ {
 		if unpack(file, width, line) == false {
 			fmt.Printf("Failed to unpack line %d\n", y)
 			return
 		}
 
 		yoffset := y /*(height - y - 1)*/ * width * 3 * 4
-		for x := types.Pointer(0); x < width; x++ {
+		for x := valuetypes.Pointer(0); x < width; x++ {
 			loffset := x * 4
 			exponent := math.Pow(2.0, float64(int(line[loffset+3])-128))
 			xoffset := yoffset + x*3*4
@@ -321,9 +321,9 @@ func decodeHdr(file *os.File) (pixelBytes []byte, i32Width int32, i32Height int3
 			g := float32(exponent * float64(line[loffset+1]) / 256.0)
 			b := float32(exponent * float64(line[loffset+2]) / 256.0)
 
-			types.F32Write(pixelBytes, xoffset, r)
-			types.F32Write(pixelBytes, xoffset+4, g)
-			types.F32Write(pixelBytes, xoffset+8, b)
+			valuetypes.F32Write(pixelBytes, xoffset, r)
+			valuetypes.F32Write(pixelBytes, xoffset+4, g)
+			valuetypes.F32Write(pixelBytes, xoffset+8, b)
 		}
 	}
 	return
@@ -492,17 +492,17 @@ func OpGlGIFFrameToTexture(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs [
 // see docs/GarbageCollector.md.
 func OpGlAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outputSlicePointer := outputs[0].Offset
-	outputSliceOffset := types.PtrRead(prgrm.Memory, outputSlicePointer)
+	outputSliceOffset := valuetypes.PtrRead(prgrm.Memory, outputSlicePointer)
 
 	inputSliceOffset := ast.SliceOffsetGet(prgrm, inputs[0].FramePointer, inputs[0].TypeSignature)
-	var inputSliceLen types.Pointer
+	var inputSliceLen valuetypes.Pointer
 	if inputSliceOffset != 0 {
 		inputSliceLen = ast.SliceLenGet(prgrm, inputSliceOffset)
 	}
 
 	obj := inputs[1].BytesGet(prgrm)
 
-	objLen := types.IntToPtrCast(len(obj))
+	objLen := valuetypes.IntToPtrCast(len(obj))
 	outputSliceOffset = ast.SliceResizeEx(prgrm, outputSliceOffset, inputSliceLen+objLen, 1)
 	ast.SliceCopyEx(prgrm, outputSliceOffset, inputSliceOffset, inputSliceLen, 1)
 	ast.SliceAppendWriteByte(prgrm, outputSliceOffset, obj, inputSliceLen)

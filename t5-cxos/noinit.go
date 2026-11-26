@@ -3,7 +3,7 @@
 package cxos
 
 import (
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 func PackageRegister(prgrm *ast.CXProgram) {

@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t2-globals"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t4-execute"
@@ -158,8 +158,8 @@ func compileRunSources(tb testing.TB, names []string, sources []string) {
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1780 S1781.
 	actions.AST = cxinit.ProgramMake()
 	cxinit.PackagesRegister(actions.AST)
-	globals.FoundCompileErrors = false
-	globals.HeapOffset = 0
+	environment.FoundCompileErrors = false
+	environment.HeapOffset = 0
 	if err := compileSourceStrings(names, sources); err != nil {
 		tb.Fatalf("%s: %v", names, err)
 	}
@@ -264,7 +264,7 @@ func BenchmarkRunVm(b *testing.B) {
 			b.ReportAllocs()
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				if code := core.ExecutorVmRunMachine(actions.AST, machine); code != types.CXSuccess {
+				if code := core.ExecutorVmRunMachine(actions.AST, machine); code != valuetypes.CXSuccess {
 					b.Fatalf("%s: code %d", p.name, code)
 				}
 			}
@@ -285,7 +285,7 @@ func TestRunVmAllocs(t *testing.T) {
 		lowered++
 		discardStdout(t)
 		allocs := testing.AllocsPerRun(3, func() {
-			if code := core.ExecutorVmRunMachine(actions.AST, machine); code != types.CXSuccess {
+			if code := core.ExecutorVmRunMachine(actions.AST, machine); code != valuetypes.CXSuccess {
 				t.Fatalf("%s: code %d", p.name, code)
 			}
 		})
@@ -321,8 +321,8 @@ func TestRunVmLibraryCallAllocs(t *testing.T) {
 	initProgram()
 	for _, enabled := range []bool{true, false} {
 		compileRunProgram(t, runBenchProgram{name: "library", source: runLibraryCallSource})
-		actions.AST.ProgramLibrariesEnabled[constants.LibraryNumberFile] = enabled
-		actions.AST.ProgramLibrariesEnabled[constants.LibraryNumberNet] = enabled
+		actions.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberFile] = enabled
+		actions.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberNet] = enabled
 		core.LibrariesEnabledResolve(actions.AST)
 		if refused := core.OperationRefused(actions.AST) != 0; refused == enabled {
 			t.Fatalf("enabled %v: refused %v", enabled, refused)

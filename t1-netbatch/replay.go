@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-textsections"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-textsections"
 )
 
 // NetReplayFormatVersion is the version of the replay record format.

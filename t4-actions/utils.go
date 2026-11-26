@@ -4,7 +4,7 @@ import (
 	"bytes"
 
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // StripNameNumber returns name without the n: prefix SymbolsTableUpdate gives

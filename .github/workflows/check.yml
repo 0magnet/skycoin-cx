@@ -95,7 +95,7 @@ jobs:
           sudo dpkg -i "$RUNNER_TEMP/tinygo.deb"
           sudo apt-get update
           sudo apt-get install -y qemu-system-arm
-      - run: tinygo test ./t0-cxhash ./t1-cx-runtime-sandbox
+      - run: tinygo test ./t0-cx-core-digest ./t1-cx-runtime-sandbox
       - run: go test -count=1 -run 'TestBuildLlvmLinkerChoose|TestBuildLlvmTinygo' ./t11-cx
       - run: make run-mcu MCU_TARGET=cortex-m-qemu
       - run: make build-mcu MCU_TARGET=pico

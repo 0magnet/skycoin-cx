@@ -7,12 +7,12 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t10-cx-tools-programgenerator"
-	cxast "github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"                           // thin: tests use only MakeProgram, RegisterPackages; no depth gain
 	cxparsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: tests use only InitCXCore; no depth gain
-	"github.com/skycoin/skycoin-cx/t9-astapi"
+	"github.com/skycoin/skycoin-cx/t9-cx-core-astapi"
 )
 
 // t.Logf("Stack size=%v\n", tc.program.StackSize)
@@ -44,22 +44,22 @@ func TestSerialize(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 			program := generateSampleProgramFromCXEvolves(t, tc.withLiteral)
-			var codec cxast.SerializeCodec
+			var codec ast.SerializeCodec
 			if tc.useCompression {
 				codec = newProgramCodec(t)
 			}
-			serializedBytes, err := cxast.CXProgramSerialize(program, tc.includeDataMemory, codec)
+			serializedBytes, err := ast.CXProgramSerialize(program, tc.includeDataMemory, codec)
 			if err != nil {
 				t.Fatal(err)
 			}
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Now a constructor call, as the other round trip tests make it.
-			deserializedCXProgram, err := cxast.Deserialize(serializedBytes, codec)
+			deserializedCXProgram, err := ast.Deserialize(serializedBytes, codec)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			want, got := cxast.ToString(program), cxast.ToString(deserializedCXProgram)
+			want, got := ast.ToString(program), ast.ToString(deserializedCXProgram)
 			if got != want {
 				t.Errorf("%+v\n!=\n%+v\n", got, want)
 			}
@@ -78,8 +78,8 @@ func TestSerialize(t *testing.T) {
 	}
 }
 
-func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *cxast.CXProgram {
-	var cxProgram *cxast.CXProgram
+func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *ast.CXProgram {
+	var cxProgram *ast.CXProgram
 
 	// Needed for FunctionNativeExpressionAdd
 	// because of dependency on cxast.OpNames
@@ -101,12 +101,12 @@ func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *cxast.C
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = astapi.FunctionNativeInputAdd(cxProgram, "main", "TestFunction", "inputOne", types.I32)
+	err = astapi.FunctionNativeInputAdd(cxProgram, "main", "TestFunction", "inputOne", valuetypes.I32)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = astapi.FunctionNativeOutputAdd(cxProgram, "main", "TestFunction", "outputOne", types.I32)
+	err = astapi.FunctionNativeOutputAdd(cxProgram, "main", "TestFunction", "outputOne", valuetypes.I32)
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
@@ -121,7 +121,7 @@ func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *cxast.C
 		buf := new(bytes.Buffer)
 		var num int32 = 5
 		binary.Write(buf, binary.LittleEndian, num)
-		err = astapi.ExpressionLiteralInputAdd(cxProgram, "main", "TestFunction", buf.Bytes(), types.I32, 2)
+		err = astapi.ExpressionLiteralInputAdd(cxProgram, "main", "TestFunction", buf.Bytes(), valuetypes.I32, 2)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

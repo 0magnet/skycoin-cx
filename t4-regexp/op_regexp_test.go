@@ -5,10 +5,10 @@ package regexp
 import (
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 func newTestProgram() *ast.CXProgram {
@@ -19,11 +19,11 @@ func newTestProgram() *ast.CXProgram {
 		CurrentPackage: -1,
 		// OBJMODEL: state.CXCallMng (manager storage) or []CXCallGid, phase 4 #366.
 		// Now a slice of objects, site S1419.
-		CallStack: make([]ast.CXCall, constants.CallStackSize),
-		Memory:    make([]byte, constants.StackSize+ast.MinHeapSize()),
-		Stack:     ast.StackSegmentStruct{Size: constants.StackSize},
-		Data:      ast.DataSegmentStruct{StartsAt: constants.StackSize},
-		Heap:      ast.HeapSegmentStruct{StartsAt: constants.StackSize, Size: ast.MinHeapSize(), Pointer: constants.NullHeapAddressOffset},
+		CallStack: make([]ast.CXCall, opcodetable.CallStackSize),
+		Memory:    make([]byte, opcodetable.StackSize+ast.MinHeapSize()),
+		Stack:     ast.StackSegmentStruct{Size: opcodetable.StackSize},
+		Data:      ast.DataSegmentStruct{StartsAt: opcodetable.StackSize},
+		Heap:      ast.HeapSegmentStruct{StartsAt: opcodetable.StackSize, Size: ast.MinHeapSize(), Pointer: opcodetable.NullHeapAddressOffset},
 		CxIrState: &ast.CxIrState{},
 	}
 	prgrm.CxIrState.CxIrStateInit()
@@ -31,7 +31,7 @@ func newTestProgram() *ast.CXProgram {
 	return prgrm
 }
 
-func strValue(prgrm *ast.CXProgram, offset types.Pointer, s string) ast.CXValue {
+func strValue(prgrm *ast.CXProgram, offset valuetypes.Pointer, s string) ast.CXValue {
 	ast.StrAllocateAt(prgrm, offset, s)
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureAlloc(), phase 4 #331.
 	// Now a heap literal, site S1420.
@@ -83,7 +83,7 @@ func TestRegexpFindAfterFailedCompile(t *testing.T) {
 	}
 
 	defer func() {
-		if r := recover(); r != types.CXRuntimeError {
+		if r := recover(); r != valuetypes.CXRuntimeError {
 			t.Errorf("Find on a failed Regexp panicked with %v, want CX_RUNTIME_ERROR", r)
 		}
 	}()

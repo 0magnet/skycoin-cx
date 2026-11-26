@@ -3,9 +3,9 @@ package actions
 import (
 	"strconv"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // LiteralElement is one element of an array or slice literal. An elided
@@ -23,9 +23,9 @@ type LiteralElement struct {
 // LiteralType is the type of an array or slice literal. Lengths are
 // outermost first and 0 for a slice dimension, as in CXArgument.Lengths.
 type LiteralType struct {
-	Lengths    []types.Pointer
+	Lengths    []valuetypes.Pointer
 	Slice      bool
-	TypeCode   types.Code
+	TypeCode   valuetypes.Code
 	StructName string
 	// Line and Column are where the literal starts, where a missing struct
 	// is reported, or 0 for the token the parser is at.
@@ -152,7 +152,7 @@ func LiteralSliceNest(prgrm *ast.CXProgram, exprs []ast.CXExpression) []ast.CXEx
 			expressionOutputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 			if expressionOutputArg.Name == lastExpressionInputTypeSig.Name {
 				expressionOutputArg.Lengths = append(expressionOutputArg.Lengths, 0)
-				expressionOutputArg.DeclarationSpecifiers = append(expressionOutputArg.DeclarationSpecifiers, constants.DeclarationSlice)
+				expressionOutputArg.DeclarationSpecifiers = append(expressionOutputArg.DeclarationSpecifiers, opcodetable.DeclarationSlice)
 			}
 		case ast.TypeSliceAtomic, ast.TypePointerSliceAtomic:
 			if expressionOutputTypeSig.Name == lastExpressionInputTypeSig.Name {
@@ -168,7 +168,7 @@ func LiteralSliceNest(prgrm *ast.CXProgram, exprs []ast.CXExpression) []ast.CXEx
 		if sig := prgrm.CXTypeSignatureFromArrayGet(outputs[0]); sig.Type == ast.TypeCXArgumentDeprecate {
 			out := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(sig.Meta))
 			out.Lengths = append(out.Lengths, 0)
-			out.DeclarationSpecifiers = append(out.DeclarationSpecifiers, constants.DeclarationSlice)
+			out.DeclarationSpecifiers = append(out.DeclarationSpecifiers, opcodetable.DeclarationSlice)
 		} else if sig.Type == ast.TypeSliceAtomic || sig.Type == ast.TypePointerSliceAtomic {
 			details := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
 			details.Lengths = append(details.Lengths, 0)
@@ -192,7 +192,7 @@ func literalValueInvalid(prgrm *ast.CXProgram, exprs []ast.CXExpression) bool {
 // as [][] before *T gives [][]*T.
 func LiteralTypeSlices(elem *ast.CXArgument, count int) *ast.CXArgument {
 	for i := 0; i < count; i++ {
-		elem = DeclarationSpecifiers(elem, []types.Pointer{0}, constants.DeclarationSlice)
+		elem = DeclarationSpecifiers(elem, []valuetypes.Pointer{0}, opcodetable.DeclarationSlice)
 	}
 	return elem
 }
@@ -202,7 +202,7 @@ func LiteralTypeSlices(elem *ast.CXArgument, count int) *ast.CXArgument {
 // []*T{&t} and [2][]i32{{1}, {2, 3}} do. line and column are where it starts.
 func LiteralCompound(prgrm *ast.CXProgram, typ *ast.CXArgument, line int, column int, elems []LiteralElement) []ast.CXExpression {
 	specs := typ.DeclarationSpecifiers
-	slice := specs[len(specs)-1] == constants.DeclarationSlice
+	slice := specs[len(specs)-1] == opcodetable.DeclarationSlice
 	elem := literalTemplateElement(prgrm, typ)
 	var exprs []ast.CXExpression
 	for _, element := range elems {
@@ -229,11 +229,11 @@ func LiteralCompound(prgrm *ast.CXProgram, typ *ast.CXArgument, line int, column
 // literalTemplateLengths returns the lengths of an array literal of
 // arraySizes whose elements have the type template, nil for a basic or
 // struct element.
-func literalTemplateLengths(arraySizes []types.Pointer, template *ast.CXArgument) []types.Pointer {
+func literalTemplateLengths(arraySizes []valuetypes.Pointer, template *ast.CXArgument) []valuetypes.Pointer {
 	if template == nil {
 		return arraySizes
 	}
-	return append(append([]types.Pointer(nil), arraySizes...), template.Lengths...)
+	return append(append([]valuetypes.Pointer(nil), arraySizes...), template.Lengths...)
 }
 
 // literalTemplateElement returns a new argument of the element type of the
@@ -253,11 +253,11 @@ func literalCompoundElided(prgrm *ast.CXProgram, typ *ast.CXArgument, elem Liter
 	}
 	specs := typ.DeclarationSpecifiers
 	switch last := specs[len(specs)-1]; {
-	case last == constants.DeclarationArray || last == constants.DeclarationSlice:
+	case last == opcodetable.DeclarationArray || last == opcodetable.DeclarationSlice:
 		if !elem.Keyed || len(elem.Fields) == 0 {
 			return LiteralCompound(prgrm, typ, elem.Line, 0, elem.Elements)
 		}
-	case last == constants.DeclarationPointer && len(specs) == 2 && specs[0] == constants.DeclarationStruct && literalStructLocal(prgrm, typ.StructType):
+	case last == opcodetable.DeclarationPointer && len(specs) == 2 && specs[0] == opcodetable.DeclarationStruct && literalStructLocal(prgrm, typ.StructType):
 		if !elem.Keyed {
 			prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeStructLiteralFieldNames, CurrentFile, elem.Line, ast.CompileErrorOperands{int64(typ.StructType.Name)})
 			return nil
@@ -273,13 +273,13 @@ func literalCompoundElided(prgrm *ast.CXProgram, typ *ast.CXArgument, elem Liter
 // dimensions, the types the literal actions build without a template.
 func literalTypeSimple(prgrm *ast.CXProgram, typ *ast.CXArgument) (LiteralType, bool) {
 	specs := typ.DeclarationSpecifiers
-	if len(specs) == 0 || typ.Type == types.POINTER {
+	if len(specs) == 0 || typ.Type == valuetypes.POINTER {
 		return LiteralType{}, false
 	}
-	result := LiteralType{Lengths: append([]types.Pointer(nil), typ.Lengths...), TypeCode: typ.Type}
+	result := LiteralType{Lengths: append([]valuetypes.Pointer(nil), typ.Lengths...), TypeCode: typ.Type}
 	switch specs[0] {
-	case constants.DeclarationBasic:
-	case constants.DeclarationStruct:
+	case opcodetable.DeclarationBasic:
+	case opcodetable.DeclarationStruct:
 		if !literalStructLocal(prgrm, typ.StructType) {
 			return LiteralType{}, false
 		}
@@ -289,10 +289,10 @@ func literalTypeSimple(prgrm *ast.CXProgram, typ *ast.CXArgument) (LiteralType, 
 		return LiteralType{}, false
 	}
 	for i, spec := range specs[1:] {
-		if spec != constants.DeclarationArray && spec != constants.DeclarationSlice || i > 0 && spec != specs[1] {
+		if spec != opcodetable.DeclarationArray && spec != opcodetable.DeclarationSlice || i > 0 && spec != specs[1] {
 			return LiteralType{}, false
 		}
-		result.Slice = spec == constants.DeclarationSlice
+		result.Slice = spec == opcodetable.DeclarationSlice
 	}
 	return result, true
 }
@@ -307,7 +307,7 @@ func literalStructLocal(prgrm *ast.CXProgram, strct *ast.CXStruct) bool {
 // builds, one with a pointer or with array and slice dimensions mixed.
 func literalTypeCompound(typ *ast.CXArgument) bool {
 	for _, spec := range typ.DeclarationSpecifiers {
-		if spec == constants.DeclarationPointer {
+		if spec == opcodetable.DeclarationPointer {
 			return true
 		}
 	}

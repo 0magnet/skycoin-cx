@@ -1,9 +1,9 @@
 package actions
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // gcRootsDeclare adds a new local that holds a pointer, slice or str, also
@@ -27,7 +27,7 @@ func gcRootsDeclare(prgrm *ast.CXProgram, fn *ast.CXFunction, typeSig *ast.CXTyp
 // gcRootAdd adds the local at offset to fn.ListOfSlots.
 // GCREACH: adds a GC root to ListOfSlots,
 // see docs/GarbageCollector.md.
-func gcRootAdd(fn *ast.CXFunction, offset types.Pointer, specs []int, typ types.Code, strct *ast.CXStruct, lengths []types.Pointer) {
+func gcRootAdd(fn *ast.CXFunction, offset valuetypes.Pointer, specs []int, typ valuetypes.Code, strct *ast.CXStruct, lengths []valuetypes.Pointer) {
 	fn.ListOfSlots = append(fn.ListOfSlots, ast.CXFunctionSlot{
 		CXFunctionSlotOffset:     offset,
 		CXFunctionSlotLengths:    lengths,
@@ -39,8 +39,8 @@ func gcRootAdd(fn *ast.CXFunction, offset types.Pointer, specs []int, typ types.
 
 // gcRootAddEscapeSlot adds the frame slot of an escaped local, which holds
 // its heap object, to fn.ListOfSlots.
-func gcRootAddEscapeSlot(fn *ast.CXFunction, offset types.Pointer) {
-	gcRootAdd(fn, offset, []int{constants.DeclarationBasic, constants.DeclarationPointer}, types.UNDEFINED, nil, nil)
+func gcRootAddEscapeSlot(fn *ast.CXFunction, offset valuetypes.Pointer) {
+	gcRootAdd(fn, offset, []int{opcodetable.DeclarationBasic, opcodetable.DeclarationPointer}, valuetypes.UNDEFINED, nil, nil)
 }
 
 // gcPointerDepthLimit bounds the struct nesting gcValueReferences follows.
@@ -48,18 +48,18 @@ const gcPointerDepthLimit = 16
 
 // gcValueReferences reports whether a value of declaration specifiers specs
 // holds a pointer, slice or str.
-func gcValueReferences(prgrm *ast.CXProgram, specs []int, typ types.Code, strct *ast.CXStruct, depth int) bool {
+func gcValueReferences(prgrm *ast.CXProgram, specs []int, typ valuetypes.Code, strct *ast.CXStruct, depth int) bool {
 	if depth > gcPointerDepthLimit || len(specs) == 0 {
 		return false
 	}
 	switch specs[len(specs)-1] {
-	case constants.DeclarationPointer, constants.DeclarationSlice:
+	case opcodetable.DeclarationPointer, opcodetable.DeclarationSlice:
 		return true
-	case constants.DeclarationArray:
+	case opcodetable.DeclarationArray:
 		return gcValueReferences(prgrm, specs[:len(specs)-1], typ, strct, depth+1)
 	}
 	if strct == nil {
-		return typ == types.STR
+		return typ == valuetypes.STR
 	}
 	for _, fieldIdx := range strct.Fields {
 		specs, typ, fieldStruct, _ := ast.SignatureGCDeclaration(prgrm, prgrm.CXTypeSignatureFromArrayGet(fieldIdx))

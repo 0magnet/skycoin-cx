@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t2-globals"
+	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"
 	cxparsing "github.com/skycoin/skycoin-cx/t9-cxparsing"
@@ -55,8 +55,8 @@ func BenchmarkCompile(b *testing.B) {
 				// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0054 S0055.
 				actions.AST = cxinit.ProgramMake()
 				cxinit.PackagesRegister(actions.AST)
-				globals.FoundCompileErrors = false
-				globals.HeapOffset = 0
+				environment.FoundCompileErrors = false
+				environment.HeapOffset = 0
 				b.StartTimer()
 				if err := cxparsing.SourceStringsParse([]string{string(source)}, []string{programPath}); err != nil {
 					b.Fatalf("%s: %v", programPath, err)

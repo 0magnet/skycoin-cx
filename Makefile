@@ -135,7 +135,7 @@ test-go: ## Run the Go unit tests
 vet: ## go vet with default and ptr64 tags, and gofmt
 	go vet ./...
 	@files=$$(gofmt -l $$(git ls-files '*.go' | grep -v '^vendor/')); test -z "$$files" || { echo "gofmt -l lists: $$files"; exit 1; }
-	go vet -tags ptr64 ./t0-types ./t3-ast
+	go vet -tags ptr64 ./t0-cx-core-valuetypes ./t3-cx-core-ast
 
 vet-gui: ## go vet with the cxfx tag (needs cgo and X11/GL/OpenAL headers)
 	go vet -tags cxfx ./t6-cxfx ./t7-init ./t11-cx
@@ -188,14 +188,14 @@ names-csv: ## Write one CSV row per declared Go and CX name to NAMES_CSV, for sk
 	mkdir -p $(dir $(NAMES_CSV))
 	go run ./t0-cx-tools-names -out $(NAMES_CSV) . $(REPOS)
 
-generate-opcodes: ## Regenerate the opcode and library signature tables and switches from t1-constants/opcodes_definitions.go and libraries_definitions.go, decisions D21 and D96
+generate-opcodes: ## Regenerate the opcode and library signature tables and switches from t1-cx-core-opcodetable/opcodes_definitions.go and libraries_definitions.go, decisions D21 and D96
 	go run ./t2-cx-core-opcodegen -root .
 
-check-opcodes: ## Check that the opcode and library tables and switches are up to date with t1-constants/opcodes_definitions.go and libraries_definitions.go
+check-opcodes: ## Check that the opcode and library tables and switches are up to date with t1-cx-core-opcodetable/opcodes_definitions.go and libraries_definitions.go
 	go run ./t2-cx-core-opcodegen -root . -check
 
-generate-objmodel: ## Regenerate the Gid, manager and manager test files of t3-ast and the site counts of docs/ObjectModel.md
-	go run ./t0-cx-core-objmodelgen -dir t3-ast
+generate-objmodel: ## Regenerate the Gid, manager and manager test files of t3-cx-core-ast and the site counts of docs/ObjectModel.md
+	go run ./t0-cx-core-objmodelgen -dir t3-cx-core-ast
 
 check: check-tiers llvm-clang check-inits check-ifaces check-names check-parser check-json check-recovers check-objmodel check-opcodes check-gcreach check-strhot vet test-go test test-ptr64 ## tier, init, interface, naming, JSON, recover, object model, opcode table, GC reach and STRHOT checks, vet, Go tests and CX program tests (default and ptr64)
 

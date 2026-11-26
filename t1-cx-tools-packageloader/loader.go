@@ -12,8 +12,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/skycoin/skycoin-cx/t0-cx-core-syspackages"   // thin: only CheckImport, IsBuiltinImport; no depth gain
 	"github.com/skycoin/skycoin-cx/t0-cx-tools-packagestore" // thin: only Add; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-packages"              // thin: only CheckImport, IsBuiltinImport; no depth gain
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -131,8 +131,8 @@ func addNewPackage(packageListStruct *PackageList, packageName string, fileMap m
 	}
 
 	// Built-in packages are not in the directory
-	if packages.ImportBuiltin(packageName) {
-		return packages.ImportCheck(packageName)
+	if syspackages.ImportBuiltin(packageName) {
+		return syspackages.ImportCheck(packageName)
 	}
 
 	// Checks if package is found in the directory

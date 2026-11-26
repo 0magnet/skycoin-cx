@@ -4,8 +4,8 @@ import (
 	"runtime/debug"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t4-execute"
@@ -179,7 +179,7 @@ func TestRunVmPrintAllocs(t *testing.T) {
 	}
 	machine := vm.MachineNew(&image, core.ExecutorOutputSize)
 	allocs := testing.AllocsPerRun(3, func() {
-		if code := core.ExecutorVmRunMachine(actions.AST, machine); code != types.CXSuccess {
+		if code := core.ExecutorVmRunMachine(actions.AST, machine); code != valuetypes.CXSuccess {
 			t.Fatalf("code %d", code)
 		}
 	})

@@ -11,8 +11,8 @@ import (
 	"golang.org/x/crypto/blake2b"
 
 	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-syspackages"
 	"github.com/skycoin/skycoin-cx/t0-cx-tools-packagestore"
-	packages "github.com/skycoin/skycoin-cx/t0-packages"
 	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader"
 )
 
@@ -558,13 +558,13 @@ func TestLoadCXProgramCommentedImport(t *testing.T) {
 }
 
 func TestLoadCXProgramBuiltinImports(t *testing.T) {
-	for _, name := range packages.DefaultPackages {
+	for _, name := range syspackages.DefaultPackages {
 		t.Run(name, func(t *testing.T) {
 			src := filepath.Join(t.TempDir(), "src")
 			if err := os.Mkdir(src, 0755); err != nil {
 				t.Fatal(err)
 			}
-			content := "package main\nimport \"" + packages.SysPrefix + name + "\"\nfunc main() {\n}\n"
+			content := "package main\nimport \"" + syspackages.SysPrefix + name + "\"\nfunc main() {\n}\n"
 			if err := os.WriteFile(filepath.Join(src, "m.cx"), []byte(content), 0644); err != nil {
 				t.Fatal(err)
 			}

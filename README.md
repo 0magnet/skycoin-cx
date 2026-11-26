@@ -68,7 +68,7 @@ The OpenGL programs in `tests/examples/opengl` need this build.
 ## The language today
 
 The language has versions. The current one is
-`constants.LanguageVersionCurrent` in `t1-constants/constants.go`,
+`constants.LanguageVersionCurrent` in `t1-cx-core-opcodetable/constants.go`,
 2611230003, an integer of the form `yymmddnnnn`. It is stored in every
 serialized program, and a program serialized under another version must be
 compiled again. Each version is described in

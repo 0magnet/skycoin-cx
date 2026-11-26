@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/skycoin/skycoin-cx/t1-netbatch"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-cxnet"
 )
 

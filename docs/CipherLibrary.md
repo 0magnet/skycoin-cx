@@ -62,12 +62,12 @@ func main() {
 
 The hash is BLAKE3 with a 256 bit output, BLAKE3-256 (decision D23). It
 replaced SHA-256, and a digest stays 32 bytes. It is one function,
-`cxhash.CxHashOfBytes` in `t0-cxhash`, with `cxhash.CxHashNew` for the
+`cxhash.CxHashOfBytes` in `t0-cx-core-digest`, with `cxhash.CxHashNew` for the
 incremental form and `cxhash.CxHashName`. The execution records hash
 through the same functions, so a change of hash changes the cipher library
 and the records at once. The implementation is `lukechampine.com/blake3`,
 pure Go with assembly for amd64 and arm64, and the published BLAKE3 vectors
-are checked in `t0-cxhash/cxhash_test.go` and `tests/test-cipher-library.cx`.
+are checked in `t0-cx-core-digest/cxhash_test.go` and `tests/test-cipher-library.cx`.
 Signatures still sign a 32 byte digest, which is now a BLAKE3-256 digest.
 
 An incremental state is an `i32` handle into a fixed table of 64 states,
@@ -107,7 +107,7 @@ means fixed size field arithmetic in Skycoin's secp256k1, see decision D76.
 Measured on an Intel i7-3770S. The run is `BenchmarkRunCipher` in
 `t11-cx`, a run of the old loop divided by its 100 calls, which includes
 about 2000 ns per call of run start and loop, its `LoopWithoutCalls`. The
-Go call is `BenchmarkCxHashOfBytes` in `t0-cxhash` and
+Go call is `BenchmarkCxHashOfBytes` in `t0-cx-core-digest` and
 `BenchmarkCipherSignatureVerify` in `t4-cipher`.
 
 | Call | Run, ns/call | Go call, ns/op | Go allocations per call |

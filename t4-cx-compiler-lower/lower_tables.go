@@ -5,12 +5,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
-	// GCREACH: t3-ast owns the heap and the GC roots. The side tables read only
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. The side tables read only
 	// type signatures and names, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // The side tables of the image, decision D8: the extent, name and type of
@@ -22,11 +22,11 @@ func (s *state) localAdd(signatureIndex ast.CXTypeSignatureIndex, offset uint32,
 	prgrm := s.stateProgram
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	name := signature.Name
-	code := types.UNDEFINED
+	code := valuetypes.UNDEFINED
 	typeName := ""
 	switch signature.Type {
 	case ast.TypeAtomic:
-		code = types.Code(signature.Meta)
+		code = valuetypes.Code(signature.Meta)
 		typeName = code.Name()
 	case ast.TypeCXArgumentDeprecate:
 		arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta))
@@ -43,7 +43,7 @@ func (s *state) localAdd(signatureIndex ast.CXTypeSignatureIndex, offset uint32,
 		}
 	}
 	if !localScalar(code) {
-		code = types.UNDEFINED
+		code = valuetypes.UNDEFINED
 	}
 	s.stateLocals = append(s.stateLocals, ir.Local{
 		LocalOffset:   offset,
@@ -62,7 +62,7 @@ func localArgumentTypeName(prgrm *ast.CXProgram, arg *ast.CXArgument) string {
 		text += "[" + strconv.FormatUint(uint64(length), 10) + "]"
 	}
 	element := arg.Type
-	if arg.Type == types.POINTER {
+	if arg.Type == valuetypes.POINTER {
 		text += "*"
 		element = arg.PointerTargetType
 	}
@@ -73,10 +73,10 @@ func localArgumentTypeName(prgrm *ast.CXProgram, arg *ast.CXArgument) string {
 }
 
 // localScalar reports whether code is a bool, integer or float type.
-func localScalar(code types.Code) bool {
+func localScalar(code valuetypes.Code) bool {
 	switch code {
-	case types.BOOL, types.I8, types.I16, types.I32, types.I64,
-		types.UI8, types.UI16, types.UI32, types.UI64, types.F32, types.F64:
+	case valuetypes.BOOL, valuetypes.I8, valuetypes.I16, valuetypes.I32, valuetypes.I64,
+		valuetypes.UI8, valuetypes.UI16, valuetypes.UI32, valuetypes.UI64, valuetypes.F32, valuetypes.F64:
 		return true
 	}
 	return false

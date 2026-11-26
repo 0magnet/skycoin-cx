@@ -12,12 +12,12 @@ import (
 	"fmt"
 
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
-	// GCREACH: t3-ast owns the heap and the GC roots. Lowering rejects heap operands,
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. Lowering rejects heap operands,
 	// so vm code never reaches the GC, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // ReasonCode says why a function did not lower.
@@ -220,7 +220,7 @@ func Program(prgrm *ast.CXProgram) (ir.Image, []Failure) {
 
 // opcodeNumber returns the language number of a live opcode name.
 func opcodeNumber(name string) int {
-	row, found := constants.OpcodeLifecycleLiveByName(name)
+	row, found := opcodetable.OpcodeLifecycleLiveByName(name)
 	assert.InvariantTrue(found, "lower: opcode "+name+" is not live")
 	return row.Number
 }
@@ -340,7 +340,7 @@ func (s *state) declaration(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator) (
 		return code, ReasonOperandCount
 	}
 	signature := s.stateProgram.CXTypeSignatureFromArrayGet(outputs[0])
-	var offset types.Pointer
+	var offset valuetypes.Pointer
 	switch signature.Type {
 	case ast.TypeCXArgumentDeprecate:
 		offset = s.stateProgram.CXArgGet(ast.CXArgumentIndex(signature.Meta)).Offset
@@ -375,13 +375,13 @@ func (s *state) builtIn(code []ir.Instr, line int, cxAtomicOp *ast.CXAtomicOpera
 	noFixup := jumpFixup{}
 
 	switch opcode {
-	case constants.OpNop:
+	case opcodetable.OpNop:
 		return code, noFixup, false, ReasonNone, 0
-	case constants.OpGoto, constants.OpBreak, constants.OpContinue:
+	case opcodetable.OpGoto, opcodetable.OpBreak, opcodetable.OpContinue:
 		pc := uint32(len(code))
 		code = append(code, ir.Instr{InstrOpcode: ir.OpcodeJump})
 		return code, jumpFixup{jumpFixupPc: pc, jumpFixupTrue: line + cxAtomicOp.ThenLines + 1}, true, ReasonNone, 0
-	case constants.OpJmp, constants.OpAbsJmp:
+	case opcodetable.OpJmp, opcodetable.OpAbsJmp:
 		if len(inputs) != 1 {
 			return code, noFixup, false, ReasonOperandCount, 0
 		}
@@ -398,15 +398,15 @@ func (s *state) builtIn(code []ir.Instr, line int, cxAtomicOp *ast.CXAtomicOpera
 			jumpFixupFalse:       line + cxAtomicOp.ElseLines + 1,
 			jumpFixupConditional: true,
 		}
-		if opcode == constants.OpAbsJmp {
+		if opcode == opcodetable.OpAbsJmp {
 			fixup.jumpFixupTrue = cxAtomicOp.ThenLines + 1
 			fixup.jumpFixupFalse = cxAtomicOp.ElseLines + 1
 		}
 		return append(code, in), fixup, true, ReasonNone, 0
-	case constants.OpIdentity:
+	case opcodetable.OpIdentity:
 		code, reason := s.identity(code, inputs, outputs)
 		return code, noFixup, false, reason, 0
-	case constants.OpTest:
+	case opcodetable.OpTest:
 		code, reason := s.test(code, inputs)
 		return code, noFixup, false, reason, 0
 	case s.statePrintLine:
@@ -423,7 +423,7 @@ func (s *state) builtIn(code []ir.Instr, line int, cxAtomicOp *ast.CXAtomicOpera
 	case s.statePrintf:
 		code, reason := s.printf(code, inputs, outputs)
 		return code, noFixup, false, reason, 0
-	case constants.OpLibraryCall:
+	case opcodetable.OpLibraryCall:
 		// os.Run of the process library, the one function still called
 		// through LibraryCall, takes and returns a str and never lowers.
 		return code, noFixup, false, ReasonLibraryFunctionOutsideSubset, 0
@@ -482,15 +482,15 @@ func (s *state) identity(code []ir.Instr, inputs []ast.CXTypeSignatureIndex, out
 		element := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(output.Meta)).AssignmentElementGet(prgrm)
 		address = ast.CXArgumentTakesAddress(prgrm, element, input)
 		if ast.CXArgumentStringSlicePointer(element) {
-			address = ast.CXTypeSignaturePassBy(prgrm, input) == constants.PassByReference
+			address = ast.CXTypeSignaturePassBy(prgrm, input) == opcodetable.PassByReference
 		}
 	case ast.TypeAtomic, ast.TypeSliceAtomic:
-		address = output.PassBy == constants.PassByReference
+		address = output.PassBy == opcodetable.PassByReference
 	case ast.TypePointerAtomic:
 		address = !ast.CXTypeSignaturePointerValue(prgrm, input)
 	case ast.TypeArrayAtomic:
 	case ast.TypePointerArrayAtomic, ast.TypePointerSliceAtomic:
-		address = input.PassBy == constants.PassByReference
+		address = input.PassBy == opcodetable.PassByReference
 	case ast.TypeStruct, ast.TypePointerStruct:
 		address = ast.CXTypeSignatureStructTakesAddress(prgrm, output, input)
 	default:
@@ -529,7 +529,7 @@ func (s *state) identity(code []ir.Instr, inputs []ast.CXTypeSignatureIndex, out
 }
 
 // machinePointerSize is the size of a pointer in memory.
-const machinePointerSize = uint32(types.PointerSize)
+const machinePointerSize = uint32(valuetypes.PointerSize)
 
 // addressOf returns an instruction that writes the address of p as a
 // pointer, its output operand still to set.
@@ -609,9 +609,9 @@ func (s *state) call(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator, callee *
 			return code, ReasonCalleeLayout
 		}
 		signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
-		byReference := signature.PassBy == constants.PassByReference
+		byReference := signature.PassBy == opcodetable.PassByReference
 		if signature.Type == ast.TypeCXArgumentDeprecate {
-			byReference = byReference || prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta)).PassBy == constants.PassByReference
+			byReference = byReference || prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta)).PassBy == opcodetable.PassByReference
 		}
 		var source place
 		if code, source, reason = s.placeOf(code, signatureIndex); reason != ReasonNone {
@@ -844,12 +844,12 @@ func (s *state) placeOfSignature(code []ir.Instr, signatureIndex ast.CXTypeSigna
 			}
 		}
 		details := prgrm.CXTypeSignatureArrayFromArrayGet(signature.Meta)
-		elementSize := pointerToUint32(types.Code(details.Meta).Size())
+		elementSize := pointerToUint32(valuetypes.Code(details.Meta).Size())
 		for i, indexSignature := range details.Indexes {
 			if i >= len(details.Lengths) {
 				return code, p, ReasonOperandIndexed
 			}
-			stride := pointerToUint32(types.TotalLength(details.Lengths[i+1:])) * elementSize
+			stride := pointerToUint32(valuetypes.TotalLength(details.Lengths[i+1:])) * elementSize
 			if code, reason = s.placeIndex(code, &p, indexSignature, stride); reason != ReasonNone {
 				return code, p, reason
 			}
@@ -900,7 +900,7 @@ func (s *state) placeOfSignature(code []ir.Instr, signatureIndex ast.CXTypeSigna
 
 // placeBase is a static place at offset, relative to the frame when offset
 // is inside the stack.
-func (s *state) placeBase(offset types.Pointer, size uint32) place {
+func (s *state) placeBase(offset valuetypes.Pointer, size uint32) place {
 	base := pointerToUint32(offset)
 	return place{placeOffset: base, placeFrame: base < s.stateStackSize, placeSize: size}
 }
@@ -922,13 +922,13 @@ func (s *state) placeDereferences(code []ir.Instr, p *place, arg *ast.CXArgument
 	derefPointer := false
 	var reason ReasonCode
 	for _, operation := range arg.DereferenceOperations {
-		if len(arg.Indexes) == 0 && operation != constants.DerefPointer {
+		if len(arg.Indexes) == 0 && operation != opcodetable.DerefPointer {
 			continue
 		}
 		switch operation {
-		case constants.DerefSlice:
+		case opcodetable.DerefSlice:
 			return code, ReasonOperandHeap
-		case constants.DerefArray:
+		case opcodetable.DerefArray:
 			if indexCount >= len(arg.Indexes) || indexCount >= len(arg.Lengths) {
 				return code, ReasonOperandIndexed
 			}
@@ -938,15 +938,15 @@ func (s *state) placeDereferences(code []ir.Instr, p *place, arg *ast.CXArgument
 				lengths = arg.Lengths[indexCount+1 : direct]
 			} else if dims := arg.ArraySliceDimensions(); dims > indexCount {
 				// The elements of [N][]T are slice headers.
-				elementSize, lengths = types.PointerSize, arg.Lengths[indexCount+1:dims]
+				elementSize, lengths = valuetypes.PointerSize, arg.Lengths[indexCount+1:dims]
 			}
-			stride := pointerToUint32(types.TotalLength(lengths) * elementSize)
+			stride := pointerToUint32(valuetypes.TotalLength(lengths) * elementSize)
 			derefPointer = false
 			if code, reason = s.placeIndex(code, p, arg.Indexes[indexCount], stride); reason != ReasonNone {
 				return code, reason
 			}
 			indexCount++
-		case constants.DerefPointer:
+		case opcodetable.DerefPointer:
 			if code, reason = s.placeDeref(code, p); reason != ReasonNone {
 				return code, reason
 			}
@@ -1043,7 +1043,7 @@ func (s *state) file(file ast.SourceFileGid) uint32 {
 }
 
 // pointerToUint32 narrows an offset or size. An image addresses 4 GB.
-func pointerToUint32(pointer types.Pointer) uint32 {
+func pointerToUint32(pointer valuetypes.Pointer) uint32 {
 	assert.InvariantTrue(uint64(pointer) <= uint64(^uint32(0)), "lower: offset does not fit in 32 bits")
 	return uint32(pointer)
 }
@@ -1055,9 +1055,9 @@ func libraryBufferInput(prgrm *ast.CXProgram, signatureIndex ast.CXTypeSignature
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	switch signature.Type {
 	case ast.TypeAtomic:
-		return types.Code(signature.Meta) == types.UNDEFINED
+		return valuetypes.Code(signature.Meta) == valuetypes.UNDEFINED
 	case ast.TypeCXArgumentDeprecate:
-		return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta)).Type == types.UNDEFINED
+		return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta)).Type == valuetypes.UNDEFINED
 	}
 	return false
 }
@@ -1068,7 +1068,7 @@ func libraryBufferInput(prgrm *ast.CXProgram, signatureIndex ast.CXTypeSignature
 func (s *state) libraryBuffer(code []ir.Instr, signatureIndex ast.CXTypeSignatureIndex, offset uint32) ([]ir.Instr, ReasonCode) {
 	prgrm := s.stateProgram
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
-	if signature.Type != ast.TypeArrayAtomic || signature.TypeGet(prgrm) != types.UI8 {
+	if signature.Type != ast.TypeArrayAtomic || signature.TypeGet(prgrm) != valuetypes.UI8 {
 		return code, ReasonOperandNotScalar
 	}
 	code, p, reason := s.placeOf(code, signatureIndex)
@@ -1096,45 +1096,45 @@ func (s *state) libraryBuffer(code []ir.Instr, signatureIndex ast.CXTypeSignatur
 // runs on vm, ir.OpcodeInvalid for any other opcode (decision D119).
 func libraryOpcodeOf(opcode int) ir.Opcode {
 	switch opcode {
-	case constants.OpcodeCipherHashStateNew:
+	case opcodetable.OpcodeCipherHashStateNew:
 		return ir.OpcodeCipherHashStateNew
-	case constants.OpcodeCipherHashStateRelease:
+	case opcodetable.OpcodeCipherHashStateRelease:
 		return ir.OpcodeCipherHashStateRelease
-	case constants.OpcodeNetUpdate:
+	case opcodetable.OpcodeNetUpdate:
 		return ir.OpcodeNetUpdate
-	case constants.OpcodeNetReadyCount:
+	case opcodetable.OpcodeNetReadyCount:
 		return ir.OpcodeNetReadyCount
-	case constants.OpcodeNetReadyNext:
+	case opcodetable.OpcodeNetReadyNext:
 		return ir.OpcodeNetReadyNext
-	case constants.OpcodeNetClock:
+	case opcodetable.OpcodeNetClock:
 		return ir.OpcodeNetClock
-	case constants.OpcodeNetRead:
+	case opcodetable.OpcodeNetRead:
 		return ir.OpcodeNetRead
-	case constants.OpcodeNetWrite:
+	case opcodetable.OpcodeNetWrite:
 		return ir.OpcodeNetWrite
-	case constants.OpcodeNetClose:
+	case opcodetable.OpcodeNetClose:
 		return ir.OpcodeNetClose
-	case constants.OpcodeNetTimeoutSet:
+	case opcodetable.OpcodeNetTimeoutSet:
 		return ir.OpcodeNetTimeoutSet
-	case constants.OpcodeNetTCPListen:
+	case opcodetable.OpcodeNetTCPListen:
 		return ir.OpcodeNetTCPListen
-	case constants.OpcodeNetTCPDial:
+	case opcodetable.OpcodeNetTCPDial:
 		return ir.OpcodeNetTCPDial
-	case constants.OpcodeNetUDPListen:
+	case opcodetable.OpcodeNetUDPListen:
 		return ir.OpcodeNetUDPListen
-	case constants.OpcodeNetUDPDial:
+	case opcodetable.OpcodeNetUDPDial:
 		return ir.OpcodeNetUDPDial
-	case constants.OpcodeNetUDPReadFrom:
+	case opcodetable.OpcodeNetUDPReadFrom:
 		return ir.OpcodeNetUDPReadFrom
-	case constants.OpcodeNetUDPWriteTo:
+	case opcodetable.OpcodeNetUDPWriteTo:
 		return ir.OpcodeNetUDPWriteTo
-	case constants.OpcodeNetUDPPeerResolve:
+	case opcodetable.OpcodeNetUDPPeerResolve:
 		return ir.OpcodeNetUDPPeerResolve
-	case constants.OpcodeFileClose:
+	case opcodetable.OpcodeFileClose:
 		return ir.OpcodeFileClose
-	case constants.OpcodeFileSeek:
+	case opcodetable.OpcodeFileSeek:
 		return ir.OpcodeFileSeek
-	case constants.OpcodeFileSync:
+	case opcodetable.OpcodeFileSync:
 		return ir.OpcodeFileSync
 	}
 	return ir.OpcodeInvalid
@@ -1190,7 +1190,7 @@ func (s *state) libraryCall(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator, c
 			}
 			continue
 		}
-		if ast.CXTypeSignaturePassBy(prgrm, prgrm.CXTypeSignatureFromArrayGet(signatureIndex)) == constants.PassByReference {
+		if ast.CXTypeSignaturePassBy(prgrm, prgrm.CXTypeSignatureFromArrayGet(signatureIndex)) == opcodetable.PassByReference {
 			return code, ReasonOperandByReference
 		}
 		var value operand

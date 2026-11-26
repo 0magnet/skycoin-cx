@@ -3,9 +3,9 @@ package opcodes
 import (
 	"os"
 
-	// GCREACH: t3-ast owns the heap and the GC roots. This file formats into a Go
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. This file formats into a Go
 	// buffer and allocates nothing, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // formatBuffer returns the empty scratch buffer of prgrm that the print,

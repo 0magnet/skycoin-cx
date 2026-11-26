@@ -5,8 +5,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 )
 
@@ -269,48 +269,48 @@ func varValueRead(yylex yyLexer, line int, column int) int {
 // varValueLiteralType is the type of the value of var g = value that starts
 // at line and column when it is a literal or a negated number literal, and
 // types.UNDEFINED otherwise.
-func varValueLiteralType(lexer *Lexer, line int, column int) types.Code {
+func varValueLiteralType(lexer *Lexer, line int, column int) valuetypes.Code {
 	last := lexer.tokenBefore
 	if last.lexerTokenLine == line && last.lexerTokenColumn == column {
 		return varLiteralTokenType(last.lexerTokenKind)
 	}
 	sign := lexer.tokenBeforeLast
 	code := varLiteralTokenType(last.lexerTokenKind)
-	if sign.lexerTokenLine == line && sign.lexerTokenColumn == column && (sign.lexerTokenKind == SUB_OP || sign.lexerTokenKind == ADD_OP) && code != types.STR && code != types.BOOL {
+	if sign.lexerTokenLine == line && sign.lexerTokenColumn == column && (sign.lexerTokenKind == SUB_OP || sign.lexerTokenKind == ADD_OP) && code != valuetypes.STR && code != valuetypes.BOOL {
 		return code
 	}
-	return types.UNDEFINED
+	return valuetypes.UNDEFINED
 }
 
 // varLiteralTokenType is the type of a literal token, as pass two writes it.
-func varLiteralTokenType(kind int) types.Code {
+func varLiteralTokenType(kind int) valuetypes.Code {
 	switch kind {
 	case STRING_LITERAL:
-		return types.STR
+		return valuetypes.STR
 	case BOOLEAN_LITERAL:
-		return types.BOOL
+		return valuetypes.BOOL
 	case BYTE_LITERAL:
-		return types.I8
+		return valuetypes.I8
 	case SHORT_LITERAL:
-		return types.I16
+		return valuetypes.I16
 	case INT_LITERAL:
-		return types.I32
+		return valuetypes.I32
 	case LONG_LITERAL:
-		return types.I64
+		return valuetypes.I64
 	case UNSIGNED_BYTE_LITERAL:
-		return types.UI8
+		return valuetypes.UI8
 	case UNSIGNED_SHORT_LITERAL:
-		return types.UI16
+		return valuetypes.UI16
 	case UNSIGNED_INT_LITERAL:
-		return types.UI32
+		return valuetypes.UI32
 	case UNSIGNED_LONG_LITERAL:
-		return types.UI64
+		return valuetypes.UI64
 	case FLOAT_LITERAL:
-		return types.F32
+		return valuetypes.F32
 	case DOUBLE_LITERAL:
-		return types.F64
+		return valuetypes.F64
 	}
-	return types.UNDEFINED
+	return valuetypes.UNDEFINED
 }
 
 // varValues returns the values var_values holds the indexes of.

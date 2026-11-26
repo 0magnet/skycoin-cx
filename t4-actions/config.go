@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // OBJMODEL: *CxIrState passed as a parameter, owned by main, phase 5 #372.

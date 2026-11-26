@@ -12,7 +12,7 @@ import (
 )
 
 // OpcodeTableFile holds OpcodeLifecycleTable, the CX opcode names.
-const OpcodeTableFile = "t1-constants/opcodes.go"
+const OpcodeTableFile = "t1-cx-core-opcodetable/opcodes.go"
 
 // OpcodeNames records every CX opcode name of OpcodeLifecycleTable. The
 // package column is the part before the dot, or builtin. A row whose

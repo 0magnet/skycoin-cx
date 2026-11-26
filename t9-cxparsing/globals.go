@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	"github.com/skycoin/skycoin-cx/t2-cx-core-environment" // thin: only FoundCompileErrors; no depth gain
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t2-globals" // thin: only FoundCompileErrors; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	cxparsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only Identifiers; no depth gain
 )
@@ -184,7 +184,7 @@ func globalDeferredDeclare(prgrm *ast.CXProgram, deferred *ast.GlobalDeferred, t
 	currentPackage := prgrm.CurrentPackage
 	prgrm.CurrentPackage = ast.CXPackageIndex(pkg.Index)
 	if spec == nil {
-		spec = actions.DeclarationSpecifiersBasic(prgrm, types.INVALID)
+		spec = actions.DeclarationSpecifiersBasic(prgrm, valuetypes.INVALID)
 	}
 	actions.GlobalInPackageDeclare(prgrm, pkg, declarator, spec, nil, false)
 	prgrm.CurrentPackage = currentPackage
@@ -199,7 +199,7 @@ func globalsInvalidNamed(prgrm *ast.CXProgram, pkg *ast.CXPackage, text string) 
 		if err != nil {
 			continue
 		}
-		if glbl.Type == ast.TypeAtomic && types.Code(glbl.Meta) == types.INVALID {
+		if glbl.Type == ast.TypeAtomic && valuetypes.Code(glbl.Meta) == valuetypes.INVALID {
 			return true
 		}
 	}
@@ -224,7 +224,7 @@ func globalDeferredType(prgrm *ast.CXProgram, pkg *ast.CXPackage, deferred *ast.
 
 	errorList := &prgrm.CxIrState.CompileErrorList
 	records := len(errorList.CompileErrorListRecords)
-	foundCompileErrors := globals.FoundCompileErrors
+	foundCompileErrors := environment.FoundCompileErrors
 	functionsLive := prgrm.CXProgramFunctionLiveSlots()
 	atomicOps := len(prgrm.CXAtomicOps)
 	currentFile, lineNo, lineStr := actions.CurrentFile, actions.LineNo, actions.LineStr
@@ -247,7 +247,7 @@ func globalDeferredType(prgrm *ast.CXProgram, pkg *ast.CXPackage, deferred *ast.
 
 	delete(pkg.Functions, functionName)
 	if !reported {
-		globals.FoundCompileErrors = foundCompileErrors
+		environment.FoundCompileErrors = foundCompileErrors
 	}
 	prgrm.CXProgramFunctionReleaseNew(functionsLive)
 	prgrm.CXAtomicOps = prgrm.CXAtomicOps[:atomicOps]
@@ -330,31 +330,31 @@ func globalValueSpec(prgrm *ast.CXProgram, fn *ast.CXFunction, valueName stringp
 // parser builds the spec of the type written out, or nil for a type that
 // cannot be written, such as an invalid one.
 func globalSpecOfSignature(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) *ast.CXArgument {
-	reference := sig.PassBy == constants.PassByReference
+	reference := sig.PassBy == opcodetable.PassByReference
 	switch sig.Type {
 	case ast.TypeAtomic:
-		return globalSpecPointer(globalSpecBasic(prgrm, types.Code(sig.Meta)), reference)
+		return globalSpecPointer(globalSpecBasic(prgrm, valuetypes.Code(sig.Meta)), reference)
 	case ast.TypePointerAtomic:
-		return globalSpecPointer(globalSpecBasic(prgrm, types.Code(sig.Meta)), !sig.Deref)
+		return globalSpecPointer(globalSpecBasic(prgrm, valuetypes.Code(sig.Meta)), !sig.Deref)
 	case ast.TypeArrayAtomic, ast.TypePointerArrayAtomic:
 		array := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
-		spec := globalSpecBasic(prgrm, types.Code(array.Meta))
+		spec := globalSpecBasic(prgrm, valuetypes.Code(array.Meta))
 		if spec == nil || len(array.Lengths) <= len(array.Indexes) {
 			return nil
 		}
-		spec = actions.DeclarationSpecifiers(spec, append([]types.Pointer(nil), array.Lengths[len(array.Indexes):]...), constants.DeclarationArray)
+		spec = actions.DeclarationSpecifiers(spec, append([]valuetypes.Pointer(nil), array.Lengths[len(array.Indexes):]...), opcodetable.DeclarationArray)
 		if sig.Type == ast.TypePointerArrayAtomic {
 			reference = !sig.Deref
 		}
 		return globalSpecPointer(spec, reference)
 	case ast.TypeSliceAtomic, ast.TypePointerSliceAtomic:
 		array := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
-		spec := globalSpecBasic(prgrm, types.Code(array.Meta))
+		spec := globalSpecBasic(prgrm, valuetypes.Code(array.Meta))
 		if spec == nil || len(array.Lengths) <= len(array.Indexes) {
 			return nil
 		}
 		for range array.Lengths[len(array.Indexes):] {
-			spec = actions.DeclarationSpecifiers(spec, []types.Pointer{0}, constants.DeclarationSlice)
+			spec = actions.DeclarationSpecifiers(spec, []valuetypes.Pointer{0}, opcodetable.DeclarationSlice)
 		}
 		if sig.Type == ast.TypePointerSliceAtomic {
 			reference = !sig.Deref
@@ -386,9 +386,9 @@ func globalSpecOfArgument(prgrm *ast.CXProgram, arg *ast.CXArgument) *ast.CXArgu
 	case arg.StructType != nil:
 		// A slice of structs has a basic first specifier.
 		spec = globalSpecStruct(prgrm, arg.StructType)
-	case arg.DeclarationSpecifiers[0] == constants.DeclarationBasic:
+	case arg.DeclarationSpecifiers[0] == opcodetable.DeclarationBasic:
 		code := arg.Type
-		if code == types.POINTER {
+		if code == valuetypes.POINTER {
 			code = arg.PointerTargetType
 		}
 		spec = globalSpecBasic(prgrm, code)
@@ -399,13 +399,13 @@ func globalSpecOfArgument(prgrm *ast.CXProgram, arg *ast.CXArgument) *ast.CXArgu
 	arrays := 0
 	for _, decl := range arg.DeclarationSpecifiers[1:] {
 		switch decl {
-		case constants.DeclarationArray:
+		case opcodetable.DeclarationArray:
 			arrays++
-			spec = actions.DeclarationSpecifiers(spec, []types.Pointer{0}, constants.DeclarationArray)
-		case constants.DeclarationSlice:
-			spec = actions.DeclarationSpecifiers(spec, []types.Pointer{0}, constants.DeclarationSlice)
-		case constants.DeclarationPointer:
-			spec = actions.DeclarationSpecifiers(spec, nil, constants.DeclarationPointer)
+			spec = actions.DeclarationSpecifiers(spec, []valuetypes.Pointer{0}, opcodetable.DeclarationArray)
+		case opcodetable.DeclarationSlice:
+			spec = actions.DeclarationSpecifiers(spec, []valuetypes.Pointer{0}, opcodetable.DeclarationSlice)
+		case opcodetable.DeclarationPointer:
+			spec = actions.DeclarationSpecifiers(spec, nil, opcodetable.DeclarationPointer)
 		default:
 			return nil
 		}
@@ -413,15 +413,15 @@ func globalSpecOfArgument(prgrm *ast.CXProgram, arg *ast.CXArgument) *ast.CXArgu
 	if len(arg.Lengths) != len(spec.Lengths) {
 		return nil
 	}
-	spec.Lengths = append([]types.Pointer(nil), arg.Lengths...)
+	spec.Lengths = append([]valuetypes.Pointer(nil), arg.Lengths...)
 	return spec
 }
 
 // globalSpecBasic is the spec of the basic type code, or nil for a type that
 // cannot be written.
-func globalSpecBasic(prgrm *ast.CXProgram, code types.Code) *ast.CXArgument {
+func globalSpecBasic(prgrm *ast.CXProgram, code valuetypes.Code) *ast.CXArgument {
 	switch code {
-	case types.UNDEFINED, types.INVALID, types.IDENTIFIER, types.POINTER, types.STRUCT, types.FUNC:
+	case valuetypes.UNDEFINED, valuetypes.INVALID, valuetypes.IDENTIFIER, valuetypes.POINTER, valuetypes.STRUCT, valuetypes.FUNC:
 		return nil
 	}
 	return actions.DeclarationSpecifiersBasic(prgrm, code)
@@ -433,11 +433,11 @@ func globalSpecStruct(prgrm *ast.CXProgram, strct *ast.CXStruct) *ast.CXArgument
 		return nil
 	}
 	_, arg := ast.ArgumentMake(prgrm, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
-	arg.Type = types.STRUCT
+	arg.Type = valuetypes.STRUCT
 	arg.StructType = strct
 	arg.Size = strct.StructSizeGet(prgrm)
 	arg.Package = prgrm.CurrentPackage
-	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DeclarationStruct)
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, opcodetable.DeclarationStruct)
 	return arg
 }
 
@@ -446,7 +446,7 @@ func globalSpecPointer(spec *ast.CXArgument, pointer bool) *ast.CXArgument {
 	if spec == nil || !pointer {
 		return spec
 	}
-	return actions.DeclarationSpecifiers(spec, nil, constants.DeclarationPointer)
+	return actions.DeclarationSpecifiers(spec, nil, opcodetable.DeclarationPointer)
 }
 
 // globalDeferredErrorsKeep drops the errors recorded from index records on
@@ -614,7 +614,7 @@ func globalsInitializersCycleReport(prgrm *ast.CXProgram, pkg *ast.CXPackage, ru
 	for k, index := range path {
 		name := run[index].GlobalInitializerName
 		glbl, err := pkg.GlobalGet(prgrm, name)
-		if err == nil && glbl.Type == ast.TypeAtomic && types.Code(glbl.Meta) == types.INVALID {
+		if err == nil && glbl.Type == ast.TypeAtomic && valuetypes.Code(glbl.Meta) == valuetypes.INVALID {
 			return path
 		}
 		from := prgrm.CXProgramNameText(name)
@@ -657,7 +657,7 @@ func globalsInitializerReferences(prgrm *ast.CXProgram, pkg *ast.CXPackage, expr
 		}
 		op := &prgrm.CXAtomicOps[expr.Index]
 		for _, input := range op.InputsGet(prgrm) {
-			globalsSignatureNames(prgrm, prgrm.CXTypeSignatureFromArrayGet(input), func(name stringpool.StringGid, _ types.Pointer) {
+			globalsSignatureNames(prgrm, prgrm.CXTypeSignatureFromArrayGet(input), func(name stringpool.StringGid, _ valuetypes.Pointer) {
 				if _, err := pkg.GlobalGet(prgrm, name); err == nil {
 					references = append(references, globalsInitializerReference{globalsInitializerReferenceName: name})
 				}
@@ -740,7 +740,7 @@ func globalsFunctionReferences(prgrm *ast.CXProgram, fnIdx ast.CXFunctionGid, fu
 		op := &prgrm.CXAtomicOps[expr.Index]
 		for _, sigs := range [][]ast.CXTypeSignatureIndex{op.InputsGet(prgrm), op.OutputsGet(prgrm)} {
 			for _, sigIdx := range sigs {
-				globalsSignatureNames(prgrm, prgrm.CXTypeSignatureFromArrayGet(sigIdx), func(name stringpool.StringGid, offset types.Pointer) {
+				globalsSignatureNames(prgrm, prgrm.CXTypeSignatureFromArrayGet(sigIdx), func(name stringpool.StringGid, offset valuetypes.Pointer) {
 					if seen[name] {
 						return
 					}
@@ -764,7 +764,7 @@ func globalsFunctionReferences(prgrm *ast.CXProgram, fnIdx ast.CXFunctionGid, fu
 
 // globalsSignatureNames calls use with the name and offset of sig and of the
 // indexes it reads.
-func globalsSignatureNames(prgrm *ast.CXProgram, sig *ast.CXTypeSignature, use func(stringpool.StringGid, types.Pointer)) {
+func globalsSignatureNames(prgrm *ast.CXProgram, sig *ast.CXTypeSignature, use func(stringpool.StringGid, valuetypes.Pointer)) {
 	if sig.Type != ast.TypeCXArgumentDeprecate {
 		use(sig.Name, sig.Offset)
 		return
@@ -777,7 +777,7 @@ func globalsSignatureNames(prgrm *ast.CXProgram, sig *ast.CXTypeSignature, use f
 }
 
 // globalsOffset is the offset of the global glbl.
-func globalsOffset(prgrm *ast.CXProgram, glbl *ast.CXTypeSignature) types.Pointer {
+func globalsOffset(prgrm *ast.CXProgram, glbl *ast.CXTypeSignature) valuetypes.Pointer {
 	if glbl.Type == ast.TypeCXArgumentDeprecate {
 		return prgrm.CXArgGet(ast.CXArgumentIndex(glbl.Meta)).Offset
 	}
@@ -806,7 +806,7 @@ func globalsMethodResultsDeclare(prgrm *ast.CXProgram, fn *ast.CXFunction) {
 		}
 		for _, output := range prgrm.CXAtomicOps[expr.Index].OutputsGet(prgrm) {
 			name := prgrm.CXTypeSignatureFromArrayGet(output).Name
-			if strings.HasPrefix(prgrm.CXProgramNameText(name), constants.MethodResultPrefix) && !fn.LocalVariableDeclared(name) {
+			if strings.HasPrefix(prgrm.CXProgramNameText(name), opcodetable.MethodResultPrefix) && !fn.LocalVariableDeclared(name) {
 				if err := fn.LocalVariableNameAdd(name); err != nil {
 					panic(err)
 				}

@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"math"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 )
 
 // The memory accessors read and write little endian values at a byte
@@ -79,7 +79,7 @@ func memoryZero(mem []byte, offset uint32, size uint32) {
 
 // rPointer reads a pointer of types.PointerSize bytes.
 func rPointer(mem []byte, offset uint32) uint64 {
-	if types.PointerSize == 4 {
+	if valuetypes.PointerSize == 4 {
 		return uint64(rUI32(mem, offset))
 	}
 	return rUI64(mem, offset)
@@ -87,7 +87,7 @@ func rPointer(mem []byte, offset uint32) uint64 {
 
 // wPointer writes address as a pointer of types.PointerSize bytes.
 func wPointer(mem []byte, offset uint32, address uint32) {
-	if types.PointerSize == 4 {
+	if valuetypes.PointerSize == 4 {
 		wUI32(mem, offset, address)
 		return
 	}
@@ -100,15 +100,15 @@ func wPointer(mem []byte, offset uint32, address uint32) {
 // panic.
 func memoryStrRead(mem []byte, address uint32, end uint32) ([]byte, bool) {
 	object := rPointer(mem, address)
-	if object == 0 || object == uint64(types.InvalidPointer) {
+	if object == 0 || object == uint64(valuetypes.InvalidPointer) {
 		return nil, true
 	}
-	if object+uint64(types.ObjectHeaderSize) > uint64(end) {
+	if object+uint64(valuetypes.ObjectHeaderSize) > uint64(end) {
 		return nil, false
 	}
-	objectSize := uint64(types.ObjectSizeRead(mem, types.Pointer(object)))
-	if objectSize < uint64(types.ObjectHeaderSize) || object+objectSize > uint64(end) {
+	objectSize := uint64(valuetypes.ObjectSizeRead(mem, valuetypes.Pointer(object)))
+	if objectSize < uint64(valuetypes.ObjectHeaderSize) || object+objectSize > uint64(end) {
 		return nil, false
 	}
-	return mem[object+uint64(types.ObjectHeaderSize) : object+objectSize], true
+	return mem[object+uint64(valuetypes.ObjectHeaderSize) : object+objectSize], true
 }

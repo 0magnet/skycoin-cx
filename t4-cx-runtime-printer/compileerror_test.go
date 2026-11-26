@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // TestPrinterCompileErrorAppend checks each code against the text the

@@ -1,9 +1,9 @@
 package parsingcompletor
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 )
 
@@ -267,7 +267,7 @@ func ParserActionDeclareLocals(names []*ast.CXArgument, spec *ast.CXArgument, va
 	// The names of var a, b = 1 are invalid, so their uses report nothing more
 	// than the count, as the global form does.
 	for _, name := range names {
-		result = append(result, actions.LocalDeclare(actions.AST, name, actions.DeclarationSpecifiersBasic(actions.AST, types.INVALID), nil, false)...)
+		result = append(result, actions.LocalDeclare(actions.AST, name, actions.DeclarationSpecifiersBasic(actions.AST, valuetypes.INVALID), nil, false)...)
 	}
 	return result
 }

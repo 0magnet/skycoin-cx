@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"
 	"github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t2-globals"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	cxparsing "github.com/skycoin/skycoin-cx/t9-cxparsing"
 )
@@ -23,8 +23,8 @@ func affordanceSource(body string) string {
 func affordanceCompile(t *testing.T, source string) []string {
 	t.Helper()
 	initProgram()
-	globals.FoundCompileErrors = false
-	defer func() { globals.FoundCompileErrors = false }()
+	environment.FoundCompileErrors = false
+	defer func() { environment.FoundCompileErrors = false }()
 	cxparsing.SourceStringsParse([]string{source}, []string{"aff.cx"})
 	var errors []string
 	for _, record := range actions.AST.CxIrState.CompileErrorList.CompileErrorListRecords {
@@ -70,7 +70,7 @@ func TestAffordanceLiteralParse(t *testing.T) {
 				t.Fatalf("compile errors %q", errors)
 			}
 			prgrm := actions.AST
-			value := ast.AffordanceValueRead(prgrm.Memory, prgrm.Data.StartsAt+prgrm.Data.Size-types.AffSize)
+			value := ast.AffordanceValueRead(prgrm.Memory, prgrm.Data.StartsAt+prgrm.Data.Size-valuetypes.AffSize)
 			pkg, err := prgrm.PackageGet(prgrm.CxIrState.CxIrStateNameMain)
 			if err != nil {
 				t.Fatal(err)
@@ -155,7 +155,7 @@ func TestAffordanceSerializeDeclarations(t *testing.T) {
 				t.Fatalf("compile errors %q", errors)
 			}
 			prgrm := actions.AST
-			value := ast.AffordanceValueRead(prgrm.Memory, prgrm.Data.StartsAt+prgrm.Data.Size-types.AffSize)
+			value := ast.AffordanceValueRead(prgrm.Memory, prgrm.Data.StartsAt+prgrm.Data.Size-valuetypes.AffSize)
 			b, ok := ast.AffordanceSerialize(prgrm, value)
 			if !ok {
 				t.Fatal("SerializeAffordance failed")

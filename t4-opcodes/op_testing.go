@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	// GCREACH: t3-ast owns the heap and the GC roots. This file allocates strs, which
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. This file allocates strs, which
 	// adds to the GC pressure, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // VIOLATION: state outside State. Owner: t4-opcodes; moves to TestMng in phase 2.
@@ -28,7 +28,7 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 		// Now an arena getter, site S1341.
 		inp0 = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
 
-		if inp0.Type == types.STR || inp0.PointerTargetType == types.STR {
+		if inp0.Type == valuetypes.STR || inp0.PointerTargetType == valuetypes.STR {
 			byts1 = inputs[0].StrBytesGet(prgrm)
 			byts2 = inputs[1].StrBytesGet(prgrm)
 		} else {
@@ -59,7 +59,7 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1343.
 			fld := prgrm.CXArgFromArrayGet(structDetails.Fields[lenFlds-1])
-			if fld.Type == types.STR || fld.PointerTargetType == types.STR {
+			if fld.Type == valuetypes.STR || fld.PointerTargetType == valuetypes.STR {
 				strTyped = true
 			}
 		}
@@ -104,7 +104,7 @@ func OpTest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func OpPanic(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	if !assert(prgrm, inputs, outputs) {
-		panic(types.CXAssert)
+		panic(valuetypes.CXAssert)
 	}
 }
 
@@ -114,7 +114,7 @@ func panicIf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, 
 		// The printer prints the line and the message after the loop.
 		prgrm.RuntimeError.RuntimeErrorRecordAssertLine = true
 		prgrm.RuntimeError.RuntimeErrorRecordAssertMessage = inputs[1].PtrGet(prgrm)
-		panic(types.CXAssert)
+		panic(valuetypes.CXAssert)
 	}
 }
 

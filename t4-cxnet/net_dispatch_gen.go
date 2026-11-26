@@ -3,10 +3,10 @@
 package cxnet
 
 import (
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
-// NetOpcodeDispatch runs the opcode code of constants.OpcodeGroupNet on its operands
+// NetOpcodeDispatch runs the opcode code of opcodetable.OpcodeGroupNet on its operands
 // and reports false for any other opcode.
 func NetOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, outputs []ast.CXValue) bool {
 	switch code {

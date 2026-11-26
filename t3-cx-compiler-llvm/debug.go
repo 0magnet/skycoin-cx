@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
 
@@ -64,23 +64,23 @@ func (d *debugMetadata) location(line uint32) int {
 
 // typeOf returns the type of a variable, a basic type for a scalar and a
 // byte array named by its type name for any other.
-func (d *debugMetadata) typeOf(code types.Code, name string, size uint32) int {
+func (d *debugMetadata) typeOf(code valuetypes.Code, name string, size uint32) int {
 	key := fmt.Sprintf("%d %s %d", code, name, size)
 	if id, found := d.debugTypes[key]; found {
 		return id
 	}
 	var id int
 	switch {
-	case code == types.BOOL:
+	case code == valuetypes.BOOL:
 		id = d.add(fmt.Sprintf("!DIBasicType(name: \"bool\", size: 8, encoding: DW_ATE_boolean)"))
-	case code == types.F32 || code == types.F64:
+	case code == valuetypes.F32 || code == valuetypes.F64:
 		id = d.add(fmt.Sprintf("!DIBasicType(name: %q, size: %d, encoding: DW_ATE_float)", code.Name(), 8*typeSize(code)))
 	case typeSigned(code):
 		id = d.add(fmt.Sprintf("!DIBasicType(name: %q, size: %d, encoding: DW_ATE_signed)", code.Name(), 8*typeSize(code)))
 	case typeSize(code) > 0:
 		id = d.add(fmt.Sprintf("!DIBasicType(name: %q, size: %d, encoding: DW_ATE_unsigned)", code.Name(), 8*typeSize(code)))
 	default:
-		element := d.typeOf(types.UI8, "", 1)
+		element := d.typeOf(valuetypes.UI8, "", 1)
 		subrange := d.add(fmt.Sprintf("!DISubrange(count: %d)", size))
 		id = d.add(fmt.Sprintf("!DICompositeType(tag: DW_TAG_array_type, name: %s, baseType: !%d, size: %d, elements: !{!%d})", debugString(name), element, 8*size, subrange))
 	}

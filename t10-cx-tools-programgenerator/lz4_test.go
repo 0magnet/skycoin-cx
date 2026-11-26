@@ -8,16 +8,16 @@ import (
 	"os"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-lz4codec"
-	cxast "github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-compression"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // newProgramCodec sizes a codec for the sample programs, whose whole memory
 // is about 3 MiB.
-func newProgramCodec(t *testing.T) *lz4codec.Codec {
+func newProgramCodec(t *testing.T) *compression.Codec {
 	t.Helper()
-	c := &lz4codec.Codec{}
-	if err := c.Init(lz4codec.Config{MaxInput: 8 << 20, MaxOutput: 8 << 20}); err != nil {
+	c := &compression.Codec{}
+	if err := c.Init(compression.Config{MaxInput: 8 << 20, MaxOutput: 8 << 20}); err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
@@ -61,7 +61,7 @@ func TestCompression_LZ4ProgramGolden(t *testing.T) {
 func TestSerializeDebugInfoCompressed(t *testing.T) {
 	c := newProgramCodec(t)
 	prgrm := generateSampleProgramFromCXEvolves(t, false)
-	b, err := cxast.CXProgramSerialize(prgrm, false, c)
+	b, err := ast.CXProgramSerialize(prgrm, false, c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func TestSerializeDebugInfoCompressed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got, err := cxast.Deserialize(b, c)
+	got, err := ast.Deserialize(b, c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +77,7 @@ func TestSerializeDebugInfoCompressed(t *testing.T) {
 		t.Fatal("compressed serialization did not keep the memory")
 	}
 
-	info, err := cxast.SerializedSizesOf(prgrm, false, true)
+	info, err := ast.SerializedSizesOf(prgrm, false, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,13 +92,13 @@ func TestSerializeDebugInfoCompressed(t *testing.T) {
 func TestDeserializeCompressed(t *testing.T) {
 	c := newProgramCodec(t)
 	prgrm := generateSampleProgramFromCXEvolves(t, false)
-	b, err := cxast.CXProgramSerialize(prgrm, false, c)
+	b, err := ast.CXProgramSerialize(prgrm, false, c)
 	if err != nil {
 		t.Fatal(err)
 	}
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a constructor call, site S0016.
-	got, err := cxast.Deserialize(b, c)
+	got, err := ast.Deserialize(b, c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,13 +106,13 @@ func TestDeserializeCompressed(t *testing.T) {
 		t.Fatalf("got %d packages, want %d", len(got.Packages), len(prgrm.Packages))
 	}
 
-	short, err := cxast.CXProgramSerialize(prgrm, false, nil)
+	short, err := ast.CXProgramSerialize(prgrm, false, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a constructor call, site S0017.
-	if _, err := cxast.Deserialize(short[:8], nil); err == nil {
+	if _, err := ast.Deserialize(short[:8], nil); err == nil {
 		t.Fatal("want an error for truncated input")
 	}
 }
@@ -120,26 +120,26 @@ func TestDeserializeCompressed(t *testing.T) {
 // A codec that is not initialized or is closed is an error, not a panic.
 func TestSerializeCodecMisuse(t *testing.T) {
 	prgrm := generateSampleProgramFromCXEvolves(t, false)
-	closed := &lz4codec.Codec{}
-	if err := closed.Init(lz4codec.Config{MaxInput: 1, MaxOutput: 1}); err != nil {
+	closed := &compression.Codec{}
+	if err := closed.Init(compression.Config{MaxInput: 1, MaxOutput: 1}); err != nil {
 		t.Fatal(err)
 	}
 	if err := closed.Close(); err != nil {
 		t.Fatal(err)
 	}
 	for name, tc := range map[string]struct {
-		c    *lz4codec.Codec
+		c    *compression.Codec
 		want error
 	}{
-		"before Init": {&lz4codec.Codec{}, lz4codec.ErrNotInitialized},
-		"after Close": {closed, lz4codec.ErrClosed},
+		"before Init": {&compression.Codec{}, compression.ErrNotInitialized},
+		"after Close": {closed, compression.ErrClosed},
 	} {
-		if _, err := cxast.CXProgramSerialize(prgrm, false, tc.c); !errors.Is(err, tc.want) {
+		if _, err := ast.CXProgramSerialize(prgrm, false, tc.c); !errors.Is(err, tc.want) {
 			t.Errorf("%s: SerializeCXProgram: got %v, want %v", name, err, tc.want)
 		}
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Now a constructor call, site S0018.
-		if _, err := cxast.Deserialize([]byte{0}, tc.c); !errors.Is(err, tc.want) {
+		if _, err := ast.Deserialize([]byte{0}, tc.c); !errors.Is(err, tc.want) {
 			t.Errorf("%s: Deserialize: got %v, want %v", name, err, tc.want)
 		}
 	}
@@ -149,13 +149,13 @@ func TestSerializeCodecMisuse(t *testing.T) {
 // numbers, so deserializing it must fail. See #183.
 func TestDeserializeRejectsOtherVersion(t *testing.T) {
 	prgrm := generateSampleProgramFromCXEvolves(t, false)
-	b, err := cxast.CXProgramSerialize(prgrm, false, nil)
+	b, err := ast.CXProgramSerialize(prgrm, false, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a constructor call, site S0019.
-	got, err := cxast.Deserialize(b, nil)
+	got, err := ast.Deserialize(b, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,12 +164,12 @@ func TestDeserializeRejectsOtherVersion(t *testing.T) {
 	}
 
 	prgrm.Version = 1
-	if b, err = cxast.CXProgramSerialize(prgrm, false, nil); err != nil {
+	if b, err = ast.CXProgramSerialize(prgrm, false, nil); err != nil {
 		t.Fatal(err)
 	}
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a constructor call, site S0020.
-	if _, err := cxast.Deserialize(b, nil); err == nil {
+	if _, err := ast.Deserialize(b, nil); err == nil {
 		t.Fatal("want an error for a program from another version")
 	}
 }

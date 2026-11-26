@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // coreLibraryNetLinked says that the net library is linked into this core.

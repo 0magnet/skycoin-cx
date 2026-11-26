@@ -5,10 +5,10 @@
 package cipher
 
 import (
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
-// CipherOpcodeDispatch runs the opcode code of constants.OpcodeGroupCipher on its operands
+// CipherOpcodeDispatch runs the opcode code of opcodetable.OpcodeGroupCipher on its operands
 // and reports false for any other opcode.
 func CipherOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, outputs []ast.CXValue) bool {
 	switch code {

@@ -27,12 +27,12 @@ document or check script.
    [skycoin-cx#212](https://github.com/skycoin/skycoin-cx/issues/212).
 7. **Opcode numbers are fixed.** Every opcode has a fixed number in
    `constants.OpcodeLifecycleTable` in
-   [t1-constants/opcodes.go](../t1-constants/opcodes.go), mirrored in
+   [t1-cx-core-opcodetable/opcodes.go](../t1-cx-core-opcodetable/opcodes.go), mirrored in
    [opcodes.csv](opcodes.csv). A new opcode takes the next number after the
    highest. A deleted opcode keeps its row as deprecated, gets no handler, and
    its number is never reused before the row's reassignable version.
    Every live opcode also has a row in `constants.OpcodeDefinitionTable` in
-   [t1-constants/opcodes_definitions.go](../t1-constants/opcodes_definitions.go)
+   [t1-cx-core-opcodetable/opcodes_definitions.go](../t1-cx-core-opcodetable/opcodes_definitions.go)
    with its handler and signature. `make generate-opcodes` writes the
    signature tables from it and `make check-opcodes` fails when they are out
    of date (decision D21).
@@ -42,11 +42,11 @@ document or check script.
    version plus one year (`OpcodeReassignmentIntervalYears`), same month and
    day, release 0001, so deprecated 2611200001 is reassignable from
    2711200001, and 29 February moves to 1 March. Every event is listed in
-   order in [t1-constants/opcodes_history.go](../t1-constants/opcodes_history.go).
+   order in [t1-cx-core-opcodetable/opcodes_history.go](../t1-cx-core-opcodetable/opcodes_history.go).
    A renamed opcode keeps its number and row, which takes the new name, and
    `constants.OpcodeRenameTable` records the old name and the version as a
    `renamed` event. An old name is a compile error and is never reused.
-   `go test ./t1-constants` fails when the table, the CSV and the history
+   `go test ./t1-cx-core-opcodetable` fails when the table, the CSV and the history
    disagree.
 9. **Language version.** The integer `yymmddnnnn`, the release date and the
    release number that day, for example 2611200001 is 2026-11-20 release
@@ -77,11 +77,11 @@ document or check script.
     Using a `sys/` package without the import, or importing it without
     `sys/`, is a compile error. Its functions have verbose upper camel case
     names, for example `string.OrderingByByteValue`, and are never exposed
-    as operators. `packages.DefaultPackages` in t0-packages lists them. See
+    as operators. `packages.DefaultPackages` in t0-cx-core-syspackages lists them. See
     #380 and #379.
 15. **GC reach.** The vm executor (`t3-cx-runtime-vm`) and the IR base
-    (`t2-cx-runtime-ir`) never import t3-ast or the collector
-    (`t2-cx-runtime-gc`), which only t3-ast imports. Every other place that
+    (`t2-cx-runtime-ir`) never import t3-cx-core-ast or the collector
+    (`t2-cx-runtime-gc`), which only t3-cx-core-ast imports. Every other place that
     allocates on the heap, ticks the collector or touches a GC root table
     has a two line `GCREACH:` comment above it or above its function. `make
     check-gcreach` runs [check-gcreach.sh](../check-gcreach.sh). See
@@ -100,7 +100,7 @@ document or check script.
     call that the library is enabled.
     Library numbers (`constants.LibraryTable`) and the function numbers of
     each library (`constants.LibraryFunctionLifecycleTable`) in
-    [t1-constants/libraries.go](../t1-constants/libraries.go) follow rules 7
+    [t1-cx-core-opcodetable/libraries.go](../t1-cx-core-opcodetable/libraries.go) follow rules 7
     and 8: fixed for life, a new one takes the next number, a deleted one is
     deprecated and not reused before its reassignable version, 0 is never
     assigned. `constants.LibraryPolicyEnabledWhenImported` is the default

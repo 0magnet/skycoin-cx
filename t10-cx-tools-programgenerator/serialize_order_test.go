@@ -6,13 +6,13 @@ import (
 	"sort"
 	"testing"
 
-	cxast "github.com/skycoin/skycoin-cx/t3-ast"
-	"github.com/skycoin/skycoin-cx/t9-astapi"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
+	"github.com/skycoin/skycoin-cx/t9-cx-core-astapi"
 )
 
 // sampleProgramWithPackages is the sample program plus packages that each
 // declare functions, so the serializer has several packages to order.
-func sampleProgramWithPackages(t *testing.T) *cxast.CXProgram {
+func sampleProgramWithPackages(t *testing.T) *ast.CXProgram {
 	t.Helper()
 	prgrm := generateSampleProgramFromCXEvolves(t, false)
 	for _, pkg := range []string{"alpha", "beta", "gamma", "delta"} {
@@ -31,7 +31,7 @@ func sampleProgramWithPackages(t *testing.T) *cxast.CXProgram {
 }
 
 // packageFunctions returns the function names of each package.
-func packageFunctions(prgrm *cxast.CXProgram) map[string][]string {
+func packageFunctions(prgrm *ast.CXProgram) map[string][]string {
 	got := map[string][]string{}
 	for name, pkgIdx := range prgrm.Packages {
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
@@ -52,12 +52,12 @@ func packageFunctions(prgrm *cxast.CXProgram) map[string][]string {
 
 func TestSerializeIsDeterministic(t *testing.T) {
 	prgrm := sampleProgramWithPackages(t)
-	first, err := cxast.CXProgramSerialize(prgrm, false, nil)
+	first, err := ast.CXProgramSerialize(prgrm, false, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for i := 0; i < 10; i++ {
-		again, err := cxast.CXProgramSerialize(prgrm, false, nil)
+		again, err := ast.CXProgramSerialize(prgrm, false, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -77,13 +77,13 @@ func TestSerializeKeepsFunctionsInTheirPackage(t *testing.T) {
 	prgrm := sampleProgramWithPackages(t)
 	want := packageFunctions(prgrm)
 	for i := 0; i < 10; i++ {
-		b, err := cxast.CXProgramSerialize(prgrm, false, nil)
+		b, err := ast.CXProgramSerialize(prgrm, false, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Now a constructor call, site S0053.
-		got, err := cxast.Deserialize(b, nil)
+		got, err := ast.Deserialize(b, nil)
 		if err != nil {
 			t.Fatal(err)
 		}

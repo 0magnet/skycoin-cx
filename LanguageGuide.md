@@ -1009,7 +1009,7 @@ it is built, so it never runs an operation that is not enabled.
 
 Libraries are disabled unless `--enable` names them. The setting
 `constants.LibraryPolicyEnabledWhenImported` in
-`t1-constants/libraries.go` holds this default. Set to `true`, it
+`t1-cx-core-opcodetable/libraries.go` holds this default. Set to `true`, it
 enables every library the program calls. See
 [skycoin-cx#492](https://github.com/skycoin/skycoin-cx/issues/492),
 decision D17.
@@ -4094,7 +4094,7 @@ it is loaded, so it must be compiled again from source.
 ## Opcode numbers
 
 Every opcode has a fixed number, listed in number order in
-`t1-constants/opcodes.go` and in `docs/opcodes.csv`. The number never
+`t1-cx-core-opcodetable/opcodes.go` and in `docs/opcodes.csv`. The number never
 depends on registration order or build tags. A new opcode takes the next
 number after the highest in the table.
 
@@ -4108,7 +4108,7 @@ its reassignable version.
 
 Reassignable is the deprecated version plus one year, same month and day,
 release 0001. Deprecated `2611200001` is reassignable from `2711200001`. A
-29 February deprecation moves to 1 March. `t1-constants/opcodes_history.go`
+29 February deprecation moves to 1 March. `t1-cx-core-opcodetable/opcodes_history.go`
 lists every lifecycle event in version order. See
 [docs/Conventions.md](docs/Conventions.md).
 

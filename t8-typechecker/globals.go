@@ -3,9 +3,9 @@ package type_checker
 import (
 	"regexp"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: only File; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t6-declextractor"
 )
@@ -58,7 +58,7 @@ func GlobalsParse(files []*packageloader.File, globals []declaration_extractor.G
 
 		// add Global as CX Argument to CX Package
 		_, globalArg := ast.ArgumentMake(prgrm, prgrm.CXProgramNameIntern(global.GlobalVariableName), prgrm.CXProgramSourceFileIntern(global.FileID), global.LineNumber)
-		globalArg.Offset = types.InvalidPointer
+		globalArg.Offset = valuetypes.InvalidPointer
 		globalArg.Package = ast.CXPackageIndex(pkg.Index)
 		globalArgIdx := ast.CXArgumentIndex(globalArg.Index)
 

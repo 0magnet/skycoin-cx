@@ -3,16 +3,16 @@ package execute
 import (
 	"errors"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	// GCREACH: t3-ast owns the heap and the GC roots. The old loop runs opcodes that
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. The old loop runs opcodes that
 	// allocate, which adds to the GC pressure, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // RunCxAst runs cxprogram. A runtime error ends the run with nil and is left
 // in cxprogram.RuntimeError for the printer package, see #413.
-func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall types.Pointer) error {
+func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall valuetypes.Pointer) error {
 	defer ast.RuntimeError(cxprogram)
 	return runLoop(cxprogram, untilEnd, maxOps, untilCall, &cxprogram.ProgramInputValues, &cxprogram.ProgramOutputValues)
 }
@@ -23,7 +23,7 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 // opcode does not, so nothing moves under that opcode.
 // GCREACH: the GC tick, at a safe point where every root is in a slot,
 // see docs/GarbageCollector.md.
-func runLoop(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall types.Pointer, inputs *[]ast.CXValue, outputs *[]ast.CXValue) error {
+func runLoop(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall valuetypes.Pointer, inputs *[]ast.CXValue, outputs *[]ast.CXValue) error {
 	var opCount int = 0
 	gcTick := !untilCall.Valid()
 	// fn is borrowed for the run, which has no grow boundary and releases no
@@ -38,8 +38,8 @@ func runLoop(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall type
 		}
 
 		// checking if enough memory in stack
-		if cxprogram.Stack.Pointer > constants.StackSize {
-			panic(constants.StackOverflowError)
+		if cxprogram.Stack.Pointer > opcodetable.StackSize {
+			panic(opcodetable.StackOverflowError)
 		}
 
 		opCount++
@@ -99,16 +99,16 @@ func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
 		return nil
 	}
 	if osPkg, err := cxprogram.SelectPackage(cxprogram.CxIrState.CxIrStateNameOs); err == nil {
-		argsOffset := types.Pointer(0)
+		argsOffset := valuetypes.Pointer(0)
 		if osGlbl, err := osPkg.GlobalGet(cxprogram, cxprogram.CxIrState.CxIrStateNameOsArgs); err == nil {
 			for _, arg := range args {
 				argOffset := ast.StrAllocate(cxprogram, arg)
 
-				var argOffsetBytes [types.PointerSize]byte
-				types.PtrWrite(argOffsetBytes[:], 0, argOffset)
+				var argOffsetBytes [valuetypes.PointerSize]byte
+				valuetypes.PtrWrite(argOffsetBytes[:], 0, argOffset)
 				argsOffset = ast.SliceWrite(cxprogram, argsOffset, argOffsetBytes[:])
 			}
-			types.PtrWrite(cxprogram.Memory, ast.FinalOffsetGet(cxprogram, 0, nil, osGlbl), argsOffset)
+			valuetypes.PtrWrite(cxprogram.Memory, ast.FinalOffsetGet(cxprogram, 0, nil, osGlbl), argsOffset)
 		}
 	}
 	return nil
@@ -182,7 +182,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 		cxprogram.Terminated = false
 	}
 
-	if err := RunCxAst(cxprogram, untilEnd, maxOps, types.InvalidPointer); err != nil {
+	if err := RunCxAst(cxprogram, untilEnd, maxOps, valuetypes.InvalidPointer); err != nil {
 		return err
 	}
 	if cxprogram.RuntimeError.RuntimeErrorRecordRaised {

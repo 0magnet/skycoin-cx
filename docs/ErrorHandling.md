@@ -82,14 +82,14 @@ A new area takes the next free block and is added here in the same change.
 
 | Block | Area | Struct | Package | Status |
 |---|---|---|---|---|
-| 0 - 999 | CX exit and runtime codes | none, `CX_*` constants | `t0-types` | exists |
+| 0 - 999 | CX exit and runtime codes | none, `CX_*` constants | `t0-cx-core-valuetypes` | exists |
 | 1000 - 1999 | Files | `FileError` | `t1-cx-runtime-sandbox` | exists |
 | 2000 - 2999 | Paths and the working directory | `PathError` | `t1-cx-runtime-sandbox` | planned |
 | 3000 - 3999 | Networking | `NetworkingError` | `t4-cxnet` | planned |
 | 4000 - 4999 | Package store database | `PackageStoreError` | `t0-cx-tools-packagestore` | planned |
 | 5000 - 5999 | Package loader | `PackageLoaderError` | `t1-cx-tools-packageloader` | planned |
-| 6000 - 6999 | LZ4 compression | `LZ4CodecError` | `t0-lz4codec` | planned |
-| 7000 - 7999 | Compiler | `CompileErrorRecord`, held as a list | `t3-ast` | exists |
+| 6000 - 6999 | LZ4 compression | `LZ4CodecError` | `t0-cx-core-compression` | planned |
+| 7000 - 7999 | Compiler | `CompileErrorRecord`, held as a list | `t3-cx-core-ast` | exists |
 
 A planned struct does not exist yet. Its block and name are reserved for the
 phases of #196. Until then those packages return a Go `error` or an error
@@ -127,7 +127,7 @@ Three error records exist.
   expected format such as a damaged `cx build` trailer, and its operation
   codes are `FileOperationOpen` (1501) to `FileOperationRemove` (1508).
   `FileErrorWrap` wraps a Go error of another package at its boundary.
-- `CompileErrorRecord` in `t3-ast/compileerror.go` holds one compile error.
+- `CompileErrorRecord` in `t3-cx-core-ast/compileerror.go` holds one compile error.
   Its fields are `CompileErrorRecordCode`, `CompileErrorRecordFile`,
   `CompileErrorRecordLine`, `CompileErrorRecordColumn`, 0 when unknown, and
   `CompileErrorRecordOperands`. The code is a `CompileErrorCode` from
@@ -209,9 +209,9 @@ Three error records exist.
   that cannot be loaded, without an error at the import. 7000 is
   `CompileErrorCodeNil` and `CompileErrorCodeEnd` is one past the last code.
   The records are kept in a `CompileErrorList` in `CxIrState.CompileErrorList`.
-- `RuntimeErrorRecord` in `t3-ast/error.go` holds the runtime error of the
+- `RuntimeErrorRecord` in `t3-cx-core-ast/error.go` holds the runtime error of the
   old loop in `CXProgram.RuntimeError`. Its code is a `CX_RUNTIME_*` or
-  `CX_ASSERT` exit code from `t0-types`, and it also keeps the panic value,
+  `CX_ASSERT` exit code from `t0-cx-core-valuetypes`, and it also keeps the panic value,
   the call stack position and the expression index.
 
 The two records are described in [CX programs](#cx-programs) below.
@@ -285,7 +285,7 @@ func StackFramePop(prgrm *CXProgram) {
 A failed assert prints to stderr
 
 ```
-assert failed: precondition violated at /path/t3-ast/stack.go:42: pop of the entry frame
+assert failed: precondition violated at /path/t3-cx-core-ast/stack.go:42: pop of the entry frame
 
 goroutine 1 [running]:
 ...

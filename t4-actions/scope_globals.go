@@ -2,7 +2,7 @@ package actions
 
 import (
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // ScopeGlobalName is one name of a global statement, `counter` or

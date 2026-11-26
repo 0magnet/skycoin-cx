@@ -94,14 +94,14 @@ allocates only when it fails, and is marked by its STRHOT E code instead
 Measured with `go list` on the default build.
 
 ```
-t4-execute -> t3-ast -> t2-cx-core-stringpool -> t1-cx-core-objmodel -> t0-cx-core-assert
-t4-opcodes -> t3-ast, t3-cx-runtime-vm
-t3-cx-runtime-vm -> t2-cx-runtime-ir -> t1-constants -> t0-types
+t4-execute -> t3-cx-core-ast -> t2-cx-core-stringpool -> t1-cx-core-objmodel -> t0-cx-core-assert
+t4-opcodes -> t3-cx-core-ast, t3-cx-runtime-vm
+t3-cx-runtime-vm -> t2-cx-runtime-ir -> t1-cx-core-opcodetable -> t0-cx-core-valuetypes
 ```
 
-The old loop is five levels deep and the vm four. t3-ast is tier 3
+The old loop is five levels deep and the vm four. t3-cx-core-ast is tier 3
 because of three tier 2 packages, the string pool, the collector and
-t2-globals, so dropping t2-globals alone no longer lowers it, as it would
+t2-cx-core-environment, so dropping t2-cx-core-environment alone no longer lowers it, as it would
 have when #411 was written. Each package name carries its tier, so any
 flattening renames packages. It is left to #408, which separates the IR
 definitions from the builders. Tiers cost nothing at run time, call depth

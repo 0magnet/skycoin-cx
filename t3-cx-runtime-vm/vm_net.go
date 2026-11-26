@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t1-netbatch"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
@@ -25,26 +25,26 @@ type netBlock struct {
 }
 
 func (block *netBlock) blockI32() int32 {
-	value := types.I32Read(block.blockMemory, types.Pointer(block.blockOffset))
+	value := valuetypes.I32Read(block.blockMemory, valuetypes.Pointer(block.blockOffset))
 	block.blockOffset += 4
 	return value
 }
 
 func (block *netBlock) blockI32Write(value int32) {
-	types.I32Write(block.blockMemory, types.Pointer(block.blockOffset), value)
+	valuetypes.I32Write(block.blockMemory, valuetypes.Pointer(block.blockOffset), value)
 	block.blockOffset += 4
 }
 
 func (block *netBlock) blockBoolWrite(value bool) {
-	types.BoolWrite(block.blockMemory, types.Pointer(block.blockOffset), value)
+	valuetypes.BoolWrite(block.blockMemory, valuetypes.Pointer(block.blockOffset), value)
 	block.blockOffset++
 }
 
 // blockBuffer returns the ui8 array at the address and size the lowering
 // wrote, empty when it lies outside memory.
 func (block *netBlock) blockBuffer() []byte {
-	address := uint64(types.PtrRead(block.blockMemory, types.Pointer(block.blockOffset)))
-	size := uint64(types.PtrRead(block.blockMemory, types.Pointer(block.blockOffset+machinePointerSize)))
+	address := uint64(valuetypes.PtrRead(block.blockMemory, valuetypes.Pointer(block.blockOffset)))
+	size := uint64(valuetypes.PtrRead(block.blockMemory, valuetypes.Pointer(block.blockOffset+machinePointerSize)))
 	block.blockOffset += 2 * machinePointerSize
 	if address+size > uint64(len(block.blockMemory)) {
 		return nil
@@ -91,7 +91,7 @@ func netOpcodeRun(op ir.Opcode, memory []byte, offset uint32) {
 		block.blockI32Write(messageID)
 		block.blockI32Write(detail)
 	case ir.OpcodeNetClock:
-		types.I64Write(memory, types.Pointer(offset), netbatch.NetClock())
+		valuetypes.I64Write(memory, valuetypes.Pointer(offset), netbatch.NetClock())
 	case ir.OpcodeNetRead:
 		handle, messageID, buffer, payloadOffset := block.blockI32(), block.blockI32(), block.blockBuffer(), block.blockI32()
 		block.blockI32Write(netbatch.NetRead(handle, messageID, buffer, payloadOffset))

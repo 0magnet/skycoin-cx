@@ -120,7 +120,7 @@ linters:
         linters: [errcheck, gosec]
       - path: ^t0-cx-tools-interfacecheck/main\.go$
         linters: [errcheck, gosec]
-      - path: ^t0-lz4codec/codec_test\.go$
+      - path: ^t0-cx-core-compression/codec_test\.go$
         linters: [errcheck]
       - path: ^t0-cx-tools-packagestore/bolt\.go$
         linters: [errcheck]
@@ -128,7 +128,7 @@ linters:
         linters: [errcheck]
       - path: ^t0-cx-tools-packagestore/main_test\.go$
         linters: [errcheck]
-      - path: ^t0-types/types\.go$
+      - path: ^t0-cx-core-valuetypes/types\.go$
         linters: [unconvert, unparam]
       - path: ^t0-cx-compiler-sourceargs/sourceargs\.go$
         linters: [errcheck, staticcheck]
@@ -178,7 +178,7 @@ linters:
         linters: [errcheck]
       - path: ^t11-cx/test_output_test\.go$
         linters: [errcheck, gosec]
-      - path: ^t1-constants/opcodes_test\.go$
+      - path: ^t1-cx-core-opcodetable/opcodes_test\.go$
         linters: [errcheck]
       - path: ^t1-cx-tools-programtest/compound\.go$
         linters: [errcheck]
@@ -218,17 +218,17 @@ linters:
         linters: [errcheck]
       - path: ^t2-cx-tools-packagetree/main_test\.go$
         linters: [errcheck]
-      - path: ^t3-ast/ast_cxpackage\.go$
+      - path: ^t3-cx-core-ast/ast_cxpackage\.go$
         linters: [staticcheck, unconvert]
-      - path: ^t3-ast/ast_cxprogram\.go$
+      - path: ^t3-cx-core-ast/ast_cxprogram\.go$
         linters: [unconvert]
-      - path: ^t3-ast/ast_cxtype_signature\.go$
+      - path: ^t3-cx-core-ast/ast_cxtype_signature\.go$
         linters: [staticcheck, unconvert]
-      - path: ^t3-ast/error\.go$
+      - path: ^t3-cx-core-ast/error\.go$
         linters: [unconvert]
-      - path: ^t3-ast/print_value\.go$
+      - path: ^t3-cx-core-ast/print_value\.go$
         linters: [gosec]
-      - path: ^t3-ast/tostring\.go$
+      - path: ^t3-cx-core-ast/tostring\.go$
         linters: [errcheck]
       - path: ^t3-cx-compiler-llvm/debug\.go$
         linters: [staticcheck]
@@ -312,11 +312,11 @@ linters:
         linters: [errcheck, ineffassign, staticcheck, unconvert]
       - path: ^t8-typechecker/util\.go$
         linters: [staticcheck]
-      - path: ^t9-astapi/arguments\.go$
+      - path: ^t9-cx-core-astapi/arguments\.go$
         linters: [unconvert]
-      - path: ^t9-astapi/arguments_test\.go$
+      - path: ^t9-cx-core-astapi/arguments_test\.go$
         linters: [errcheck]
-      - path: ^t9-astapi/functions\.go$
+      - path: ^t9-cx-core-astapi/functions\.go$
         linters: [unconvert]
       - path: ^t9-cxparsing/utils\.go$
         linters: [errcheck]

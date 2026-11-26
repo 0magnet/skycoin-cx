@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"unicode/utf8"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	// GCREACH: t3-ast owns the heap and the GC roots. This file allocates strs, which
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. This file allocates strs, which
 	// adds to the GC pressure, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // buildString appends the text printf and sprintf make of inputs to res and
@@ -49,28 +49,28 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, res []byte) []byte 
 				res = append(res, inp.StrBytesGet(prgrm)...)
 			case 'd':
 				switch inp.Type {
-				case types.I8:
+				case valuetypes.I8:
 					res = strconv.AppendInt(res, int64(inp.I8Get(prgrm)), 10)
-				case types.I16:
+				case valuetypes.I16:
 					res = strconv.AppendInt(res, int64(inp.I16Get(prgrm)), 10)
-				case types.I32:
+				case valuetypes.I32:
 					res = strconv.AppendInt(res, int64(inp.I32Get(prgrm)), 10)
-				case types.I64:
+				case valuetypes.I64:
 					res = strconv.AppendInt(res, inp.I64Get(prgrm), 10)
-				case types.UI8:
+				case valuetypes.UI8:
 					res = strconv.AppendUint(res, uint64(inp.UI8Get(prgrm)), 10)
-				case types.UI16:
+				case valuetypes.UI16:
 					res = strconv.AppendUint(res, uint64(inp.UI16Get(prgrm)), 10)
-				case types.UI32:
+				case valuetypes.UI32:
 					res = strconv.AppendUint(res, uint64(inp.UI32Get(prgrm)), 10)
-				case types.UI64:
+				case valuetypes.UI64:
 					res = strconv.AppendUint(res, inp.UI64Get(prgrm), 10)
 				}
 			case 'f':
 				switch inp.Type {
-				case types.F32:
+				case valuetypes.F32:
 					res = strconv.AppendFloat(res, float64(inp.F32Get(prgrm)), 'f', 7, 32)
-				case types.F64:
+				case valuetypes.F64:
 					res = strconv.AppendFloat(res, inp.F64Get(prgrm), 'f', 16, 64)
 				}
 			case 'v':

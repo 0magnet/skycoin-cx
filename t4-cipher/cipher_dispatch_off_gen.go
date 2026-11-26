@@ -5,10 +5,10 @@
 package cipher
 
 import (
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
-// CipherOpcodeDispatch reports false, the build tags leave out constants.OpcodeGroupCipher.
+// CipherOpcodeDispatch reports false, the build tags leave out opcodetable.OpcodeGroupCipher.
 func CipherOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, outputs []ast.CXValue) bool {
 	return false
 }

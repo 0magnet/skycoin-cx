@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t0-cx-tools-testrunner"
-	"github.com/skycoin/skycoin-cx/t0-types"
 )
 
 // runGuideSnippetTests compiles each ```cx block of LanguageGuide.md that has a func main with cx -ast.
@@ -47,9 +47,9 @@ func runGuideSnippetTests(t *testrunner.TestRunner, workingDir string) {
 		}
 
 		source := strings.Join(block, "\n") + "\n"
-		expectedCode := types.CXSuccess
+		expectedCode := valuetypes.CXSuccess
 		if fence == "```cx compile-error" {
-			expectedCode = types.CXCompilationError
+			expectedCode = valuetypes.CXCompilationError
 		}
 		fence = ""
 		if !strings.Contains(source, "func main") {

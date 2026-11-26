@@ -8,9 +8,9 @@ import (
 	"github.com/skycoin/gltext"
 
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 
-	cxos "github.com/skycoin/skycoin-cx/t5-cxos" // thin: only ValidFile; could move ValidFile to t1-cx-runtime-sandbox or t3-ast, max tier 11 to 10
+	cxos "github.com/skycoin/skycoin-cx/t5-cxos" // thin: only ValidFile; could move ValidFile to t1-cx-runtime-sandbox or t3-cx-core-ast, max tier 11 to 10
 )
 
 // A font is an i32 handle into State.CxfxFontTable, returned by
