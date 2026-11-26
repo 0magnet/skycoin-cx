@@ -85,7 +85,7 @@ A new area takes the next free block and is added here in the same change.
 | 0 - 999 | CX exit and runtime codes | none, `CX_*` constants | `t0-cx-core-valuetypes` | exists |
 | 1000 - 1999 | Files | `FileError` | `t1-cx-runtime-sandbox` | exists |
 | 2000 - 2999 | Paths and the working directory | `PathError` | `t1-cx-runtime-sandbox` | planned |
-| 3000 - 3999 | Networking | `NetworkingError` | `t4-cxnet` | planned |
+| 3000 - 3999 | Networking | `NetworkingError` | `t4-cx-library-netopcodes` | planned |
 | 4000 - 4999 | Package store database | `PackageStoreError` | `t0-cx-tools-packagestore` | planned |
 | 5000 - 5999 | Package loader | `PackageLoaderError` | `t1-cx-tools-packageloader` | planned |
 | 6000 - 6999 | LZ4 compression | `LZ4CodecError` | `t0-cx-core-compression` | planned |

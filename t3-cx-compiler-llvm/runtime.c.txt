@@ -373,7 +373,7 @@ static void cx_rt_assert(const char *message) {
 }
 
 // cipherHashStateTaken marks the taken states of the cipher library, as
-// t1-cipherstate does. The digest itself is only read by functions that do
+// t1-cx-library-cipherstate does. The digest itself is only read by functions that do
 // not run on vm.
 #define CX_CIPHER_HASH_STATE_COUNT_MAX 64
 static uint8_t cipherHashStateTaken[CX_CIPHER_HASH_STATE_COUNT_MAX];
@@ -553,7 +553,7 @@ CX_CONVERT_FROM(f32, float)
 CX_CONVERT_FROM(f64, double)
 
 #ifndef CX_RT_NET_NONE
-// The net library, decision D119, as t1-netbatch runs it: sockets are read
+// The net library, decision D119, as t1-cx-library-networkbatch runs it: sockets are read
 // when the program calls net.Update, everything that arrived becomes one
 // batch sorted by socket handle, and the writes of a batch are sent at the
 // next update. With CX_NET_REPLAY set the batches come from a replay record
@@ -875,7 +875,7 @@ static int32_t netErrorOf(int code) {
 	return netErrorOther;
 }
 
-// The replay record, see t1-netbatch/replay.go.
+// The replay record, see t1-cx-library-networkbatch/replay.go.
 
 static char *netReplayField(char **cursor) {
 	char *s = *cursor;
@@ -1042,7 +1042,7 @@ static void netSendMark(int32_t handle) {
 }
 
 // netSendOne sends what socket handle queued since the last update, as the
-// writer of t1-netbatch does, and posts the error of a failed send.
+// writer of t1-cx-library-networkbatch does, and posts the error of a failed send.
 static void netSendOne(int32_t handle) {
 	{
 		netSocket *socket = &netSockets[handle];
@@ -1316,7 +1316,7 @@ static int32_t netUpdate(int32_t wait) {
 		dropped |= netSockets[handle].socketDropped != 0;
 	netPoll(netLocalCount == 0 && !dropped ? wait : 0);
 	netClockMilliseconds = netNow() - netClockStart;
-	// Local events come first, as t1-netbatch drains them before the
+	// Local events come first, as t1-cx-library-networkbatch drains them before the
 	// channel, and the sort keeps that order within a socket.
 	if (netLocalCount > 0) {
 		memmove(netBatch + netLocalCount, netBatch, sizeof(netEntry) * (size_t)netBatchCount);
@@ -1628,7 +1628,7 @@ CX_NET_FUNCTION(udp_peer_resolve) {
 // The file opcodes that run on vm, decision D119. Every function that opens
 // a file takes or returns a str and runs on the old loop only, so a program
 // that lowers holds no open file: os.Close and os.Sync of any handle report
-// false and os.Seek -1, as t0-cxfiles does for a handle that is not open.
+// false and os.Seek -1, as t0-cx-library-filetable does for a handle that is not open.
 void cx_rt_file_close(uint8_t *mem, uint64_t size, uint32_t ptrSize, uint8_t *block) {
 	(void)mem, (void)size, (void)ptrSize;
 	block[4] = 0;

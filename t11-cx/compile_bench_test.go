@@ -7,7 +7,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
+	"github.com/skycoin/skycoin-cx/t7-cx-runtime-libraries"
 	"github.com/skycoin/skycoin-cx/t9-cx-compiler-parsing"
 )
 
@@ -53,8 +53,8 @@ func BenchmarkCompile(b *testing.B) {
 				b.StopTimer()
 				// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 				// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0054 S0055.
-				astbuild.AST = cxinit.ProgramMake()
-				cxinit.PackagesRegister(astbuild.AST)
+				astbuild.AST = libraries.ProgramMake()
+				libraries.PackagesRegister(astbuild.AST)
 				environment.FoundCompileErrors = false
 				environment.HeapOffset = 0
 				b.StartTimer()

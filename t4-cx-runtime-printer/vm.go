@@ -27,7 +27,7 @@ func printerVmStopLine(machine *vm.Machine) (string, int) {
 	return image.ImageFileNames[line.LineFile], int(line.LineNumber)
 }
 
-// VmTestFailurePrint prints a failed test as assert in t4-opcodes
+// VmTestFailurePrint prints a failed test as assert in t4-cx-runtime-opcodes
 // does.
 func VmTestFailurePrint(machine *vm.Machine) {
 	fileName, lineNumber := printerVmStopLine(machine)

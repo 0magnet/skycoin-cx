@@ -8,8 +8,8 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"  // thin: tests use only Code, I16, I32; no depth gain
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable" // thin: tests use only OpAdd, OpDiv, OpSub; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"             // thin: tests use only MakeProgram, RegisterPackages; tests only, moving these tests up lets astapi drop to t5
-	"github.com/skycoin/skycoin-cx/t8-cx-compiler-fullparsing" // thin: tests use only InitCXCore; tests only, could init with t7-init and t4-opcodes
+	"github.com/skycoin/skycoin-cx/t7-cx-runtime-libraries"    // thin: tests use only MakeProgram, RegisterPackages; tests only, moving these tests up lets astapi drop to t5
+	"github.com/skycoin/skycoin-cx/t8-cx-compiler-fullparsing" // thin: tests use only InitCXCore; tests only, could init with t7-cx-runtime-libraries and t4-cx-runtime-opcodes
 	"github.com/skycoin/skycoin-cx/t9-cx-core-astapi"
 )
 
@@ -23,8 +23,8 @@ func TestASTAPI_Arguments(t *testing.T) {
 	t.Run("make program", func(t *testing.T) {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Now a constructor call, site S1585.
-		cxprogram = cxinit.ProgramMake()
-		cxinit.PackagesRegister(cxprogram)
+		cxprogram = libraries.ProgramMake()
+		libraries.PackagesRegister(cxprogram)
 	})
 
 	t.Run("add empty package", func(t *testing.T) {

@@ -1,0 +1,20 @@
+//go:build !nocxos
+
+package fileopcodes
+
+import (
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-opcodes" // thin: only LibraryLink; registration API, keep
+)
+
+// PackageRegister links the process library. The file functions are the
+// opcodes of constants.OpcodeGroupFile, which FileOpcodeDispatch runs.
+func PackageRegister(prgrm *ast.CXProgram) {
+	LibraryProcessRegister(prgrm)
+}
+
+// LibraryProcessRegister links the process library, os.Run.
+func LibraryProcessRegister(prgrm *ast.CXProgram) {
+	opcodes.LibraryLink(opcodetable.LibraryNumberProcess, LibraryProcessDispatch)
+}

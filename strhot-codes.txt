@@ -9,7 +9,7 @@
 # the string to Go, the OS or compiler code run by an opcode (I/O, system
 # libraries, serialize, affordances).
 # STATUS is open (a VIOLATION comment marks it), removed (no longer on the run
-# path) or cxfx (open in t6-cxfx, which only the build with the cxfx tag has,
+# path) or cxfx (open in t6-cx-library-graphics, which only the build with the cxfx tag has,
 # checked by ./check-strhot.sh -tags cxfx, #432).
 STRHOT-001 I removed t1-cx-core-objmodel/gid.go GidCheck not on the run path at dfcc46ab
 STRHOT-002 E open t3-cx-core-ast/cxargumentdebug_mng.go *CXArgumentDebugMng.CXArgumentDebugGet
@@ -26,7 +26,7 @@ STRHOT-012 O removed t0-util/file.go CXOpenFile not on the run path at dfcc46ab
 STRHOT-013 O removed t0-util/file.go CXCreateFile not on the run path at dfcc46ab
 STRHOT-014 O removed t0-util/file.go CXReadFile not on the run path at dfcc46ab
 STRHOT-015 O removed t0-util/file.go cxPath not on the run path at dfcc46ab
-STRHOT-016 B open t1-profiling/profiling.go CPUProfileStartOnFile
+STRHOT-016 B open t1-cx-runtime-profiling/profiling.go CPUProfileStartOnFile
 STRHOT-017 O removed t3-cx-core-ast/ast_cxfunction.go *CXFunction.InputAdd not on the run path at dfcc46ab
 STRHOT-018 O removed t3-cx-core-ast/ast_cxfunction.go *CXFunction.OutputAdd not on the run path at dfcc46ab
 STRHOT-019 O removed t3-cx-core-ast/ast_cxfunction.go *CXFunction.LocalVariableNameAdd not on the run path at dfcc46ab
@@ -80,150 +80,150 @@ STRHOT-066 O removed t3-cx-core-ast/serialize.go packagesByName not on the run p
 STRHOT-067 O removed t3-cx-core-ast/serialize.go structsByName not on the run path at dfcc46ab
 STRHOT-068 O removed t3-cx-core-ast/serialize.go functionsByName not on the run path at dfcc46ab
 STRHOT-069 O removed t3-cx-core-ast/serialize.go importsByName not on the run path at dfcc46ab
-STRHOT-070 B removed t4-opcodes/op_aff.go GetInferActions op_aff.go deleted by decision D5, #500
-STRHOT-071 B removed t4-opcodes/op_aff.go OpAffPrint op_aff.go deleted by decision D5, #500
-STRHOT-072 B removed t4-opcodes/op_aff.go queryParam op_aff.go deleted by decision D5, #500
-STRHOT-073 B removed t4-opcodes/op_aff.go QueryArgument op_aff.go deleted by decision D5, #500
-STRHOT-074 B removed t4-opcodes/op_aff.go QueryExpressions op_aff.go deleted by decision D5, #500
-STRHOT-075 B removed t4-opcodes/op_aff.go getSignatureSlice op_aff.go deleted by decision D5, #500
-STRHOT-076 B removed t4-opcodes/op_aff.go queryStructsInPackage op_aff.go deleted by decision D5, #500
-STRHOT-077 B removed t4-opcodes/op_aff.go QueryFunction op_aff.go deleted by decision D5, #500
-STRHOT-078 B removed t4-opcodes/op_aff.go QueryCaller op_aff.go deleted by decision D5, #500
-STRHOT-079 B removed t4-opcodes/op_aff.go QueryProgram op_aff.go deleted by decision D5, #500
-STRHOT-080 B removed t4-opcodes/op_aff.go OpAffQuery op_aff.go deleted by decision D5, #500
-STRHOT-081 O removed t4-opcodes/op_bool.go OpBoolPrint fixed, byte views of CX memory and the format buffer
-STRHOT-082 O removed t4-opcodes/op_f32.go OpF32ToStr fixed, byte views of CX memory and the format buffer
-STRHOT-083 O removed t4-opcodes/op_f32.go OpF32Print fixed, byte views of CX memory and the format buffer
-STRHOT-084 O removed t4-opcodes/op_f64.go OpF64ToStr fixed, byte views of CX memory and the format buffer
-STRHOT-085 O removed t4-opcodes/op_f64.go OpF64Print fixed, byte views of CX memory and the format buffer
-STRHOT-086 P removed t4-opcodes/op_fmt.go buildString the type name of an extra argument appends bytes, ValueTypeNameAppend, #412
-STRHOT-087 O removed t4-opcodes/op_fmt.go OpSprintf fixed, byte views of CX memory and the format buffer
-STRHOT-088 O removed t4-opcodes/op_fmt.go OpPrintf fixed, byte views of CX memory and the format buffer
-STRHOT-089 O removed t4-opcodes/op_fmt.go CheckForEscapedChars not on the run path at dfcc46ab
-STRHOT-090 O removed t4-opcodes/op_i16.go OpI16ToStr fixed, byte views of CX memory and the format buffer
-STRHOT-091 O removed t4-opcodes/op_i16.go OpI16Print fixed, byte views of CX memory and the format buffer
-STRHOT-092 O removed t4-opcodes/op_i32.go OpI32ToStr fixed, byte views of CX memory and the format buffer
-STRHOT-093 O removed t4-opcodes/op_i32.go OpI32Print fixed, byte views of CX memory and the format buffer
-STRHOT-094 O removed t4-opcodes/op_i64.go OpI64ToStr fixed, byte views of CX memory and the format buffer
-STRHOT-095 O removed t4-opcodes/op_i64.go OpI64Print fixed, byte views of CX memory and the format buffer
-STRHOT-096 O removed t4-opcodes/op_i8.go OpI8ToStr fixed, byte views of CX memory and the format buffer
-STRHOT-097 O removed t4-opcodes/op_i8.go OpI8Print fixed, byte views of CX memory and the format buffer
-STRHOT-098 B open t4-opcodes/op_stdin.go OpReadStdin
-STRHOT-099 O removed t4-opcodes/op_str.go OpStrToI8 fixed, byte views of CX memory and the format buffer
-STRHOT-100 O removed t4-opcodes/op_str.go OpStrToI16 fixed, byte views of CX memory and the format buffer
-STRHOT-101 O removed t4-opcodes/op_str.go OpStrToI32 fixed, byte views of CX memory and the format buffer
-STRHOT-102 O removed t4-opcodes/op_str.go OpStrToI64 fixed, byte views of CX memory and the format buffer
-STRHOT-103 O removed t4-opcodes/op_str.go OpStrToUI8 fixed, byte views of CX memory and the format buffer
-STRHOT-104 O removed t4-opcodes/op_str.go OpStrToUI16 fixed, byte views of CX memory and the format buffer
-STRHOT-105 O removed t4-opcodes/op_str.go OpStrToUI32 fixed, byte views of CX memory and the format buffer
-STRHOT-106 O removed t4-opcodes/op_str.go OpStrToUI64 fixed, byte views of CX memory and the format buffer
-STRHOT-107 O removed t4-opcodes/op_str.go OpStrToF32 fixed, floatparse.FloatParseBytes reads the bytes, D92
-STRHOT-108 O removed t4-opcodes/op_str.go OpStrToF64 fixed, floatparse.FloatParseBytes reads the bytes, D92
-STRHOT-109 O removed t4-opcodes/op_str.go OpStrPrint fixed, byte views of CX memory and the format buffer
-STRHOT-110 O removed t4-opcodes/op_str.go OpStrConcat fixed, byte views of CX memory and the format buffer
-STRHOT-111 O removed t4-opcodes/op_str.go OpStrSubstr fixed, byte views of CX memory and the format buffer
-STRHOT-112 O removed t4-opcodes/op_str.go OpStrIndex fixed, byte views of CX memory and the format buffer
-STRHOT-113 O removed t4-opcodes/op_str.go OpStrLastIndex fixed, byte views of CX memory and the format buffer
-STRHOT-114 O removed t4-opcodes/op_str.go OpStrTrimSpace fixed, byte views of CX memory and the format buffer
-STRHOT-115 O removed t4-opcodes/op_str.go OpStrEqualByValue fixed, byte views of CX memory and the format buffer
-STRHOT-116 O removed t4-opcodes/op_str.go OpStrCompareByValue fixed, byte views of CX memory and the format buffer
-STRHOT-117 O removed t4-opcodes/op_str.go OpStrByteLength fixed, byte views of CX memory and the format buffer
-STRHOT-118 E open t4-opcodes/op_testing.go assert O fixed, the failure text remains
-STRHOT-119 O removed t4-opcodes/op_testing.go panicIf not on the run path at dfcc46ab
-STRHOT-120 B open t4-opcodes/op_testing.go OpStrError
-STRHOT-121 O removed t4-opcodes/op_ui16.go OpUI16ToStr fixed, byte views of CX memory and the format buffer
-STRHOT-122 O removed t4-opcodes/op_ui16.go OpUI16Print fixed, byte views of CX memory and the format buffer
-STRHOT-123 O removed t4-opcodes/op_ui32.go OpUI32ToStr fixed, byte views of CX memory and the format buffer
-STRHOT-124 O removed t4-opcodes/op_ui32.go OpUI32Print fixed, byte views of CX memory and the format buffer
-STRHOT-125 O removed t4-opcodes/op_ui64.go OpUI64ToStr fixed, byte views of CX memory and the format buffer
-STRHOT-126 O removed t4-opcodes/op_ui64.go OpUI64Print fixed, byte views of CX memory and the format buffer
-STRHOT-127 O removed t4-opcodes/op_ui8.go OpUI8ToStr fixed, byte views of CX memory and the format buffer
-STRHOT-128 O removed t4-opcodes/op_ui8.go OpUI8Print fixed, byte views of CX memory and the format buffer
-STRHOT-129 O removed t5-cxos/op_json.go opJsonOpen not on the run path at dfcc46ab
-STRHOT-130 B removed t5-cxos/op_json.go opJsonTokenStr deleted with the json functions, #509
-STRHOT-131 B open t5-cxos/op_os.go OpOsReadAllText
-STRHOT-132 O removed t5-cxos/op_os.go OpOsOpen not on the run path at dfcc46ab
-STRHOT-133 O removed t5-cxos/op_os.go OpOsCreate not on the run path at dfcc46ab
-STRHOT-134 B open t5-cxos/op_os.go OpOsReadStr
-STRHOT-135 B open t5-cxos/op_os.go OpOsWriteStr
-STRHOT-136 B open t5-cxos/op_os.go OpOsGetWorkingDirectory
-STRHOT-137 B open t5-cxos/op_os.go OpOsRun
-STRHOT-138 B open t5-cxos/op_os.go splitCommand
-STRHOT-139 B open t5-cxos/op_profile.go OpStartProfile
-STRHOT-140 B open t5-cxos/op_profile.go OpStopProfile
-STRHOT-141 O removed t4-regexp/op_regexp.go expOffset not on the run path at dfcc46ab
-STRHOT-142 B open t4-regexp/op_regexp.go regexpCompile
-STRHOT-143 B open t4-regexp/op_regexp.go OpRegexpCompile
-STRHOT-144 B open t4-regexp/op_regexp.go OpRegexpFind
+STRHOT-070 B removed t4-cx-runtime-opcodes/op_aff.go GetInferActions op_aff.go deleted by decision D5, #500
+STRHOT-071 B removed t4-cx-runtime-opcodes/op_aff.go OpAffPrint op_aff.go deleted by decision D5, #500
+STRHOT-072 B removed t4-cx-runtime-opcodes/op_aff.go queryParam op_aff.go deleted by decision D5, #500
+STRHOT-073 B removed t4-cx-runtime-opcodes/op_aff.go QueryArgument op_aff.go deleted by decision D5, #500
+STRHOT-074 B removed t4-cx-runtime-opcodes/op_aff.go QueryExpressions op_aff.go deleted by decision D5, #500
+STRHOT-075 B removed t4-cx-runtime-opcodes/op_aff.go getSignatureSlice op_aff.go deleted by decision D5, #500
+STRHOT-076 B removed t4-cx-runtime-opcodes/op_aff.go queryStructsInPackage op_aff.go deleted by decision D5, #500
+STRHOT-077 B removed t4-cx-runtime-opcodes/op_aff.go QueryFunction op_aff.go deleted by decision D5, #500
+STRHOT-078 B removed t4-cx-runtime-opcodes/op_aff.go QueryCaller op_aff.go deleted by decision D5, #500
+STRHOT-079 B removed t4-cx-runtime-opcodes/op_aff.go QueryProgram op_aff.go deleted by decision D5, #500
+STRHOT-080 B removed t4-cx-runtime-opcodes/op_aff.go OpAffQuery op_aff.go deleted by decision D5, #500
+STRHOT-081 O removed t4-cx-runtime-opcodes/op_bool.go OpBoolPrint fixed, byte views of CX memory and the format buffer
+STRHOT-082 O removed t4-cx-runtime-opcodes/op_f32.go OpF32ToStr fixed, byte views of CX memory and the format buffer
+STRHOT-083 O removed t4-cx-runtime-opcodes/op_f32.go OpF32Print fixed, byte views of CX memory and the format buffer
+STRHOT-084 O removed t4-cx-runtime-opcodes/op_f64.go OpF64ToStr fixed, byte views of CX memory and the format buffer
+STRHOT-085 O removed t4-cx-runtime-opcodes/op_f64.go OpF64Print fixed, byte views of CX memory and the format buffer
+STRHOT-086 P removed t4-cx-runtime-opcodes/op_fmt.go buildString the type name of an extra argument appends bytes, ValueTypeNameAppend, #412
+STRHOT-087 O removed t4-cx-runtime-opcodes/op_fmt.go OpSprintf fixed, byte views of CX memory and the format buffer
+STRHOT-088 O removed t4-cx-runtime-opcodes/op_fmt.go OpPrintf fixed, byte views of CX memory and the format buffer
+STRHOT-089 O removed t4-cx-runtime-opcodes/op_fmt.go CheckForEscapedChars not on the run path at dfcc46ab
+STRHOT-090 O removed t4-cx-runtime-opcodes/op_i16.go OpI16ToStr fixed, byte views of CX memory and the format buffer
+STRHOT-091 O removed t4-cx-runtime-opcodes/op_i16.go OpI16Print fixed, byte views of CX memory and the format buffer
+STRHOT-092 O removed t4-cx-runtime-opcodes/op_i32.go OpI32ToStr fixed, byte views of CX memory and the format buffer
+STRHOT-093 O removed t4-cx-runtime-opcodes/op_i32.go OpI32Print fixed, byte views of CX memory and the format buffer
+STRHOT-094 O removed t4-cx-runtime-opcodes/op_i64.go OpI64ToStr fixed, byte views of CX memory and the format buffer
+STRHOT-095 O removed t4-cx-runtime-opcodes/op_i64.go OpI64Print fixed, byte views of CX memory and the format buffer
+STRHOT-096 O removed t4-cx-runtime-opcodes/op_i8.go OpI8ToStr fixed, byte views of CX memory and the format buffer
+STRHOT-097 O removed t4-cx-runtime-opcodes/op_i8.go OpI8Print fixed, byte views of CX memory and the format buffer
+STRHOT-098 B open t4-cx-runtime-opcodes/op_stdin.go OpReadStdin
+STRHOT-099 O removed t4-cx-runtime-opcodes/op_str.go OpStrToI8 fixed, byte views of CX memory and the format buffer
+STRHOT-100 O removed t4-cx-runtime-opcodes/op_str.go OpStrToI16 fixed, byte views of CX memory and the format buffer
+STRHOT-101 O removed t4-cx-runtime-opcodes/op_str.go OpStrToI32 fixed, byte views of CX memory and the format buffer
+STRHOT-102 O removed t4-cx-runtime-opcodes/op_str.go OpStrToI64 fixed, byte views of CX memory and the format buffer
+STRHOT-103 O removed t4-cx-runtime-opcodes/op_str.go OpStrToUI8 fixed, byte views of CX memory and the format buffer
+STRHOT-104 O removed t4-cx-runtime-opcodes/op_str.go OpStrToUI16 fixed, byte views of CX memory and the format buffer
+STRHOT-105 O removed t4-cx-runtime-opcodes/op_str.go OpStrToUI32 fixed, byte views of CX memory and the format buffer
+STRHOT-106 O removed t4-cx-runtime-opcodes/op_str.go OpStrToUI64 fixed, byte views of CX memory and the format buffer
+STRHOT-107 O removed t4-cx-runtime-opcodes/op_str.go OpStrToF32 fixed, floatparse.FloatParseBytes reads the bytes, D92
+STRHOT-108 O removed t4-cx-runtime-opcodes/op_str.go OpStrToF64 fixed, floatparse.FloatParseBytes reads the bytes, D92
+STRHOT-109 O removed t4-cx-runtime-opcodes/op_str.go OpStrPrint fixed, byte views of CX memory and the format buffer
+STRHOT-110 O removed t4-cx-runtime-opcodes/op_str.go OpStrConcat fixed, byte views of CX memory and the format buffer
+STRHOT-111 O removed t4-cx-runtime-opcodes/op_str.go OpStrSubstr fixed, byte views of CX memory and the format buffer
+STRHOT-112 O removed t4-cx-runtime-opcodes/op_str.go OpStrIndex fixed, byte views of CX memory and the format buffer
+STRHOT-113 O removed t4-cx-runtime-opcodes/op_str.go OpStrLastIndex fixed, byte views of CX memory and the format buffer
+STRHOT-114 O removed t4-cx-runtime-opcodes/op_str.go OpStrTrimSpace fixed, byte views of CX memory and the format buffer
+STRHOT-115 O removed t4-cx-runtime-opcodes/op_str.go OpStrEqualByValue fixed, byte views of CX memory and the format buffer
+STRHOT-116 O removed t4-cx-runtime-opcodes/op_str.go OpStrCompareByValue fixed, byte views of CX memory and the format buffer
+STRHOT-117 O removed t4-cx-runtime-opcodes/op_str.go OpStrByteLength fixed, byte views of CX memory and the format buffer
+STRHOT-118 E open t4-cx-runtime-opcodes/op_testing.go assert O fixed, the failure text remains
+STRHOT-119 O removed t4-cx-runtime-opcodes/op_testing.go panicIf not on the run path at dfcc46ab
+STRHOT-120 B open t4-cx-runtime-opcodes/op_testing.go OpStrError
+STRHOT-121 O removed t4-cx-runtime-opcodes/op_ui16.go OpUI16ToStr fixed, byte views of CX memory and the format buffer
+STRHOT-122 O removed t4-cx-runtime-opcodes/op_ui16.go OpUI16Print fixed, byte views of CX memory and the format buffer
+STRHOT-123 O removed t4-cx-runtime-opcodes/op_ui32.go OpUI32ToStr fixed, byte views of CX memory and the format buffer
+STRHOT-124 O removed t4-cx-runtime-opcodes/op_ui32.go OpUI32Print fixed, byte views of CX memory and the format buffer
+STRHOT-125 O removed t4-cx-runtime-opcodes/op_ui64.go OpUI64ToStr fixed, byte views of CX memory and the format buffer
+STRHOT-126 O removed t4-cx-runtime-opcodes/op_ui64.go OpUI64Print fixed, byte views of CX memory and the format buffer
+STRHOT-127 O removed t4-cx-runtime-opcodes/op_ui8.go OpUI8ToStr fixed, byte views of CX memory and the format buffer
+STRHOT-128 O removed t4-cx-runtime-opcodes/op_ui8.go OpUI8Print fixed, byte views of CX memory and the format buffer
+STRHOT-129 O removed t5-cx-library-fileopcodes/op_json.go opJsonOpen not on the run path at dfcc46ab
+STRHOT-130 B removed t5-cx-library-fileopcodes/op_json.go opJsonTokenStr deleted with the json functions, #509
+STRHOT-131 B open t5-cx-library-fileopcodes/op_os.go OpOsReadAllText
+STRHOT-132 O removed t5-cx-library-fileopcodes/op_os.go OpOsOpen not on the run path at dfcc46ab
+STRHOT-133 O removed t5-cx-library-fileopcodes/op_os.go OpOsCreate not on the run path at dfcc46ab
+STRHOT-134 B open t5-cx-library-fileopcodes/op_os.go OpOsReadStr
+STRHOT-135 B open t5-cx-library-fileopcodes/op_os.go OpOsWriteStr
+STRHOT-136 B open t5-cx-library-fileopcodes/op_os.go OpOsGetWorkingDirectory
+STRHOT-137 B open t5-cx-library-fileopcodes/op_os.go OpOsRun
+STRHOT-138 B open t5-cx-library-fileopcodes/op_os.go splitCommand
+STRHOT-139 B open t5-cx-library-fileopcodes/op_profile.go OpStartProfile
+STRHOT-140 B open t5-cx-library-fileopcodes/op_profile.go OpStopProfile
+STRHOT-141 O removed t4-cx-library-regexp/op_regexp.go expOffset not on the run path at dfcc46ab
+STRHOT-142 B open t4-cx-library-regexp/op_regexp.go regexpCompile
+STRHOT-143 B open t4-cx-library-regexp/op_regexp.go OpRegexpCompile
+STRHOT-144 B open t4-cx-library-regexp/op_regexp.go OpRegexpFind
 STRHOT-145 B removed t5-tcp/op_tcp.go errString deleted with the blocking tcp functions, #508
 STRHOT-146 B removed t5-tcp/op_tcp.go opTCPDial deleted with the blocking tcp functions, #508
 STRHOT-147 B removed t5-tcp/op_tcp.go opTCPAccept deleted with the blocking tcp functions, #508
 STRHOT-148 B removed t5-tcp/op_tcp.go opTCPListen deleted with the blocking tcp functions, #508
-STRHOT-149 O removed t6-cxfx/cxgl_desktop.go getCString handles and byte views, #432
-STRHOT-150 O removed t6-cxfx/cxgl_desktop.go freeCString handles and byte views, #432
-STRHOT-151 O removed t6-cxfx/cxgl_desktop.go opGlDestroy handles and byte views, #432
-STRHOT-152 O removed t6-cxfx/cxgl_desktop.go opGlStrs handles and byte views, #432
-STRHOT-153 O removed t6-cxfx/cxgl_desktop.go opGlFree handles and byte views, #432
-STRHOT-154 O removed t6-cxfx/cxgl_desktop.go cxglBindAttribLocation handles and byte views, #432
-STRHOT-155 O removed t6-cxfx/cxgl_desktop.go cxglGetAttribLocation handles and byte views, #432
-STRHOT-156 O removed t6-cxfx/cxgl_desktop.go cxglGetProgramInfoLog handles and byte views, #432
-STRHOT-157 O removed t6-cxfx/cxgl_desktop.go cxglGetShaderInfoLog handles and byte views, #432
-STRHOT-158 O removed t6-cxfx/cxgl_desktop.go cxglGetUniformLocation handles and byte views, #432
-STRHOT-159 O removed t6-cxfx/cxgl_desktop.go cxglShaderSource handles and byte views, #432
-STRHOT-160 O removed t6-cxfx/event.go *CXCallback.init handles and byte views, #432
-STRHOT-161 O removed t6-cxfx/event.go *CXCallback.Init handles and byte views, #432
-STRHOT-162 O removed t6-cxfx/event.go *CXCallback.InitEx handles and byte views, #432
-STRHOT-163 O removed t6-cxfx/event.go *CXCallback.Call handles and byte views, #432
-STRHOT-164 O removed t6-cxfx/op_glfw_desktop.go OpGlfwFullscreen handles and byte views, #432
-STRHOT-165 O removed t6-cxfx/op_glfw_desktop.go OpGlfwSwapBuffers handles and byte views, #432
-STRHOT-166 O removed t6-cxfx/op_glfw_desktop.go OpGlfwMakeContextCurrent handles and byte views, #432
-STRHOT-167 O removed t6-cxfx/op_glfw_desktop.go OpGlfwSetInputMode handles and byte views, #432
-STRHOT-168 O removed t6-cxfx/op_glfw_desktop.go OpGlfwGetCursorPos handles and byte views, #432
-STRHOT-169 O removed t6-cxfx/op_glfw_desktop.go OpGlfwGetKey handles and byte views, #432
-STRHOT-170 B cxfx t6-cxfx/op_glfw_desktop.go OpGlfwCreateWindow O fixed, hands the window title to GLFW, #432
-STRHOT-171 O removed t6-cxfx/op_glfw_desktop.go OpGlfwGetWindowContentScale handles and byte views, #432
-STRHOT-172 O removed t6-cxfx/op_glfw_desktop.go OpGlfwSetWindowPos handles and byte views, #432
-STRHOT-173 O removed t6-cxfx/op_glfw_desktop.go OpGlfwShouldClose handles and byte views, #432
-STRHOT-174 O removed t6-cxfx/op_glfw_desktop.go OpGlfwGetFramebufferSize handles and byte views, #432
-STRHOT-175 O removed t6-cxfx/op_glfw_desktop.go OpGlfwGetWindowPos handles and byte views, #432
-STRHOT-176 O removed t6-cxfx/op_glfw_desktop.go OpGlfwGetWindowSize handles and byte views, #432
-STRHOT-177 O removed t6-cxfx/op_glfw_desktop.go glfwSetKeyCallback handles and byte views, #432
-STRHOT-178 O removed t6-cxfx/op_glfw_desktop.go glfwSetCursorPosCallback handles and byte views, #432
-STRHOT-179 O removed t6-cxfx/op_glfw_desktop.go glfwSetMouseButtonCallback handles and byte views, #432
-STRHOT-180 O removed t6-cxfx/op_glfw_desktop.go OpGlfwSetFramebufferSizeCallback handles and byte views, #432
-STRHOT-181 O removed t6-cxfx/op_glfw_desktop.go OpGlfwSetWindowSizeCallback handles and byte views, #432
-STRHOT-182 O removed t6-cxfx/op_glfw_desktop.go OpGlfwSetWindowPosCallback handles and byte views, #432
-STRHOT-183 O removed t6-cxfx/op_glfw_desktop.go OpGlfwSetShouldClose handles and byte views, #432
-STRHOT-184 O removed t6-cxfx/op_gltext.go loadTrueType handles and byte views, #432
-STRHOT-185 B cxfx t6-cxfx/op_gltext.go OpGltextPrintf O fixed, text to gltext as a view, #432
-STRHOT-186 B cxfx t6-cxfx/op_gltext.go OpGltextMetrics O fixed, text to gltext as a view, #432
-STRHOT-187 O removed t6-cxfx/op_gltext.go OpGltextTexture handles and byte views, #432
-STRHOT-188 O removed t6-cxfx/op_gltext.go OpGltextNextGlyph handles and byte views, #432
-STRHOT-189 O removed t6-cxfx/op_gltext.go OpGltextGlyphBounds handles and byte views, #432
-STRHOT-190 O removed t6-cxfx/op_gltext.go OpGltextGlyphMetrics handles and byte views, #432
-STRHOT-191 O removed t6-cxfx/op_gltext.go OpGltextGlyphInfo handles and byte views, #432
-STRHOT-192 B cxfx t6-cxfx/op_openal_desktop.go OpAlExtensions O fixed, OpenAL returns text, #432
-STRHOT-193 B cxfx t6-cxfx/op_openal_desktop.go OpAlRenderer O fixed, OpenAL returns text, #432
-STRHOT-194 B cxfx t6-cxfx/op_openal_desktop.go OpAlVendor O fixed, OpenAL returns text, #432
-STRHOT-195 B cxfx t6-cxfx/op_openal_desktop.go OpAlVersion O fixed, OpenAL returns text, #432
-STRHOT-196 B cxfx t6-cxfx/op_openal.go OpAlLoadWav O fixed, reads the file at a program path, #432
-STRHOT-197 E cxfx t6-cxfx/op_opengl.go decodeHdr B fixed, reads the HDR header as bytes and prints only on a failure branch, #432
-STRHOT-198 B cxfx t6-cxfx/op_opengl.go uploadTexture O fixed, reads the file at a program path, #432
-STRHOT-199 O removed t6-cxfx/op_opengl.go OpGlNewTexture handles and byte views, #432
-STRHOT-200 O removed t6-cxfx/op_opengl.go OpGlNewTextureCube handles and byte views, #432
-STRHOT-201 O removed t6-cxfx/op_opengl.go OpCxReleaseTexture handles and byte views, #432
-STRHOT-202 O removed t6-cxfx/op_opengl.go OpCxTextureGetPixel handles and byte views, #432
-STRHOT-203 O removed t6-cxfx/op_opengl.go OpGlUploadImageToTexture handles and byte views, #432
-STRHOT-204 B cxfx t6-cxfx/op_opengl.go OpGlNewGIF O fixed, reads the file at a program path, #432
-STRHOT-205 O removed t6-cxfx/op_opengl.go OpGlFreeGIF handles and byte views, #432
-STRHOT-206 O removed t6-cxfx/op_opengl.go OpGlGIFFrameToTexture handles and byte views, #432
-STRHOT-207 O removed t6-cxfx/op_opengl.go OpGlBindAttribLocation handles and byte views, #432
-STRHOT-208 O removed t6-cxfx/op_opengl.go OpGlGetAttribLocation handles and byte views, #432
-STRHOT-209 O removed t6-cxfx/op_opengl.go OpGlGetProgramInfoLog handles and byte views, #432
-STRHOT-210 O removed t6-cxfx/op_opengl.go OpGlGetShaderInfoLog handles and byte views, #432
-STRHOT-211 O removed t6-cxfx/op_opengl.go OpGlGetUniformLocation handles and byte views, #432
-STRHOT-212 O removed t6-cxfx/op_opengl.go OpGlShaderSource handles and byte views, #432
-STRHOT-213 O removed t6-cxfx/utils.go OpGlfwFuncI32I32 handles and byte views, #432
+STRHOT-149 O removed t6-cx-library-graphics/cxgl_desktop.go getCString handles and byte views, #432
+STRHOT-150 O removed t6-cx-library-graphics/cxgl_desktop.go freeCString handles and byte views, #432
+STRHOT-151 O removed t6-cx-library-graphics/cxgl_desktop.go opGlDestroy handles and byte views, #432
+STRHOT-152 O removed t6-cx-library-graphics/cxgl_desktop.go opGlStrs handles and byte views, #432
+STRHOT-153 O removed t6-cx-library-graphics/cxgl_desktop.go opGlFree handles and byte views, #432
+STRHOT-154 O removed t6-cx-library-graphics/cxgl_desktop.go cxglBindAttribLocation handles and byte views, #432
+STRHOT-155 O removed t6-cx-library-graphics/cxgl_desktop.go cxglGetAttribLocation handles and byte views, #432
+STRHOT-156 O removed t6-cx-library-graphics/cxgl_desktop.go cxglGetProgramInfoLog handles and byte views, #432
+STRHOT-157 O removed t6-cx-library-graphics/cxgl_desktop.go cxglGetShaderInfoLog handles and byte views, #432
+STRHOT-158 O removed t6-cx-library-graphics/cxgl_desktop.go cxglGetUniformLocation handles and byte views, #432
+STRHOT-159 O removed t6-cx-library-graphics/cxgl_desktop.go cxglShaderSource handles and byte views, #432
+STRHOT-160 O removed t6-cx-library-graphics/event.go *CXCallback.init handles and byte views, #432
+STRHOT-161 O removed t6-cx-library-graphics/event.go *CXCallback.Init handles and byte views, #432
+STRHOT-162 O removed t6-cx-library-graphics/event.go *CXCallback.InitEx handles and byte views, #432
+STRHOT-163 O removed t6-cx-library-graphics/event.go *CXCallback.Call handles and byte views, #432
+STRHOT-164 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwFullscreen handles and byte views, #432
+STRHOT-165 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwSwapBuffers handles and byte views, #432
+STRHOT-166 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwMakeContextCurrent handles and byte views, #432
+STRHOT-167 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwSetInputMode handles and byte views, #432
+STRHOT-168 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwGetCursorPos handles and byte views, #432
+STRHOT-169 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwGetKey handles and byte views, #432
+STRHOT-170 B cxfx t6-cx-library-graphics/op_glfw_desktop.go OpGlfwCreateWindow O fixed, hands the window title to GLFW, #432
+STRHOT-171 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwGetWindowContentScale handles and byte views, #432
+STRHOT-172 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwSetWindowPos handles and byte views, #432
+STRHOT-173 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwShouldClose handles and byte views, #432
+STRHOT-174 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwGetFramebufferSize handles and byte views, #432
+STRHOT-175 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwGetWindowPos handles and byte views, #432
+STRHOT-176 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwGetWindowSize handles and byte views, #432
+STRHOT-177 O removed t6-cx-library-graphics/op_glfw_desktop.go glfwSetKeyCallback handles and byte views, #432
+STRHOT-178 O removed t6-cx-library-graphics/op_glfw_desktop.go glfwSetCursorPosCallback handles and byte views, #432
+STRHOT-179 O removed t6-cx-library-graphics/op_glfw_desktop.go glfwSetMouseButtonCallback handles and byte views, #432
+STRHOT-180 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwSetFramebufferSizeCallback handles and byte views, #432
+STRHOT-181 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwSetWindowSizeCallback handles and byte views, #432
+STRHOT-182 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwSetWindowPosCallback handles and byte views, #432
+STRHOT-183 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwSetShouldClose handles and byte views, #432
+STRHOT-184 O removed t6-cx-library-graphics/op_gltext.go loadTrueType handles and byte views, #432
+STRHOT-185 B cxfx t6-cx-library-graphics/op_gltext.go OpGltextPrintf O fixed, text to gltext as a view, #432
+STRHOT-186 B cxfx t6-cx-library-graphics/op_gltext.go OpGltextMetrics O fixed, text to gltext as a view, #432
+STRHOT-187 O removed t6-cx-library-graphics/op_gltext.go OpGltextTexture handles and byte views, #432
+STRHOT-188 O removed t6-cx-library-graphics/op_gltext.go OpGltextNextGlyph handles and byte views, #432
+STRHOT-189 O removed t6-cx-library-graphics/op_gltext.go OpGltextGlyphBounds handles and byte views, #432
+STRHOT-190 O removed t6-cx-library-graphics/op_gltext.go OpGltextGlyphMetrics handles and byte views, #432
+STRHOT-191 O removed t6-cx-library-graphics/op_gltext.go OpGltextGlyphInfo handles and byte views, #432
+STRHOT-192 B cxfx t6-cx-library-graphics/op_openal_desktop.go OpAlExtensions O fixed, OpenAL returns text, #432
+STRHOT-193 B cxfx t6-cx-library-graphics/op_openal_desktop.go OpAlRenderer O fixed, OpenAL returns text, #432
+STRHOT-194 B cxfx t6-cx-library-graphics/op_openal_desktop.go OpAlVendor O fixed, OpenAL returns text, #432
+STRHOT-195 B cxfx t6-cx-library-graphics/op_openal_desktop.go OpAlVersion O fixed, OpenAL returns text, #432
+STRHOT-196 B cxfx t6-cx-library-graphics/op_openal.go OpAlLoadWav O fixed, reads the file at a program path, #432
+STRHOT-197 E cxfx t6-cx-library-graphics/op_opengl.go decodeHdr B fixed, reads the HDR header as bytes and prints only on a failure branch, #432
+STRHOT-198 B cxfx t6-cx-library-graphics/op_opengl.go uploadTexture O fixed, reads the file at a program path, #432
+STRHOT-199 O removed t6-cx-library-graphics/op_opengl.go OpGlNewTexture handles and byte views, #432
+STRHOT-200 O removed t6-cx-library-graphics/op_opengl.go OpGlNewTextureCube handles and byte views, #432
+STRHOT-201 O removed t6-cx-library-graphics/op_opengl.go OpCxReleaseTexture handles and byte views, #432
+STRHOT-202 O removed t6-cx-library-graphics/op_opengl.go OpCxTextureGetPixel handles and byte views, #432
+STRHOT-203 O removed t6-cx-library-graphics/op_opengl.go OpGlUploadImageToTexture handles and byte views, #432
+STRHOT-204 B cxfx t6-cx-library-graphics/op_opengl.go OpGlNewGIF O fixed, reads the file at a program path, #432
+STRHOT-205 O removed t6-cx-library-graphics/op_opengl.go OpGlFreeGIF handles and byte views, #432
+STRHOT-206 O removed t6-cx-library-graphics/op_opengl.go OpGlGIFFrameToTexture handles and byte views, #432
+STRHOT-207 O removed t6-cx-library-graphics/op_opengl.go OpGlBindAttribLocation handles and byte views, #432
+STRHOT-208 O removed t6-cx-library-graphics/op_opengl.go OpGlGetAttribLocation handles and byte views, #432
+STRHOT-209 O removed t6-cx-library-graphics/op_opengl.go OpGlGetProgramInfoLog handles and byte views, #432
+STRHOT-210 O removed t6-cx-library-graphics/op_opengl.go OpGlGetShaderInfoLog handles and byte views, #432
+STRHOT-211 O removed t6-cx-library-graphics/op_opengl.go OpGlGetUniformLocation handles and byte views, #432
+STRHOT-212 O removed t6-cx-library-graphics/op_opengl.go OpGlShaderSource handles and byte views, #432
+STRHOT-213 O removed t6-cx-library-graphics/utils.go OpGlfwFuncI32I32 handles and byte views, #432
 STRHOT-214 P removed t0-cx-core-valuetypes/types.go Code.Name not on the run path at dfcc46ab
 STRHOT-215 P removed t3-cx-core-ast/tostring.go valueAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
 STRHOT-216 P removed t3-cx-core-ast/tostring.go elementsAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
@@ -326,39 +326,39 @@ STRHOT-312 E open t3-cx-core-ast/serialize.go serializeUnusedManagersCheck
 STRHOT-313 E open t3-cx-core-ast/sourcefilemng.go *SourceFileMng.SourceFilePath
 STRHOT-314 P removed t3-cx-core-ast/tostring.go printPointer appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
 STRHOT-315 P removed t3-cx-core-ast/tostring.go printStructPointer appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
-STRHOT-316 E removed t4-opcodes/libraries.go opLibraryCall removed with the opcode registration (D21)
-STRHOT-317 B removed t4-opcodes/op_aff.go affFunction op_aff.go deleted by decision D5, #500
-STRHOT-318 O removed t4-opcodes/op_str.go OpStrBytesOfString fixed, byte views of CX memory and the format buffer
-STRHOT-319 O removed t4-opcodes/op_str.go OpStrStringOfBytes fixed, byte views of CX memory and the format buffer
+STRHOT-316 E removed t4-cx-runtime-opcodes/libraries.go opLibraryCall removed with the opcode registration (D21)
+STRHOT-317 B removed t4-cx-runtime-opcodes/op_aff.go affFunction op_aff.go deleted by decision D5, #500
+STRHOT-318 O removed t4-cx-runtime-opcodes/op_str.go OpStrBytesOfString fixed, byte views of CX memory and the format buffer
+STRHOT-319 O removed t4-cx-runtime-opcodes/op_str.go OpStrStringOfBytes fixed, byte views of CX memory and the format buffer
 STRHOT-320 P removed t4-cx-runtime-printer/stack.go printerStackValueLine appends names viewed from the string pool, #412
-STRHOT-321 E open t4-regexp/op_regexp.go OpRegexpMustCompile
-STRHOT-322 B cxfx t2-cx-core-stringpool/string_view.go StringView O fixed, only the t6-cxfx GLFW, gltext and file boundaries call it, D92
-STRHOT-323 E cxfx t6-cxfx/state.go cxfxHandleAssertFailure
-STRHOT-324 E cxfx t6-cxfx/state.go cxfxTableFullAssertFailure
-STRHOT-325 B removed t6-cxfx/op_opengl.go decodeImg fixed, picks the decoder by the first bytes of the file, #432
-STRHOT-326 E open t1-cipherstate/cipherstate.go hashStateAssertFailure
-STRHOT-327 E open t1-cipherstate/cipherstate.go hashStateFullAssertFailure
-STRHOT-328 E open t4-cxnet/op_net.go netReplayEndAssertFailure
-STRHOT-329 B open t4-cxnet/op_net.go OpNetTCPListen
-STRHOT-330 B open t4-cxnet/op_net.go OpNetTCPDial
-STRHOT-331 B open t4-cxnet/op_net.go OpNetUDPListen
-STRHOT-332 B open t4-cxnet/op_net.go OpNetUDPDial
-STRHOT-333 B open t4-cxnet/op_net.go OpNetUDPPeerResolve
-STRHOT-334 B removed t4-cxnet/op_net.go blockStr a vm form, not on the run path of the old loop
-STRHOT-335 B open t1-netbatch/socket.go netUDPReadLoop
-STRHOT-336 E open t4-cxnet/op_net.go netBufferAssertFailure
-STRHOT-337 B open t4-cxnet/op_net.go netAddress
-STRHOT-338 B open t1-netbatch/socket.go netTCPReadLoop
-STRHOT-339 B open t1-netbatch/socket.go NetTCPListen
-STRHOT-340 B open t1-netbatch/socket.go NetTCPDial
-STRHOT-341 B open t1-netbatch/socket.go NetUDPListen
-STRHOT-342 B open t1-netbatch/socket.go NetUDPDial
-STRHOT-343 B open t1-netbatch/socket.go netUDPOpen
-STRHOT-344 B open t1-netbatch/socket.go NetUDPPeerResolve
-STRHOT-345 B open t1-netbatch/socket.go netErrorOf
-STRHOT-346 B removed t1-netbatch/errno_unix.go netErrorOfSystem folded into netErrorOf, whose code covers it on every system
-STRHOT-347 B open t1-netbatch/socket.go netTCPDialRun
-STRHOT-348 B open t1-netbatch/replay.go netPayloadQuote
+STRHOT-321 E open t4-cx-library-regexp/op_regexp.go OpRegexpMustCompile
+STRHOT-322 B cxfx t2-cx-core-stringpool/string_view.go StringView O fixed, only the t6-cx-library-graphics GLFW, gltext and file boundaries call it, D92
+STRHOT-323 E cxfx t6-cx-library-graphics/state.go cxfxHandleAssertFailure
+STRHOT-324 E cxfx t6-cx-library-graphics/state.go cxfxTableFullAssertFailure
+STRHOT-325 B removed t6-cx-library-graphics/op_opengl.go decodeImg fixed, picks the decoder by the first bytes of the file, #432
+STRHOT-326 E open t1-cx-library-cipherstate/cipherstate.go hashStateAssertFailure
+STRHOT-327 E open t1-cx-library-cipherstate/cipherstate.go hashStateFullAssertFailure
+STRHOT-328 E open t4-cx-library-netopcodes/op_net.go netReplayEndAssertFailure
+STRHOT-329 B open t4-cx-library-netopcodes/op_net.go OpNetTCPListen
+STRHOT-330 B open t4-cx-library-netopcodes/op_net.go OpNetTCPDial
+STRHOT-331 B open t4-cx-library-netopcodes/op_net.go OpNetUDPListen
+STRHOT-332 B open t4-cx-library-netopcodes/op_net.go OpNetUDPDial
+STRHOT-333 B open t4-cx-library-netopcodes/op_net.go OpNetUDPPeerResolve
+STRHOT-334 B removed t4-cx-library-netopcodes/op_net.go blockStr a vm form, not on the run path of the old loop
+STRHOT-335 B open t1-cx-library-networkbatch/socket.go netUDPReadLoop
+STRHOT-336 E open t4-cx-library-netopcodes/op_net.go netBufferAssertFailure
+STRHOT-337 B open t4-cx-library-netopcodes/op_net.go netAddress
+STRHOT-338 B open t1-cx-library-networkbatch/socket.go netTCPReadLoop
+STRHOT-339 B open t1-cx-library-networkbatch/socket.go NetTCPListen
+STRHOT-340 B open t1-cx-library-networkbatch/socket.go NetTCPDial
+STRHOT-341 B open t1-cx-library-networkbatch/socket.go NetUDPListen
+STRHOT-342 B open t1-cx-library-networkbatch/socket.go NetUDPDial
+STRHOT-343 B open t1-cx-library-networkbatch/socket.go netUDPOpen
+STRHOT-344 B open t1-cx-library-networkbatch/socket.go NetUDPPeerResolve
+STRHOT-345 B open t1-cx-library-networkbatch/socket.go netErrorOf
+STRHOT-346 B removed t1-cx-library-networkbatch/errno_unix.go netErrorOfSystem folded into netErrorOf, whose code covers it on every system
+STRHOT-347 B open t1-cx-library-networkbatch/socket.go netTCPDialRun
+STRHOT-348 B open t1-cx-library-networkbatch/replay.go netPayloadQuote
 STRHOT-349 B open t1-cx-runtime-sandbox/path.go FileOpenReadWrite
 STRHOT-350 B open t1-cx-runtime-sandbox/path.go FileRemove
 STRHOT-351 B open t3-cx-core-ast/serialize.go deserializeOpcodeSet

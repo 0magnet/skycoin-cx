@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
-	"github.com/skycoin/skycoin-cx/t1-cipherstate"
+	"github.com/skycoin/skycoin-cx/t1-cx-library-cipherstate"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
 
@@ -1001,7 +1001,7 @@ func (machine *Machine) printFull(out []byte, cursor int) Stop {
 }
 
 // printValue appends the value of type typ at a in the printf verb, as
-// buildString in t4-opcodes formats it. The lowering only emits the verb and
+// buildString in t4-cx-runtime-opcodes formats it. The lowering only emits the verb and
 // type pairs handled here.
 func printValue(out []byte, mem []byte, a uint32, typ valuetypes.Code, verb byte) []byte {
 	switch typ {

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	lower "github.com/skycoin/skycoin-cx/t4-cx-compiler-lower"
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter"
 )
 
 const operationRefusedSource = `package main
@@ -28,8 +28,8 @@ func TestOperationRefusedOutsideExecutorRun(t *testing.T) {
 	if len(failures) != 1 || failures[0].FailureReason != lower.ReasonOperationRefused || len(image.ImageFuncs) != 0 {
 		t.Errorf("lower.Program = %d functions, failures %+v, want only ReasonOperationRefused", len(image.ImageFuncs), failures)
 	}
-	err := execute.RunCompiled(prgrm, 0, nil)
+	err := interpreter.RunCompiled(prgrm, 0, nil)
 	if err == nil || !strings.Contains(err.Error(), "CX_RUNTIME_LIBRARY_DISABLED, library file is not enabled") {
-		t.Errorf("execute.RunCompiled = %v, want the refusal of the file library", err)
+		t.Errorf("interpreter.RunCompiled = %v, want the refusal of the file library", err)
 	}
 }

@@ -5,9 +5,9 @@ package main
 import (
 	"os"
 
-	"github.com/skycoin/skycoin-cx/t1-netbatch"
+	"github.com/skycoin/skycoin-cx/t1-cx-library-networkbatch"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	"github.com/skycoin/skycoin-cx/t4-cxnet"
+	"github.com/skycoin/skycoin-cx/t4-cx-library-netopcodes"
 )
 
 // coreNetReplayEnv names the replay record a built program runs its net
@@ -20,13 +20,13 @@ const coreLibraryNetLinked = true
 
 // The net library is linked into this core, see coreLibraryRegisters.
 func init() {
-	coreLibraryRegisters = append(coreLibraryRegisters, cxnet.PackageRegister)
+	coreLibraryRegisters = append(coreLibraryRegisters, netopcodes.PackageRegister)
 	if path := os.Getenv(coreNetReplayEnv); path != "" {
-		netbatch.NetRunMode, netbatch.NetRunRecordPath = netbatch.NetModeReplay, path
+		networkbatch.NetRunMode, networkbatch.NetRunRecordPath = networkbatch.NetModeReplay, path
 	}
 }
 
 // coreOpcodeDispatchNet runs an opcode of the net library.
 func coreOpcodeDispatchNet(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, outputs []ast.CXValue) bool {
-	return cxnet.NetOpcodeDispatch(prgrm, code, inputs, outputs)
+	return netopcodes.NetOpcodeDispatch(prgrm, code, inputs, outputs)
 }

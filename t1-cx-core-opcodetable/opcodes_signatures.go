@@ -11,22 +11,22 @@ type OpcodeGroup uint8
 // Opcode groups. OpcodeGroupNone is a number without a definition row.
 const (
 	OpcodeGroupNone OpcodeGroup = iota
-	// OpcodeGroupCore is t4-opcodes and t4-cx-runtime-printer, and the rows
+	// OpcodeGroupCore is t4-cx-runtime-opcodes and t4-cx-runtime-printer, and the rows
 	// without a handler.
 	OpcodeGroupCore
-	// OpcodeGroupOsCore is t4-cxos-core, left out by the nocxos tag.
+	// OpcodeGroupOsCore is t4-cx-library-osopcodes, left out by the nocxos tag.
 	OpcodeGroupOsCore
-	// OpcodeGroupRegexp is t4-regexp, left out by the noregexp tag.
+	// OpcodeGroupRegexp is t4-cx-library-regexp, left out by the noregexp tag.
 	OpcodeGroupRegexp
-	// OpcodeGroupCxfx is t6-cxfx, linked only with the cxfx tag.
+	// OpcodeGroupCxfx is t6-cx-library-graphics, linked only with the cxfx tag.
 	OpcodeGroupCxfx
-	// OpcodeGroupCipher is the cipher library in t4-cipher, left out by the
+	// OpcodeGroupCipher is the cipher library in t4-cx-library-cipher, left out by the
 	// nocipher tag.
 	OpcodeGroupCipher
-	// OpcodeGroupNet is the net library in t4-cxnet, in every build of cx and
+	// OpcodeGroupNet is the net library in t4-cx-library-netopcodes, in every build of cx and
 	// in the cores built with cxcorelibrarynet.
 	OpcodeGroupNet
-	// OpcodeGroupFile is the file library in t5-cxos, left out by the nocxos
+	// OpcodeGroupFile is the file library in t5-cx-library-fileopcodes, left out by the nocxos
 	// tag.
 	OpcodeGroupFile
 	OpcodeGroupCount

@@ -25,7 +25,7 @@ import (
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	lower "github.com/skycoin/skycoin-cx/t4-cx-compiler-lower"
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
 
@@ -381,7 +381,7 @@ func lowerCompareChild(t *testing.T, program string) {
 	}
 
 	lowerCompareCaptureStdout(t, func() {
-		if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
+		if err := interpreter.RunCompiled(astbuild.AST, 0, nil); err != nil {
 			t.Fatal(err)
 		}
 	})

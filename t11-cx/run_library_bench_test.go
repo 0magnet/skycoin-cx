@@ -7,7 +7,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
 
@@ -51,9 +51,9 @@ func BenchmarkRunLibraryCall(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			b.StopTimer()
 			runLibraryCallLoopCompile(b)
-			execute.RunPrepare(astbuild.AST)
+			interpreter.RunPrepare(astbuild.AST)
 			b.StartTimer()
-			if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
+			if err := interpreter.RunCompiled(astbuild.AST, 0, nil); err != nil {
 				b.Fatal(err)
 			}
 		}

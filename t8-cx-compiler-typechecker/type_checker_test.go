@@ -15,7 +15,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t5-cx-tools-packagefiles" // thin: tests use only GetImportFiles; no depth gain
 	"github.com/skycoin/skycoin-cx/t6-cx-compiler-declarationextractor"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: tests use only MakeProgram, RegisterPackages; could take the program as an argument, tier 8 to 7
+	"github.com/skycoin/skycoin-cx/t7-cx-runtime-libraries" // thin: tests use only MakeProgram, RegisterPackages; could take the program as an argument, tier 8 to 7
 	"github.com/skycoin/skycoin-cx/t8-cx-compiler-typechecker"
 )
 
@@ -136,8 +136,8 @@ func TestTypeChecker_ParseDeclarationSpecifier(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1528 S1529.
-			astbuild.AST = cxinit.ProgramMake()
-			cxinit.PackagesRegister(astbuild.AST)
+			astbuild.AST = libraries.ProgramMake()
+			libraries.PackagesRegister(astbuild.AST)
 
 			if tc.strctName != "" {
 
@@ -264,8 +264,8 @@ func TestTypeChecker_ParseParameterDeclaration(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1533 S1534.
-			astbuild.AST = cxinit.ProgramMake()
-			cxinit.PackagesRegister(astbuild.AST)
+			astbuild.AST = libraries.ProgramMake()
+			libraries.PackagesRegister(astbuild.AST)
 
 			var pkg *ast.CXPackage
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
@@ -343,8 +343,8 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1538 S1539.
-			astbuild.AST = cxinit.ProgramMake()
-			cxinit.PackagesRegister(astbuild.AST)
+			astbuild.AST = libraries.ProgramMake()
+			libraries.PackagesRegister(astbuild.AST)
 
 			srcBytes, err := os.ReadFile(tc.testDir)
 			if err != nil {
@@ -527,8 +527,8 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1542 S1543.
-			astbuild.AST = cxinit.ProgramMake()
-			cxinit.PackagesRegister(astbuild.AST)
+			astbuild.AST = libraries.ProgramMake()
+			libraries.PackagesRegister(astbuild.AST)
 
 			_, sourceCode, _, perr := sourceargs.Parse([]string{tc.testDir}, true)
 			if perr != nil {
@@ -693,8 +693,8 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1545 S1546.
-			astbuild.AST = cxinit.ProgramMake()
-			cxinit.PackagesRegister(astbuild.AST)
+			astbuild.AST = libraries.ProgramMake()
+			libraries.PackagesRegister(astbuild.AST)
 
 			_, sourceCode, _, perr := sourceargs.Parse([]string{tc.testDir}, true)
 			if perr != nil {
@@ -872,8 +872,8 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1550 S1551.
-			astbuild.AST = cxinit.ProgramMake()
-			cxinit.PackagesRegister(astbuild.AST)
+			astbuild.AST = libraries.ProgramMake()
+			libraries.PackagesRegister(astbuild.AST)
 
 			_, sourceCode, _, perr := sourceargs.Parse([]string{tc.testDir}, true)
 			if perr != nil {

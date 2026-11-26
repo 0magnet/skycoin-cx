@@ -10,11 +10,11 @@ the old loop can still reach, and the check that keeps the list complete.
 
 ## The run path
 
-The run path is `RunCxAst` in t4-execute and every opcode handler, a
+The run path is `RunCxAst` in t4-cx-runtime-interpreter and every opcode handler, a
 function with the `OpcodeGoFunction` signature, followed through static calls
 into this module. `t0-cx-tools-strhot` type checks the packages of the `cx`
 build with the default tags and walks those calls. Interface calls and
-function values other than handlers are not followed. t6-cxfx is built only
+function values other than handlers are not followed. t6-cx-library-graphics is built only
 with `-tags cxfx`, and its codes have the status `cxfx`, open in that build
 only. `./check-strhot.sh -tags cxfx` checks it (#432).
 

@@ -11,16 +11,16 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	filelog "github.com/skycoin/skycoin-cx/t0-cx-runtime-filelog"
-	opcodes "github.com/skycoin/skycoin-cx/t4-opcodes" // thin: only AssertFailed; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-opcodes" // thin: only AssertFailed; no depth gain
 
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
-	profiling "github.com/skycoin/skycoin-cx/t1-profiling"
+	"github.com/skycoin/skycoin-cx/t1-cx-runtime-profiling"
 	"github.com/skycoin/skycoin-cx/t10-cx-tools-repl" // thin: only Repl, TargetFunction; only user of cxrepl, could merge it here, max tier 11 to 10
 	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	printer "github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"             // thin: only MakeProgram, RegisterPackages; no depth gain
+	"github.com/skycoin/skycoin-cx/t7-cx-runtime-libraries"    // thin: only MakeProgram, RegisterPackages; no depth gain
 	"github.com/skycoin/skycoin-cx/t8-cx-compiler-fullparsing" // thin: only Tokenize; no depth gain
 	"github.com/skycoin/skycoin-cx/t9-cx-compiler-parsing"     // thin: only AddInitFunction, ErrCompilation, ParseSourceStrings; no depth gain
 )
@@ -53,8 +53,8 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	if astbuild.AST == nil {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0056 S0057.
-		astbuild.AST = cxinit.ProgramMake()
-		cxinit.PackagesRegister(astbuild.AST)
+		astbuild.AST = libraries.ProgramMake()
+		libraries.PackagesRegister(astbuild.AST)
 	}
 
 	sources := make([]string, len(sourceCode))

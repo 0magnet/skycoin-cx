@@ -3,10 +3,10 @@
 package main
 
 import (
-	cxos "github.com/skycoin/skycoin-cx/t5-cxos"
+	"github.com/skycoin/skycoin-cx/t5-cx-library-fileopcodes"
 )
 
 // The process library is linked into this core, see coreLibraryRegisters.
 func init() {
-	coreLibraryRegisters = append(coreLibraryRegisters, cxos.LibraryProcessRegister)
+	coreLibraryRegisters = append(coreLibraryRegisters, fileopcodes.LibraryProcessRegister)
 }

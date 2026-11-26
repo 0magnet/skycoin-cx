@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: tests use only MakeProgram, RegisterPackages; tests only, moving these tests up lets astapi drop to t5
+	"github.com/skycoin/skycoin-cx/t7-cx-runtime-libraries" // thin: tests use only MakeProgram, RegisterPackages; tests only, moving these tests up lets astapi drop to t5
 	"github.com/skycoin/skycoin-cx/t9-cx-core-astapi"
 )
 
@@ -15,8 +15,8 @@ func TestASTAPI_Packages(t *testing.T) {
 	t.Run("make program", func(t *testing.T) {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Now a constructor call, site S1613.
-		cxprogram = cxinit.ProgramMake()
-		cxinit.PackagesRegister(cxprogram)
+		cxprogram = libraries.ProgramMake()
+		libraries.PackagesRegister(cxprogram)
 		nativePkgs = len(cxprogram.Packages)
 	})
 

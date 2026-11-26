@@ -34,7 +34,7 @@ Counts are files, not rows.
 | cx | `cx/ast/` | 32 | keep | `t3-cx-core-ast` | AST, memory model, serializer and GC |
 | cx | `cx/constants/` | 2 | keep | `t1-cx-core-opcodetable` | Opcode, type and exit code constants |
 | cx | `cx/globals/` | 3 | keep | `t2-cx-core-environment` | Compiler wide flags and counters, a source of the shared process state |
-| cx | `cx/init/` | 1 | keep | `t7-init` | Builds an empty program and registers the stdlib |
+| cx | `cx/init/` | 1 | keep | `t7-cx-runtime-libraries` | Builds an empty program and registers the stdlib |
 | cx | `cx/types/` | 5 | keep | `t0-cx-core-valuetypes` | Leaf type codes and pointer size, imported by everything |
 | cx | `cx/util/` | 1 | keep | `t1-cx-runtime-sandbox`, `t0-cx-compiler-sourceargs`, `t0-cx-runtime-filelog` | Split by subject |
 
@@ -53,19 +53,19 @@ Counts are files, not rows.
 
 | Repo | Path | Files | Action | Now in | Reason |
 |---|---|---:|---|---|---|
-| cx | `cx/execute/` | 2 | keep | `t4-execute` | The interpreter loop |
-| cx | `cx/opcodes/` | 21 | keep | `t4-opcodes` | Native opcode implementations |
+| cx | `cx/execute/` | 2 | keep | `t4-cx-runtime-interpreter` | The interpreter loop |
+| cx | `cx/opcodes/` | 21 | keep | `t4-cx-runtime-opcodes` | Native opcode implementations |
 
 ## Standard library
 
 | Repo | Path | Files | Action | Now in | Reason |
 |---|---|---:|---|---|---|
 | cx | `cx/packages/` | 1 | keep | `t0-cx-core-syspackages` | Registry of built in package names |
-| cx | `cx/packages/cipher/` | 3 | keep | `t4-cipher` | CX cipher package, on by default now |
-| cx | `cx/packages/cxfx/` | 15 | keep | `t6-cxfx` | GL, GLFW, OpenAL and gltext bindings behind the cxfx tag (cgo) |
-| cx | `cx/packages/cxos/` | 7 | keep | `t5-cxos` | CX os, json, time and profile packages, on by default now |
-| cx | `cx/packages/regexp/` | 3 | keep | `t4-regexp` | CX regexp package, on by default now |
-| cx | `cx/packages/tcp/` | 2 | keep | `t4-cxnet` | CX net library, batched since skycoin-cx 508 |
+| cx | `cx/packages/cipher/` | 3 | keep | `t4-cx-library-cipher` | CX cipher package, on by default now |
+| cx | `cx/packages/cxfx/` | 15 | keep | `t6-cx-library-graphics` | GL, GLFW, OpenAL and gltext bindings behind the cxfx tag (cgo) |
+| cx | `cx/packages/cxos/` | 7 | keep | `t5-cx-library-fileopcodes` | CX os, json, time and profile packages, on by default now |
+| cx | `cx/packages/regexp/` | 3 | keep | `t4-cx-library-regexp` | CX regexp package, on by default now |
+| cx | `cx/packages/tcp/` | 2 | keep | `t4-cx-library-netopcodes` | CX net library, batched since skycoin-cx 508 |
 | cx-games | `libs/utest/` | 4 | merge | `skycoin-cx/lib/utest` | CX unit test library, runs on the current compiler |
 
 ## New compiler (WIP)
@@ -100,8 +100,8 @@ Counts are files, not rows.
 | cx | `cmd/cxrepl/` | 1 | keep | `t10-cx-tools-repl` | REPL used by t11-cx |
 | cx | `cmd/goyacc/` | 187 | delete | `go tool goyacc` | modernc goyacc copy, did not build and did not generate the parsers. golang.org/x/tools goyacc does |
 | cx | `cmd/token-fuzzer/` | 1 | keep | `t9-cx-tools-tokenfuzzer` | Lexer fuzzer, small |
-| cx | `cxparser/util/cxprof/` | 1 | merge | `t1-cxprof` | Nothing imports it, fold into t1-profiling or delete |
-| cx | `cxparser/util/profiling/` | 1 | keep | `t1-profiling` | Used by t11-cx and the parser |
+| cx | `cxparser/util/cxprof/` | 1 | merge | `t1-cxprof` | Nothing imports it, fold into t1-cx-runtime-profiling or delete |
+| cx | `cxparser/util/profiling/` | 1 | keep | `t1-cx-runtime-profiling` | Used by t11-cx and the parser |
 
 ## Tests
 

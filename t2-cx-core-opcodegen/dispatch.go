@@ -23,17 +23,17 @@ type dispatchGroup struct {
 }
 
 var dispatchGroups = []dispatchGroup{
-	{opcodetable.OpcodeGroupOsCore, "t5-cx-runtime-core/core_dispatch_oscore", "core", "coreOpcodeDispatchOsCore", "!nocxos", "nocxos", "github.com/skycoin/skycoin-cx/t4-cxos-core", "cxoscore"},
-	{opcodetable.OpcodeGroupRegexp, "t5-cx-runtime-core/core_dispatch_regexp", "core", "coreOpcodeDispatchRegexp", "!noregexp", "noregexp", "github.com/skycoin/skycoin-cx/t4-regexp", "regexp"},
-	{opcodetable.OpcodeGroupCxfx, "t6-cxfx/cxfx_dispatch", "cxfx", "CxfxOpcodeDispatch", "cxfx", "!cxfx", "", ""},
-	{opcodetable.OpcodeGroupCipher, "t4-cipher/cipher_dispatch", "cipher", "CipherOpcodeDispatch", "!nocipher", "nocipher", "", ""},
-	{opcodetable.OpcodeGroupNet, "t4-cxnet/net_dispatch", "cxnet", "NetOpcodeDispatch", "", "", "", ""},
-	{opcodetable.OpcodeGroupFile, "t5-cxos/file_dispatch", "cxos", "FileOpcodeDispatch", "!nocxos", "nocxos", "", ""},
+	{opcodetable.OpcodeGroupOsCore, "t5-cx-runtime-core/core_dispatch_oscore", "core", "coreOpcodeDispatchOsCore", "!nocxos", "nocxos", "github.com/skycoin/skycoin-cx/t4-cx-library-osopcodes", "osopcodes"},
+	{opcodetable.OpcodeGroupRegexp, "t5-cx-runtime-core/core_dispatch_regexp", "core", "coreOpcodeDispatchRegexp", "!noregexp", "noregexp", "github.com/skycoin/skycoin-cx/t4-cx-library-regexp", "regexp"},
+	{opcodetable.OpcodeGroupCxfx, "t6-cx-library-graphics/cxfx_dispatch", "graphics", "CxfxOpcodeDispatch", "cxfx", "!cxfx", "", ""},
+	{opcodetable.OpcodeGroupCipher, "t4-cx-library-cipher/cipher_dispatch", "cipher", "CipherOpcodeDispatch", "!nocipher", "nocipher", "", ""},
+	{opcodetable.OpcodeGroupNet, "t4-cx-library-netopcodes/net_dispatch", "netopcodes", "NetOpcodeDispatch", "", "", "", ""},
+	{opcodetable.OpcodeGroupFile, "t5-cx-library-fileopcodes/file_dispatch", "fileopcodes", "FileOpcodeDispatch", "!nocxos", "nocxos", "", ""},
 }
 
 // coreImports are the handler packages of OpcodeGroupCore.
 var coreImports = map[string]string{
-	"opcodes": "github.com/skycoin/skycoin-cx/t4-opcodes",
+	"opcodes": "github.com/skycoin/skycoin-cx/t4-cx-runtime-opcodes",
 	"printer": "github.com/skycoin/skycoin-cx/t4-cx-runtime-printer",
 }
 
@@ -43,7 +43,7 @@ const dispatchParameters = "(prgrm *ast.CXProgram, code int, inputs []ast.CXValu
 
 // dispatchFiles returns the switch files: CoreOpcodeDispatch for the core
 // group, with the opcodes of the tagged core groups in their own files, and
-// CxfxOpcodeDispatch in t6-cxfx.
+// CxfxOpcodeDispatch in t6-cx-library-graphics.
 func (gen *generated) dispatchFiles() map[string][]byte {
 	files := map[string][]byte{}
 	var b bytes.Buffer

@@ -4,7 +4,7 @@ package vm
 
 import (
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
-	"github.com/skycoin/skycoin-cx/t0-cxfiles"
+	"github.com/skycoin/skycoin-cx/t0-cx-library-filetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
 
@@ -14,11 +14,11 @@ import (
 func fileOpcodeRun(op ir.Opcode, memory []byte, offset uint32) {
 	switch op {
 	case ir.OpcodeFileClose:
-		valuetypes.BoolWrite(memory, valuetypes.Pointer(offset+4), cxfiles.FileHandleClose(valuetypes.I32Read(memory, valuetypes.Pointer(offset))))
+		valuetypes.BoolWrite(memory, valuetypes.Pointer(offset+4), filetable.FileHandleClose(valuetypes.I32Read(memory, valuetypes.Pointer(offset))))
 	case ir.OpcodeFileSeek:
-		position := cxfiles.FileHandleSeek(valuetypes.I32Read(memory, valuetypes.Pointer(offset)), valuetypes.I64Read(memory, valuetypes.Pointer(offset+4)), valuetypes.I32Read(memory, valuetypes.Pointer(offset+12)))
+		position := filetable.FileHandleSeek(valuetypes.I32Read(memory, valuetypes.Pointer(offset)), valuetypes.I64Read(memory, valuetypes.Pointer(offset+4)), valuetypes.I32Read(memory, valuetypes.Pointer(offset+12)))
 		valuetypes.I64Write(memory, valuetypes.Pointer(offset+16), position)
 	case ir.OpcodeFileSync:
-		valuetypes.BoolWrite(memory, valuetypes.Pointer(offset+4), cxfiles.FileHandleSync(valuetypes.I32Read(memory, valuetypes.Pointer(offset))))
+		valuetypes.BoolWrite(memory, valuetypes.Pointer(offset+4), filetable.FileHandleSync(valuetypes.I32Read(memory, valuetypes.Pointer(offset))))
 	}
 }

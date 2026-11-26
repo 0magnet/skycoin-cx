@@ -9,7 +9,7 @@ import (
 
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
-	"github.com/skycoin/skycoin-cx/t1-netbatch"
+	"github.com/skycoin/skycoin-cx/t1-cx-library-networkbatch"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
 
@@ -68,7 +68,7 @@ func netBufferLength(buffer []byte, length int32) []byte {
 // netReplayEndAssertFailure ends a program that asks for an update the
 // replay record does not hold.
 func netReplayEndAssertFailure() {
-	assert.PreconditionTrue(false, fmt.Sprintf("the net replay record has no update %d, or one of its entries names a socket the program did not open", netbatch.NetUpdateNumber()))
+	assert.PreconditionTrue(false, fmt.Sprintf("the net replay record has no update %d, or one of its entries names a socket the program did not open", networkbatch.NetUpdateNumber()))
 }
 
 // netOpcodeRun runs the net opcode op on the block at offset.
@@ -77,51 +77,51 @@ func netOpcodeRun(op ir.Opcode, memory []byte, offset uint32) {
 	block := netBlock{memory, offset}
 	switch op {
 	case ir.OpcodeNetUpdate:
-		count := netbatch.NetUpdate(block.blockI32())
+		count := networkbatch.NetUpdate(block.blockI32())
 		if count < 0 {
 			netReplayEndAssertFailure()
 		}
 		block.blockI32Write(count)
 	case ir.OpcodeNetReadyCount:
-		block.blockI32Write(netbatch.NetReadyCount())
+		block.blockI32Write(networkbatch.NetReadyCount())
 	case ir.OpcodeNetReadyNext:
-		handle, trigger, messageID, detail := netbatch.NetReadyNext()
+		handle, trigger, messageID, detail := networkbatch.NetReadyNext()
 		block.blockI32Write(handle)
 		block.blockI32Write(int32(trigger))
 		block.blockI32Write(messageID)
 		block.blockI32Write(detail)
 	case ir.OpcodeNetClock:
-		valuetypes.I64Write(memory, valuetypes.Pointer(offset), netbatch.NetClock())
+		valuetypes.I64Write(memory, valuetypes.Pointer(offset), networkbatch.NetClock())
 	case ir.OpcodeNetRead:
 		handle, messageID, buffer, payloadOffset := block.blockI32(), block.blockI32(), block.blockBuffer(), block.blockI32()
-		block.blockI32Write(netbatch.NetRead(handle, messageID, buffer, payloadOffset))
+		block.blockI32Write(networkbatch.NetRead(handle, messageID, buffer, payloadOffset))
 	case ir.OpcodeNetWrite:
 		handle, buffer := block.blockI32(), block.blockBuffer()
 		buffer = netBufferLength(buffer, block.blockI32())
-		block.blockI32Write(netbatch.NetWrite(handle, buffer))
+		block.blockI32Write(networkbatch.NetWrite(handle, buffer))
 	case ir.OpcodeNetClose:
-		block.blockBoolWrite(netbatch.NetClose(block.blockI32()))
+		block.blockBoolWrite(networkbatch.NetClose(block.blockI32()))
 	case ir.OpcodeNetTimeoutSet:
 		handle, milliseconds := block.blockI32(), block.blockI32()
-		block.blockBoolWrite(netbatch.NetTimeoutSet(handle, milliseconds))
+		block.blockBoolWrite(networkbatch.NetTimeoutSet(handle, milliseconds))
 	case ir.OpcodeNetTCPListen:
-		block.blockI32Write(netbatch.NetTCPListen(block.blockAddress()))
+		block.blockI32Write(networkbatch.NetTCPListen(block.blockAddress()))
 	case ir.OpcodeNetTCPDial:
-		block.blockI32Write(netbatch.NetTCPDial(block.blockAddress()))
+		block.blockI32Write(networkbatch.NetTCPDial(block.blockAddress()))
 	case ir.OpcodeNetUDPListen:
-		block.blockI32Write(netbatch.NetUDPListen(block.blockAddress()))
+		block.blockI32Write(networkbatch.NetUDPListen(block.blockAddress()))
 	case ir.OpcodeNetUDPDial:
-		block.blockI32Write(netbatch.NetUDPDial(block.blockAddress()))
+		block.blockI32Write(networkbatch.NetUDPDial(block.blockAddress()))
 	case ir.OpcodeNetUDPReadFrom:
 		handle, messageID, buffer, payloadOffset := block.blockI32(), block.blockI32(), block.blockBuffer(), block.blockI32()
-		length, peer := netbatch.NetUDPReadFrom(handle, messageID, buffer, payloadOffset)
+		length, peer := networkbatch.NetUDPReadFrom(handle, messageID, buffer, payloadOffset)
 		block.blockI32Write(length)
 		block.blockI32Write(peer)
 	case ir.OpcodeNetUDPWriteTo:
 		handle, peer, buffer := block.blockI32(), block.blockI32(), block.blockBuffer()
 		buffer = netBufferLength(buffer, block.blockI32())
-		block.blockI32Write(netbatch.NetUDPWriteTo(handle, peer, buffer))
+		block.blockI32Write(networkbatch.NetUDPWriteTo(handle, peer, buffer))
 	case ir.OpcodeNetUDPPeerResolve:
-		block.blockI32Write(netbatch.NetUDPPeerResolve(block.blockAddress()))
+		block.blockI32Write(networkbatch.NetUDPPeerResolve(block.blockAddress()))
 	}
 }

@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
-	"github.com/skycoin/skycoin-cx/t1-netbatch"
+	"github.com/skycoin/skycoin-cx/t1-cx-library-networkbatch"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
 
@@ -55,10 +55,10 @@ func main() { global buffer
 // side to plain Go peers on loopback and returns the peers.
 func runNetPeers(t *testing.T, count int) []net.Conn {
 	t.Helper()
-	if err := netbatch.NetRunStart(netbatch.NetModeLive, ""); err != nil {
+	if err := networkbatch.NetRunStart(networkbatch.NetModeLive, ""); err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(netbatch.NetRunStop)
+	t.Cleanup(networkbatch.NetRunStop)
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
@@ -66,7 +66,7 @@ func runNetPeers(t *testing.T, count int) []net.Conn {
 	defer listener.Close()
 	address := listener.Addr().(*net.TCPAddr)
 	for i := 0; i < count; i++ {
-		netbatch.NetTCPDial(net.JoinHostPort("127.0.0.1", strconv.Itoa(address.Port)))
+		networkbatch.NetTCPDial(net.JoinHostPort("127.0.0.1", strconv.Itoa(address.Port)))
 	}
 	var peers []net.Conn
 	for len(peers) < count {
@@ -79,13 +79,13 @@ func runNetPeers(t *testing.T, count int) []net.Conn {
 	connected := 0
 	deadline := time.Now().Add(5 * time.Second)
 	for connected < count && time.Now().Before(deadline) {
-		netbatch.NetUpdate(20)
+		networkbatch.NetUpdate(20)
 		for {
-			_, trigger, _, _ := netbatch.NetReadyNext()
-			if trigger == netbatch.NetTriggerNone {
+			_, trigger, _, _ := networkbatch.NetReadyNext()
+			if trigger == networkbatch.NetTriggerNone {
 				break
 			}
-			if trigger == netbatch.NetTriggerConnected {
+			if trigger == networkbatch.NetTriggerConnected {
 				connected++
 			}
 		}
@@ -103,7 +103,7 @@ func runNetSend(peers []net.Conn, payload []byte) {
 		peer.Write(payload)
 	}
 	deadline := time.Now().Add(5 * time.Second)
-	for netbatch.NetArrivalsPending() < len(peers) && time.Now().Before(deadline) {
+	for networkbatch.NetArrivalsPending() < len(peers) && time.Now().Before(deadline) {
 		time.Sleep(50 * time.Microsecond)
 	}
 }
@@ -133,14 +133,14 @@ func TestRunNetAllocs(t *testing.T) {
 		compileRunProgram(t, runBenchProgram{name: "net", source: runNetSource})
 		astbuild.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberNet] = true
 		core.LibrariesEnabledResolve(astbuild.AST)
-		execute.RunPrepare(astbuild.AST)
+		interpreter.RunPrepare(astbuild.AST)
 		compiled = append(compiled, astbuild.AST)
 	}
 	payload := []byte("ab")
 	next := 0
 	allocs := testing.AllocsPerRun(runs, func() {
 		runNetSend(peers, payload)
-		if err := execute.RunCompiled(compiled[next], 0, nil); err != nil {
+		if err := interpreter.RunCompiled(compiled[next], 0, nil); err != nil {
 			t.Fatal(err)
 		}
 		next++

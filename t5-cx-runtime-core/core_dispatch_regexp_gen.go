@@ -8,7 +8,7 @@ import (
 	// GCREACH: t3-cx-core-ast owns the heap. The switch hands the operands to the
 	// handlers and allocates nothing, see docs/GarbageCollector.md.
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	regexp "github.com/skycoin/skycoin-cx/t4-regexp"
+	regexp "github.com/skycoin/skycoin-cx/t4-cx-library-regexp"
 )
 
 // coreOpcodeDispatchRegexp runs the opcode code of opcodetable.OpcodeGroupRegexp on its operands

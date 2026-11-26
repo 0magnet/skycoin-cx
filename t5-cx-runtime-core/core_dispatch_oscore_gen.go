@@ -8,7 +8,7 @@ import (
 	// GCREACH: t3-cx-core-ast owns the heap. The switch hands the operands to the
 	// handlers and allocates nothing, see docs/GarbageCollector.md.
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	cxoscore "github.com/skycoin/skycoin-cx/t4-cxos-core"
+	osopcodes "github.com/skycoin/skycoin-cx/t4-cx-library-osopcodes"
 )
 
 // coreOpcodeDispatchOsCore runs the opcode code of opcodetable.OpcodeGroupOsCore on its operands
@@ -16,13 +16,13 @@ import (
 func coreOpcodeDispatchOsCore(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, outputs []ast.CXValue) bool {
 	switch code {
 	case 135:
-		cxoscore.OpTimeSleep(prgrm, inputs, outputs)
+		osopcodes.OpTimeSleep(prgrm, inputs, outputs)
 	case 136:
-		cxoscore.OpTimeUnixMilli(prgrm, inputs, outputs)
+		osopcodes.OpTimeUnixMilli(prgrm, inputs, outputs)
 	case 137:
-		cxoscore.OpTimeUnixNano(prgrm, inputs, outputs)
+		osopcodes.OpTimeUnixNano(prgrm, inputs, outputs)
 	case 190:
-		cxoscore.OpOsExit(prgrm, inputs, outputs)
+		osopcodes.OpOsExit(prgrm, inputs, outputs)
 	default:
 		return false
 	}

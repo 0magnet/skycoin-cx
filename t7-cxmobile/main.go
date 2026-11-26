@@ -16,7 +16,7 @@ import (
 	"golang.org/x/mobile/event/touch"
 	"golang.org/x/mobile/gl"
 
-	"github.com/skycoin/skycoin-cx/t6-cxfx"
+	"github.com/skycoin/skycoin-cx/t6-cx-library-graphics"
 )
 
 func startCXVM() {
@@ -46,31 +46,31 @@ func eventLoop(a app.App) {
 				case lifecycle.CrossOn:
 					var glctx gl.Context
 					glctx, _ = e.DrawContext.(gl.Context)
-					cxfx.SetGLContext(glctx)
-					cxfx.SetGOApp(a)
-					cxfx.EventPush(cxfx.AppStart)
+					graphics.SetGLContext(glctx)
+					graphics.SetGOApp(a)
+					graphics.EventPush(graphics.AppStart)
 				case lifecycle.CrossOff:
-					cxfx.EventPush(cxfx.AppStop)
+					graphics.EventPush(graphics.AppStop)
 				}
 			case size.Event:
-				cxfx.FramebufferSizeEventPush(float64(e.WidthPx), float64(e.HeightPx))
-				cxfx.WindowSizeEventPush(float64(e.WidthPx), float64(e.HeightPx))
+				graphics.FramebufferSizeEventPush(float64(e.WidthPx), float64(e.HeightPx))
+				graphics.WindowSizeEventPush(float64(e.WidthPx), float64(e.HeightPx))
 			case paint.Event:
-				cxfx.EventPush(cxfx.AppPaint)
+				graphics.EventPush(graphics.AppPaint)
 				//if glctx == nil || e.External {
 				//	continue
 				//}
 			case touch.Event:
-				cxfxAction := cxfx.ActionRelease
+				cxfxAction := graphics.ActionRelease
 				switch e.Type {
 				case touch.TypeBegin:
-					cxfxAction = cxfx.ActionPress
+					cxfxAction = graphics.ActionPress
 				case touch.TypeMove:
-					cxfxAction = cxfx.ActionMove
+					cxfxAction = graphics.ActionMove
 				case touch.TypeEnd:
-					cxfxAction = cxfx.ActionRelease
+					cxfxAction = graphics.ActionRelease
 				}
-				cxfx.MouseEventPush(cxfx.AppMouse, cxfxAction, int32(e.Sequence), int64(e.Sequence), 0, float64(e.X), float64(e.Y))
+				graphics.MouseEventPush(graphics.AppMouse, cxfxAction, int32(e.Sequence), int64(e.Sequence), 0, float64(e.X), float64(e.Y))
 			}
 		}
 	}()

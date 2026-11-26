@@ -11,15 +11,15 @@ import (
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
-	profiling "github.com/skycoin/skycoin-cx/t1-profiling"
+	"github.com/skycoin/skycoin-cx/t1-cx-runtime-profiling"
 	"github.com/skycoin/skycoin-cx/t10-cx-tools-repl"      // thin: only Repl, TargetFunction; only user of cxrepl, could merge it here, max tier 11 to 10
 	"github.com/skycoin/skycoin-cx/t2-cx-core-environment" // thin: only DebugGolangStackTrace; no depth gain
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	cxnet "github.com/skycoin/skycoin-cx/t4-cxnet"          // thin: only ConstantsInit; no depth gain
-	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core" // thin: only ExecutorRun, ExecutorMemoryLimitsClamp and the executor names; no depth gain
-	cxos "github.com/skycoin/skycoin-cx/t5-cxos"            // thin: only ConstantsInit; no depth gain
-	cxfx "github.com/skycoin/skycoin-cx/t6-cxfx"            // thin: only ConstantsInit; no depth gain
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"          // thin: only MakeProgram, RegisterPackages; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-cx-library-netopcodes"  // thin: only ConstantsInit; no depth gain
+	"github.com/skycoin/skycoin-cx/t5-cx-library-fileopcodes" // thin: only ConstantsInit; no depth gain
+	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"   // thin: only ExecutorRun, ExecutorMemoryLimitsClamp and the executor names; no depth gain
+	"github.com/skycoin/skycoin-cx/t6-cx-library-graphics"    // thin: only ConstantsInit; no depth gain
+	"github.com/skycoin/skycoin-cx/t7-cx-runtime-libraries"   // thin: only MakeProgram, RegisterPackages; no depth gain
 )
 
 func main() {
@@ -237,16 +237,16 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 	// Init 4: cx.* constants in actions.ConstCodes
 	astbuild.ConstantsInit()
 	// Init 5: os.* constants (empty with nocxos)
-	cxos.ConstantsInit(astbuild.ConstI32Add)
-	cxnet.ConstantsInit(astbuild.ConstI32Add)
+	fileopcodes.ConstantsInit(astbuild.ConstI32Add)
+	netopcodes.ConstantsInit(astbuild.ConstI32Add)
 	// Init 6: gl, glfw and al constants (empty without cxfx)
-	cxfx.ConstantsInit()
+	graphics.ConstantsInit()
 	// Init 7: actions.AST, the program state
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0062 S0063.
-	astbuild.AST = cxinit.ProgramMake()
+	astbuild.AST = libraries.ProgramMake()
 	// Init 8: native packages in the program and the global opcode tables
-	cxinit.PackagesRegister(astbuild.AST)
+	libraries.PackagesRegister(astbuild.AST)
 	// Init 9: built-in opcode and operator tables
 
 	enabled, operations, problem := librariesEnabledParse(options.enable)

@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	"github.com/skycoin/skycoin-cx/t4-cxnet"
-	"github.com/skycoin/skycoin-cx/t5-cxos"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
+	"github.com/skycoin/skycoin-cx/t4-cx-library-netopcodes"
+	"github.com/skycoin/skycoin-cx/t5-cx-library-fileopcodes"
+	"github.com/skycoin/skycoin-cx/t7-cx-runtime-libraries"
 )
 
 func TestMain(m *testing.M) {
@@ -46,10 +46,10 @@ func TestNoArgsStartsRepl(t *testing.T) {
 
 func initProgram() {
 	astbuild.ConstantsInit()
-	cxos.ConstantsInit(astbuild.ConstI32Add)
-	cxnet.ConstantsInit(astbuild.ConstI32Add)
+	fileopcodes.ConstantsInit(astbuild.ConstI32Add)
+	netopcodes.ConstantsInit(astbuild.ConstI32Add)
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0064 S0065.
-	astbuild.AST = cxinit.ProgramMake()
-	cxinit.PackagesRegister(astbuild.AST)
+	astbuild.AST = libraries.ProgramMake()
+	libraries.PackagesRegister(astbuild.AST)
 }

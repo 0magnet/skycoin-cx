@@ -20,7 +20,7 @@ type libraryDispatch struct {
 }
 
 var libraryDispatches = []libraryDispatch{
-	{opcodetable.LibraryNumberProcess, "t5-cxos/library_process_dispatch_gen.go", "cxos", "LibraryProcessDispatch", "!nocxos"},
+	{opcodetable.LibraryNumberProcess, "t5-cx-library-fileopcodes/library_process_dispatch_gen.go", "fileopcodes", "LibraryProcessDispatch", "!nocxos"},
 }
 
 // librariesGenerated is everything opcodegen derives from

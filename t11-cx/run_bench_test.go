@@ -15,9 +15,9 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"
+	"github.com/skycoin/skycoin-cx/t7-cx-runtime-libraries"
 )
 
 // runBenchProgram is a CX program BenchmarkRun and TestRunAllocs execute.
@@ -156,8 +156,8 @@ func compileRunProgram(tb testing.TB, p runBenchProgram) {
 func compileRunSources(tb testing.TB, names []string, sources []string) {
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1780 S1781.
-	astbuild.AST = cxinit.ProgramMake()
-	cxinit.PackagesRegister(astbuild.AST)
+	astbuild.AST = libraries.ProgramMake()
+	libraries.PackagesRegister(astbuild.AST)
 	environment.FoundCompileErrors = false
 	environment.HeapOffset = 0
 	if err := compileSourceStrings(names, sources); err != nil {
@@ -194,9 +194,9 @@ func BenchmarkRun(b *testing.B) {
 				b.StopTimer()
 				ast.ProgramMemoryRelease(astbuild.AST)
 				compileRunProgram(b, p)
-				execute.RunPrepare(astbuild.AST)
+				interpreter.RunPrepare(astbuild.AST)
 				b.StartTimer()
-				if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
+				if err := interpreter.RunCompiled(astbuild.AST, 0, nil); err != nil {
 					b.Fatal(err)
 				}
 			}
@@ -220,12 +220,12 @@ func TestRunAllocs(t *testing.T) {
 			var compiled []*ast.CXProgram
 			for i := 0; i <= runs; i++ {
 				compileRunProgram(t, p)
-				execute.RunPrepare(astbuild.AST)
+				interpreter.RunPrepare(astbuild.AST)
 				compiled = append(compiled, astbuild.AST)
 			}
 			next := 0
 			allocs := testing.AllocsPerRun(runs, func() {
-				if err := execute.RunCompiled(compiled[next], 0, nil); err != nil {
+				if err := interpreter.RunCompiled(compiled[next], 0, nil); err != nil {
 					t.Fatal(err)
 				}
 				next++
@@ -396,11 +396,11 @@ func TestRunNoGC(t *testing.T) {
 		t.Run(p.name, func(t *testing.T) {
 			discardStdout(t)
 			compileRunProgram(t, p)
-			execute.RunPrepare(astbuild.AST)
+			interpreter.RunPrepare(astbuild.AST)
 			var before, after runtime.MemStats
 			runtime.GC()
 			runtime.ReadMemStats(&before)
-			if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
+			if err := interpreter.RunCompiled(astbuild.AST, 0, nil); err != nil {
 				t.Fatal(err)
 			}
 			runtime.ReadMemStats(&after)
@@ -430,9 +430,9 @@ func BenchmarkLoad(b *testing.B) {
 				compileStart := time.Now()
 				compileRunSources(b, []string{name}, []string{string(source)})
 				prepareStart := time.Now()
-				execute.RunPrepare(astbuild.AST)
+				interpreter.RunPrepare(astbuild.AST)
 				runStart := time.Now()
-				if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
+				if err := interpreter.RunCompiled(astbuild.AST, 0, nil); err != nil {
 					b.Fatal(err)
 				}
 				runEnd := time.Now()

@@ -7,7 +7,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter"
 	"github.com/skycoin/skycoin-cx/t9-cx-compiler-parsing"
 )
 
@@ -44,7 +44,7 @@ func TestRunCompiledMaxOps(t *testing.T) {
 	astbuild.AST.CxIrState.StringPool.StringPoolFreeze()
 	before := len(astbuild.AST.CXAtomicOps)
 	out := captureStdout(t, func() {
-		if err := execute.RunCompiled(astbuild.AST, 1000, nil); err != nil {
+		if err := interpreter.RunCompiled(astbuild.AST, 1000, nil); err != nil {
 			t.Fatal(err)
 		}
 	})

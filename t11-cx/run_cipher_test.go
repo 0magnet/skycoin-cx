@@ -11,7 +11,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 	"github.com/skycoin/skycoin/src/cipher"
 )
@@ -119,7 +119,7 @@ func runCipherCompile(tb testing.TB, p runBenchProgram) *ast.CXProgram {
 	compileRunProgram(tb, p)
 	astbuild.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberCipher] = true
 	core.LibrariesEnabledResolve(astbuild.AST)
-	execute.RunPrepare(astbuild.AST)
+	interpreter.RunPrepare(astbuild.AST)
 	return astbuild.AST
 }
 
@@ -133,7 +133,7 @@ func runCipherAllocs(t *testing.T, p runBenchProgram) float64 {
 	}
 	next := 0
 	return testing.AllocsPerRun(runs, func() {
-		if err := execute.RunCompiled(compiled[next], 0, nil); err != nil {
+		if err := interpreter.RunCompiled(compiled[next], 0, nil); err != nil {
 			t.Fatal(err)
 		}
 		next++
@@ -186,7 +186,7 @@ func BenchmarkRunCipher(b *testing.B) {
 				b.StopTimer()
 				prgrm := runCipherCompile(b, p)
 				b.StartTimer()
-				if err := execute.RunCompiled(prgrm, 0, nil); err != nil {
+				if err := interpreter.RunCompiled(prgrm, 0, nil); err != nil {
 					b.Fatal(err)
 				}
 			}

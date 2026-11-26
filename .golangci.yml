@@ -85,7 +85,7 @@ linters:
       - linters:
           - gosec
         text: "G(204|702):"
-        path: (_test\.go|t11-cx/build_llvm\.go|t11-cx/build_llvm_tinygo\.go|t5-cxos/op_os\.go)
+        path: (_test\.go|t11-cx/build_llvm\.go|t11-cx/build_llvm_tinygo\.go|t5-cx-library-fileopcodes/op_os\.go)
       # Tests run the binaries they build on the files they write, in their
       # own temporary directories.
       - linters:
@@ -186,13 +186,13 @@ linters:
         linters: [errcheck, gosec]
       - path: ^t1-cx-tools-programtest/main\.go$
         linters: [errcheck, misspell, staticcheck, unparam]
-      - path: ^t1-netbatch/netbatch\.go$
+      - path: ^t1-cx-library-networkbatch/netbatch\.go$
         linters: [errcheck]
-      - path: ^t1-netbatch/netbatch_test\.go$
+      - path: ^t1-cx-library-networkbatch/netbatch_test\.go$
         linters: [errcheck]
-      - path: ^t1-netbatch/replay\.go$
+      - path: ^t1-cx-library-networkbatch/replay\.go$
         linters: [errcheck]
-      - path: ^t1-netbatch/socket\.go$
+      - path: ^t1-cx-library-networkbatch/socket\.go$
         linters: [errcheck]
       - path: ^t1-cx-tools-packageloader/loader\.go$
         linters: [errcheck]
@@ -202,7 +202,7 @@ linters:
         linters: [errcheck]
       - path: ^t1-cx-tools-packageloader/textform\.go$
         linters: [errcheck]
-      - path: ^t1-profiling/profiling\.go$
+      - path: ^t1-cx-runtime-profiling/profiling\.go$
         linters: [errcheck]
       - path: ^t2-cx-core-opcodegen/dispatch\.go$
         linters: [errcheck]
@@ -250,7 +250,7 @@ linters:
         linters: [errcheck, unconvert]
       - path: ^t4-cx-compiler-astbuild/variables\.go$
         linters: [unconvert]
-      - path: ^t4-cipher/op_cipher_test\.go$
+      - path: ^t4-cx-library-cipher/op_cipher_test\.go$
         linters: [errcheck]
       - path: ^t4-cx-runtime-printer/compileerror\.go$
         linters: [errcheck]
@@ -258,21 +258,21 @@ linters:
         linters: [errcheck]
       - path: ^t4-cx-runtime-printer/stack\.go$
         linters: [errcheck]
-      - path: ^t4-execute/execute\.go$
+      - path: ^t4-cx-runtime-interpreter/execute\.go$
         linters: [staticcheck]
-      - path: ^t4-opcodes/op_fmt\.go$
+      - path: ^t4-cx-runtime-opcodes/op_fmt\.go$
         linters: [errcheck, unconvert]
-      - path: ^t4-opcodes/op_format\.go$
+      - path: ^t4-cx-runtime-opcodes/op_format\.go$
         linters: [errcheck]
-      - path: ^t4-opcodes/op_i16\.go$
+      - path: ^t4-cx-runtime-opcodes/op_i16\.go$
         linters: [unconvert]
-      - path: ^t4-opcodes/op_i64\.go$
+      - path: ^t4-cx-runtime-opcodes/op_i64\.go$
         linters: [unconvert]
-      - path: ^t4-opcodes/op_testing\.go$
+      - path: ^t4-cx-runtime-opcodes/op_testing\.go$
         linters: [errcheck, staticcheck, unparam]
-      - path: ^t4-regexp/init\.go$
+      - path: ^t4-cx-library-regexp/init\.go$
         linters: [errcheck]
-      - path: ^t5-cxos/op_os\.go$
+      - path: ^t5-cx-library-fileopcodes/op_os\.go$
         linters: [errcheck, nakedret, unconvert, unparam]
       - path: ^t5-cx-compiler-partialparsing/lex\.go$
         linters: [ineffassign, unconvert]

@@ -11,7 +11,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter"
 )
 
 // serializeDeclarationSource declares a local variable, which Deserialize
@@ -47,7 +47,7 @@ func TestSerializeDeclaration(t *testing.T) {
 		}
 		astbuild.AST = got
 		out := lowerCompareCaptureStdout(t, func() {
-			if err := execute.RunCompiled(got, 0, nil); err != nil {
+			if err := interpreter.RunCompiled(got, 0, nil); err != nil {
 				t.Fatal(err)
 			}
 		})
