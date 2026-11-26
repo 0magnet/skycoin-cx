@@ -6,8 +6,8 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
-// hasDeclSpec determines if an argument has certain declaration specifier.
-func hasDeclSpec(arg *ast.CXArgument, spec int) bool {
+// declarationSpecifierFound determines if an argument has certain declaration specifier.
+func declarationSpecifierFound(arg *ast.CXArgument, spec int) bool {
 	found := false
 	for _, s := range arg.DeclarationSpecifiers {
 		if s == spec {
@@ -17,8 +17,8 @@ func hasDeclSpec(arg *ast.CXArgument, spec int) bool {
 	return found
 }
 
-// hasDerefOp determines if an argument has certain dereference operation
-func hasDerefOp(arg *ast.CXArgument, spec int) bool {
+// derefOpFound determines if an argument has certain dereference operation
+func derefOpFound(arg *ast.CXArgument, spec int) bool {
 	found := false
 	for _, s := range arg.DereferenceOperations {
 		if s == spec {
@@ -82,13 +82,13 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, storag
 }
 
 // WritePrimary writes those bytes to prgrm.Data and returns a []CXExpression.
-func WritePrimaryExprs(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, isSlice bool) []ast.CXExpression {
+func WritePrimaryExprs(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, sliceTyped bool) []ast.CXExpression {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
 
-	arg := WritePrimary(prgrm, typeCode, byts, isSlice)
+	arg := WritePrimary(prgrm, typeCode, byts, sliceTyped)
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1055.
@@ -141,8 +141,8 @@ func primaryIdentifierExpressions(prgrm *ast.CXProgram, identGid stringpool.Stri
 	return []ast.CXExpression{*expr}
 }
 
-// IsAllArgsBasicTypes checks if all the input arguments in an expressions are of basic type.
-func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
+// ArgsAllBasicTypes checks if all the input arguments in an expressions are of basic type.
+func ArgsAllBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S1084.
 	expression, err := prgrm.GetCXAtomicOp(expr.Index)

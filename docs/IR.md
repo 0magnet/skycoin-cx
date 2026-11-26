@@ -83,13 +83,13 @@ A function is finished by `actions.FunctionHeader`, which adds the
 (`t4-actions/functions.go`), which
 
 * adds the parameters with `FunctionAddParameters`,
-* resolves `goto` targets with `ProcessGoTos`,
+* resolves `goto` targets with `GoTosResolve`,
 * appends the expressions with `AddExprsToFunction`,
 * gives every parameter and local a frame offset through
-  `ProcessFunctionParameters`, `ProcessExpressionArguments` and
+  `FunctionParametersDeclare`, `ExpressionArgumentsResolve` and
   `UpdateSymbolsTable`, renaming each local to `<n>:<name>`,
 * type checks each expression (`CheckTypes`, `checkOperatorOperands`) and
-  replaces untyped operators with typed ones in `ProcessTypedOperator`,
+  replaces untyped operators with typed ones in `TypedOperatorResolve`,
   so `+` on `i32` becomes `i32.add`,
 * sets `CXFunction.LineCount = len(fn.Expressions)` and `CXFunction.Size`
   to the frame size.
@@ -271,7 +271,7 @@ with distance `n` continues at `i + n + 1`. `n = 0` falls through.
   is a compile error. A literal or variable condition is read in place.
 * `goto L` is an `OP_GOTO` expression whose `Label` is `L`, and the
   statement labelled `L` has the same `Label` on each expression that has
-  none yet. `actions.ProcessGoTos`
+  none yet. `actions.GoTosResolve`
   finds that expression at index `j` and sets `ThenLines = j - i - 1`.
 * `return` (`actions.AddJmpToReturnExpressions`) is an `OP_GOTO` with a
   generated label `*lbl_<n>` and `ThenLines = types.MAX_INT32`, which
@@ -511,7 +511,7 @@ When it is true, `Line` becomes 7 and the then block runs. The `jmp` at
 
 `sum` and `i32.add` resolve differently although both are called the same
 way. `sum` stays a user function call at index 2, and `+` becomes the
-native `i32.add` in `ProcessTypedOperator`. The arenas end up with 8
+native `i32.add` in `TypedOperatorResolve`. The arenas end up with 8
 functions in `CXFunctionMng`, three user functions (`sum`, `main`, `*init`) and five
 per-expression native copies.
 
@@ -766,7 +766,7 @@ This document does not list the opcodes. The list is
   turns a call by an old name into a compile error that names the new one.
 * The typed operators are also reachable through
   `constants.OpcodeOperatorOf(typeCode, opcode)`, which is how
-  `ProcessTypedOperator` turns `add` (82) into `i32.add` (383).
+  `TypedOperatorResolve` turns `add` (82) into `i32.add` (383).
 
 Before [#297](https://github.com/skycoin/skycoin-cx/pull/297) the
 numbers above `END_OF_NAMED_OPCODES` came from registration order and

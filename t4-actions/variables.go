@@ -8,7 +8,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
-func processGlobalInitializer(prgrm *ast.CXProgram, initializer []ast.CXExpression, glblIdx ast.CXTypeSignatureIndex) {
+func globalInitializerResolve(prgrm *ast.CXProgram, initializer []ast.CXExpression, glblIdx ast.CXTypeSignatureIndex) {
 	start := len(prgrm.SysInitExprs)
 	glbl := prgrm.GetCXTypeSignatureFromArray(glblIdx)
 	defer prgrm.CXProgramGlobalInitializerAdd(prgrm.CurrentPackage, glbl.Name, start)
@@ -262,7 +262,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// If `initializer` is `nil`, this means that an expression
 		// equivalent to nil was used, such as `[]i32{}`.
 		if doesInitialize && initializer != nil {
-			processGlobalInitializer(prgrm, initializer, glbl.Index)
+			globalInitializerResolve(prgrm, initializer, glbl.Index)
 		}
 	} else {
 		// then it hasn't been defined
@@ -291,7 +291,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// If `initializer` is `nil`, this means that an expression
 		// equivalent to nil was used, such as `[]i32{}`.
 		if doesInitialize && initializer != nil {
-			processGlobalInitializer(prgrm, initializer, typeSignatureIdx)
+			globalInitializerResolve(prgrm, initializer, typeSignatureIdx)
 		}
 	}
 
@@ -301,7 +301,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	}
 }
 
-func processLocalInitialization(prgrm *ast.CXProgram, pkg *ast.CXPackage, initializer *[]ast.CXExpression, localVarIdx ast.CXTypeSignatureIndex, declSpecIdx ast.CXArgumentIndex) {
+func localInitializationResolve(prgrm *ast.CXProgram, pkg *ast.CXPackage, initializer *[]ast.CXExpression, localVarIdx ast.CXTypeSignatureIndex, declSpecIdx ast.CXArgumentIndex) {
 	initializerExpression, err := prgrm.GetCXAtomicOpFromExpressions(*initializer, len(*initializer)-1)
 	if err != nil {
 		panic(err)
@@ -452,7 +452,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 	// equivalent to nil was used, such as `[]i32{}`.
 	if doesInitialize && initializer != nil {
 		outputlessValueCheck(prgrm, initializer)
-		processLocalInitialization(prgrm, pkg, &initializer, localVarTypeSigIdx, declSpecIdx)
+		localInitializationResolve(prgrm, pkg, &initializer, localVarTypeSigIdx, declSpecIdx)
 		prgrm.ReleaseCXArgUnlessNamed(declarationSpecifiers, localVarTypeSigIdx)
 
 		// OBJMODEL: state.CXExpressionMng (manager storage) or []CXExpressionGid, phase 4 #346.
@@ -569,7 +569,7 @@ func DeclareGlobals(prgrm *ast.CXProgram, names []*ast.CXArgument, spec *ast.CXA
 				nameSpec = DeclarationSpecifiersBasic(prgrm, types.INVALID)
 			} else {
 				if !GlobalRedeclarationCheck(prgrm, name) && initialized && values[i] != nil {
-					processGlobalInitializer(prgrm, values[i], glbl.Index)
+					globalInitializerResolve(prgrm, values[i], glbl.Index)
 				}
 				prgrm.ReleaseCXArgBuilder(name)
 				continue

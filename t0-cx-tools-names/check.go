@@ -170,11 +170,12 @@ func NameCheckRun(rows []NameRow, allowlistPath string) int {
 
 // NameCheckVerbs are the verbs that may not lead an exported function or
 // method name. The subject leads, so related names sort together:
-// RouteGroupClose, not CloseRouteGroup.
+// RouteGroupClose, not CloseRouteGroup. Run and compile are not listed, they
+// are subjects as well, as in RunBuffersPrepare and CompileErrorList.
 var NameCheckVerbs = map[string]bool{
 	"add": true, "alloc": true, "allocate": true, "append": true, "apply": true,
 	"assign": true, "build": true, "calculate": true, "call": true, "cast": true,
-	"check": true, "clear": true, "close": true, "collect": true, "compile": true,
+	"check": true, "clear": true, "close": true, "collect": true,
 	"compute": true, "convert": true, "copy": true, "create": true, "declare": true,
 	"decode": true, "delete": true, "deserialize": true, "emit": true, "encode": true,
 	"execute": true, "extract": true, "find": true, "format": true, "free": true,
@@ -182,7 +183,7 @@ var NameCheckVerbs = map[string]bool{
 	"lookup": true, "make": true, "mark": true, "new": true, "open": true,
 	"parse": true, "pop": true, "print": true, "push": true, "read": true,
 	"register": true, "release": true, "remove": true, "reset": true,
-	"resize": true, "resolve": true, "run": true, "save": true, "scan": true,
+	"resize": true, "resolve": true, "save": true, "scan": true,
 	"serialize": true, "set": true, "start": true, "stop": true, "update": true,
 	"validate": true, "verify": true, "write": true,
 }

@@ -541,7 +541,7 @@ type escapeSlot struct {
 
 // escapeDeclare gives a new escaped local the next frame slot, which holds
 // the address of its heap object.
-func escapeDeclare(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSig *ast.CXTypeSignature, sym *ast.CXArgument, offset *types.Pointer) {
+func escapeDeclare(prgrm *ast.CXProgram, symbolTable *SymbolTable, typeSig *ast.CXTypeSignature, sym *ast.CXArgument, offset *types.Pointer) {
 	slot := *offset
 	if sym != nil {
 		sym.Name = typeSig.Name
@@ -549,7 +549,7 @@ func escapeDeclare(prgrm *ast.CXProgram, symbolsData *SymbolsData, typeSig *ast.
 	}
 	typeSig.Offset = slot | constants.ESCAPE_OFFSET_FLAG
 	updateSymbolsTableOffsetAdd(prgrm, typeSig, offset, escapeSlotSize)
-	symbolsData.escapedSlots = append(symbolsData.escapedSlots, escapeSlot{escapeSlotName: typeSig.Name, escapeSlotOffset: slot})
+	symbolTable.escapedSlots = append(symbolTable.escapedSlots, escapeSlot{escapeSlotName: typeSig.Name, escapeSlotOffset: slot})
 }
 
 // escapeFunction analyzes fn before its body compiles. It returns the escaped
@@ -611,7 +611,7 @@ func (state *escapeState) escapeStoreUnknown(outputs []ast.CXTypeSignatureIndex)
 func (state *escapeState) escapeStructLiteralTemporary(name stringpool.StringGid, sig *ast.CXTypeSignature) bool {
 	prgrm := state.escapeStatePrgrm
 	specs := state.escapeStateLocals[name]
-	if !IsTempVar(prgrm, name) || state.escapeStateStructs[name] == nil || len(specs) == 0 || specs[len(specs)-1] != constants.DECL_POINTER {
+	if !TemporaryVariable(prgrm, name) || state.escapeStateStructs[name] == nil || len(specs) == 0 || specs[len(specs)-1] != constants.DECL_POINTER {
 		return false
 	}
 	if sig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {

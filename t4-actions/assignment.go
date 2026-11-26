@@ -24,13 +24,13 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 		panic(err)
 	}
 
-	for _, exprInfo := range fromExprs {
-		if exprInfo.Type == ast.CX_LINE || exprInfo.TypeMethodCall() {
+	for _, fromExpr := range fromExprs {
+		if fromExpr.Type == ast.CX_LINE || fromExpr.TypeMethodCall() {
 			continue
 		}
 		// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 		// Now an arena getter, site S0512.
-		expression, err := prgrm.GetCXAtomicOp(exprInfo.Index)
+		expression, err := prgrm.GetCXAtomicOp(fromExpr.Index)
 		if err != nil {
 			panic(err)
 		}
@@ -133,13 +133,13 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 
 	// If the last expression in `fromExprs` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
-	if !hasDeclSpec(lastFromExpressionOutputArg.GetAssignmentElement(prgrm), constants.DECL_POINTER) {
+	if !declarationSpecifierFound(lastFromExpressionOutputArg.GetAssignmentElement(prgrm), constants.DECL_POINTER) {
 		return assignStructLiteralFields(prgrm, toExprs, fromExprs, toExpressionOutputTypeSig.Name)
 	} else {
 		// And we also need an auxiliary variable to point to,
 		// otherwise we'd be trying to assign the fields to a nil value.
 		outField := lastFromExpressionOutputArg
-		auxName := generateTempVarName(prgrm, constants.LOCAL_PREFIX)
+		auxName := temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
 		_, aux := ast.MakeArgument(prgrm, auxName, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		aux.SetType(outField.Type)
 		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, constants.DECL_POINTER)
@@ -279,7 +279,7 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 			// Now an arena getter, site S0537.
 			fromExpressionInputArg = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionInputTypeSig.Meta))
 
-			_, sym := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
+			_, sym := ast.MakeArgument(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
 			sym.SetType(fromExpressionInputArg.Type)
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
@@ -287,7 +287,7 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 			typeSigIdx = ast.AllocCXTypeSignatureOfCXArgBuilder(prgrm, sym)
 		} else if fromExpressionInputTypeSig.Type == ast.TYPE_ATOMIC || fromExpressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			_, newTypeSig := prgrm.AllocCXTypeSignatureCopy(fromExpressionInputTypeSig)
-			newTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
+			newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
 			newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 			typeSigIdx = newTypeSig.Index
 		} else {
@@ -406,7 +406,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			_, sym = ast.MakeArgument(prgrm, toExpressionOutputTypeSig.Name, CurrentFile, LineNo)
 			sym.SetType(fromExpressionOutputArg.Type)
 			if len(fromExpressionOutputArg.Fields) > 0 {
-				// x := f().y, which ProcessShortDeclaration types from the field.
+				// x := f().y, which ShortDeclarationComplete types from the field.
 				sym.Type, sym.Size = types.IDENTIFIER, types.IDENTIFIER.Size()
 			} else if fromExpressionOutputArg.Type == types.STRUCT && fromExpressionOutputArg.StructType != nil {
 				// A struct literal value.
@@ -458,7 +458,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			_, sym = ast.MakeArgument(prgrm, toExpressionOutputTypeSig.Name, CurrentFile, LineNo)
 			sym.SetType(outType)
 			if outType == types.UNDEFINED && shortDeclarationOperatorChained(prgrm, fromExprs) {
-				// x := a + b + c, which ProcessShortDeclaration types from the
+				// x := a + b + c, which ShortDeclarationComplete types from the
 				// operand a + b once that has its type.
 				sym.Type, sym.Size = types.IDENTIFIER, types.IDENTIFIER.Size()
 			}
@@ -588,7 +588,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 	return append([]ast.CXExpression{*expr}, toExprs...)
 }
 
-func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExprs []ast.CXExpression, toExpression *ast.CXAtomicOperator) []ast.CXExpression {
+func assignmentResolve(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExprs []ast.CXExpression, toExpression *ast.CXAtomicOperator) []ast.CXExpression {
 	lastFromExpressionIdx := len(fromExprs) - 1
 	fromExpressionIdx := fromExprs[lastFromExpressionIdx].Index
 	fromExpressionOperator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(prgrm.CXAtomicOps[fromExpressionIdx].Operator)
@@ -974,7 +974,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 	declarationCount := len(toExprs) - 1
 	// x := f().y reads the result of f, so the declaration moves after the call.
 	valueRead := fromExpressionOperator == nil && expressionsCount(fromExprs) > 1
-	exprs := processAssignment(prgrm, toExprs, fromExprs, toExpression)
+	exprs := assignmentResolve(prgrm, toExprs, fromExprs, toExpression)
 	if assignOp == ":=" && (valueRead || methodCallFound(fromExprs) || shortDeclarationOperatorChained(prgrm, fromExprs) && shortDeclarationUntyped(prgrm, toExprs)) {
 		exprs = shortDeclarationAfterMethodCalls(exprs, declarationCount)
 	}
@@ -1028,7 +1028,7 @@ func methodCallFound(exprs []ast.CXExpression) bool {
 }
 
 // shortDeclarationAfterMethodCalls moves the declaration of a := to just
-// before its assignment, which ProcessShortDeclaration types from it.
+// before its assignment, which ShortDeclarationComplete types from it.
 func shortDeclarationAfterMethodCalls(exprs []ast.CXExpression, declarationCount int) []ast.CXExpression {
 	last := len(exprs) - 1
 	if declarationCount <= 0 || declarationCount > last {
@@ -1059,7 +1059,7 @@ func AssignmentStatement(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assig
 // MultipleValueName returns a new name for the variable that holds one value
 // of a multiple assignment.
 func MultipleValueName(prgrm *ast.CXProgram) stringpool.StringGid {
-	return generateTempVarName(prgrm, constants.MULTIPLE_VALUE_PREFIX)
+	return temporaryVariableNameGenerate(prgrm, constants.MULTIPLE_VALUE_PREFIX)
 }
 
 // MultipleValueRead returns the expressions that read the variable name.
@@ -1112,7 +1112,7 @@ func MultipleAssignmentCall(prgrm *ast.CXProgram, targets [][]ast.CXExpression, 
 }
 
 // multipleAssignmentMethodCall gives a method call one result variable per
-// target, which ProcessMethodCall types, and assigns each to its target.
+// target, which MethodCallResolve types, and assigns each to its target.
 func multipleAssignmentMethodCall(prgrm *ast.CXProgram, targets [][]ast.CXExpression, assignOp string, value []ast.CXExpression) []ast.CXExpression {
 	callOp := &prgrm.CXAtomicOps[value[len(value)-2].Index]
 	readOp := &prgrm.CXAtomicOps[value[len(value)-1].Index]
@@ -1160,7 +1160,7 @@ func shortDeclarationOperatorChained(prgrm *ast.CXProgram, exprs []ast.CXExpress
 }
 
 // shortDeclarationUntyped reports whether the declaration of a :=, the first
-// expression of toExprs after its line, waits for ProcessShortDeclaration to
+// expression of toExprs after its line, waits for ShortDeclarationComplete to
 // give it a type.
 func shortDeclarationUntyped(prgrm *ast.CXProgram, toExprs []ast.CXExpression) bool {
 	for _, expr := range toExprs {

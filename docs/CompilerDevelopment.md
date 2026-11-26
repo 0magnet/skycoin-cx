@@ -198,7 +198,7 @@ There are also Selectors like previously defined for CXFunctions and CXPackages-
 
 Finally, there is PrintAllObjects, a printing algorithm used for printing the program state when debugging.
 
-Two small makers remain. `generateTempVarName(name)` in [t4-actions/counter.go](../t4-actions/counter.go) returns a unique identifier with the prefix `name_`. `MakeCall` in [t4-execute/execute.go](../t4-execute/execute.go) returns a blank CXCall with the given CXFunction as the Operator.
+Two small makers remain. `temporaryVariableNameGenerate(name)` in [t4-actions/counter.go](../t4-actions/counter.go) returns a unique identifier with the prefix `name_`. `MakeCall` in [t4-execute/execute.go](../t4-execute/execute.go) returns a blank CXCall with the given CXFunction as the Operator.
 
 The opcodes used by the CX runtime are in [t4-opcodes](../t4-opcodes), and their numbers are fixed in [t1-constants/opcodes.go](../t1-constants/opcodes.go).
 
