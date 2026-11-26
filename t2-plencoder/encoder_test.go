@@ -5,13 +5,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt"
-	"github.com/skycoin/skycoin-cx/t0-programfiles"
-	"github.com/skycoin/skycoin-cx/t1-plloader"
+	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
+	bolt "github.com/skycoin/skycoin-cx/t0-plbolt"
+	loader "github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
 func TestSavePackage(t *testing.T) {
-	_, sourceCodes, _, perr := programfiles.ParseArgsForCX([]string{"test_tree"}, true)
+	_, sourceCodes, _, perr := sourceargs.Parse([]string{"test_tree"}, true)
 	if perr != nil {
 		t.Fatal(perr)
 	}

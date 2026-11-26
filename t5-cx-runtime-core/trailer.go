@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/skycoin/skycoin-cx/t0-programfiles" // thin: only FileError and its codes; no depth gain
+	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 )
 
 // The trailer ends a file that cx build made: the core binary, the serialized
@@ -61,15 +61,15 @@ func CoreTrailerDecode(tail []byte, fileSize uint64) (trailer CoreTrailer, found
 
 // CoreTrailerRead returns the program appended to the file at path, nil
 // when the file ends in no trailer.
-func CoreTrailerRead(path string) ([]byte, *programfiles.FileError) {
+func CoreTrailerRead(path string) ([]byte, *sandbox.FileError) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, programfiles.FileErrorWrap(programfiles.FileOperationOpen, path, err)
+		return nil, sandbox.FileErrorWrap(sandbox.FileOperationOpen, path, err)
 	}
 	defer file.Close()
 	info, err := file.Stat()
 	if err != nil {
-		return nil, programfiles.FileErrorWrap(programfiles.FileOperationRead, path, err)
+		return nil, sandbox.FileErrorWrap(sandbox.FileOperationRead, path, err)
 	}
 	size := info.Size()
 	if size < CoreTrailerSize {
@@ -77,7 +77,7 @@ func CoreTrailerRead(path string) ([]byte, *programfiles.FileError) {
 	}
 	tail := make([]byte, CoreTrailerSize)
 	if _, err := file.ReadAt(tail, size-CoreTrailerSize); err != nil {
-		return nil, programfiles.FileErrorWrap(programfiles.FileOperationRead, path, err)
+		return nil, sandbox.FileErrorWrap(sandbox.FileOperationRead, path, err)
 	}
 	trailer, found, problem := CoreTrailerDecode(tail, uint64(size))
 	if !found {
@@ -88,7 +88,7 @@ func CoreTrailerRead(path string) ([]byte, *programfiles.FileError) {
 	}
 	program := make([]byte, trailer.CoreTrailerLength)
 	if _, err := file.ReadAt(program, int64(trailer.CoreTrailerOffset)); err != nil && err != io.EOF {
-		return nil, programfiles.FileErrorWrap(programfiles.FileOperationRead, path, err)
+		return nil, sandbox.FileErrorWrap(sandbox.FileOperationRead, path, err)
 	}
 	if crc32.ChecksumIEEE(program) != trailer.CoreTrailerChecksum {
 		return nil, coreTrailerContentInvalid(path, "the appended program does not match its checksum")
@@ -96,10 +96,10 @@ func CoreTrailerRead(path string) ([]byte, *programfiles.FileError) {
 	return program, nil
 }
 
-func coreTrailerContentInvalid(path string, problem string) *programfiles.FileError {
-	return &programfiles.FileError{
-		FileErrorCode:      programfiles.FileErrorCodeContentInvalid,
-		FileErrorOperation: programfiles.FileOperationRead,
+func coreTrailerContentInvalid(path string, problem string) *sandbox.FileError {
+	return &sandbox.FileError{
+		FileErrorCode:      sandbox.FileErrorCodeContentInvalid,
+		FileErrorOperation: sandbox.FileOperationRead,
 		FileErrorMessage:   problem,
 		FileErrorPath:      path,
 	}

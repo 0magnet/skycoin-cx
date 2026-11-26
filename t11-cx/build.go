@@ -7,10 +7,11 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-programfiles"
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t3-ast"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	filelog "github.com/skycoin/skycoin-cx/t0-cx-runtime-filelog"
+	types "github.com/skycoin/skycoin-cx/t0-types"
+	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
+	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	actions "github.com/skycoin/skycoin-cx/t4-actions"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
 
@@ -97,7 +98,7 @@ func buildRun(args []string) int {
 	}
 	coreBinary, err := os.ReadFile(corePath)
 	if err != nil {
-		return buildFileFail(programfiles.FileErrorWrap(programfiles.FileOperationRead, corePath, err))
+		return buildFileFail(sandbox.FileErrorWrap(sandbox.FileOperationRead, corePath, err))
 	}
 	if len(coreBinary) >= core.CoreTrailerSize {
 		if _, found, _ := core.CoreTrailerDecode(coreBinary[len(coreBinary)-core.CoreTrailerSize:], uint64(len(coreBinary))); found {
@@ -107,11 +108,11 @@ func buildRun(args []string) int {
 
 	output := options.buildOptionsOutput
 	if err := os.WriteFile(output, core.CoreTrailerAppend(coreBinary, program), 0o755); err != nil {
-		return buildFileFail(programfiles.FileErrorWrap(programfiles.FileOperationWrite, output, err))
+		return buildFileFail(sandbox.FileErrorWrap(sandbox.FileOperationWrite, output, err))
 	}
 	// WriteFile keeps the mode of a file that exists and applies the umask.
 	if err := os.Chmod(output, 0o755); err != nil {
-		return buildFileFail(programfiles.FileErrorWrap(programfiles.FileOperationWrite, output, err))
+		return buildFileFail(sandbox.FileErrorWrap(sandbox.FileOperationWrite, output, err))
 	}
 	return types.CX_SUCCESS
 }
@@ -187,7 +188,7 @@ func buildOptionsParse(args []string) (options buildOptions, problem string) {
 // buildOutputDefault names the output of cx build without -o in the working
 // directory as go build does, after the first source file without .cx or
 // after the one source directory, with .exe on Windows. sources are the
-// arguments that programfiles.ParseArgsForCX reads. It returns a problem when they
+// arguments that sourceargs.Parse reads. It returns a problem when they
 // give no single name.
 func buildOutputDefault(sources []string) (string, string) {
 	var files, directories []string
@@ -197,7 +198,7 @@ func buildOutputDefault(sources []string) (string, string) {
 			skip = false
 			continue
 		}
-		// programfiles.ParseArgsForCX skips flags and the value of a flag without =.
+		// sourceargs.Parse skips flags and the value of a flag without =.
 		if len(arg) > 1 && arg[0] == '-' {
 			skip = !strings.Contains(arg, "=")
 			continue
@@ -205,7 +206,7 @@ func buildOutputDefault(sources []string) (string, string) {
 		if strings.HasPrefix(arg, "++") {
 			continue
 		}
-		if info, err := programfiles.CXStatFile(filepath.Clean(arg)); err == nil && info.IsDir() {
+		if info, err := filelog.Stat(filepath.Clean(arg)); err == nil && info.IsDir() {
 			directories = append(directories, arg)
 		} else {
 			files = append(files, arg)
@@ -286,7 +287,7 @@ func buildFail(message string) int {
 	return types.CX_COMPILATION_ERROR
 }
 
-func buildFileFail(fileError *programfiles.FileError) int {
+func buildFileFail(fileError *sandbox.FileError) int {
 	return buildFail(fmt.Sprintf("%s: %s", fileError.FileErrorPath, fileError.FileErrorMessage))
 }
 

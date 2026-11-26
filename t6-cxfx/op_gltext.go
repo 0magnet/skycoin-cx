@@ -7,10 +7,10 @@ import (
 
 	"github.com/skycoin/gltext"
 
-	"github.com/skycoin/skycoin-cx/t0-programfiles"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
+	ast "github.com/skycoin/skycoin-cx/t3-ast"
 
-	"github.com/skycoin/skycoin-cx/t5-cxos" // thin: only ValidFile; could move ValidFile to t0-programfiles or t3-ast, max tier 11 to 10
+	cxos "github.com/skycoin/skycoin-cx/t5-cxos" // thin: only ValidFile; could move ValidFile to t1-cx-runtime-sandbox or t3-ast, max tier 11 to 10
 )
 
 // A font is an i32 handle into CxfxState.CxfxFontTable, returned by
@@ -37,14 +37,14 @@ func OpGltextLoadTrueTypeCore(prgrm *ast.CXProgram, inputs []ast.CXValue, output
 
 // VIOLATION STRHOT-185: B, hands the text to gltext as a view of program memory, #432.
 func OpGltextPrintf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	if err := cxfxFontGet(inputs[0].Get_i32(prgrm)).Printf(inputs[1].Get_f32(prgrm), inputs[2].Get_f32(prgrm), "%s", programfiles.ProgramTextStringView(ast.ProgramStringBytesRead(prgrm, &inputs[3]))); err != nil {
+	if err := cxfxFontGet(inputs[0].Get_i32(prgrm)).Printf(inputs[1].Get_f32(prgrm), inputs[2].Get_f32(prgrm), "%s", stringpool.StringView(ast.ProgramStringBytesRead(prgrm, &inputs[3]))); err != nil {
 		panic(err)
 	}
 }
 
 // VIOLATION STRHOT-186: B, hands the text to gltext as a view of program memory, #432.
 func OpGltextMetrics(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	width, height := cxfxFontGet(inputs[0].Get_i32(prgrm)).Metrics(programfiles.ProgramTextStringView(ast.ProgramStringBytesRead(prgrm, &inputs[1])))
+	width, height := cxfxFontGet(inputs[0].Get_i32(prgrm)).Metrics(stringpool.StringView(ast.ProgramStringBytesRead(prgrm, &inputs[1])))
 	outputs[0].Set_i32(prgrm, int32(width))
 	outputs[1].Set_i32(prgrm, int32(height))
 }

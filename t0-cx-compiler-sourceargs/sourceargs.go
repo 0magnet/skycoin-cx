@@ -1,4 +1,4 @@
-package programfiles
+package sourceargs
 
 import (
 	"fmt"
@@ -8,10 +8,10 @@ import (
 	"strings"
 )
 
-// ParseArgsForCX splits args into "++" cx flags and .cx source files. A
+// Parse splits args into "++" cx flags and .cx source files. A
 // directory argument adds every .cx file in it, and in its subdirectories
 // when alsoSubdirs is set. On error every file it opened is closed again.
-func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string, err error) {
+func Parse(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string, err error) {
 	defer func() {
 		if err != nil {
 			for _, file := range sourceCode {
@@ -49,9 +49,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 		}
 
 		arg = filepath.Clean(arg)
-		// NOTE: CXStatFile, the directory walk and CXOpenFile apply the working directory
-		// in different ways. See #100.
-		fi, err := CXStatFile(arg)
+		fi, err := os.Stat(arg)
 		if err != nil {
 			return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: source file or library not found: %w", arg, err)
 		}
@@ -75,7 +73,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 				if filepath.Ext(path) != ".cx" {
 					continue
 				}
-				file, err := CXOpenFile(path)
+				file, err := os.Open(path)
 				if err != nil {
 					return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: open source file: %w", path, err)
 				}
@@ -83,7 +81,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 				fileNames = append(fileNames, file.Name())
 			}
 		case mode.IsRegular():
-			file, err := CXOpenFile(arg)
+			file, err := os.Open(arg)
 			if err != nil {
 				return cxArgs, sourceCode, fileNames, fmt.Errorf("%s: open source file: %w", arg, err)
 			}

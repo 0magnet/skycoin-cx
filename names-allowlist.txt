@@ -554,7 +554,6 @@ t0-types/types_ptr64.go|function||Write_ptr
 t0-types/types_string.go|function||Read_str
 t0-types/types_string.go|function||Read_str_bytes
 t0-types/types_string.go|function||Read_str_size
-t0-programfiles/args.go|function||ParseArgsForCX
 t10-cxrepl/repl.go|global_variable||ReplTargetFn
 t10-cxrepl/repl.go|global_variable||ReplTargetMod
 t10-cxrepl/repl.go|global_variable||ReplTargetStrct
