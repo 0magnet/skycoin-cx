@@ -9,7 +9,7 @@ import (
 // TestLibraryCallSandbox checks the D16 sandbox of the old loop. A library
 // is disabled by default (D17), and an enabled call runs its function through
 // the switch of its library. The disabled calls, which panic, are the
-// test-library-disabled.cx cases of t1-cxtest.
+// test-library-disabled.cx cases of t1-cx-tools-programtest.
 func TestLibraryCallSandbox(t *testing.T) {
 	if constants.LibraryPolicyEnabledWhenImported {
 		t.Fatalf("libraries are enabled by default, decision D17 keeps them disabled")

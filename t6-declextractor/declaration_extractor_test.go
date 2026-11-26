@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
-	loader "github.com/skycoin/skycoin-cx/t1-plloader"          // thin: tests use only LoadCXProgram; no depth gain
-	file_output "github.com/skycoin/skycoin-cx/t5-plfileoutput" // thin: tests use only GetImportFiles; tests only, could move the test to t5-plfileoutput, tier 6 to 2
+	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: tests use only LoadCXProgram; no depth gain
+	"github.com/skycoin/skycoin-cx/t5-cx-tools-packagefiles"  // thin: tests use only GetImportFiles; tests only, could move the test to t5-cx-tools-packagefiles, tier 6 to 2
 	declaration_extractor "github.com/skycoin/skycoin-cx/t6-declextractor"
 )
 
@@ -1435,12 +1435,12 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			if perr != nil {
 				t.Fatal(perr)
 			}
-			err := loader.CXProgramLoad("mypkg1", sourceCodes)
+			err := packageloader.CXProgramLoad("mypkg1", sourceCodes)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.ImportFilesGet("mypkg1")
+			files, err := packagefiles.ImportFilesGet("mypkg1")
 			if err != nil {
 				t.Fatal(err)
 			}

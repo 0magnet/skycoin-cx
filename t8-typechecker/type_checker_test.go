@@ -9,11 +9,11 @@ import (
 	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
 	cxpackages "github.com/skycoin/skycoin-cx/t0-packages" // thin: tests use only IsDefaultPackage; no depth gain
 	constants "github.com/skycoin/skycoin-cx/t1-constants"
-	loader "github.com/skycoin/skycoin-cx/t1-plloader" // thin: tests use only LoadCXProgram; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: tests use only LoadCXProgram; no depth gain
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	ast "github.com/skycoin/skycoin-cx/t3-ast"
 	actions "github.com/skycoin/skycoin-cx/t4-actions"
-	file_output "github.com/skycoin/skycoin-cx/t5-plfileoutput" // thin: tests use only GetImportFiles; no depth gain
+	"github.com/skycoin/skycoin-cx/t5-cx-tools-packagefiles" // thin: tests use only GetImportFiles; no depth gain
 	declaration_extractor "github.com/skycoin/skycoin-cx/t6-declextractor"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: tests use only MakeProgram, RegisterPackages; could take the program as an argument, tier 8 to 7
 	type_checker "github.com/skycoin/skycoin-cx/t8-typechecker"
@@ -535,12 +535,12 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 				t.Fatal(perr)
 			}
 
-			err := loader.CXProgramLoad("test", sourceCode)
+			err := packageloader.CXProgramLoad("test", sourceCode)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.ImportFilesGet("test")
+			files, err := packagefiles.ImportFilesGet("test")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -701,12 +701,12 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 				t.Fatal(perr)
 			}
 
-			err := loader.CXProgramLoad("test", sourceCode)
+			err := packageloader.CXProgramLoad("test", sourceCode)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.ImportFilesGet("test")
+			files, err := packagefiles.ImportFilesGet("test")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -880,12 +880,12 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 				t.Fatal(perr)
 			}
 
-			err := loader.CXProgramLoad("test", sourceCode)
+			err := packageloader.CXProgramLoad("test", sourceCode)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.ImportFilesGet("test")
+			files, err := packagefiles.ImportFilesGet("test")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1214,12 +1214,12 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 				t.Fatal(perr)
 			}
 
-			err := loader.CXProgramLoad("test", sourceCode)
+			err := packageloader.CXProgramLoad("test", sourceCode)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.ImportFilesGet("test")
+			files, err := packagefiles.ImportFilesGet("test")
 			if err != nil {
 				t.Fatal(err)
 			}

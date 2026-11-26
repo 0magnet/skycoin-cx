@@ -287,7 +287,7 @@ func main() {
 	}
 }
 
-// TestLlvmCompareBenchmarks builds the t0-benchmarks/compare programs with
+// TestLlvmCompareBenchmarks builds the t0-cx-tools-benchmarks/compare programs with
 // cx build --target=llvm and checks that each prints the hash of
 // expected.txt and its pass line. It needs clang.
 func TestLlvmCompareBenchmarks(t *testing.T) {
@@ -295,7 +295,7 @@ func TestLlvmCompareBenchmarks(t *testing.T) {
 	if testing.Short() {
 		t.Skip("builds the compare benchmarks")
 	}
-	dir, err := filepath.Abs(filepath.Join("..", "t0-benchmarks", "compare"))
+	dir, err := filepath.Abs(filepath.Join("..", "t0-cx-tools-benchmarks", "compare"))
 	if err != nil {
 		t.Fatal(err)
 	}

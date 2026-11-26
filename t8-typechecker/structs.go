@@ -1,7 +1,7 @@
 package type_checker
 
 import (
-	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: only File; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t6-declextractor"
@@ -10,7 +10,7 @@ import (
 // Parse Structs
 // - takes in structs from cx/cmd/declaration_extractor
 // - adds structs to AST
-func StructsParse(files []*loader.File, structs []declaration_extractor.StructDeclaration) error {
+func StructsParse(files []*packageloader.File, structs []declaration_extractor.StructDeclaration) error {
 	prgrm := actions.AST
 
 	// Get Package

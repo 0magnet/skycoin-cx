@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: only File; no depth gain
 )
 
 func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, Enum []EnumDeclaration, TypeDef []TypeDefinitionDeclaration, Strct []StructDeclaration, Func []FuncDeclaration) error {
@@ -102,7 +102,7 @@ func DeclarationsGet(source []byte, Glbls []GlobalDeclaration, Enums []EnumDecla
 	return declarations
 }
 
-func AllDeclarationsExtract(source []*loader.File) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
+func AllDeclarationsExtract(source []*packageloader.File) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
 
 	//Variable declarations
 	var Imports []ImportDeclaration
@@ -129,7 +129,7 @@ func AllDeclarationsExtract(source []*loader.File) ([]ImportDeclaration, []Globa
 
 		wg.Add(1)
 
-		go func(currentFile *loader.File, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
+		go func(currentFile *packageloader.File, globalChannel chan<- []GlobalDeclaration, enumChannel chan<- []EnumDeclaration, typeDefinition chan<- []TypeDefinitionDeclaration, structChannel chan<- []StructDeclaration, funcChannel chan<- []FuncDeclaration, errorChannel chan<- error, wg *sync.WaitGroup) {
 
 			defer wg.Done()
 

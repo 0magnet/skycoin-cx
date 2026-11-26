@@ -1,44 +1,44 @@
 site,object,category,file,line,function,current_form,target,phase,issue,depends_on
-S0001,CXProgram,ctor-call,t10-cxrepl/repl.go,82,unsafeEval,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0002,CXProgram,drop,t10-cxrepl/repl.go,82,unsafeEval,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
-S0003,CXProgram,ctor-call,t10-cxrepl/repl.go,96,unsafeEval,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0004,CXProgram,drop,t10-cxrepl/repl.go,96,unsafeEval,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
-S0005,CXProgram,ctor-call,t10-cxrepl/repl.go,114,unsafeEval,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0006,CXProgram,drop,t10-cxrepl/repl.go,114,unsafeEval,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
-S0007,CXProgram,ctor-call,t10-cxrepl/repl.go,125,unsafeEval,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0008,CXProgram,drop,t10-cxrepl/repl.go,125,unsafeEval,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
-S0009,CXProgram,ctor-call,t10-cxrepl/repl.go,153,Eval,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0010,CXProgram,drop,t10-cxrepl/repl.go,153,Eval,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
-S0011,CXProgram,ctor-call,t10-cxrepl/repl_test.go,24,TestMain,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0012,CXProgram,drop,t10-cxrepl/repl_test.go,24,TestMain,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
-S0013,CXProgram,ctor-call,t10-generator/ast_serialize_test.go,94,generateSampleProgramFromCXEvolves,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0014,CXPackage,arena-add,t10-generator/ast_serialize_test.go,99,generateSampleProgramFromCXEvolves,"astapi.AddEmptyPackage(cxProgram, ""main"")",state.CXPackageMng.CXPackageAlloc(),4-alloc,361,CXPackage phase 2-mng
-S0016,CXProgram,ctor-call,t10-generator/lz4_test.go,97,TestDeserializeCompressed,"cxast.Deserialize(b, c)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0017,CXProgram,ctor-call,t10-generator/lz4_test.go,111,TestDeserializeCompressed,"cxast.Deserialize(short[:8], nil)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0018,CXProgram,ctor-call,t10-generator/lz4_test.go,138,TestSerializeCodecMisuse,"cxast.Deserialize([]byte{0}, tc.c)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0019,CXProgram,ctor-call,t10-generator/lz4_test.go,154,TestDeserializeRejectsOtherVersion,"cxast.Deserialize(b, nil)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0020,CXProgram,ctor-call,t10-generator/lz4_test.go,168,TestDeserializeRejectsOtherVersion,"cxast.Deserialize(b, nil)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0021,CXExpression,ctor-call,t10-generator/program_generator.go,41,GenerateRandomExpressions,"cxast.MakeCXLineExpression(prgrm, """", -1, """")",state.CXExpressionMng.CXExpressionAlloc(),4-alloc,346,CXExpression phase 2-mng
-S0022,CXExpression,ctor-call,t10-generator/program_generator.go,44,GenerateRandomExpressions,"cxast.MakeAtomicOperatorExpression(prgrm, op)",state.CXExpressionMng.CXExpressionAlloc(),4-alloc,346,CXExpression phase 2-mng
-S0027,CXAtomicOperator,get-call,t10-generator/program_generator.go,125,getAtomicOp,prgrm.GetCXAtomicOp(index),state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid),5-gid,342,CXAtomicOperator phase 4-alloc
-S0028,CXTypeSignature,get-call,t10-generator/program_generator.go,137,sigType,prgrm.GetCXTypeSignatureFromArray(idx),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
-S0029,CXArgument,get-call,t10-generator/program_generator.go,141,sigType,prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(sig.Meta)),state.CXArgumentMng.CXArgumentGet(gid),5-gid,327,CXArgument phase 4-alloc
-S0030,CXTypeSignature,get-call,t10-generator/program_generator.go,149,sigSize,prgrm.GetCXTypeSignatureFromArray(idx),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
-S0033,CXTypeSignature,arena-add,t10-generator/program_generator.go,201,newSlot,"prgrm.AddCXTypeSignatureInArray(cxast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, arg))",state.CXTypeSignatureMng.CXTypeSignatureAlloc(),4-alloc,331,CXTypeSignature phase 2-mng
-S0034,CXTypeSignature,alloc-copy,t10-generator/program_generator.go,209,copySig,sig := *prgrm.GetCXTypeSignatureFromArray(idx),state.CXTypeSignatureMng.CXTypeSignatureAlloc(),4-alloc,331,CXTypeSignature phase 2-mng
-S0035,CXTypeSignature,get-call,t10-generator/program_generator.go,209,copySig,prgrm.GetCXTypeSignatureFromArray(idx),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
-S0036,CXTypeSignature,arena-add,t10-generator/program_generator.go,212,copySig,prgrm.AddCXTypeSignatureInArray(&sig),state.CXTypeSignatureMng.CXTypeSignatureAlloc(),4-alloc,331,CXTypeSignature phase 2-mng
-S0037,CXTypeSignature,get-call,t10-generator/program_generator.go,222,findArgOptions,prgrm.GetCXTypeSignatureFromArray(idx),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
-S0038,CXTypeSignature,get-call,t10-generator/program_generator.go,234,findArgOptions,prgrm.GetCXTypeSignatureFromArray(outputs[0]),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
-S0040,CXExpression,ctor-call,t10-generator/program_generator.go,261,addNewExpression,"cxast.MakeCXLineExpression(prgrm, """", -1, """")",state.CXExpressionMng.CXExpressionAlloc(),4-alloc,346,CXExpression phase 2-mng
-S0041,CXExpression,ctor-call,t10-generator/program_generator.go,264,addNewExpression,"cxast.MakeAtomicOperatorExpression(prgrm, native)",state.CXExpressionMng.CXExpressionAlloc(),4-alloc,346,CXExpression phase 2-mng
-S0045,CXProgram,ctor-def,t10-generator/program_generator.go,318,GenerateSampleProgram,func GenerateSampleProgram,state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0046,CXProgram,ctor-call,t10-generator/program_generator.go,326,GenerateSampleProgram,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0047,CXPackage,arena-add,t10-generator/program_generator.go,331,GenerateSampleProgram,"astapi.AddEmptyPackage(cxProgram, ""main"")",state.CXPackageMng.CXPackageAlloc(),4-alloc,361,CXPackage phase 2-mng
-S0049,CXProgram,ctor-call,t10-generator/program_generator_test.go,28,TestProgramGenerator,"cxgenerator.GenerateSampleProgram(t, tc.withLiteral)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0050,CXPackage,arena-add,t10-generator/serialize_order_test.go,21,sampleProgramWithPackages,"astapi.AddEmptyPackage(prgrm, pkg)",state.CXPackageMng.CXPackageAlloc(),4-alloc,361,CXPackage phase 2-mng
-S0052,CXPackage,get-call,t10-generator/serialize_order_test.go,41,packageFunctions,prgrm.GetPackageFromArray(pkgIdx),state.CXPackageMng.CXPackageGet(gid),5-gid,362,CXPackage phase 4-alloc
-S0053,CXProgram,ctor-call,t10-generator/serialize_order_test.go,88,TestSerializeKeepsFunctionsInTheirPackage,"cxast.Deserialize(b, nil)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0001,CXProgram,ctor-call,t10-cx-tools-repl/repl.go,82,unsafeEval,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0002,CXProgram,drop,t10-cx-tools-repl/repl.go,82,unsafeEval,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
+S0003,CXProgram,ctor-call,t10-cx-tools-repl/repl.go,96,unsafeEval,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0004,CXProgram,drop,t10-cx-tools-repl/repl.go,96,unsafeEval,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
+S0005,CXProgram,ctor-call,t10-cx-tools-repl/repl.go,114,unsafeEval,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0006,CXProgram,drop,t10-cx-tools-repl/repl.go,114,unsafeEval,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
+S0007,CXProgram,ctor-call,t10-cx-tools-repl/repl.go,125,unsafeEval,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0008,CXProgram,drop,t10-cx-tools-repl/repl.go,125,unsafeEval,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
+S0009,CXProgram,ctor-call,t10-cx-tools-repl/repl.go,153,Eval,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0010,CXProgram,drop,t10-cx-tools-repl/repl.go,153,Eval,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
+S0011,CXProgram,ctor-call,t10-cx-tools-repl/repl_test.go,24,TestMain,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0012,CXProgram,drop,t10-cx-tools-repl/repl_test.go,24,TestMain,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
+S0013,CXProgram,ctor-call,t10-cx-tools-programgenerator/ast_serialize_test.go,94,generateSampleProgramFromCXEvolves,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0014,CXPackage,arena-add,t10-cx-tools-programgenerator/ast_serialize_test.go,99,generateSampleProgramFromCXEvolves,"astapi.AddEmptyPackage(cxProgram, ""main"")",state.CXPackageMng.CXPackageAlloc(),4-alloc,361,CXPackage phase 2-mng
+S0016,CXProgram,ctor-call,t10-cx-tools-programgenerator/lz4_test.go,97,TestDeserializeCompressed,"cxast.Deserialize(b, c)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0017,CXProgram,ctor-call,t10-cx-tools-programgenerator/lz4_test.go,111,TestDeserializeCompressed,"cxast.Deserialize(short[:8], nil)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0018,CXProgram,ctor-call,t10-cx-tools-programgenerator/lz4_test.go,138,TestSerializeCodecMisuse,"cxast.Deserialize([]byte{0}, tc.c)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0019,CXProgram,ctor-call,t10-cx-tools-programgenerator/lz4_test.go,154,TestDeserializeRejectsOtherVersion,"cxast.Deserialize(b, nil)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0020,CXProgram,ctor-call,t10-cx-tools-programgenerator/lz4_test.go,168,TestDeserializeRejectsOtherVersion,"cxast.Deserialize(b, nil)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0021,CXExpression,ctor-call,t10-cx-tools-programgenerator/program_generator.go,41,GenerateRandomExpressions,"cxast.MakeCXLineExpression(prgrm, """", -1, """")",state.CXExpressionMng.CXExpressionAlloc(),4-alloc,346,CXExpression phase 2-mng
+S0022,CXExpression,ctor-call,t10-cx-tools-programgenerator/program_generator.go,44,GenerateRandomExpressions,"cxast.MakeAtomicOperatorExpression(prgrm, op)",state.CXExpressionMng.CXExpressionAlloc(),4-alloc,346,CXExpression phase 2-mng
+S0027,CXAtomicOperator,get-call,t10-cx-tools-programgenerator/program_generator.go,125,getAtomicOp,prgrm.GetCXAtomicOp(index),state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid),5-gid,342,CXAtomicOperator phase 4-alloc
+S0028,CXTypeSignature,get-call,t10-cx-tools-programgenerator/program_generator.go,137,sigType,prgrm.GetCXTypeSignatureFromArray(idx),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
+S0029,CXArgument,get-call,t10-cx-tools-programgenerator/program_generator.go,141,sigType,prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(sig.Meta)),state.CXArgumentMng.CXArgumentGet(gid),5-gid,327,CXArgument phase 4-alloc
+S0030,CXTypeSignature,get-call,t10-cx-tools-programgenerator/program_generator.go,149,sigSize,prgrm.GetCXTypeSignatureFromArray(idx),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
+S0033,CXTypeSignature,arena-add,t10-cx-tools-programgenerator/program_generator.go,201,newSlot,"prgrm.AddCXTypeSignatureInArray(cxast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, arg))",state.CXTypeSignatureMng.CXTypeSignatureAlloc(),4-alloc,331,CXTypeSignature phase 2-mng
+S0034,CXTypeSignature,alloc-copy,t10-cx-tools-programgenerator/program_generator.go,209,copySig,sig := *prgrm.GetCXTypeSignatureFromArray(idx),state.CXTypeSignatureMng.CXTypeSignatureAlloc(),4-alloc,331,CXTypeSignature phase 2-mng
+S0035,CXTypeSignature,get-call,t10-cx-tools-programgenerator/program_generator.go,209,copySig,prgrm.GetCXTypeSignatureFromArray(idx),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
+S0036,CXTypeSignature,arena-add,t10-cx-tools-programgenerator/program_generator.go,212,copySig,prgrm.AddCXTypeSignatureInArray(&sig),state.CXTypeSignatureMng.CXTypeSignatureAlloc(),4-alloc,331,CXTypeSignature phase 2-mng
+S0037,CXTypeSignature,get-call,t10-cx-tools-programgenerator/program_generator.go,222,findArgOptions,prgrm.GetCXTypeSignatureFromArray(idx),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
+S0038,CXTypeSignature,get-call,t10-cx-tools-programgenerator/program_generator.go,234,findArgOptions,prgrm.GetCXTypeSignatureFromArray(outputs[0]),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
+S0040,CXExpression,ctor-call,t10-cx-tools-programgenerator/program_generator.go,261,addNewExpression,"cxast.MakeCXLineExpression(prgrm, """", -1, """")",state.CXExpressionMng.CXExpressionAlloc(),4-alloc,346,CXExpression phase 2-mng
+S0041,CXExpression,ctor-call,t10-cx-tools-programgenerator/program_generator.go,264,addNewExpression,"cxast.MakeAtomicOperatorExpression(prgrm, native)",state.CXExpressionMng.CXExpressionAlloc(),4-alloc,346,CXExpression phase 2-mng
+S0045,CXProgram,ctor-def,t10-cx-tools-programgenerator/program_generator.go,318,GenerateSampleProgram,func GenerateSampleProgram,state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0046,CXProgram,ctor-call,t10-cx-tools-programgenerator/program_generator.go,326,GenerateSampleProgram,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0047,CXPackage,arena-add,t10-cx-tools-programgenerator/program_generator.go,331,GenerateSampleProgram,"astapi.AddEmptyPackage(cxProgram, ""main"")",state.CXPackageMng.CXPackageAlloc(),4-alloc,361,CXPackage phase 2-mng
+S0049,CXProgram,ctor-call,t10-cx-tools-programgenerator/program_generator_test.go,28,TestProgramGenerator,"cxgenerator.GenerateSampleProgram(t, tc.withLiteral)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0050,CXPackage,arena-add,t10-cx-tools-programgenerator/serialize_order_test.go,21,sampleProgramWithPackages,"astapi.AddEmptyPackage(prgrm, pkg)",state.CXPackageMng.CXPackageAlloc(),4-alloc,361,CXPackage phase 2-mng
+S0052,CXPackage,get-call,t10-cx-tools-programgenerator/serialize_order_test.go,41,packageFunctions,prgrm.GetPackageFromArray(pkgIdx),state.CXPackageMng.CXPackageGet(gid),5-gid,362,CXPackage phase 4-alloc
+S0053,CXProgram,ctor-call,t10-cx-tools-programgenerator/serialize_order_test.go,88,TestSerializeKeepsFunctionsInTheirPackage,"cxast.Deserialize(b, nil)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
 S0054,CXProgram,ctor-call,t11-cx/compile_bench_test.go,56,BenchmarkCompile,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
 S0055,CXProgram,drop,t11-cx/compile_bench_test.go,56,BenchmarkCompile,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
 S0056,CXProgram,ctor-call,t11-cx/helpers.go,54,parseProgram,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng

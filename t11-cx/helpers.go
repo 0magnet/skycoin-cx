@@ -15,7 +15,7 @@ import (
 
 	constants "github.com/skycoin/skycoin-cx/t1-constants"
 	profiling "github.com/skycoin/skycoin-cx/t1-profiling"
-	repl "github.com/skycoin/skycoin-cx/t10-cxrepl" // thin: only Repl, TargetFunction; only user of cxrepl, could merge it here, max tier 11 to 10
+	"github.com/skycoin/skycoin-cx/t10-cx-tools-repl" // thin: only Repl, TargetFunction; only user of cxrepl, could merge it here, max tier 11 to 10
 	globals "github.com/skycoin/skycoin-cx/t2-globals"
 	ast "github.com/skycoin/skycoin-cx/t3-ast"
 	actions "github.com/skycoin/skycoin-cx/t4-actions"

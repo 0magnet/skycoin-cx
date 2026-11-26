@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-plbolt"
+	"github.com/skycoin/skycoin-cx/t0-cx-tools-packagestore"
 )
 
 func TestMain(m *testing.M) {
@@ -20,10 +20,10 @@ func run(m *testing.M) int {
 		return 1
 	}
 	defer os.RemoveAll(dir)
-	if err := bolt.Init(filepath.Join(dir, "program_list.db")); err != nil {
+	if err := packagestore.Init(filepath.Join(dir, "program_list.db")); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
-	defer bolt.Close()
+	defer packagestore.Close()
 	return m.Run()
 }

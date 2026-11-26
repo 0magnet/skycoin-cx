@@ -4,7 +4,7 @@ import (
 	"regexp"
 
 	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: only File; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t6-declextractor"
@@ -13,7 +13,7 @@ import (
 // Parse Globals
 // - takes in globals from cx/cmd/declaration_extractor
 // - adds globals to AST
-func GlobalsParse(files []*loader.File, globals []declaration_extractor.GlobalDeclaration) error {
+func GlobalsParse(files []*packageloader.File, globals []declaration_extractor.GlobalDeclaration) error {
 	prgrm := actions.AST
 
 	// Range over global declarations and parse

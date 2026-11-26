@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"regexp"
 
-	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: only File; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t6-declextractor"
@@ -13,7 +13,7 @@ import (
 // Parse Function Headers
 // - takes in funcs from cx/cmd/declaration_extractor
 // - adds func headers to AST
-func FuncHeadersParse(files []*loader.File, funcs []declaration_extractor.FuncDeclaration) error {
+func FuncHeadersParse(files []*packageloader.File, funcs []declaration_extractor.FuncDeclaration) error {
 	prgrm := actions.AST
 
 	for _, fun := range funcs {

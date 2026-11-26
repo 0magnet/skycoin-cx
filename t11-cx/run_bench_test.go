@@ -351,7 +351,7 @@ func TestRunVmLibraryCallAllocs(t *testing.T) {
 	}
 }
 
-// runCompareScale shrinks each t0-benchmarks/compare program to a size that
+// runCompareScale shrinks each t0-cx-tools-benchmarks/compare program to a size that
 // runs in milliseconds on the old loop. The code paths, prints included, stay
 // those of the full size, only the pass line prints FAIL.
 var runCompareScale = map[string][][2]string{
@@ -363,12 +363,12 @@ var runCompareScale = map[string][][2]string{
 	"primes":  {{"n = 2000000", "n = 2000"}, {"k < 300000UL", "k < 300UL"}, {"round < 20", "round < 1"}},
 }
 
-// runComparePrograms are the t0-benchmarks/compare programs at the scale of
+// runComparePrograms are the t0-cx-tools-benchmarks/compare programs at the scale of
 // runCompareScale. They allocate nothing during a run (#407).
 func runComparePrograms(tb testing.TB) []runBenchProgram {
 	var programs []runBenchProgram
 	for _, name := range []string{"count", "fib", "array", "struct", "memtest", "primes"} {
-		source, err := os.ReadFile(filepath.Join("..", "t0-benchmarks", "compare", "cx", name+".cx"))
+		source, err := os.ReadFile(filepath.Join("..", "t0-cx-tools-benchmarks", "compare", "cx", name+".cx"))
 		if err != nil {
 			tb.Fatal(err)
 		}

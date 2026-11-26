@@ -239,7 +239,7 @@ func executionRecordSourceHash(tests string, name string) (string, error) {
 }
 
 // executionRecordPrograms lists each .cx file under tests/ alone, then each
-// t1-cxtest entry that passes flags or several files, without its executor
+// t1-cx-tools-programtest entry that passes flags or several files, without its executor
 // flag, which the forms choose. A program is its cx arguments relative to
 // tests/, joined by spaces.
 func executionRecordPrograms(t *testing.T, tests string) []string {
@@ -260,7 +260,7 @@ func executionRecordPrograms(t *testing.T, tests string) []string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	harness, err := os.ReadFile(filepath.Join("..", "t1-cxtest", "main.go"))
+	harness, err := os.ReadFile(filepath.Join("..", "t1-cx-tools-programtest", "main.go"))
 	if err != nil {
 		t.Fatal(err)
 	}
