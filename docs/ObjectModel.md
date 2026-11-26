@@ -297,9 +297,9 @@ The boundaries are
 
 * in `Preliminarystage`, before each file of its three passes, packages and
   structs, globals, and pass one,
-* in `ParseSourceStrings`, at its start, after `Preliminarystage`, before
+* in `SourceStringsParse`, at its start, after `Preliminarystage`, before
   each file of pass two and after pass two,
-* at the start of `AddInitFunction`,
+* at the start of `SysInitFunctionAdd`,
 * before `RunCompiled` in `cx` and in the REPL, and at the top of each REPL
   loop iteration.
 
@@ -442,7 +442,7 @@ type CxIrStateManagerLen struct {
 
 The compiler passes `prgrm *CXProgram` to almost every function today,
 and stage 4 does not change that. Each program points at its state
-through `CXProgram.CxIrState`, which `MakeProgram`, `Deserialize`
+through `CXProgram.CxIrState`, which `ProgramMake`, `Deserialize`
 and the test helpers that build a program set to a new, initialized
 `CxIrState`. A site reaches its manager as `prgrm.CxIrState.<Obj>Mng`,
 so stage 4 changes no signature except to give a constructor a program,
@@ -637,10 +637,10 @@ No object model function returns an error value.
 
 `BenchmarkCompile` in `t11-cx/compile_bench_test.go` compiles seven programs
 from `tests/` with no run. It registers the opcodes once, as `cx` does.
-Each iteration makes a fresh program with `cxinit.MakeProgram` and
-`cxinit.RegisterPackages` outside the timer, then times
-`cxparsing.ParseSourceStrings` (passes one and two) and
-`cxparsing.AddInitFunction`. It reports ns/op,
+Each iteration makes a fresh program with `cxinit.ProgramMake` and
+`cxinit.PackagesRegister` outside the timer, then times
+`cxparsing.SourceStringsParse` (passes one and two) and
+`cxparsing.SysInitFunctionAdd`. It reports ns/op,
 B/op, allocs/op and `irobjects/op`, the number of objects in the arenas after
 the compile.
 
@@ -755,7 +755,7 @@ comment in that PR. The line numbers are not checked.
 
 | Category | Meaning |
 | --- | --- |
-| `ctor-def` | a constructor, `Make*`, `MakeCall`, `Param`, `Slice`, `nativeArgCopy`, `Deserialize`, `deserializeArgument`, `deserializeExpression` or the test generator `GenerateSampleProgram` |
+| `ctor-def` | a constructor, `Make*`, `CallMake`, `Param`, `Slice`, `nativeArgCopy`, `Deserialize`, `deserializeArgument`, `deserializeExpression` or the test generator `SampleProgramGenerate` |
 | `ctor-call` | a call to one of those constructors |
 | `arena-add` | a call that inserts into an arena, `Add*InArray`, `AddCXLine`, `CXAtomicOpAdd`, `PackageAdd` and the `astapi` wrappers |
 | `arena-append` | an `append` to an arena slice inside those functions |

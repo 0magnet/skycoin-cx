@@ -525,7 +525,7 @@ func escapePrologue(prgrm *ast.CXProgram, params []escapeParam, escaped map[stri
 		source.Name = hidden
 
 		_, declarator := ast.ArgumentMake(prgrm, param.escapeParamName, CurrentFile, line)
-		prologue = append(prologue, DeclareLocal(prgrm, declarator, specs, primaryIdentifierExpressions(prgrm, hidden), true)...)
+		prologue = append(prologue, LocalDeclare(prgrm, declarator, specs, primaryIdentifierExpressions(prgrm, hidden), true)...)
 	}
 	if prologue == nil {
 		return exprs

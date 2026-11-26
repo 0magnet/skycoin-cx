@@ -13,7 +13,7 @@ import (
 // Parse Globals
 // - takes in globals from cx/cmd/declaration_extractor
 // - adds globals to AST
-func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDeclaration) error {
+func GlobalsParse(files []*loader.File, globals []declaration_extractor.GlobalDeclaration) error {
 	prgrm := actions.AST
 
 	// Range over global declarations and parse
@@ -46,7 +46,7 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 		actions.AST.SelectPackage(pkgNameGid)
 
 		// Read File
-		source, err := GetSourceBytes(files, global.FileID)
+		source, err := SourceBytesGet(files, global.FileID)
 		if err != nil {
 			return err
 		}
@@ -66,14 +66,14 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 
 		var declarationSpecifier *ast.CXArgument
 
-		declarationSpecifier, err = ParseDeclarationSpecifier(prgrm, globalTokens[2], prgrm.CXProgramSourceFileIntern(global.FileID), global.LineNumber, declarationSpecifier)
+		declarationSpecifier, err = DeclarationSpecifierParse(prgrm, globalTokens[2], prgrm.CXProgramSourceFileIntern(global.FileID), global.LineNumber, declarationSpecifier)
 		if err != nil {
 			return err
 		}
 
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1515.
-		actions.DeclareGlobalInPackage(actions.AST, nil, actions.AST.CXArgFromArrayGet(globalArgIdx), declarationSpecifier, nil, false)
+		actions.GlobalInPackageDeclare(actions.AST, nil, actions.AST.CXArgFromArrayGet(globalArgIdx), declarationSpecifier, nil, false)
 
 	}
 	return nil

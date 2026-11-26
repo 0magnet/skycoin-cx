@@ -17,7 +17,7 @@ type FuncDeclaration struct {
 	FuncName    string // name of function being declared
 }
 
-func ExtractFuncs(source []byte, fileName string) ([]FuncDeclaration, error) {
+func FuncsExtract(source []byte, fileName string) ([]FuncDeclaration, error) {
 
 	var FuncDeclarationsArray []FuncDeclaration
 	var pkg string

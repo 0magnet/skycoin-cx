@@ -19,7 +19,7 @@ type EnumDeclaration struct {
 	EnumName    string // name of enum being declared
 }
 
-func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
+func EnumsExtract(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 	var EnumDeclarationsArray []EnumDeclaration
 	var pkg string

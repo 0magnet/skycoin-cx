@@ -27,7 +27,7 @@ import (
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) bool {
 
-	stopCPUProfile, err := profiling.StartCPUProfile("parse", profiling.DebugProfileRate)
+	stopCPUProfile, err := profiling.CPUProfileStart("parse", profiling.DebugProfileRate)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		stopCPUProfile = func() error { return nil }
@@ -46,15 +46,15 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 		}()
 	}
 
-	profiling.StartProfile("parse")
-	defer profiling.StopProfile("parse")
+	profiling.ProfileStart("parse")
+	defer profiling.ProfileStop("parse")
 	defer func() { printer.PrinterCompileErrorsPrint(actions.AST) }()
 
 	if actions.AST == nil {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0056 S0057.
-		actions.AST = cxinit.MakeProgram()
-		cxinit.RegisterPackages(actions.AST)
+		actions.AST = cxinit.ProgramMake()
+		cxinit.PackagesRegister(actions.AST)
 	}
 
 	sources := make([]string, len(sourceCode))
@@ -83,7 +83,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 // compileSourceStrings compiles sources, named by fileNames, into actions.AST
 // with its *init. The cx command and the tests compile through it (#516).
 func compileSourceStrings(fileNames []string, sources []string) error {
-	if err := cxparsing.ParseSourceStrings(sources, fileNames); err != nil {
+	if err := cxparsing.SourceStringsParse(sources, fileNames); err != nil {
 		return err
 	}
 
@@ -93,7 +93,7 @@ func compileSourceStrings(fileNames []string, sources []string) error {
 	}
 
 	// Adding *init function that initializes all the global variables.
-	if err := cxparsing.AddInitFunction(actions.AST); err != nil {
+	if err := cxparsing.SysInitFunctionAdd(actions.AST); err != nil {
 		return fmt.Errorf("initializing *init: %w", err)
 	}
 
@@ -172,8 +172,8 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 }
 
 func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
-	profiling.StartProfile("run")
-	defer profiling.StopProfile("run")
+	profiling.ProfileStart("run")
+	defer profiling.ProfileStop("run")
 
 	if options.replMode || len(sourceCode) == 0 {
 		repl.Repl()
@@ -232,9 +232,9 @@ type SourceCode struct {
 	Code string //Unused?
 }
 
-// GetCXPath sets the bin, pkg and src paths from -cxpath, else CXPATH, else
+// CXPathGet sets the bin, pkg and src paths from -cxpath, else CXPATH, else
 // $HOME/cx. It does not create the directories.
-func GetCXPath(options cxCmdFlags) {
+func CXPathGet(options cxCmdFlags) {
 	var err error
 	CXPATH := ""
 	if os.Getenv("CXPATH") != "" {

@@ -13,7 +13,7 @@ func TestCheckImport(t *testing.T) {
 		"math":       true,
 		"math/sys":   true,
 	} {
-		if err := CheckImport(path); (err == nil) != ok {
+		if err := ImportCheck(path); (err == nil) != ok {
 			t.Errorf("CheckImport(%q) = %v, want ok %v", path, err, ok)
 		}
 	}

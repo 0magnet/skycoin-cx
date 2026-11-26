@@ -11,12 +11,12 @@ import (
 	"golang.org/x/mobile/asset"
 )
 
-func CopyAssetsToFilesDir() bool {
+func AssetsCopyToFilesDir() bool {
 	filesDir := asset.GetFilesDir()
-	return CopyAssetsTo("", filesDir)
+	return AssetsCopyTo("", filesDir)
 }
 
-func CopyAssetTo(path string, dest string) bool {
+func AssetCopyTo(path string, dest string) bool {
 	destPath := fmt.Sprintf("%s/%s", dest, path)
 	fmt.Printf("Copy '%s' to '%s'\n", path, destPath)
 	source, err := asset.Open(path)
@@ -41,11 +41,11 @@ func CopyAssetTo(path string, dest string) bool {
 	return true
 }
 
-func CopyAssetsTo(path string, dest string) bool {
+func AssetsCopyTo(path string, dest string) bool {
 	//fmt.Printf("COPY_ASSETS '%s' TO '%s'\n", path, dest)
 	assetList := asset.GetAssetList(path)
 	if len(assetList) == 0 {
-		if success := CopyAssetTo(path, dest); success == false {
+		if success := AssetCopyTo(path, dest); success == false {
 			fmt.Printf("ProgramError copying file '%s' to '%s'\n", path, dest)
 			return false
 		}
@@ -69,7 +69,7 @@ func CopyAssetsTo(path string, dest string) bool {
 				sourcePath = fmt.Sprintf("%s/%s", path, s)
 				//fmt.Printf("SOURCE_PATH_EMPTY '%s' ADD '%s'\n", sourcePath, s)
 			}
-			if success := CopyAssetsTo(sourcePath, dest); success == false {
+			if success := AssetsCopyTo(sourcePath, dest); success == false {
 				fmt.Printf("ProgramError copying file or dir '%s' to '%s'\n", sourcePath, dest)
 				return false
 			}

@@ -44,12 +44,12 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 			if perr != nil {
 				t.Fatal(perr)
 			}
-			err := loader.LoadCXProgram(tc.programName, sourceCodes)
+			err := loader.CXProgramLoad(tc.programName, sourceCodes)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles(tc.programName)
+			files, err := file_output.ImportFilesGet(tc.programName)
 			if err != nil {
 				t.Fatal(err)
 			}

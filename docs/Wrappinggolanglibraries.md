@@ -35,12 +35,12 @@ outside the standard library is a system library instead, see
    and its case makes the call inline, writing the value to the one output
    when there is one.
 
-4. **Write `RegisterPackage(prgrm *ast.CXProgram)`** when the package has
+4. **Write `PackageRegister(prgrm *ast.CXProgram)`** when the package has
    types or structs. In [t4-regexp/init.go](../t4-regexp/init.go) it calls
    `ast.PackageMake(prgrm.CXProgramNameIntern("regexp"))`, then
    `prgrm.PackageAdd` and `StructAdd` for the `Regexp` struct. Call it from
-   `RegisterPackages` in [t7-init/init.go](../t7-init/init.go), next to
-   `regexp.RegisterPackage(prgrm)`. There is no `func init`.
+   `PackagesRegister` in [t7-init/init.go](../t7-init/init.go), next to
+   `regexp.PackageRegister(prgrm)`. There is no `func init`.
 
 5. **Make it importable.** Add the package name to `DefaultPackages` in
    [t0-packages/packages.go](../t0-packages/packages.go). CX code then
@@ -52,7 +52,7 @@ outside the standard library is a system library instead, see
    t3-ast, so it is tier 4.
 
 To make the package optional, give its files a build tag and the
-`RegisterPackage` an empty stand in under the opposite tag, as t4-regexp does
+`PackageRegister` an empty stand in under the opposite tag, as t4-regexp does
 with `noregexp`. Pass concrete Go types to the wrapped library, not
 interfaces. `make check` runs the tier, init, opcode table and object model
 checks.
@@ -81,5 +81,5 @@ A system library function has no opcode row. It is called through
    handler to the switch of its library (decision D96). There is no
    registration. A new library also needs its number in `LibraryTable`, a
    `libraryDispatches` entry in t2-cx-core-opcodegen, and a call of
-   `opcodes.LibraryLink` with its two switches from the `RegisterPackage` of
+   `opcodes.LibraryLink` with its two switches from the `PackageRegister` of
    its package.

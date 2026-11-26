@@ -80,15 +80,15 @@ func importScopedBegin() {
 	importScoped = importScopedState{}
 }
 
-// DeclareImportScoped declares import . "path" for names nil, and import
+// ImportScopedDeclare declares import . "path" for names nil, and import
 // (names) "path" otherwise, at line and column of currentFile. A scope of
 // "file" brings the names into the file only, and "" into the package.
-func DeclareImportScoped(prgrm *ast.CXProgram, path string, scope string, scopeLine int, scopeColumn int, names []ImportScopedName, currentFile ast.SourceFileGid, line int, column int) {
+func ImportScopedDeclare(prgrm *ast.CXProgram, path string, scope string, scopeLine int, scopeColumn int, names []ImportScopedName, currentFile ast.SourceFileGid, line int, column int) {
 	if scope != "" && scope != "file" {
 		prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeImportFormInvalid, currentFile, scopeLine, scopeColumn, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText("'" + scope + "' cannot stand before an import, only file can")})
 		return
 	}
-	DeclareImportAt(prgrm, path, currentFile, line, column)
+	ImportDeclareAt(prgrm, path, currentFile, line, column)
 	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		panic(err)

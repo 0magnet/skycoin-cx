@@ -48,7 +48,7 @@ func IterationExpressions(prgrm *ast.CXProgram,
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0608.
-	upExprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	upExprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0609.
 	upExpr := ast.AtomicOperatorExpressionMake(prgrm, jmpFn)
@@ -70,7 +70,7 @@ func IterationExpressions(prgrm *ast.CXProgram,
 	upLines := ((len(statementExprs) + len(incrementExprs) + len(loopConditionExprs) + 2) * -1) - 2
 	downLines := 0
 
-	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
+	trueArg := PrimaryWrite(prgrm, types.BOOL, encoder.Serialize(true), false)
 	typeSigIdx := ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, trueArg)
 	prgrm.CXAtomicOps[upExpressionIdx].InputAdd(prgrm, typeSigIdx)
 	prgrm.CXAtomicOps[upExpressionIdx].ThenLines = upLines
@@ -78,7 +78,7 @@ func IterationExpressions(prgrm *ast.CXProgram,
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0611.
-	downExprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	downExprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0612.
 	downExpr := ast.AtomicOperatorExpressionMake(prgrm, jmpFn)
@@ -205,13 +205,13 @@ func trueJmpExpressions(prgrm *ast.CXProgram, opcode int) []ast.CXExpression {
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0625.
-	exprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	exprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0626.
 	expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcode))
 	expressionIdx := expr.Index
 
-	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
+	trueArg := PrimaryWrite(prgrm, types.BOOL, encoder.Serialize(true), false)
 	typeSigIdx := ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, trueArg)
 	prgrm.CXAtomicOps[expressionIdx].InputAdd(prgrm, typeSigIdx)
 	prgrm.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
@@ -262,7 +262,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0629.
-	ifExprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	ifExprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0630.
 	ifExpr := ast.AtomicOperatorExpressionMake(prgrm, jmpFn)
@@ -315,7 +315,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0636.
-	skipExprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	skipExprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0637.
 	skipExpr := ast.AtomicOperatorExpressionMake(prgrm, jmpFn)
@@ -325,7 +325,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 
 	skipLines := len(elseExprs)
 
-	trueArg := WritePrimary(prgrm, types.BOOL, encoder.Serialize(true), false)
+	trueArg := PrimaryWrite(prgrm, types.BOOL, encoder.Serialize(true), false)
 	typeSigIdx := ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, trueArg)
 	prgrm.CXAtomicOps[skipExpressionIdx].InputAdd(prgrm, typeSigIdx)
 	prgrm.CXAtomicOps[skipExpressionIdx].ThenLines = skipLines
@@ -481,7 +481,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0670.
-	exprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	exprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0671.
 	expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcode))
@@ -648,7 +648,7 @@ func shortCircuitExpressions(prgrm *ast.CXProgram, exprs []ast.CXExpression, lef
 		panic(err)
 	}
 
-	jmpCXLine := MakeCXLineExpressionCurrent(prgrm)
+	jmpCXLine := CXLineExpressionCurrentMake(prgrm)
 	jmpExpr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OP_JMP))
 	jmpOp := &prgrm.CXAtomicOps[jmpExpr.Index]
 	jmpOp.Package = ast.CXPackageIndex(pkg.Index)
@@ -972,7 +972,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 	}
 
 	fnOutputs := fn.OutputsGet(prgrm)
-	// AddJmpToReturnExpressions reports a return count that does not match.
+	// ReturnExpressionsJmpAdd reports a return count that does not match.
 	if idx >= len(fnOutputs) || len(retExprs) == 0 {
 		return retExprs
 	}
@@ -1087,7 +1087,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		if len(retExprs) < 2 || retExprs[len(retExprs)-2].Type != ast.CX_LINE {
 			// return s[0][1] has no line of its own for a runtime error to report.
 			lineExprs := append([]ast.CXExpression{}, retExprs[:len(retExprs)-1]...)
-			return append(lineExprs, *MakeCXLineExpressionCurrent(prgrm), lastExpr)
+			return append(lineExprs, *CXLineExpressionCurrentMake(prgrm), lastExpr)
 		}
 		return retExprs
 	} else if lastExpr.TypeArrayLiteral() && len(lastExpression.OutputsGet(prgrm)) > 0 {
@@ -1099,7 +1099,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 	} else if len(lastExpression.OutputsGet(prgrm)) > 0 {
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0716.
-		exprCXLine := MakeCXLineExpressionCurrent(prgrm)
+		exprCXLine := CXLineExpressionCurrentMake(prgrm)
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0717.
 		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OP_IDENTITY))
@@ -1121,13 +1121,13 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 	}
 }
 
-// AddJmpToReturnExpressions adds an jump expression that makes a function stop its execution.
+// ReturnExpressionsJmpAdd adds an jump expression that makes a function stop its execution.
 //
 // Input arguments description:
 //
 //		prgrm - a CXProgram that contains all the data and arrays of the program.
 //	 exprs - contains the array of return expressions where the jump expr will be added.
-func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []ast.CXExpression {
+func ReturnExpressionsJmpAdd(prgrm *ast.CXProgram, exprs ReturnExpressions) []ast.CXExpression {
 	var pkg *ast.CXPackage
 	var fn *ast.CXFunction
 	var err error
@@ -1159,7 +1159,7 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0719.
-	exprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	exprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// expression to jump to the end of the embedding function
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0720.

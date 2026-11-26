@@ -156,8 +156,8 @@ func compileRunProgram(tb testing.TB, p runBenchProgram) {
 func compileRunSources(tb testing.TB, names []string, sources []string) {
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1780 S1781.
-	actions.AST = cxinit.MakeProgram()
-	cxinit.RegisterPackages(actions.AST)
+	actions.AST = cxinit.ProgramMake()
+	cxinit.PackagesRegister(actions.AST)
 	globals.FoundCompileErrors = false
 	globals.HeapOffset = 0
 	if err := compileSourceStrings(names, sources); err != nil {

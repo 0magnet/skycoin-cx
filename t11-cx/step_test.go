@@ -35,10 +35,10 @@ func captureStdout(t *testing.T, fn func()) string {
 func TestRunCompiledMaxOps(t *testing.T) {
 	initProgram()
 	src := "package main\nimport \"sys/string\"\nfunc f() {\n\tstring.PrintLine(\"in f\")\n}\nfunc main() {\n\tf()\n\tf()\n\tfor true {\n\t}\n}\n"
-	if err := cxparsing.ParseSourceStrings([]string{src}, []string{"step.cx"}); err != nil {
+	if err := cxparsing.SourceStringsParse([]string{src}, []string{"step.cx"}); err != nil {
 		t.Fatal(err)
 	}
-	if err := cxparsing.AddInitFunction(actions.AST); err != nil {
+	if err := cxparsing.SysInitFunctionAdd(actions.AST); err != nil {
 		t.Fatal(err)
 	}
 	actions.AST.CxIrState.StringPool.StringPoolFreeze()

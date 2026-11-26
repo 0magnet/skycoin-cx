@@ -15,22 +15,22 @@ func TestASTAPI_Packages(t *testing.T) {
 	t.Run("make program", func(t *testing.T) {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Now a constructor call, site S1613.
-		cxprogram = cxinit.MakeProgram()
-		cxinit.RegisterPackages(cxprogram)
+		cxprogram = cxinit.ProgramMake()
+		cxinit.PackagesRegister(cxprogram)
 		nativePkgs = len(cxprogram.Packages)
 	})
 
 	t.Run("add empty package", func(t *testing.T) {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now an arena insert, site S1614.
-		err := astapi.AddEmptyPackage(cxprogram, "main")
+		err := astapi.EmptyPackageAdd(cxprogram, "main")
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("get packages name lists", func(t *testing.T) {
-		list := astapi.GetPackagesNameList(cxprogram)
+		list := astapi.PackagesNameListGet(cxprogram)
 		wantLen := nativePkgs + 1
 		if len(list) != wantLen {
 			t.Errorf("got len(list)=%v, want %v", len(list), wantLen)

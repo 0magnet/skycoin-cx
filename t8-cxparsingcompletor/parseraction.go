@@ -120,7 +120,7 @@ func ParserActionExpressionStatement(exprs []ast.CXExpression) []ast.CXExpressio
 		// test() and assert report the CX_LINE before them (skycoin-cx#254)
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Also state.CXExpressionMng (manager storage) or []CXExpressionGid, phase 4 #346. Site S1500 S1501.
-		result = append([]ast.CXExpression{*actions.MakeCXLineExpressionCurrent(actions.AST)}, exprs...)
+		result = append([]ast.CXExpression{*actions.CXLineExpressionCurrentMake(actions.AST)}, exprs...)
 	} else {
 		result = exprs
 	}
@@ -227,7 +227,7 @@ func ParserActionDeclareLocals(names []*ast.CXArgument, spec *ast.CXArgument, va
 			if initialized {
 				initializer = values[0]
 			}
-			result = append(result, actions.DeclareLocal(actions.AST, name, nameSpec, initializer, initialized)...)
+			result = append(result, actions.LocalDeclare(actions.AST, name, nameSpec, initializer, initialized)...)
 		}
 		return result
 	}
@@ -246,7 +246,7 @@ func ParserActionDeclareLocals(names []*ast.CXArgument, spec *ast.CXArgument, va
 		if i < len(names)-1 {
 			nameSpec = actions.DeclarationSpecifiersCopy(actions.AST, spec)
 		}
-		result = append(result, actions.DeclareLocal(actions.AST, name, nameSpec, nil, false)...)
+		result = append(result, actions.LocalDeclare(actions.AST, name, nameSpec, nil, false)...)
 	}
 	if spec != nil {
 		if len(targets) == 1 && len(values) == 1 {
@@ -267,7 +267,7 @@ func ParserActionDeclareLocals(names []*ast.CXArgument, spec *ast.CXArgument, va
 	// The names of var a, b = 1 are invalid, so their uses report nothing more
 	// than the count, as the global form does.
 	for _, name := range names {
-		result = append(result, actions.DeclareLocal(actions.AST, name, actions.DeclarationSpecifiersBasic(actions.AST, types.INVALID), nil, false)...)
+		result = append(result, actions.LocalDeclare(actions.AST, name, actions.DeclarationSpecifiersBasic(actions.AST, types.INVALID), nil, false)...)
 	}
 	return result
 }

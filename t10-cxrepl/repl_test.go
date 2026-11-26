@@ -16,12 +16,12 @@ import (
 const hello = "package main\nimport \"sys/string\"\nfunc main() {\n\tstring.PrintLine(\"hi\")\n}\n"
 
 func TestMain(m *testing.M) {
-	actions.InitConstants()
-	cxos.InitConstants(actions.AddConstI32)
+	actions.ConstantsInit()
+	cxos.ConstantsInit(actions.ConstI32Add)
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0011 S0012.
-	actions.AST = cxinit.MakeProgram()
-	cxinit.RegisterPackages(actions.AST)
+	actions.AST = cxinit.ProgramMake()
+	cxinit.PackagesRegister(actions.AST)
 	os.Exit(m.Run())
 }
 
@@ -108,7 +108,7 @@ func TestEvalCompileErrorDoesNotRun(t *testing.T) {
 	}
 }
 
-// An initialization cycle is found by AddInitFunction, after parsing, and
+// An initialization cycle is found by SysInitFunctionAdd, after parsing, and
 // used to run anyway. See #519.
 func TestEvalInitCycleDoesNotRun(t *testing.T) {
 	cycle := "package main\nvar a i32 = b\nvar b i32 = a + 1\nfunc main() { global a\n\ti32.print(a)\n}\n"

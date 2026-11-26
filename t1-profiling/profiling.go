@@ -23,13 +23,13 @@ var profiles = make(map[string]int64)
 // pprof runs one CPU profile at a time, this stops it.
 var stopCPU func() error
 
-func StartProfile(name string) {
+func ProfileStart(name string) {
 	if DebugProfile {
 		profiles[name] = time.Now().UnixNano()
 	}
 }
 
-func StopProfile(name string) {
+func ProfileStop(name string) {
 	if DebugProfile {
 		t := time.Now().UnixNano()
 		deltaTime := t - profiles[name]
@@ -37,15 +37,15 @@ func StopProfile(name string) {
 	}
 }
 
-// StartCPUProfile writes a CPU profile to <argv0>_<name>_cpu.pprof at
+// CPUProfileStart writes a CPU profile to <argv0>_<name>_cpu.pprof at
 // profRate samples per second. A rate of 0 does nothing. The returned
 // function stops the profile and closes the file.
-func StartCPUProfile(name string, profRate int) (stop func() error, err error) {
-	return StartCPUProfileFile(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name), profRate)
+func CPUProfileStart(name string, profRate int) (stop func() error, err error) {
+	return CPUProfileStartFile(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name), profRate)
 }
 
-// StartCPUProfileFile is StartCPUProfile writing to path.
-func StartCPUProfileFile(path string, profRate int) (stop func() error, err error) {
+// CPUProfileStartFile is CPUProfileStart writing to path.
+func CPUProfileStartFile(path string, profRate int) (stop func() error, err error) {
 	if profRate == 0 {
 		return func() error { return nil }, nil
 	}
@@ -54,14 +54,14 @@ func StartCPUProfileFile(path string, profRate int) (stop func() error, err erro
 	if err != nil {
 		return nil, fmt.Errorf("create CPU profile: %w", err)
 	}
-	return StartCPUProfileOnFile(f, profRate)
+	return CPUProfileStartOnFile(f, profRate)
 }
 
-// StartCPUProfileOnFile is StartCPUProfile writing to f at a nonzero profRate.
+// CPUProfileStartOnFile is CPUProfileStart writing to f at a nonzero profRate.
 // It closes f on stop or failure.
 // VIOLATION STRHOT-016: B, hands a path or text to Go or the OS, #412.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
-func StartCPUProfileOnFile(f *os.File, profRate int) (stop func() error, err error) {
+func CPUProfileStartOnFile(f *os.File, profRate int) (stop func() error, err error) {
 	// test against default value to avoid warning
 	if profRate != 100 {
 		runtime.SetCPUProfileRate(profRate)

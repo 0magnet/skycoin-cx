@@ -17,7 +17,7 @@ type TypeDefinitionDeclaration struct {
 	TypeDefinitionName string // name of function being declared
 }
 
-func ExtractTypeDefinitions(source []byte, fileName string) ([]TypeDefinitionDeclaration, error) {
+func TypeDefinitionsExtract(source []byte, fileName string) ([]TypeDefinitionDeclaration, error) {
 	var TypeDefinitionDeclarationsArray []TypeDefinitionDeclaration
 	var pkg string
 

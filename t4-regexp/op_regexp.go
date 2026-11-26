@@ -14,7 +14,7 @@ var regexps map[string]*regexp.Regexp = make(map[string]*regexp.Regexp, 0)
 
 // expOffset returns the offset of the `exp` field of the CX `regexp.Regexp`
 // held by value. The field holds the expression, which keys `regexps`. exp is
-// the only field RegisterPackage gives Regexp, so it starts the struct.
+// the only field PackageRegister gives Regexp, so it starts the struct.
 func expOffset(value ast.CXValue) types.Pointer {
 	return value.Offset
 }

@@ -13,7 +13,7 @@ const coreLibraryCipherLinked = true
 
 // The cipher library is linked into this core, see coreLibraryRegisters.
 func init() {
-	coreLibraryRegisters = append(coreLibraryRegisters, cipher.RegisterPackage)
+	coreLibraryRegisters = append(coreLibraryRegisters, cipher.PackageRegister)
 }
 
 // coreOpcodeDispatchCipher runs an opcode of the cipher library.

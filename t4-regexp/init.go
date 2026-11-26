@@ -7,9 +7,9 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
-// RegisterPackage adds the regexp package and its Regexp struct to prgrm. The
+// PackageRegister adds the regexp package and its Regexp struct to prgrm. The
 // regexp opcodes are rows of constants.OpcodeDefinitionTable.
-func RegisterPackage(prgrm *ast.CXProgram) {
+func PackageRegister(prgrm *ast.CXProgram) {
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now a constructor call, site S1410.
 	regexpPkg := ast.PackageMake(prgrm.CXProgramNameIntern("regexp"))

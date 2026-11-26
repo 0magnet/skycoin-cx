@@ -18,7 +18,7 @@ func sandboxCxQuote(s string) string {
 }
 
 // Program paths stay inside the --sandbox directory for every file opcode in
-// sys/os, and for StartCPUProfile. See #433.
+// sys/os, and for CPUProfileStart. See #433.
 func TestProgramFileOpcodesStayInSandbox(t *testing.T) {
 	dir := t.TempDir()
 	sandbox := filepath.Join(dir, "sandbox")

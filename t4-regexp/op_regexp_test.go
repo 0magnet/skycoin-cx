@@ -27,7 +27,7 @@ func newTestProgram() *ast.CXProgram {
 		CxIrState: &ast.CxIrState{},
 	}
 	prgrm.CxIrState.CxIrStateInit()
-	RegisterPackage(prgrm)
+	PackageRegister(prgrm)
 	return prgrm
 }
 

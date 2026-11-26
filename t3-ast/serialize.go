@@ -469,7 +469,7 @@ func deserializeProgramFields(prgrm *CXProgram, decoder *serializeDecoder) []ser
 		return nil
 	}
 	// OBJMODEL: state.CXCallMng (manager storage) or []CXCallGid, phase 4 #366.
-	// Now a slice of objects, as cxinit.MakeProgram makes it.
+	// Now a slice of objects, as cxinit.ProgramMake makes it.
 	prgrm.CallStack = make([]CXCall, stackLength)
 	calls := make([]serializeCallReference, used)
 	for i := range calls {

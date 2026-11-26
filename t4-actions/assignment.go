@@ -902,7 +902,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		_, declarator := ast.ArgumentMake(prgrm, target.Name, file, line)
 		placeholder := declarationSpecifiersPlaceholder(prgrm, file, line)
 		placeholder.Type = types.INVALID
-		return append(DeclareLocal(prgrm, declarator, placeholder, nil, false), fromExprs...)
+		return append(LocalDeclare(prgrm, declarator, placeholder, nil, false), fromExprs...)
 	}
 
 	pkg, err := prgrm.CurrentPackageGet()
@@ -912,7 +912,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0592.
-	exprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	exprCXLine := CXLineExpressionCurrentMake(prgrm)
 	switch assignOp {
 	case ":=":
 		shortDeclExprs := shortDeclarationAssignment(prgrm, pkg, toExprs, fromExprs, 0)
@@ -1093,7 +1093,7 @@ func MultipleAssignmentCall(prgrm *ast.CXProgram, targets [][]ast.CXExpression, 
 	}
 	var result []ast.CXExpression
 	if assignOp == ":=" {
-		result = append(result, *MakeCXLineExpressionCurrent(prgrm))
+		result = append(result, *CXLineExpressionCurrentMake(prgrm))
 	}
 	for i, target := range targets {
 		if assignOp == ":=" {
@@ -1241,7 +1241,7 @@ func ShortDeclarationTargetsInvalid(prgrm *ast.CXProgram, targets [][]ast.CXExpr
 		}
 		file, line := ast.CXArgumentDebugFileGidLine(prgrm, sig.ArgDetails)
 		_, declarator := ast.ArgumentMake(prgrm, sig.Name, file, line)
-		result = append(result, DeclareLocal(prgrm, declarator, declarationSpecifiersMissing(prgrm, file, line), nil, false)...)
+		result = append(result, LocalDeclare(prgrm, declarator, declarationSpecifiersMissing(prgrm, file, line), nil, false)...)
 	}
 	return result
 }

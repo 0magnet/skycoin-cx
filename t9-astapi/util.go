@@ -6,9 +6,9 @@ import (
 	cxast "github.com/skycoin/skycoin-cx/t3-ast"
 )
 
-// FindPackage returns the package named packageName. It does not intern
+// PackageFind returns the package named packageName. It does not intern
 // the name, since a name that was never interned names no package.
-func FindPackage(cxprogram *cxast.CXProgram, packageName string) (*cxast.CXPackage, error) {
+func PackageFind(cxprogram *cxast.CXProgram, packageName string) (*cxast.CXPackage, error) {
 	packageNameGid, found := cxprogram.CXProgramNameFind(packageName)
 	if !found {
 		return nil, errors.New("package not found")
@@ -21,8 +21,8 @@ func FindPackage(cxprogram *cxast.CXProgram, packageName string) (*cxast.CXPacka
 	return cxprogram.PackageGet(packageNameGid)
 }
 
-// FindFunction returns the function named functionName in any package.
-func FindFunction(cxprogram *cxast.CXProgram, functionName string) (*cxast.CXFunction, error) {
+// FunctionFind returns the function named functionName in any package.
+func FunctionFind(cxprogram *cxast.CXProgram, functionName string) (*cxast.CXFunction, error) {
 	functionNameGid, found := cxprogram.CXProgramNameFind(functionName)
 	if !found {
 		return nil, errors.New("function not found")

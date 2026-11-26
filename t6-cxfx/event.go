@@ -82,7 +82,7 @@ var polledCount int
 // VIOLATION: state outside State. Owner: t6-cxfx; moves to EventMng in phase 1.
 var mutex sync.Mutex
 
-func PushEvent(eventType EventType) {
+func EventPush(eventType EventType) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
@@ -105,39 +105,39 @@ func PushEvent(eventType EventType) {
 	eventCount++
 }
 
-func PushWindowSizeEvent(width float64, height float64) {
+func WindowSizeEventPush(width float64, height float64) {
 	index := eventCount
-	PushEvent(APP_WINDOW_SIZE)
+	EventPush(APP_WINDOW_SIZE)
 	events[index].x = width
 	events[index].y = height
 }
 
-func PushWindowPositionEvent(x float64, y float64) {
+func WindowPositionEventPush(x float64, y float64) {
 	index := eventCount
-	PushEvent(APP_WINDOW_POSITION)
+	EventPush(APP_WINDOW_POSITION)
 	events[index].x = x
 	events[index].y = y
 }
 
-func PushFramebufferSizeEvent(width float64, height float64) {
+func FramebufferSizeEventPush(width float64, height float64) {
 	index := eventCount
-	PushEvent(APP_FRAMEBUFFER_SIZE)
+	EventPush(APP_FRAMEBUFFER_SIZE)
 	events[index].x = width
 	events[index].y = height
 }
 
-func PushKeyboardEvent(action ActionType, key int32, scancode int64, mods int32) {
+func KeyboardEventPush(action ActionType, key int32, scancode int64, mods int32) {
 	index := eventCount
-	PushEvent(APP_KEYBOARD)
+	EventPush(APP_KEYBOARD)
 	events[index].action = action
 	events[index].key = key
 	events[index].scancode = scancode
 	events[index].mods = mods
 }
 
-func PushMouseEvent(eventType EventType, action ActionType, button int32, touch int64, mods int32, x float64, y float64) {
+func MouseEventPush(eventType EventType, action ActionType, button int32, touch int64, mods int32, x float64, y float64) {
 	index := eventCount
-	PushEvent(eventType)
+	EventPush(eventType)
 	events[index].action = action
 	events[index].key = button
 	events[index].scancode = touch

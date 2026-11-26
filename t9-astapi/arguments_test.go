@@ -16,49 +16,49 @@ import (
 func TestASTAPI_Arguments(t *testing.T) {
 	var cxprogram *cxast.CXProgram
 
-	// Needed for AddNativeExpressionToFunction
+	// Needed for FunctionNativeExpressionAdd
 	// because of dependency on cxast.OpNames
-	parsingcompletor.InitCXCore()
+	parsingcompletor.CXCoreInit()
 
 	t.Run("make program", func(t *testing.T) {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Now a constructor call, site S1585.
-		cxprogram = cxinit.MakeProgram()
-		cxinit.RegisterPackages(cxprogram)
+		cxprogram = cxinit.ProgramMake()
+		cxinit.PackagesRegister(cxprogram)
 	})
 
 	t.Run("add empty package", func(t *testing.T) {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now an arena insert, site S1586.
-		err := astapi.AddEmptyPackage(cxprogram, "main")
+		err := astapi.EmptyPackageAdd(cxprogram, "main")
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add empty function to package", func(t *testing.T) {
-		err := astapi.AddEmptyFunctionToPackage(cxprogram, "main", "TestFunction")
+		err := astapi.PackageEmptyFunctionAdd(cxprogram, "main", "TestFunction")
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add input to function", func(t *testing.T) {
-		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", types.I32)
+		err := astapi.FunctionNativeInputAdd(cxprogram, "main", "TestFunction", "inputOne", types.I32)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add output to function", func(t *testing.T) {
-		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", types.I16)
+		err := astapi.FunctionNativeOutputAdd(cxprogram, "main", "TestFunction", "outputOne", types.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add expression to function", func(t *testing.T) {
-		err := astapi.AddNativeExpressionToFunction(cxprogram, "TestFunction", cxconstants.OP_ADD)
+		err := astapi.FunctionNativeExpressionAdd(cxprogram, "TestFunction", cxconstants.OP_ADD)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
@@ -68,21 +68,21 @@ func TestASTAPI_Arguments(t *testing.T) {
 		buf := new(bytes.Buffer)
 		var num int32 = 5
 		binary.Write(buf, binary.LittleEndian, num)
-		err := astapi.AddLiteralInputToExpression(cxprogram, "main", "TestFunction", buf.Bytes(), types.I16, 1)
+		err := astapi.ExpressionLiteralInputAdd(cxprogram, "main", "TestFunction", buf.Bytes(), types.I16, 1)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add second input to expression", func(t *testing.T) {
-		err := astapi.AddNativeInputToExpression(cxprogram, "main", "TestFunction", "y", types.I16, 1)
+		err := astapi.ExpressionNativeInputAdd(cxprogram, "main", "TestFunction", "y", types.I16, 1)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add output to expression", func(t *testing.T) {
-		err := astapi.AddNativeOutputToExpression(cxprogram, "main", "TestFunction", "z", types.I16, 1)
+		err := astapi.ExpressionNativeOutputAdd(cxprogram, "main", "TestFunction", "z", types.I16, 1)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
@@ -93,14 +93,14 @@ func TestASTAPI_Arguments(t *testing.T) {
 	})
 
 	t.Run("make input of an expression a pointer", func(t *testing.T) {
-		err := astapi.MakeInputExpressionAPointer(cxprogram, "TestFunction", 1, 1)
+		err := astapi.ExpressionInputPointerMake(cxprogram, "TestFunction", 1, 1)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("make output of an expression a pointer", func(t *testing.T) {
-		err := astapi.MakeOutputExpressionAPointer(cxprogram, "TestFunction", 1, 0)
+		err := astapi.ExpressionOutputPointerMake(cxprogram, "TestFunction", 1, 0)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
@@ -145,7 +145,7 @@ func TestASTAPI_Arguments(t *testing.T) {
 	})
 
 	t.Run("get accessible i16 args", func(t *testing.T) {
-		args, err := astapi.GetAccessibleArgsForFunctionByType(cxprogram, "main", "TestFunction", types.I16)
+		args, err := astapi.FunctionAccessibleArgsByTypeGet(cxprogram, "main", "TestFunction", types.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

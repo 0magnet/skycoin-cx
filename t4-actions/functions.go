@@ -221,10 +221,10 @@ func parseOperator(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 	return false
 }
 
-// CheckUndValidTypes checks if an expression with a generic operator (operators that
+// UndValidTypesCheck checks if an expression with a generic operator (operators that
 // accept `cxcore.TYPE_UNDEFINED` arguments) is receiving arguments of valid types. For example,
 // the expression `sa + sb` is not valid if they are struct instances.
-func CheckUndValidTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
+func UndValidTypesCheck(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) {
 	expressionIdx := exprs[currIndex].Index
 	expressionOperator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(prgrm.CXAtomicOps[expressionIdx].Operator)
 	if expressionOperator != nil && ast.OpcodeOperator(expressionOperator.AtomicOPCode) && !ArgsAllBasicTypes(prgrm, &exprs[currIndex]) {
@@ -251,7 +251,7 @@ func FunctionParametersDeclare(prgrm *ast.CXProgram, symbolTable *SymbolTable, o
 	fn := prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx)
 
 	for _, paramIdx := range params {
-		UpdateSymbolsTable(prgrm, symbolTable, paramIdx, offset, false)
+		SymbolsTableUpdate(prgrm, symbolTable, paramIdx, offset, false)
 		// We remove it from local var array since it is already added to the symbols
 		// if fn.LocalVariableDeclared(typeSignatureName) {
 		// 	err := fn.LocalVariableFromArrayRemove(typeSignatureName)
@@ -261,7 +261,7 @@ func FunctionParametersDeclare(prgrm *ast.CXProgram, symbolTable *SymbolTable, o
 		// }
 
 		GiveOffset(prgrm, symbolTable, paramIdx)
-		AddPointer(prgrm, fn, paramIdx)
+		PointerAdd(prgrm, fn, paramIdx)
 
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0732.
@@ -321,7 +321,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionGid, inputs, 
 	ShortCircuitJumpsResolve(prgrm, exprs)
 	GoTosResolve(prgrm, exprs)
 	LoopJumpsOutsideLoopReport(prgrm, exprs)
-	AddExprsToFunction(prgrm, fnIdx, exprs)
+	FunctionExpressionsAdd(prgrm, fnIdx, exprs)
 	fn = prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx)
 	FunctionParametersDeclare(prgrm, symbolTable, &offset, fnIdx, fn.InputsGet(prgrm))
 	FunctionParametersDeclare(prgrm, symbolTable, &offset, fnIdx, fn.OutputsGet(prgrm))
@@ -370,11 +370,11 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionGid, inputs, 
 		}
 
 		functionReferenceInputsResolve(prgrm, exprAtomicOp)
-		if !CheckTypes(prgrm, fn.Expressions, i) {
+		if !TypesCheck(prgrm, fn.Expressions, i) {
 			symbolsScopeClose(symbolTable, expr)
 			continue
 		}
-		CheckUndValidTypes(prgrm, fn.Expressions, i)
+		UndValidTypesCheck(prgrm, fn.Expressions, i)
 		checkOperatorOperands(prgrm, fn.Expressions, i)
 		checkOperatorResultType(prgrm, fn.Expressions, i)
 		checkSliceBuiltinTypes(prgrm, fn.Expressions, i)
@@ -1214,7 +1214,7 @@ func ExpressionArgumentsResolve(prgrm *ast.CXProgram, symbolTable *SymbolTable, 
 		arg := prgrm.CXArgFromArrayGet(argIdx)
 
 		if !inputArguments {
-			CheckRedeclared(prgrm, symbolTable, expr, typeSignatureIdx)
+			RedeclaredCheck(prgrm, symbolTable, expr, typeSignatureIdx)
 		}
 
 		if !inputArguments {
@@ -1228,9 +1228,9 @@ func ExpressionArgumentsResolve(prgrm *ast.CXProgram, symbolTable *SymbolTable, 
 		typeSignatureName := typeSignature.Name
 		localVariable := fn.LocalVariableDeclared(typeSignatureName)
 		if (arg != nil && arg.PreviouslyDeclared) || TemporaryVariable(prgrm, typeSignatureName) || (arg == nil && localVariable) {
-			UpdateSymbolsTable(prgrm, symbolTable, typeSignatureIdx, offset, false)
+			SymbolsTableUpdate(prgrm, symbolTable, typeSignatureIdx, offset, false)
 		} else {
-			UpdateSymbolsTable(prgrm, symbolTable, typeSignatureIdx, offset, true)
+			SymbolsTableUpdate(prgrm, symbolTable, typeSignatureIdx, offset, true)
 		}
 
 		GiveOffset(prgrm, symbolTable, typeSignatureIdx)
@@ -1238,7 +1238,7 @@ func ExpressionArgumentsResolve(prgrm *ast.CXProgram, symbolTable *SymbolTable, 
 
 		if arg != nil {
 			for _, idxIdx := range arg.Indexes {
-				UpdateSymbolsTable(prgrm, symbolTable, idxIdx, offset, true)
+				SymbolsTableUpdate(prgrm, symbolTable, idxIdx, offset, true)
 				GiveOffset(prgrm, symbolTable, idxIdx)
 				checkIndexType(prgrm, idxIdx)
 			}
@@ -1247,19 +1247,19 @@ func ExpressionArgumentsResolve(prgrm *ast.CXProgram, symbolTable *SymbolTable, 
 				// Now an arena getter, site S0803.
 				fld := prgrm.CXArgFromArrayGet(fldIdx)
 				for _, idxIdx := range fld.Indexes {
-					UpdateSymbolsTable(prgrm, symbolTable, idxIdx, offset, true)
+					SymbolsTableUpdate(prgrm, symbolTable, idxIdx, offset, true)
 					GiveOffset(prgrm, symbolTable, idxIdx)
 				}
 			}
 		} else if typeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 			// The slice placeholder of f()[i] keeps its indexes in its details.
 			for _, idxIdx := range prgrm.CXTypeSignatureArrayFromArrayGet(typeSignature.Meta).Indexes {
-				UpdateSymbolsTable(prgrm, symbolTable, idxIdx, offset, true)
+				SymbolsTableUpdate(prgrm, symbolTable, idxIdx, offset, true)
 				GiveOffset(prgrm, symbolTable, idxIdx)
 				checkIndexType(prgrm, idxIdx)
 			}
 		}
-		AddPointer(prgrm, fn, typeSignatureIdx)
+		PointerAdd(prgrm, fn, typeSignatureIdx)
 	}
 }
 
@@ -1292,7 +1292,7 @@ func pointerAdded(prgrm *ast.CXProgram, fn *ast.CXFunction, sym *ast.CXArgument)
 	return found
 }
 
-// AddPointer checks if `sym` or its last field, if a struct, behaves like a
+// PointerAdd checks if `sym` or its last field, if a struct, behaves like a
 // pointer (slice, pointer, string). If this is the case, `sym` is added to
 // `fn.ListOfPointers` so the CX runtime does not have to determine this.
 //
@@ -1304,7 +1304,7 @@ func pointerAdded(prgrm *ast.CXProgram, fn *ast.CXFunction, sym *ast.CXArgument)
 //
 // GCREACH: adds GC roots to ListOfPointers,
 // see docs/GarbageCollector.md.
-func AddPointer(prgrm *ast.CXProgram, fn *ast.CXFunction, typeSigIdx ast.CXTypeSignatureIndex) {
+func PointerAdd(prgrm *ast.CXProgram, fn *ast.CXFunction, typeSigIdx ast.CXTypeSignatureIndex) {
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0804.
 	typeSig := prgrm.CXTypeSignatureFromArrayGet(typeSigIdx)
@@ -1383,7 +1383,7 @@ func fieldPointerDeref(sym *ast.CXArgument, arg *ast.CXArgument) {
 	}
 }
 
-// CheckRedeclared checks if `expr` represents a variable declaration and then checks if an
+// RedeclaredCheck checks if `expr` represents a variable declaration and then checks if an
 // instance of that variable has already been declared.
 //
 // Input arguments description:
@@ -1395,7 +1395,7 @@ func fieldPointerDeref(sym *ast.CXArgument, arg *ast.CXArgument) {
 //				  the last element of the slice.
 //	 expr - the expression.
 //	 typeSigIdx - the index of the type signature from the main CXTypeSignature array.
-func CheckRedeclared(prgrm *ast.CXProgram, symbolTable *SymbolTable, expr *ast.CXExpression, typeSigIdx ast.CXTypeSignatureIndex) {
+func RedeclaredCheck(prgrm *ast.CXProgram, symbolTable *SymbolTable, expr *ast.CXExpression, typeSigIdx ast.CXTypeSignatureIndex) {
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0810.
 	typeSig := prgrm.CXTypeSignatureFromArrayGet(typeSigIdx)
@@ -1488,8 +1488,8 @@ func GoTosResolve(prgrm *ast.CXProgram, exprs []ast.CXExpression) {
 	}
 }
 
-// AddExprsToFunction add all expressions to the function.
-func AddExprsToFunction(prgrm *ast.CXProgram, fnIdx ast.CXFunctionGid, exprs []ast.CXExpression) {
+// FunctionExpressionsAdd add all expressions to the function.
+func FunctionExpressionsAdd(prgrm *ast.CXProgram, fnIdx ast.CXFunctionGid, exprs []ast.CXExpression) {
 	fn := prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx)
 	for _, expr := range exprs {
 		fn.ExpressionAdd(prgrm, &expr)
@@ -1667,10 +1667,10 @@ func checkMatchExprNumOfOutputs(prgrm *ast.CXProgram, expression *ast.CXAtomicOp
 	return true
 }
 
-// CheckTypes checks if the expected types are provided and outputted
+// TypesCheck checks if the expected types are provided and outputted
 // correctly. It returns false after a call with a wrong number of inputs or
 // receivers, whose other checks would index past its arguments.
-func CheckTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) bool {
+func TypesCheck(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) bool {
 	expression, err := prgrm.CXAtomicOpFromExpressionsGet(exprs, currIndex)
 	if err != nil {
 		panic(err)
@@ -2211,8 +2211,8 @@ func lookupSymbol(prgrm *ast.CXProgram, pkgName stringpool.StringGid, ident stri
 	return fnArgTypeSig, nil
 }
 
-// UpdateSymbolsTable adds `sym` to the innermost scope (last element of slice) in `symbols`.
-func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolTable *SymbolTable, typeSigIdx ast.CXTypeSignatureIndex, offset *types.Pointer, shouldAlreadyExist bool) {
+// SymbolsTableUpdate adds `sym` to the innermost scope (last element of slice) in `symbols`.
+func SymbolsTableUpdate(prgrm *ast.CXProgram, symbolTable *SymbolTable, typeSigIdx ast.CXTypeSignatureIndex, offset *types.Pointer, shouldAlreadyExist bool) {
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0876.
 	typeSig := prgrm.CXTypeSignatureFromArrayGet(typeSigIdx)
@@ -2245,7 +2245,7 @@ func UpdateSymbolsTable(prgrm *ast.CXProgram, symbolTable *SymbolTable, typeSigI
 		}
 
 		if !currFn.LocalVariableDeclared(typeSig.Name) {
-			GetGlobalSymbol(prgrm, symbolTable, typeSigPkg, typeSig.Name, typeSig.ArgDetails)
+			GlobalSymbolGet(prgrm, symbolTable, typeSigPkg, typeSig.Name, typeSig.ArgDetails)
 		}
 
 		assert.AssertInvariantTrue(len(symbolTable.symbolsIndex) > 0, "UpdateSymbolsTable: symbol scope stack is empty")
@@ -2326,7 +2326,7 @@ func MethodCallResolve(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolTable
 	}
 
 	// The receiver may be a global, as box of box.Area().
-	GetGlobalSymbol(prgrm, symbolTable, receiverPkg, receiver.Name, receiver.ArgDetails)
+	GlobalSymbolGet(prgrm, symbolTable, receiverPkg, receiver.Name, receiver.ArgDetails)
 	symbolTypeSig, err := lookupSymbol(prgrm, receiverPkg.Name, receiver.Name, symbolTable)
 	if err != nil {
 		prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeIdentifierMissing, receiver.ArgDetails, ast.CompileErrorOperands{int64(receiver.Name)})
@@ -2505,7 +2505,7 @@ func GiveOffset(prgrm *ast.CXProgram, symbolTable *SymbolTable, typeSigIdx ast.C
 		}
 
 		if !currFn.LocalVariableDeclared(symTypeSigName) {
-			GetGlobalSymbol(prgrm, symbolTable, symPkg, symTypeSigName, symTypeSig.ArgDetails)
+			GlobalSymbolGet(prgrm, symbolTable, symPkg, symTypeSigName, symTypeSig.ArgDetails)
 		}
 
 		argTypeSignature, err := lookupSymbol(prgrm, symPkg.Name, symTypeSigName, symbolTable)
@@ -2514,7 +2514,7 @@ func GiveOffset(prgrm *ast.CXProgram, symbolTable *SymbolTable, typeSigIdx ast.C
 		}
 		if err == nil {
 			SymbolFieldsCopy(prgrm, symTypeSig, argTypeSignature)
-			CopyArgFields(prgrm, symTypeSig, argTypeSignature)
+			ArgFieldsCopy(prgrm, symTypeSig, argTypeSignature)
 		}
 	}
 }
@@ -2658,7 +2658,7 @@ func TemporaryVariableComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	}
 }
 
-// CopyArgFields copies 'arg' fields to 'sym' fields.
+// ArgFieldsCopy copies 'arg' fields to 'sym' fields.
 // copyArgFieldsIndexesCheck records indexes past the dimensions of the type
 // and drops them, so later passes never index past its lengths.
 func copyArgFieldsIndexesCheck(prgrm *ast.CXProgram, sym *ast.CXArgument, typeSig *ast.CXTypeSignature) {
@@ -2677,7 +2677,7 @@ func copyArgFieldsIndexesCheck(prgrm *ast.CXProgram, sym *ast.CXArgument, typeSi
 	sym.Indexes = sym.Indexes[:dimensions]
 }
 
-func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast.CXTypeSignature) {
+func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast.CXTypeSignature) {
 	var sym *ast.CXArgument
 	if symTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
@@ -3376,8 +3376,8 @@ func SymbolFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *
 	}
 }
 
-// GetGlobalSymbol tries to retrieve `ident` from `symPkg`'s globals if `ident` is not found in the local scope.
-func GetGlobalSymbol(prgrm *ast.CXProgram, symbolTable *SymbolTable, symPkg *ast.CXPackage, ident stringpool.StringGid, details ast.CXArgumentDebugGid) {
+// GlobalSymbolGet tries to retrieve `ident` from `symPkg`'s globals if `ident` is not found in the local scope.
+func GlobalSymbolGet(prgrm *ast.CXProgram, symbolTable *SymbolTable, symPkg *ast.CXPackage, ident stringpool.StringGid, details ast.CXArgumentDebugGid) {
 	_, err := lookupSymbol(prgrm, symPkg.Name, ident, symbolTable)
 	if err != nil {
 		if glbl, err := symPkg.GlobalGet(prgrm, ident); err == nil {
@@ -3587,7 +3587,7 @@ func incDecOperandAdd(prgrm *ast.CXProgram, exprAtomicOp *ast.CXAtomicOperator) 
 		typeCode = types.I32
 		types.Write_i32(one[:], 0, 1)
 	}
-	literal := WritePrimary(prgrm, typeCode, one[:typeCode.Size()], false)
+	literal := PrimaryWrite(prgrm, typeCode, one[:typeCode.Size()], false)
 	exprAtomicOp.InputAdd(prgrm, ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, literal))
 }
 
@@ -3787,7 +3787,7 @@ func assignmentTargetFormattedType(prgrm *ast.CXProgram, sig *ast.CXTypeSignatur
 
 // pointerTypeOfLastField reports whether arg, an access such as a[i].p or
 // t.p, has the pointer type of its last field p rather than being a pointer.
-// CopyArgFields gives a pointer base the field type as PointerTargetType.
+// ArgFieldsCopy gives a pointer base the field type as PointerTargetType.
 func pointerTypeOfLastField(prgrm *ast.CXProgram, arg *ast.CXArgument) bool {
 	field := prgrm.CXArgFromArrayGet(arg.Fields[len(arg.Fields)-1])
 	return field.PointerTyped() && arg.PointerTargetType != types.POINTER
@@ -3874,7 +3874,7 @@ func shortDeclarationCollectionValue(prgrm *ast.CXProgram, sig *ast.CXTypeSignat
 }
 
 // shortDeclarationElementType returns the type of the array or slice elt
-// reads, whose specifiers CopyArgFields has stripped of its indexes. The
+// reads, whose specifiers ArgFieldsCopy has stripped of its indexes. The
 // caller adds the pointer of &a.
 func shortDeclarationElementType(elt *ast.CXArgument, reference bool) (shortDeclarationType, bool) {
 	specs := elt.DeclarationSpecifiers
@@ -3939,7 +3939,7 @@ func shortDeclarationCollectionSet(prgrm *ast.CXProgram, decl, assign *ast.CXAto
 
 	outArg := prgrm.CXArgGet(ast.CXArgumentIndex(outSig.Meta))
 	outArg.DeclarationSpecifiers, outArg.Lengths, outArg.DereferenceOperations = nil, nil, nil
-	CopyArgFields(prgrm, outSig, declSig)
+	ArgFieldsCopy(prgrm, outSig, declSig)
 	if outSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		SliceDereferenceSet(prgrm, ast.CXArgumentIndex(outSig.Meta))
 	}

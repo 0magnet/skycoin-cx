@@ -186,7 +186,7 @@ func globalDeferredDeclare(prgrm *ast.CXProgram, deferred *ast.GlobalDeferred, t
 	if spec == nil {
 		spec = actions.DeclarationSpecifiersBasic(prgrm, types.INVALID)
 	}
-	actions.DeclareGlobalInPackage(prgrm, pkg, declarator, spec, nil, false)
+	actions.GlobalInPackageDeclare(prgrm, pkg, declarator, spec, nil, false)
 	prgrm.CurrentPackage = currentPackage
 	prgrm.CxIrState.CxIrStateManagerGrowBoundary()
 }

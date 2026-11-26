@@ -14,49 +14,49 @@ func TestASTAPI_Functions(t *testing.T) {
 	t.Run("make program", func(t *testing.T) {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Now a constructor call, site S1606.
-		cxprogram = cxinit.MakeProgram()
-		cxinit.RegisterPackages(cxprogram)
+		cxprogram = cxinit.ProgramMake()
+		cxinit.PackagesRegister(cxprogram)
 	})
 
 	t.Run("add empty package", func(t *testing.T) {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now an arena insert, site S1607.
-		err := astapi.AddEmptyPackage(cxprogram, "main")
+		err := astapi.EmptyPackageAdd(cxprogram, "main")
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add empty function to package", func(t *testing.T) {
-		err := astapi.AddEmptyFunctionToPackage(cxprogram, "main", "TestFunction")
+		err := astapi.PackageEmptyFunctionAdd(cxprogram, "main", "TestFunction")
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add first input to function", func(t *testing.T) {
-		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", types.I32)
+		err := astapi.FunctionNativeInputAdd(cxprogram, "main", "TestFunction", "inputOne", types.I32)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add second input to function", func(t *testing.T) {
-		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputTwo", types.I32)
+		err := astapi.FunctionNativeInputAdd(cxprogram, "main", "TestFunction", "inputTwo", types.I32)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add first output to function", func(t *testing.T) {
-		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", types.I16)
+		err := astapi.FunctionNativeOutputAdd(cxprogram, "main", "TestFunction", "outputOne", types.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add second output to function", func(t *testing.T) {
-		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputTwo", types.I16)
+		err := astapi.FunctionNativeOutputAdd(cxprogram, "main", "TestFunction", "outputTwo", types.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
@@ -85,7 +85,7 @@ func TestASTAPI_Functions(t *testing.T) {
 	})
 
 	t.Run("remove function from package", func(t *testing.T) {
-		err := astapi.RemoveFunctionFromPackage(cxprogram, "main", "TestFunction")
+		err := astapi.PackageFunctionRemove(cxprogram, "main", "TestFunction")
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

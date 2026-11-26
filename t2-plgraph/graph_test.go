@@ -13,10 +13,10 @@ func TestGraph(t *testing.T) {
 	if perr != nil {
 		t.Fatal(perr)
 	}
-	if err := loader.LoadCXProgram("TestTree", sourceCodes); err != nil {
+	if err := loader.CXProgramLoad("TestTree", sourceCodes); err != nil {
 		t.Fatal(err)
 	}
-	output, err := GetImportGraph("TestTree")
+	output, err := ImportGraphGet("TestTree")
 	if err != nil {
 		t.Fatal(err)
 	}

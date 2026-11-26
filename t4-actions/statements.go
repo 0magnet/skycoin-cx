@@ -23,7 +23,7 @@ type SelectStatement struct {
 	Else []ast.CXExpression
 }
 
-// CreateSelectionStatement creates series of expressions that will create
+// SelectionStatementCreate creates series of expressions that will create
 // an if elseif else condition.
 //
 // Input arguments description:
@@ -36,7 +36,7 @@ type SelectStatement struct {
 //	 elseExprs - contains the statements if condition is false and there are
 //				 	no elseif conditions.
 //	 statementType - determines if the statement is an if+elseif+else or if+elseif only.
-func CreateSelectionStatement(prgrm *ast.CXProgram, conditionExprs []ast.CXExpression, thenExprs []ast.CXExpression, elseifExprs []SelectStatement, elseExprs []ast.CXExpression, statementType int) []ast.CXExpression {
+func SelectionStatementCreate(prgrm *ast.CXProgram, conditionExprs []ast.CXExpression, thenExprs []ast.CXExpression, elseifExprs []SelectStatement, elseExprs []ast.CXExpression, statementType int) []ast.CXExpression {
 	var lastElse []ast.CXExpression
 	switch statementType {
 	case SEL_ELSEIFELSE:

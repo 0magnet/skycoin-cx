@@ -75,7 +75,7 @@ func ReDeclarationCheck(Import []ImportDeclaration, Glbl []GlobalDeclaration, En
 	return nil
 }
 
-func GetDeclarations(source []byte, Glbls []GlobalDeclaration, Enums []EnumDeclaration, TypeDefs []TypeDefinitionDeclaration, Strcts []StructDeclaration, Funcs []FuncDeclaration) []string {
+func DeclarationsGet(source []byte, Glbls []GlobalDeclaration, Enums []EnumDeclaration, TypeDefs []TypeDefinitionDeclaration, Strcts []StructDeclaration, Funcs []FuncDeclaration) []string {
 
 	var declarations []string
 
@@ -102,7 +102,7 @@ func GetDeclarations(source []byte, Glbls []GlobalDeclaration, Enums []EnumDecla
 	return declarations
 }
 
-func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
+func AllDeclarationsExtract(source []*loader.File) ([]ImportDeclaration, []GlobalDeclaration, []EnumDeclaration, []TypeDefinitionDeclaration, []StructDeclaration, []FuncDeclaration, error) {
 
 	//Variable declarations
 	var Imports []ImportDeclaration
@@ -149,7 +149,7 @@ func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []Globa
 
 				defer wg.Done()
 
-				imports, err := ExtractImports(replaceComments, fileName)
+				imports, err := ImportsExtract(replaceComments, fileName)
 
 				if err != nil {
 					errorChannel <- err
@@ -164,7 +164,7 @@ func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []Globa
 
 				defer wg.Done()
 
-				globals, err := ExtractGlobals(replaceStringContents, fileName)
+				globals, err := GlobalsExtract(replaceStringContents, fileName)
 
 				if err != nil {
 					errorChannel <- err
@@ -179,7 +179,7 @@ func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []Globa
 
 				defer wg.Done()
 
-				enums, err := ExtractEnums(replaceStringContents, fileName)
+				enums, err := EnumsExtract(replaceStringContents, fileName)
 
 				if err != nil {
 					errorChannel <- err
@@ -194,7 +194,7 @@ func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []Globa
 
 				defer wg.Done()
 
-				typeDefinitions, err := ExtractTypeDefinitions(replaceStringContents, fileName)
+				typeDefinitions, err := TypeDefinitionsExtract(replaceStringContents, fileName)
 
 				if err != nil {
 					errorChannel <- err
@@ -209,7 +209,7 @@ func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []Globa
 
 				defer wg.Done()
 
-				structs, err := ExtractStructs(replaceStringContents, fileName)
+				structs, err := StructsExtract(replaceStringContents, fileName)
 
 				if err != nil {
 					errorChannel <- err
@@ -224,7 +224,7 @@ func ExtractAllDeclarations(source []*loader.File) ([]ImportDeclaration, []Globa
 
 				defer wg.Done()
 
-				funcs, err := ExtractFuncs(replaceStringContents, fileName)
+				funcs, err := FuncsExtract(replaceStringContents, fileName)
 
 				if err != nil {
 					errorChannel <- err

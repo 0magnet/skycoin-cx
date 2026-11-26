@@ -120,8 +120,8 @@ document or check script.
     imported package, a function or a type of its package, or a variable
     of an enclosing block. The compiler keeps the statements in
     `t4-actions/scope_globals.go`, checks each use where a body resolves
-    a global (`GetGlobalSymbol`) and each declaration where it enters the
-    symbol table (`UpdateSymbolsTable`).
+    a global (`GlobalSymbolGet`) and each declaration where it enters the
+    symbol table (`SymbolsTableUpdate`).
     `import "pkg"` reaches the members of `pkg` only as `pkg.name`. An
     import into scope, `import . "pkg"` or `import (a, b) "pkg"` for the
     package and `import file . "pkg"` or `import file (a, b) "pkg"` for

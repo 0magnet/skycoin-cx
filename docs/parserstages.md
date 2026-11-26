@@ -36,7 +36,7 @@ Program
 		0.- Function: main () ()
 		1.- Function: sayHi () ()
 
-before cxgo.Parse(cxgo.NewLexer(b) 
+before cxgo.Parse(cxgo.LexerNew(b) 
 Program
 0.- Package: main
 	Imports
@@ -51,7 +51,7 @@ Program
 		0.- Function: main () ()
 		1.- Function: sayHi () ()
 
-after cxgo.Parse(cxgo.NewLexer(b) 
+after cxgo.Parse(cxgo.LexerNew(b) 
 Program
 0.- Package: main
 	Imports
@@ -88,7 +88,7 @@ Program
 		1.- Function: sayHi () ()
 			0.- Expression: string.PrintLine(&*lit str)
 
-after ParseSourceStrings
+after SourceStringsParse
 Program
 0.- Package: main
 	Imports

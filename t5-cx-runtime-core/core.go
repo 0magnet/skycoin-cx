@@ -27,7 +27,7 @@ import (
 func CoreRegister(prgrm *ast.CXProgram, libraryRegisters ...func(prgrm *ast.CXProgram)) {
 	ast.OpcodeDispatch = CoreOpcodeDispatch
 	printer.PrinterCompileErrorsRegister(prgrm)
-	regexp.RegisterPackage(prgrm)
+	regexp.PackageRegister(prgrm)
 	for _, register := range libraryRegisters {
 		register(prgrm)
 	}

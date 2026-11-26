@@ -15,10 +15,10 @@ import (
 	repl "github.com/skycoin/skycoin-cx/t10-cxrepl"    // thin: only Repl, ReplTargetFn; only user of cxrepl, could merge it here, max tier 11 to 10
 	globals "github.com/skycoin/skycoin-cx/t2-globals" // thin: only DBG_GOLANG_STACK_TRACE; no depth gain
 	actions "github.com/skycoin/skycoin-cx/t4-actions"
-	cxnet "github.com/skycoin/skycoin-cx/t4-cxnet"          // thin: only InitConstants; no depth gain
+	cxnet "github.com/skycoin/skycoin-cx/t4-cxnet"          // thin: only ConstantsInit; no depth gain
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core" // thin: only ExecutorRun, ExecutorMemoryLimitsClamp and the executor names; no depth gain
-	cxos "github.com/skycoin/skycoin-cx/t5-cxos"            // thin: only InitConstants; no depth gain
-	cxfx "github.com/skycoin/skycoin-cx/t6-cxfx"            // thin: only InitConstants; no depth gain
+	cxos "github.com/skycoin/skycoin-cx/t5-cxos"            // thin: only ConstantsInit; no depth gain
+	cxfx "github.com/skycoin/skycoin-cx/t6-cxfx"            // thin: only ConstantsInit; no depth gain
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"          // thin: only MakeProgram, RegisterPackages; no depth gain
 )
 
@@ -68,9 +68,9 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 	actions.AST.ProgramSandboxRoot = root
 	actions.AST.ProgramStdinInit(os.Stdin)
 
-	profiling.StartProfile("run")
+	profiling.ProfileStart("run")
 
-	defer profiling.StopProfile("run")
+	defer profiling.ProfileStop("run")
 
 	if options.executor != core.ExecutorAuto && options.executor != core.ExecutorOld && options.executor != core.ExecutorVm {
 		fmt.Fprintf(os.Stderr, "unknown --executor %q, want auto, old or vm\n", options.executor)
@@ -102,7 +102,7 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 		Checking if CXPATH is set, either by setting an environment variable
 		 or by setting the `--cxpath` flag.
 	*/
-	GetCXPath(options)
+	CXPathGet(options)
 
 	/*
 		checkHelp checks  for command line argument string "help"
@@ -233,18 +233,18 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 	// Init 4-9 run here, after the flags, so the heap flags size the program.
 	// Init 1-3 are package vars (see the VIOLATION comments).
 	// Init 4: cx.* constants in actions.ConstCodes
-	actions.InitConstants()
+	actions.ConstantsInit()
 	// Init 5: os.* constants (empty with nocxos)
-	cxos.InitConstants(actions.AddConstI32)
-	cxnet.InitConstants(actions.AddConstI32)
+	cxos.ConstantsInit(actions.ConstI32Add)
+	cxnet.ConstantsInit(actions.ConstI32Add)
 	// Init 6: gl, glfw and al constants (empty without cxfx)
-	cxfx.InitConstants()
+	cxfx.ConstantsInit()
 	// Init 7: actions.AST, the program state
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0062 S0063.
-	actions.AST = cxinit.MakeProgram()
+	actions.AST = cxinit.ProgramMake()
 	// Init 8: native packages in the program and the global opcode tables
-	cxinit.RegisterPackages(actions.AST)
+	cxinit.PackagesRegister(actions.AST)
 	// Init 9: built-in opcode and operator tables
 
 	enabled, operations, problem := librariesEnabledParse(options.enable)

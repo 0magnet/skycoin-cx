@@ -32,9 +32,9 @@ func ImportBuiltin(path string) bool {
 	return strings.HasPrefix(path, SysPrefix) || PackageDefault(path)
 }
 
-// CheckImport returns an error when path names a built-in package that does
+// ImportCheck returns an error when path names a built-in package that does
 // not exist or omits SysPrefix.
-func CheckImport(path string) error {
+func ImportCheck(path string) error {
 	if name, found := strings.CutPrefix(path, SysPrefix); found {
 		if !PackageDefault(name) {
 			return fmt.Errorf("unknown built-in package %q", path)

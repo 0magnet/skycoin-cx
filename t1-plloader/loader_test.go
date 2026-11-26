@@ -70,7 +70,7 @@ func TestRemoveDuplicates(t *testing.T) {
 	}
 	for _, testcase := range tests {
 		t.Run(testcase.Scenario, func(t *testing.T) {
-			gotList := loader.RemoveDuplicates(testcase.List)
+			gotList := loader.DuplicatesRemove(testcase.List)
 			if !reflect.DeepEqual(gotList, testcase.WantList) {
 				t.Errorf("want list %v, got %v", testcase.WantList, gotList)
 			}
@@ -474,7 +474,7 @@ func TestLoadCXProgram(t *testing.T) {
 				t.Fatal(perr)
 			}
 			closeFiles(t, sourceCodes)
-			err := loader.LoadCXProgram("test", sourceCodes)
+			err := loader.CXProgramLoad("test", sourceCodes)
 			if testcase.WantErr {
 				if err == nil {
 					t.Error("want an error, got nil")
@@ -511,7 +511,7 @@ func TestLoadCXProgramImportLoop(t *testing.T) {
 		t.Fatal(err)
 	}
 	closeFiles(t, sourceCodes)
-	if err := loader.LoadCXProgram("loop", sourceCodes); err == nil {
+	if err := loader.CXProgramLoad("loop", sourceCodes); err == nil {
 		t.Error("want a dependency loop error, got nil")
 	}
 }
@@ -552,7 +552,7 @@ func TestLoadCXProgramCommentedImport(t *testing.T) {
 		t.Fatal(err)
 	}
 	closeFiles(t, sourceCodes)
-	if err := loader.LoadCXProgram("commentimport", sourceCodes); err != nil {
+	if err := loader.CXProgramLoad("commentimport", sourceCodes); err != nil {
 		t.Errorf("an import inside a comment was read as an import: %v", err)
 	}
 }
@@ -573,7 +573,7 @@ func TestLoadCXProgramBuiltinImports(t *testing.T) {
 				t.Fatal(err)
 			}
 			closeFiles(t, sourceCodes)
-			if err := loader.LoadCXProgram("builtin_"+name, sourceCodes); err != nil {
+			if err := loader.CXProgramLoad("builtin_"+name, sourceCodes); err != nil {
 				t.Errorf("import of the built in package %s: %v", name, err)
 			}
 		})
@@ -601,10 +601,10 @@ func TestLoadCXProgramSameFileNames(t *testing.T) {
 		t.Fatal(err)
 	}
 	closeFiles(t, sourceCodes)
-	if err := loader.LoadCXProgram("samenames", sourceCodes); err != nil {
+	if err := loader.CXProgramLoad("samenames", sourceCodes); err != nil {
 		t.Fatal(err)
 	}
-	stored, err := loader.ReadProgram("samenames")
+	stored, err := loader.ProgramRead("samenames")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -636,10 +636,10 @@ func TestReadProgram(t *testing.T) {
 		t.Fatal(err)
 	}
 	closeFiles(t, sourceCodes)
-	if err := loader.LoadCXProgram("readprogram", sourceCodes); err != nil {
+	if err := loader.CXProgramLoad("readprogram", sourceCodes); err != nil {
 		t.Fatal(err)
 	}
-	stored, err := loader.ReadProgram("readprogram")
+	stored, err := loader.ProgramRead("readprogram")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -663,7 +663,7 @@ func TestReadProgram(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v, want %v", got, want)
 	}
-	if _, err := loader.ReadProgram("readprogram-missing"); err == nil {
+	if _, err := loader.ProgramRead("readprogram-missing"); err == nil {
 		t.Error("ReadProgram of a missing program: want an error, got nil")
 	}
 }

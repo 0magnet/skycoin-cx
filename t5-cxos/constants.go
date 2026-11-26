@@ -42,10 +42,10 @@ const (
 	OS_RUN_TIMEOUT
 )
 
-// InitConstants registers the os.* constants through constantAdd,
-// actions.AddConstI32 in cx. Taking it as an argument keeps the compiler out
+// ConstantsInit registers the os.* constants through constantAdd,
+// actions.ConstI32Add in cx. Taking it as an argument keeps the compiler out
 // of this package, so the cx build core can link the file library.
-func InitConstants(constantAdd func(code int, name string, value int32)) {
+func ConstantsInit(constantAdd func(code int, name string, value int32)) {
 	// os
 	constantAdd(CONST_OS_RUN_SUCCESS, "os.RUN_SUCCESS", OS_RUN_SUCCESS)
 	constantAdd(CONST_OS_RUN_EMPTY_CMD, "os.RUN_EMPTY_CMD", OS_RUN_EMPTY_CMD)
@@ -55,8 +55,8 @@ func InitConstants(constantAdd func(code int, name string, value int32)) {
 	constantAdd(CONST_OS_RUN_TIMEOUT, "os.RUN_TIMEOUT", OS_RUN_TIMEOUT)
 
 	// os.FileModes (FIXME: these are uint32 in Go, with _DIR & _TYPE exceeding math.MaxInt32)
-	//cxcore.AddConstI32(CONST_OS_FILEMODE_DIR, "os.ModeDir", 2147483648)
-	//cxcore.AddConstI32(CONST_OS_FILEMODE_TYPE, "os.ModeType", 2399666176)
+	//cxcore.ConstI32Add(CONST_OS_FILEMODE_DIR, "os.ModeDir", 2147483648)
+	//cxcore.ConstI32Add(CONST_OS_FILEMODE_TYPE, "os.ModeType", 2399666176)
 	constantAdd(CONST_OS_FILEMODE_APPEND, "os.ModeAppend", 1073741824)
 	constantAdd(CONST_OS_FILEMODE_EXCLUSIVE, "os.ModeExclusive", 536870912)
 	constantAdd(CONST_OS_FILEMODE_TEMPORARY, "os.ModeTemporary", 268435456)

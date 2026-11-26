@@ -26,7 +26,7 @@ STRHOT-012 O removed t0-util/file.go CXOpenFile not on the run path at dfcc46ab
 STRHOT-013 O removed t0-util/file.go CXCreateFile not on the run path at dfcc46ab
 STRHOT-014 O removed t0-util/file.go CXReadFile not on the run path at dfcc46ab
 STRHOT-015 O removed t0-util/file.go cxPath not on the run path at dfcc46ab
-STRHOT-016 B open t1-profiling/profiling.go StartCPUProfileOnFile
+STRHOT-016 B open t1-profiling/profiling.go CPUProfileStartOnFile
 STRHOT-017 O removed t3-ast/ast_cxfunction.go *CXFunction.InputAdd not on the run path at dfcc46ab
 STRHOT-018 O removed t3-ast/ast_cxfunction.go *CXFunction.OutputAdd not on the run path at dfcc46ab
 STRHOT-019 O removed t3-ast/ast_cxfunction.go *CXFunction.LocalVariableNameAdd not on the run path at dfcc46ab

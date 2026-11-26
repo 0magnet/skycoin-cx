@@ -14,63 +14,63 @@ import (
 func TestASTAPI_Expressions(t *testing.T) {
 	var cxprogram *cxast.CXProgram
 
-	// Needed for AddNativeExpressionToFunction
+	// Needed for FunctionNativeExpressionAdd
 	// because of dependency on cxast.OpNames
-	parsingcompletor.InitCXCore()
+	parsingcompletor.CXCoreInit()
 
 	t.Run("make program", func(t *testing.T) {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Now a constructor call, site S1598.
-		cxprogram = cxinit.MakeProgram()
-		cxinit.RegisterPackages(cxprogram)
+		cxprogram = cxinit.ProgramMake()
+		cxinit.PackagesRegister(cxprogram)
 	})
 
 	t.Run("add empty package", func(t *testing.T) {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now an arena insert, site S1599.
-		err := astapi.AddEmptyPackage(cxprogram, "main")
+		err := astapi.EmptyPackageAdd(cxprogram, "main")
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add empty function to package", func(t *testing.T) {
-		err := astapi.AddEmptyFunctionToPackage(cxprogram, "main", "TestFunction")
+		err := astapi.PackageEmptyFunctionAdd(cxprogram, "main", "TestFunction")
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add input to function", func(t *testing.T) {
-		err := astapi.AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", types.I32)
+		err := astapi.FunctionNativeInputAdd(cxprogram, "main", "TestFunction", "inputOne", types.I32)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add output to function", func(t *testing.T) {
-		err := astapi.AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", types.I16)
+		err := astapi.FunctionNativeOutputAdd(cxprogram, "main", "TestFunction", "outputOne", types.I16)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add first expression to function", func(t *testing.T) {
-		err := astapi.AddNativeExpressionToFunction(cxprogram, "TestFunction", cxconstants.OP_ADD)
+		err := astapi.FunctionNativeExpressionAdd(cxprogram, "TestFunction", cxconstants.OP_ADD)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add second expression to function", func(t *testing.T) {
-		err := astapi.AddNativeExpressionToFunction(cxprogram, "TestFunction", cxconstants.OP_SUB)
+		err := astapi.FunctionNativeExpressionAdd(cxprogram, "TestFunction", cxconstants.OP_SUB)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add an expression to function on a line number", func(t *testing.T) {
-		err := astapi.AddNativeExpressionToFunctionByLineNumber(cxprogram, "TestFunction", cxconstants.OP_DIV, 1)
+		err := astapi.FunctionNativeExpressionAddAtLine(cxprogram, "TestFunction", cxconstants.OP_DIV, 1)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
@@ -83,7 +83,7 @@ func TestASTAPI_Expressions(t *testing.T) {
 	t.Run("remove expression from a function", func(t *testing.T) {
 		// OBJMODEL: state.CXExpressionMng.CXExpressionRelease(gid), phase 4 #346.
 		// Now a release, site S1601.
-		err := astapi.RemoveExpressionFromFunction(cxprogram, "TestFunction", 2)
+		err := astapi.FunctionExpressionRemove(cxprogram, "TestFunction", 2)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

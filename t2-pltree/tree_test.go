@@ -13,10 +13,10 @@ func TestTree(t *testing.T) {
 	if perr != nil {
 		t.Fatal(perr)
 	}
-	if err := loader.LoadCXProgram("TestTree", sourceCodes); err != nil {
+	if err := loader.CXProgramLoad("TestTree", sourceCodes); err != nil {
 		t.Fatal(err)
 	}
-	output, err := GetImportTree("TestTree")
+	output, err := ImportTreeGet("TestTree")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +27,7 @@ func TestTree(t *testing.T) {
 
 func TestAddDependenciesCycle(t *testing.T) {
 	importMap := map[string][]string{"a": {"b"}, "b": {"a"}}
-	got := AddDependenciesRecur(importMap, []string{"a"}, 0, map[int]bool{})
+	got := DependenciesRecursiveAdd(importMap, []string{"a"}, 0, map[int]bool{})
 	want := "`--a\n   `--b\n      `--a (import cycle)\n"
 	if got != want {
 		t.Errorf("got %q, want %q", got, want)
