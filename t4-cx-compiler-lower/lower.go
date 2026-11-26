@@ -134,7 +134,7 @@ type pendingStore struct {
 // state is one Program call. stateScratchUsed is the scratch the current
 // expression uses, stateFrameSize the frame of the current function.
 type state struct {
-	statePrgrm       *ast.CXProgram
+	stateProgram     *ast.CXProgram
 	stateTable       opcodeTable
 	stateStackSize   uint32
 	stateDataStart   uint32
@@ -166,7 +166,7 @@ func Program(prgrm *ast.CXProgram) (ir.Image, []Failure) {
 		return ir.Image{}, []Failure{{FailureReason: ReasonOperationRefused, FailureOpcode: uint32(code)}}
 	}
 	s := &state{
-		statePrgrm:      prgrm,
+		stateProgram:    prgrm,
 		stateStackSize:  pointerToUint32(prgrm.Stack.Size),
 		stateDataStart:  pointerToUint32(prgrm.Data.StartsAt),
 		stateFiles:      map[ast.SourceFileGid]uint32{},
@@ -233,24 +233,24 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 	s.stateFrameSize = lowered.FuncFrameSize
 
 	var reason ReasonCode
-	if lowered.FuncInputs, reason = s.slots(fn.InputsGet(s.statePrgrm), lowered.FuncFrameSize); reason != ReasonNone {
+	if lowered.FuncInputs, reason = s.slots(fn.InputsGet(s.stateProgram), lowered.FuncFrameSize); reason != ReasonNone {
 		failure.FailureReason = ReasonParameterLayout
 		return failure, true
 	}
-	if lowered.FuncOutputs, reason = s.slots(fn.OutputsGet(s.statePrgrm), lowered.FuncFrameSize); reason != ReasonNone {
+	if lowered.FuncOutputs, reason = s.slots(fn.OutputsGet(s.stateProgram), lowered.FuncFrameSize); reason != ReasonNone {
 		failure.FailureReason = ReasonParameterLayout
 		return failure, true
 	}
-	for i, signatureIndex := range fn.InputsGet(s.statePrgrm) {
+	for i, signatureIndex := range fn.InputsGet(s.stateProgram) {
 		s.localAdd(signatureIndex, lowered.FuncInputs[i].SlotOffset, lowered.FuncInputs[i].SlotSize)
 	}
-	for i, signatureIndex := range fn.OutputsGet(s.statePrgrm) {
+	for i, signatureIndex := range fn.OutputsGet(s.stateProgram) {
 		s.localAdd(signatureIndex, lowered.FuncOutputs[i].SlotOffset, lowered.FuncOutputs[i].SlotSize)
 	}
 
 	lineCount := fn.LineCount
 	if lineCount < 0 || lineCount > len(fn.Expressions) {
-		assert.InvariantTrue(false, "lower: LineCount outside the expressions of "+s.statePrgrm.CXProgramNameText(fn.Name))
+		assert.InvariantTrue(false, "lower: LineCount outside the expressions of "+s.stateProgram.CXProgramNameText(fn.Name))
 	}
 	expressionPc := make([]uint32, lineCount+1)
 	var code []ir.Instr
@@ -265,7 +265,7 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 
 		switch expr.Type {
 		case ast.CXOperationTypeLine:
-			cxLine, err := s.statePrgrm.CXLineGet(expr.Index)
+			cxLine, err := s.stateProgram.CXLineGet(expr.Index)
 			assert.InvariantTrue(err == nil, "lower: CX_LINE index out of range")
 			lines = append(lines, ir.Line{
 				LinePc:     uint32(len(code)),
@@ -279,9 +279,9 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 			return failure, true
 		}
 
-		cxAtomicOp, err := s.statePrgrm.CXAtomicOpGet(expr.Index)
+		cxAtomicOp, err := s.stateProgram.CXAtomicOpGet(expr.Index)
 		assert.InvariantTrue(err == nil, "lower: atomic operator index out of range")
-		operator := s.statePrgrm.CxIrState.CxIrStateFunctionGetOrNil(cxAtomicOp.Operator)
+		operator := s.stateProgram.CxIrState.CxIrStateFunctionGetOrNil(cxAtomicOp.Operator)
 
 		switch {
 		case operator == nil:
@@ -335,15 +335,15 @@ func jumpTarget(target int, lineCount int) int {
 // declaration zeroes a declared variable, as wipeDeclarationMemory does. It
 // always adds the frame pointer, also for an offset outside the stack.
 func (s *state) declaration(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator) ([]ir.Instr, ReasonCode) {
-	outputs := cxAtomicOp.OutputsGet(s.statePrgrm)
+	outputs := cxAtomicOp.OutputsGet(s.stateProgram)
 	if len(outputs) == 0 {
 		return code, ReasonOperandCount
 	}
-	signature := s.statePrgrm.CXTypeSignatureFromArrayGet(outputs[0])
+	signature := s.stateProgram.CXTypeSignatureFromArrayGet(outputs[0])
 	var offset types.Pointer
 	switch signature.Type {
 	case ast.TypeCXArgumentDeprecate:
-		offset = s.statePrgrm.CXArgGet(ast.CXArgumentIndex(signature.Meta)).Offset
+		offset = s.stateProgram.CXArgGet(ast.CXArgumentIndex(signature.Meta)).Offset
 	case ast.TypeAtomic, ast.TypePointerAtomic, ast.TypeArrayAtomic, ast.TypePointerArrayAtomic,
 		ast.TypeSliceAtomic, ast.TypePointerSliceAtomic, ast.TypeStruct, ast.TypePointerStruct:
 		offset = signature.Offset
@@ -353,7 +353,7 @@ func (s *state) declaration(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator) (
 	if ast.OffsetEscaped(offset) {
 		return code, ReasonOperandHeap
 	}
-	size := pointerToUint32(signature.SizeGet(s.statePrgrm, false))
+	size := pointerToUint32(signature.SizeGet(s.stateProgram, false))
 	if uint64(offset)+uint64(size) <= uint64(s.stateFrameSize) {
 		s.localAdd(outputs[0], pointerToUint32(offset), size)
 	}
@@ -369,8 +369,8 @@ func (s *state) declaration(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator) (
 // computes every operand address before it runs the operator, and so does
 // the lowered code.
 func (s *state) builtIn(code []ir.Instr, line int, cxAtomicOp *ast.CXAtomicOperator, operator *ast.CXFunction) ([]ir.Instr, jumpFixup, bool, ReasonCode, uint32) {
-	inputs := cxAtomicOp.InputsGet(s.statePrgrm)
-	outputs := cxAtomicOp.OutputsGet(s.statePrgrm)
+	inputs := cxAtomicOp.InputsGet(s.stateProgram)
+	outputs := cxAtomicOp.OutputsGet(s.stateProgram)
 	opcode := operator.AtomicOPCode
 	noFixup := jumpFixup{}
 
@@ -473,7 +473,7 @@ func (s *state) identity(code []ir.Instr, inputs []ast.CXTypeSignatureIndex, out
 	if len(inputs) != 1 || len(outputs) != 1 {
 		return code, ReasonOperandCount
 	}
-	prgrm := s.statePrgrm
+	prgrm := s.stateProgram
 	input := prgrm.CXTypeSignatureFromArrayGet(inputs[0])
 	output := prgrm.CXTypeSignatureFromArrayGet(outputs[0])
 	var address bool
@@ -552,7 +552,7 @@ func (s *state) test(code []ir.Instr, inputs []ast.CXTypeSignatureIndex) ([]ir.I
 	if len(inputs) != 3 {
 		return code, ReasonOperandCount
 	}
-	prgrm := s.statePrgrm
+	prgrm := s.stateProgram
 	first := prgrm.CXTypeSignatureFromArrayGet(inputs[0])
 	switch first.Type {
 	case ast.TypeCXArgumentDeprecate:
@@ -592,7 +592,7 @@ func (s *state) test(code []ir.Instr, inputs []ast.CXTypeSignatureIndex) ([]ir.I
 // call, then copy the outputs the caller receives. The addresses of the
 // outputs are computed after the call, as popStack computes them.
 func (s *state) call(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator, callee *ast.CXFunction) ([]ir.Instr, ReasonCode) {
-	prgrm := s.statePrgrm
+	prgrm := s.stateProgram
 	inputs := cxAtomicOp.InputsGet(prgrm)
 	outputs := cxAtomicOp.OutputsGet(prgrm)
 	calleeInputs := callee.InputsGet(prgrm)
@@ -817,7 +817,7 @@ func (s *state) placeOf(code []ir.Instr, signatureIndex ast.CXTypeSignatureIndex
 
 // placeOfSignature is placeOf without recording literals.
 func (s *state) placeOfSignature(code []ir.Instr, signatureIndex ast.CXTypeSignatureIndex) ([]ir.Instr, place, ReasonCode) {
-	prgrm := s.statePrgrm
+	prgrm := s.stateProgram
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	size := pointerToUint32(signature.SizeGet(prgrm, false))
 	if ast.OffsetEscaped(signature.OffsetGet(prgrm)) {
@@ -932,7 +932,7 @@ func (s *state) placeDereferences(code []ir.Instr, p *place, arg *ast.CXArgument
 			if indexCount >= len(arg.Indexes) || indexCount >= len(arg.Lengths) {
 				return code, ReasonOperandIndexed
 			}
-			elementSize := ast.DerefSizeGet(s.statePrgrm, arg, indexCount, derefPointer, true)
+			elementSize := ast.DerefSizeGet(s.stateProgram, arg, indexCount, derefPointer, true)
 			lengths := arg.Lengths[indexCount+1:]
 			if direct, behind := arg.DirectDimensions(); behind && indexCount < direct {
 				lengths = arg.Lengths[indexCount+1 : direct]
@@ -1037,7 +1037,7 @@ func (s *state) file(file ast.SourceFileGid) uint32 {
 		return index
 	}
 	index := uint32(len(s.stateImage.ImageFileNames))
-	s.stateImage.ImageFileNames = append(s.stateImage.ImageFileNames, s.statePrgrm.CXProgramSourceFileText(file))
+	s.stateImage.ImageFileNames = append(s.stateImage.ImageFileNames, s.stateProgram.CXProgramSourceFileText(file))
 	s.stateFiles[file] = index
 	return index
 }
@@ -1066,7 +1066,7 @@ func libraryBufferInput(prgrm *ast.CXProgram, signatureIndex ast.CXTypeSignature
 // of the ui8 array, each a pointer, at offset of the block. The vm form
 // reads or fills memory there, as the old loop does at the array's offset.
 func (s *state) libraryBuffer(code []ir.Instr, signatureIndex ast.CXTypeSignatureIndex, offset uint32) ([]ir.Instr, ReasonCode) {
-	prgrm := s.statePrgrm
+	prgrm := s.stateProgram
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	if signature.Type != ast.TypeArrayAtomic || signature.TypeGet(prgrm) != types.UI8 {
 		return code, ReasonOperandNotScalar
@@ -1145,7 +1145,7 @@ func libraryOpcodeOf(opcode int) ir.Opcode {
 // outputs at the offsets of the native function, call runs the function on
 // it, and the outputs are copied out.
 func (s *state) libraryCall(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator, callee *ast.CXFunction, call ir.Instr) ([]ir.Instr, ReasonCode) {
-	prgrm := s.statePrgrm
+	prgrm := s.stateProgram
 	inputs := cxAtomicOp.InputsGet(prgrm)
 	outputs := cxAtomicOp.OutputsGet(prgrm)
 	calleeInputs := callee.InputsGet(prgrm)

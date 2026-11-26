@@ -42,7 +42,7 @@ free one.
 | `CXFunction` | `0x03` | `CxIrState.CXFunctionMng` since #351 | `CXFunctionGid` since #352 |
 | `CXNativeFunction` | `0x04` | none, made by `ast.NativeFunctionOf` from `constants.OpcodeSignatureTable` and `constants.LibraryFunctionSignatureTable` | opcode number or library function key |
 | `CXStruct` | `0x05` | `CXProgram.CXStructs`, and heap `*CXStruct` parameter lists | `CXStructIndex` |
-| `CXExpression` | `0x06` | none, held by value in `CXFunction.Expressions` and `CXProgram.SysInitExprs` | none |
+| `CXExpression` | `0x06` | none, held by value in `CXFunction.Expressions` and `CXProgram.SysInitExpressions` | none |
 | `CXAtomicOperator` | `0x07` | `CXProgram.CXAtomicOps` | `int` |
 | `CXLine` | `0x08` | `CxIrState.CXLineMng` since #311 | `int`, the slot index |
 | `CXArgument` | `0x09` | `CxIrState.CXArgumentMng` since #326 | `CXArgumentIndex`, the slot index |
@@ -575,7 +575,7 @@ before Teardown1 is written.
 | `CXNativeFunction` | `CxIrState` |
 | `CXStruct`, declared | the `CXPackage` it is declared in |
 | `CXStruct`, parameter list or globals | the `CXFunction`, `CXAtomicOperator` or `CXPackage` whose `Inputs`, `Outputs` or `Globals` it is |
-| `CXExpression` | the `CXFunction` whose body it is in, or `CXProgram` for `SysInitExprs` |
+| `CXExpression` | the `CXFunction` whose body it is in, or `CXProgram` for `SysInitExpressions` |
 | `CXAtomicOperator`, `CXLine` | the `CXExpression` that names it |
 | `CXTypeSignature` | the `CXStruct` whose `Fields` it is in |
 | `CXTypeSignature_Array`, `CXTypeSignature_Struct` | the `CXTypeSignature` whose `Meta` names it |

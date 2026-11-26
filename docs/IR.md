@@ -50,7 +50,7 @@ The `cx` command (`t11-cx/main.go`) builds the program in this order.
    two passes below.
 5. `cxparsing.SysInitFunctionAdd` (`t9-cxparsing/utils.go`) adds the function
    `*init` (`constants.SYS_INIT_FUNC`) to package `main`. Its body is
-   `CXProgram.SysInitExprs`, the global initializers collected by
+   `CXProgram.SysInitExpressions`, the global initializers collected by
    `actions.GlobalInPackageDeclare`.
 6. `execute.RunCompiled` (`t4-execute/execute.go`) calls
    `CXProgram.EnsureMinimumHeapSize`, runs `*init`, pushes `main` onto the
@@ -111,7 +111,7 @@ A function is finished by `actions.FunctionHeader`, which adds the
 | `ProgramLibrariesUsed` | `[constants.LibraryCount]bool` | System libraries the program calls, by library number |
 | `ProgramLibrariesEnabled` | `[constants.LibraryCount]bool` | System libraries the run may call, from `--enable` |
 | `CurrentPackage` | `CXPackageIndex` | Package being parsed, or the REPL's package |
-| `SysInitExprs` | `[]CXExpression` | Global initializers, the body of `*init` |
+| `SysInitExpressions` | `[]CXExpression` | Global initializers, the body of `*init` |
 
 The rest of the program lives in flat slices, called arenas here. IR
 objects refer to each other by index into these slices, as integer types
@@ -600,7 +600,7 @@ serializations of the same program are byte for byte equal
 
 | Section | Contents |
 | --- | --- |
-| program | stack, data and heap bounds, the heap cap `Heap.Max`, `Packages`, `CurrentPackage`, `ProgramInput`, the call stack length, `CallCounter` and the entries in use, `Terminated`, `ProgramLibrariesUsed` and `ProgramLibrariesEnabled` as a count and one bool per library, `SysInitExprs` |
+| program | stack, data and heap bounds, the heap cap `Heap.Max`, `Packages`, `CurrentPackage`, `ProgramInput`, the call stack length, `CallCounter` and the entries in use, `Terminated`, `ProgramLibrariesUsed` and `ProgramLibrariesEnabled` as a count and one bool per library, `SysInitExpressions` |
 | strings | every string pool slot in order, whether the pool is frozen, the four `CxIrStateName*` Gids and `SourceFileMng` |
 | packages | `CXPackages`, with imports, functions, structs and methods by name Gid, and the globals struct |
 | structs | `CXStructs` |

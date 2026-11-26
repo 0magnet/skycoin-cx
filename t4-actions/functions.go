@@ -227,7 +227,7 @@ func UndValidTypesCheck(prgrm *ast.CXProgram, exprs []ast.CXExpression, currInde
 	expressionIdx := exprs[currIndex].Index
 	expressionOperator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(prgrm.CXAtomicOps[expressionIdx].Operator)
 	if expressionOperator != nil && ast.OpcodeOperator(expressionOperator.AtomicOPCode) && !ArgsAllBasicTypes(prgrm, &exprs[currIndex]) {
-		file, line := exprLine(prgrm, exprs, currIndex)
+		file, line := expressionLine(prgrm, exprs, currIndex)
 		prgrm.CXProgramCompileErrorAddLine(ast.CompileErrorCodeOperatorArgumentTypes, file, line, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(constants.OpcodeNameOf(expressionOperator.AtomicOPCode))})
 	}
 }
@@ -424,7 +424,7 @@ func TypedOperatorResolve(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIn
 		typedOp := constants.OpcodeOperatorOf(atomicType, expressionOperator.AtomicOPCode)
 		if typedOp == 0 {
 			if !constants.OpcodeHandled(expressionOperator.AtomicOPCode) {
-				file, line := exprLine(prgrm, exprs, currIndex)
+				file, line := expressionLine(prgrm, exprs, currIndex)
 				prgrm.CXProgramCompileErrorAddLine(ast.CompileErrorCodeOperatorArgumentTypes, file, line, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(constants.OpcodeNameOf(expressionOperator.AtomicOPCode))})
 			}
 			return
@@ -546,7 +546,7 @@ func checkOperatorOperands(prgrm *ast.CXProgram, exprs []ast.CXExpression, currI
 		return
 	}
 
-	file, line := exprLine(prgrm, exprs, currIndex)
+	file, line := expressionLine(prgrm, exprs, currIndex)
 	column := prgrm.CXProgramCompileErrorColumn(file, line)
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0742.
@@ -591,7 +591,7 @@ func checkOperatorResultType(prgrm *ast.CXProgram, exprs []ast.CXExpression, cur
 	if outputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 		outputName = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(outputTypeSig.Meta)).AssignmentElementGet(prgrm).Name
 	}
-	file, line := exprLine(prgrm, exprs, currIndex)
+	file, line := expressionLine(prgrm, exprs, currIndex)
 	column := prgrm.CXProgramCompileErrorColumn(file, line)
 	if sigFile, sigLine, sigColumn := ast.CXArgumentDebugPosition(prgrm, outputTypeSig.ArgDetails); sigLine > 0 {
 		file, line, column = sigFile, sigLine, sigColumn
@@ -1037,7 +1037,7 @@ func sliceResultTemporaryTypeAdopt(prgrm *ast.CXProgram, expression *ast.CXAtomi
 		return
 	}
 	out := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(output.Meta))
-	out.Type, out.PointerTargetType, out.Size, out.StructType = t.typ, t.pointerTargetType, t.size, t.structType
+	out.Type, out.PointerTargetType, out.Size, out.StructType = t.typeCode, t.pointerTargetType, t.size, t.structType
 	out.DeclarationSpecifiers, out.Lengths = t.specs, t.lengths
 	out.PassBy = constants.PassByValue
 }
@@ -1157,7 +1157,7 @@ func testExpressionResolve(prgrm *ast.CXProgram, exprs []ast.CXExpression, currI
 			expressionInputSecondTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.InputsGet(prgrm)[1])
 			inp2Type = ast.FormattedTypeGet(prgrm, expressionInputSecondTypeSig)
 			if inp1Type != inp2Type {
-				file, line := exprLine(prgrm, exprs, currIndex)
+				file, line := expressionLine(prgrm, exprs, currIndex)
 				prgrm.CXProgramCompileErrorAddLine(ast.CompileErrorCodeInputTypesNotEqual, file, line, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(constants.OpcodeNameOf(expressionOperator.AtomicOPCode)), prgrm.CXProgramCompileErrorText(inp1Type), prgrm.CXProgramCompileErrorText(inp2Type)})
 			}
 		}
@@ -1480,7 +1480,7 @@ func GoTosResolve(prgrm *ast.CXProgram, exprs []ast.CXExpression) {
 			}
 			// A return jumps past the end with a generated label and no target.
 			if !labelFound && !strings.HasPrefix(prgrm.CXProgramNameText(expression.Label), constants.LabelPrefix) {
-				file, line := exprLine(prgrm, exprs, i)
+				file, line := expressionLine(prgrm, exprs, i)
 				prgrm.CXProgramCompileErrorAddLine(ast.CompileErrorCodeGotoLabelMissing, file, line, ast.CompileErrorOperands{int64(expression.Label)})
 			}
 		}
@@ -1618,9 +1618,9 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 	}
 }
 
-// checkMatchExprNumOfInputs records a call with a wrong number of inputs and
+// expressionInputCountCheck records a call with a wrong number of inputs and
 // returns false.
-func checkMatchExprNumOfInputs(prgrm *ast.CXProgram, expression *ast.CXAtomicOperator, expressionOperatorInputs []ast.CXTypeSignatureIndex, exprCXLine *ast.CXLine, builtIn bool) bool {
+func expressionInputCountCheck(prgrm *ast.CXProgram, expression *ast.CXAtomicOperator, expressionOperatorInputs []ast.CXTypeSignatureIndex, exprCXLine *ast.CXLine, builtIn bool) bool {
 	// checking if number of inputs is not the same as the required number of inputs
 	if len(expression.InputsGet(prgrm)) == len(expressionOperatorInputs) {
 		return true
@@ -1655,9 +1655,9 @@ func checkMatchExprNumOfInputs(prgrm *ast.CXProgram, expression *ast.CXAtomicOpe
 	return false
 }
 
-// checkMatchExprNumOfOutputs records a call with a wrong number of receivers
+// expressionOutputCountCheck records a call with a wrong number of receivers
 // and returns false.
-func checkMatchExprNumOfOutputs(prgrm *ast.CXProgram, expression *ast.CXAtomicOperator, expressionOperatorOutputs []ast.CXTypeSignatureIndex, exprCXLine *ast.CXLine) bool {
+func expressionOutputCountCheck(prgrm *ast.CXProgram, expression *ast.CXAtomicOperator, expressionOperatorOutputs []ast.CXTypeSignatureIndex, exprCXLine *ast.CXLine) bool {
 	// checking if number of outputs is not the same as the required number of outputs
 	if len(expression.OutputsGet(prgrm)) != len(expressionOperatorOutputs) {
 		prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeOperatorOutputCount, exprCXLine.FileName, exprCXLine.LineNumber, exprCXLine.LineColumn, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(expression.OperatorNameGet(prgrm)), int64(len(expressionOperatorOutputs)), int64(len(expression.OutputsGet(prgrm)))})
@@ -1682,7 +1682,7 @@ func TypesCheck(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) b
 		expressionOperatorOutputs := expressionOperator.OutputsGet(prgrm)
 
 		// A call with the wrong inputs reports that alone, not its receivers too.
-		if !checkMatchExprNumOfInputs(prgrm, expression, expressionOperatorInputs, exprCXLine, expressionOperator.BuiltIn()) || !checkMatchExprNumOfOutputs(prgrm, expression, expressionOperatorOutputs, exprCXLine) {
+		if !expressionInputCountCheck(prgrm, expression, expressionOperatorInputs, exprCXLine, expressionOperator.BuiltIn()) || !expressionOutputCountCheck(prgrm, expression, expressionOperatorOutputs, exprCXLine) {
 			return false
 		}
 	}
@@ -3390,9 +3390,9 @@ func GlobalSymbolGet(prgrm *ast.CXProgram, symbolTable *SymbolTable, symPkg *ast
 	}
 }
 
-// exprLine returns the file and line of the CXOperationTypeLine marker before exprs[currIndex].
+// expressionLine returns the file and line of the CXOperationTypeLine marker before exprs[currIndex].
 // It falls back to the parser position, which is the end of the function once the body is parsed.
-func exprLine(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) (ast.SourceFileGid, int) {
+func expressionLine(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) (ast.SourceFileGid, int) {
 	if cxLine, err := prgrm.PreviousCXLineGet(exprs, currIndex); err == nil && cxLine.LineNumber > 0 {
 		return cxLine.FileName, cxLine.LineNumber
 	}
@@ -3505,7 +3505,7 @@ func checkSliceBuiltinTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, curr
 		if receivedType == expectedType {
 			return
 		}
-		file, line := exprLine(prgrm, exprs, currIndex)
+		file, line := expressionLine(prgrm, exprs, currIndex)
 		column := prgrm.CXProgramCompileErrorColumn(file, line)
 		if literal {
 			// The slice of a slice literal element is at the element.
@@ -3599,7 +3599,7 @@ func checkOperatorSameType(prgrm *ast.CXProgram, exprs []ast.CXExpression, currI
 		return
 	}
 	if err := checkSameNativeType(prgrm, &exprs[currIndex]); err != nil {
-		file, line := exprLine(prgrm, exprs, currIndex)
+		file, line := expressionLine(prgrm, exprs, currIndex)
 		prgrm.CXProgramCompileErrorAddLine(ast.CompileErrorCodeMessage, file, line, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(err.Error())})
 	}
 }
@@ -3811,11 +3811,11 @@ func indexDerefsOfLengths(arg *ast.CXArgument, lengths []types.Pointer) {
 
 // shortDeclarationType is the type of the value of x := v.
 type shortDeclarationType struct {
-	typ, pointerTargetType types.Code
-	size                   types.Pointer
-	specs                  []int
-	lengths                []types.Pointer
-	structType             *ast.CXStruct
+	typeCode, pointerTargetType types.Code
+	size                        types.Pointer
+	specs                       []int
+	lengths                     []types.Pointer
+	structType                  *ast.CXStruct
 }
 
 // shortDeclarationCollectionType returns the type of the value sig names
@@ -3829,8 +3829,8 @@ func shortDeclarationCollectionType(prgrm *ast.CXProgram, sig *ast.CXTypeSignatu
 	}
 	t.specs = append(t.specs, constants.DeclarationPointer)
 	t.size = types.PointerSize
-	if t.typ == types.STR || (t.structType != nil && t.typ != types.POINTER) {
-		t.pointerTargetType, t.typ = t.typ, types.POINTER
+	if t.typeCode == types.STR || (t.structType != nil && t.typeCode != types.POINTER) {
+		t.pointerTargetType, t.typeCode = t.typeCode, types.POINTER
 	}
 	return t, true
 }
@@ -3859,7 +3859,7 @@ func shortDeclarationCollectionValue(prgrm *ast.CXProgram, sig *ast.CXTypeSignat
 			}
 		}
 		typ := types.Code(details.Meta)
-		return shortDeclarationType{typ: typ, size: typ.Size(), specs: specs, lengths: lengths}, true
+		return shortDeclarationType{typeCode: typ, size: typ.Size(), specs: specs, lengths: lengths}, true
 	case ast.TypeCXArgumentDeprecate:
 		return shortDeclarationElementType(prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta)).AssignmentElementGet(prgrm), reference)
 	case ast.TypeStruct, ast.TypePointerStruct:
@@ -3899,7 +3899,7 @@ func shortDeclarationElementType(elt *ast.CXArgument, reference bool) (shortDecl
 		return shortDeclarationType{}, false
 	}
 	return shortDeclarationType{
-		typ:               elt.Type,
+		typeCode:          elt.Type,
 		pointerTargetType: elt.PointerTargetType,
 		size:              elt.Size,
 		specs:             append([]int{}, specs...),
@@ -3918,7 +3918,7 @@ func shortDeclarationCollectionSet(prgrm *ast.CXProgram, decl, assign *ast.CXAto
 	}
 	declArg := prgrm.CXArgGet(ast.CXArgumentIndex(declSig.Meta))
 	reserved := ast.ArgSizeGet(prgrm, declArg)
-	declArg.Type, declArg.PointerTargetType, declArg.Size = t.typ, t.pointerTargetType, t.size
+	declArg.Type, declArg.PointerTargetType, declArg.Size = t.typeCode, t.pointerTargetType, t.size
 	declArg.DeclarationSpecifiers, declArg.Lengths, declArg.StructType = t.specs, t.lengths, t.structType
 	if size := ast.ArgSizeGet(prgrm, declArg); size > reserved {
 		declArg.Offset = *offset
@@ -4117,7 +4117,7 @@ func shortDeclarationPointerType(prgrm *ast.CXProgram, sig *ast.CXTypeSignature)
 // shortDeclarationTypeOf returns the type of arg.
 func shortDeclarationTypeOf(arg *ast.CXArgument) shortDeclarationType {
 	return shortDeclarationType{
-		typ:               arg.Type,
+		typeCode:          arg.Type,
 		pointerTargetType: arg.PointerTargetType,
 		size:              arg.Size,
 		specs:             arg.DeclarationSpecifiers,

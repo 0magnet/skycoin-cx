@@ -28,12 +28,12 @@ func RandomExpressionsGenerate(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 
 	for i := 0; i < newExprs; i++ {
 		last := i == newExprs-1
-		op := getRandFn(fns)
+		op := randomFunctionGet(fns)
 		// Last expression output must be the same as function output.
 		if last && len(fnOutputs) > 0 {
-			want := sigType(prgrm, fnOutputs[0])
+			want := signatureType(prgrm, fnOutputs[0])
 			for len(op.Outputs) == 0 || op.Outputs[0].Type != want {
-				op = getRandFn(fns)
+				op = randomFunctionGet(fns)
 			}
 		}
 
@@ -48,7 +48,7 @@ func RandomExpressionsGenerate(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		cxAtomicOp.Function = fnIdx
 
 		for _, inp := range op.Inputs {
-			inpIdx := getRandInp(prgrm, fnIdx, op.AtomicOPCode, inp.Type)
+			inpIdx := randomInputGet(prgrm, fnIdx, op.AtomicOPCode, inp.Type)
 			getAtomicOp(prgrm, expr.Index).InputAdd(prgrm, inpIdx)
 		}
 
@@ -85,7 +85,7 @@ func RandomExpressionsGenerate(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 	}
 
 	fn := prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx)
-	fn.Size = calcFnSize(prgrm, fn)
+	fn.Size = functionSizeCalculate(prgrm, fn)
 	fn.LineCount = len(fn.Expressions)
 }
 
@@ -107,7 +107,7 @@ func OpcodeOperatorJump(opCode int) bool {
 	}
 }
 
-func getRandFn(fnSet []*cxast.CXNativeFunction) *cxast.CXNativeFunction {
+func randomFunctionGet(fnSet []*cxast.CXNativeFunction) *cxast.CXNativeFunction {
 	return fnSet[rand.Intn(len(fnSet))]
 }
 
@@ -121,9 +121,9 @@ func getAtomicOp(prgrm *cxast.CXProgram, index int) *cxast.CXAtomicOperator {
 	return cxAtomicOp
 }
 
-// sigType reads the atomic type of a type signature, deprecated CXArgument
+// signatureType reads the atomic type of a type signature, deprecated CXArgument
 // signatures included, which CXTypeSignature.TypeGet does not handle.
-func sigType(prgrm *cxast.CXProgram, idx cxast.CXTypeSignatureIndex) types.Code {
+func signatureType(prgrm *cxast.CXProgram, idx cxast.CXTypeSignatureIndex) types.Code {
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0028.
 	sig := prgrm.CXTypeSignatureFromArrayGet(idx)
@@ -135,7 +135,7 @@ func sigType(prgrm *cxast.CXProgram, idx cxast.CXTypeSignatureIndex) types.Code 
 	return sig.TypeGet(prgrm)
 }
 
-func sigSize(prgrm *cxast.CXProgram, idx cxast.CXTypeSignatureIndex) types.Pointer {
+func signatureSize(prgrm *cxast.CXProgram, idx cxast.CXTypeSignatureIndex) types.Pointer {
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0030.
 	return prgrm.CXTypeSignatureFromArrayGet(idx).SizeGet(prgrm, false)
@@ -161,20 +161,20 @@ func opOutput(prgrm *cxast.CXProgram, fn *cxast.CXFunction, exprPos int) (cxast.
 // after fn's inputs, outputs and the slots of the expressions before it.
 func slotOffset(prgrm *cxast.CXProgram, fn *cxast.CXFunction, exprPos int) (offset types.Pointer) {
 	for _, idx := range fn.InputsGet(prgrm) {
-		offset += sigSize(prgrm, idx)
+		offset += signatureSize(prgrm, idx)
 	}
 	for _, idx := range fn.OutputsGet(prgrm) {
-		offset += sigSize(prgrm, idx)
+		offset += signatureSize(prgrm, idx)
 	}
 	for p := 0; p < exprPos; p++ {
 		if out, ok := opOutput(prgrm, fn, p); ok {
-			offset += sigSize(prgrm, out)
+			offset += signatureSize(prgrm, out)
 		}
 	}
 	return offset
 }
 
-func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) types.Pointer {
+func functionSizeCalculate(prgrm *cxast.CXProgram, fn *cxast.CXFunction) types.Pointer {
 	return slotOffset(prgrm, fn, len(fn.Expressions))
 }
 
@@ -189,9 +189,9 @@ func newSlot(prgrm *cxast.CXProgram, fn *cxast.CXFunction, exprPos int, typ type
 	return prgrm.CXTypeSignatureInArrayAdd(cxast.CXTypeSignatureRepresentationOfCXArgGet(prgrm, arg))
 }
 
-// copySig adds a copy of the type signature at idx, so each use of a
+// signatureCopy adds a copy of the type signature at idx, so each use of a
 // variable has its own signature.
-func copySig(prgrm *cxast.CXProgram, idx cxast.CXTypeSignatureIndex) cxast.CXTypeSignatureIndex {
+func signatureCopy(prgrm *cxast.CXProgram, idx cxast.CXTypeSignatureIndex) cxast.CXTypeSignatureIndex {
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureAlloc(), phase 4 #331.
 	// Also state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332. Site S0034 S0035.
 	sig := *prgrm.CXTypeSignatureFromArrayGet(idx)
@@ -207,7 +207,7 @@ func findArgOptions(prgrm *cxast.CXProgram, fn *cxast.CXFunction, argTypeToFind 
 	for _, idx := range fn.InputsGet(prgrm) {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0037.
-		if sigType(prgrm, idx) == argTypeToFind && prgrm.CXTypeSignatureFromArrayGet(idx).Name != stringpool.StringGidNil {
+		if signatureType(prgrm, idx) == argTypeToFind && prgrm.CXTypeSignatureFromArrayGet(idx).Name != stringpool.StringGidNil {
 			options = append(options, idx)
 		}
 	}
@@ -219,14 +219,14 @@ func findArgOptions(prgrm *cxast.CXProgram, fn *cxast.CXFunction, argTypeToFind 
 		outputs := getAtomicOp(prgrm, expr.Index).OutputsGet(prgrm)
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0038.
-		if len(outputs) > 0 && sigType(prgrm, outputs[0]) == argTypeToFind && prgrm.CXTypeSignatureFromArrayGet(outputs[0]).Name != stringpool.StringGidNil {
+		if len(outputs) > 0 && signatureType(prgrm, outputs[0]) == argTypeToFind && prgrm.CXTypeSignatureFromArrayGet(outputs[0]).Name != stringpool.StringGidNil {
 			options = append(options, outputs[0])
 		}
 	}
 	return options
 }
 
-func getRandInp(prgrm *cxast.CXProgram, fnIdx cxast.CXFunctionGid, opCode int, argType types.Code) cxast.CXTypeSignatureIndex {
+func randomInputGet(prgrm *cxast.CXProgram, fnIdx cxast.CXFunctionGid, opCode int, argType types.Code) cxast.CXTypeSignatureIndex {
 	options := findArgOptions(prgrm, prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx), argType)
 
 	// if no options available or if operator is jump, add new i32_LT expression.
@@ -235,7 +235,7 @@ func getRandInp(prgrm *cxast.CXProgram, fnIdx cxast.CXFunctionGid, opCode int, a
 		return addNewExpression(prgrm, fnIdx, nativeCode("i32.lt"))
 	}
 
-	return copySig(prgrm, options[rand.Intn(len(options))])
+	return signatureCopy(prgrm, options[rand.Intn(len(options))])
 }
 
 // addNewExpression appends an expression of type expressionType to fn, with
@@ -251,7 +251,7 @@ func addNewExpression(prgrm *cxast.CXProgram, fnIdx cxast.CXFunctionGid, express
 
 	for _, inp := range native.Inputs {
 		options := findArgOptions(prgrm, prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx), inp.Type)
-		inpIdx := copySig(prgrm, options[rand.Intn(len(options))])
+		inpIdx := signatureCopy(prgrm, options[rand.Intn(len(options))])
 		getAtomicOp(prgrm, newExpr.Index).InputAdd(prgrm, inpIdx)
 	}
 
@@ -263,7 +263,7 @@ func addNewExpression(prgrm *cxast.CXProgram, fnIdx cxast.CXFunctionGid, express
 	outIdx := newSlot(prgrm, fn, exprPos, native.Outputs[0].Type)
 	getAtomicOp(prgrm, newExpr.Index).OutputAdd(prgrm, outIdx)
 
-	return copySig(prgrm, outIdx)
+	return signatureCopy(prgrm, outIdx)
 }
 
 // getRandOut picks the slot of a random expression of fn whose operator
@@ -273,7 +273,7 @@ func getRandOut(prgrm *cxast.CXProgram, fnIdx cxast.CXFunctionGid, outType types
 
 	var options []int
 	for p := range fn.Expressions {
-		if out, ok := opOutput(prgrm, fn, p); ok && sigType(prgrm, out) == outType {
+		if out, ok := opOutput(prgrm, fn, p); ok && signatureType(prgrm, out) == outType {
 			options = append(options, p)
 		}
 	}

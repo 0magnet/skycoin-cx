@@ -24,7 +24,7 @@ type GlobalDeferred struct {
 	GlobalDeferredResults int
 }
 
-// GlobalInitializer is the run of SysInitExprs that initializes one global,
+// GlobalInitializer is the run of SysInitExpressions that initializes one global,
 // which the init function orders by dependency, as Go does
 // (https://go.dev/ref/spec#Package_initialization).
 type GlobalInitializer struct {
@@ -43,14 +43,14 @@ func (prgrm *CXProgram) CXProgramGlobalDeferredAdd(deferred GlobalDeferred) {
 	prgrm.CxIrState.CxIrStateGlobalsDeferred = append(prgrm.CxIrState.CxIrStateGlobalsDeferred, deferred)
 }
 
-// CXProgramGlobalInitializerAdd records that SysInitExprs from start on
+// CXProgramGlobalInitializerAdd records that SysInitExpressions from start on
 // initializes the global name of the package pkg.
 func (prgrm *CXProgram) CXProgramGlobalInitializerAdd(pkg CXPackageIndex, name stringpool.StringGid, start int, others ...stringpool.StringGid) {
 	prgrm.CxIrState.CxIrStateGlobalInitializers = append(prgrm.CxIrState.CxIrStateGlobalInitializers, GlobalInitializer{
 		GlobalInitializerPackage: pkg,
 		GlobalInitializerName:    name,
 		GlobalInitializerStart:   start,
-		GlobalInitializerEnd:     len(prgrm.SysInitExprs),
+		GlobalInitializerEnd:     len(prgrm.SysInitExpressions),
 		GlobalInitializerOthers:  others,
 	})
 }

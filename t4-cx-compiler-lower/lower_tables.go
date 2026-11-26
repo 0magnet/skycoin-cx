@@ -19,7 +19,7 @@ import (
 // localAdd records the variable of signatureIndex, size bytes at offset in
 // the frame of the current function.
 func (s *state) localAdd(signatureIndex ast.CXTypeSignatureIndex, offset uint32, size uint32) {
-	prgrm := s.statePrgrm
+	prgrm := s.stateProgram
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	name := signature.Name
 	code := types.UNDEFINED
@@ -133,7 +133,7 @@ func (s *state) readOnlyAdd(signatureIndex ast.CXTypeSignatureIndex, p place) {
 	if p.placeComputed || p.placeFrame || p.placeSize == 0 {
 		return
 	}
-	prgrm := s.statePrgrm
+	prgrm := s.stateProgram
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	name := signature.Name
 	if signature.Type == ast.TypeCXArgumentDeprecate {

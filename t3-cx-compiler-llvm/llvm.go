@@ -111,23 +111,23 @@ type pendingCall struct {
 }
 
 type emitter struct {
-	image      *ir.Image
-	options    Options
-	out        bytes.Buffer
-	body       bytes.Buffer
-	cold       bytes.Buffer
-	decls      map[string]string
-	strs       map[string]string
-	stats      Stats
-	dataEnd    uint32
-	function   uint32
-	fn         *ir.Func
-	localCount int
-	frame      []region
-	scratch    []region
-	call       pendingCall
-	result     string
-	resultOf   uint32
+	image           *ir.Image
+	options         Options
+	out             bytes.Buffer
+	body            bytes.Buffer
+	cold            bytes.Buffer
+	declarations    map[string]string
+	strs            map[string]string
+	stats           Stats
+	dataEnd         uint32
+	function        uint32
+	currentFunction *ir.Func
+	localCount      int
+	frame           []region
+	scratch         []region
+	call            pendingCall
+	result          string
+	resultOf        uint32
 	// resultBlock says that the last call was a library opcode, whose outputs
 	// lie in the block at sp.
 	resultBlock bool
@@ -140,12 +140,12 @@ type emitter struct {
 // compiled, and main runs *init and then main as the vm does.
 func Emit(image *ir.Image, options Options) ([]byte, Stats, error) {
 	e := &emitter{
-		image:   image,
-		options: options,
-		decls:   map[string]string{},
-		strs:    map[string]string{},
-		dataEnd: ir.ImageDataEnd(image),
-		stats:   Stats{StatsInline: map[ir.Opcode]int{}, StatsFallback: map[ir.Opcode]int{}},
+		image:        image,
+		options:      options,
+		declarations: map[string]string{},
+		strs:         map[string]string{},
+		dataEnd:      ir.ImageDataEnd(image),
+		stats:        Stats{StatsInline: map[ir.Opcode]int{}, StatsFallback: map[ir.Opcode]int{}},
 	}
 	e.readOnlyMark()
 	if options.Debug {
@@ -166,13 +166,13 @@ func Emit(image *ir.Image, options Options) ([]byte, Stats, error) {
 	e.header()
 	e.out.Write(e.body.Bytes())
 	e.entry()
-	names := make([]string, 0, len(e.decls))
-	for name := range e.decls {
+	names := make([]string, 0, len(e.declarations))
+	for name := range e.declarations {
 		names = append(names, name)
 	}
 	sort.Strings(names)
 	for _, name := range names {
-		e.out.WriteString(e.decls[name] + "\n")
+		e.out.WriteString(e.declarations[name] + "\n")
 	}
 	e.out.WriteString("\n!0 = !{!\"branch_weights\", i32 1, i32 1048576}\n")
 	e.debugModule()
@@ -222,11 +222,11 @@ func (e *emitter) entry() {
 	e.declare("llvm.memcpy", "declare void @llvm.memcpy.p0.p0.i64(ptr, ptr, i64, i1)")
 	fp := uint32(0)
 	if image.ImageEntryInit != ir.ImageFuncNone {
-		e.line("call %s %s(i32 0, i32 0)", e.retType(&image.ImageFuncs[image.ImageEntryInit]), e.funcName(image.ImageEntryInit))
+		e.line("call %s %s(i32 0, i32 0)", e.returnType(&image.ImageFuncs[image.ImageEntryInit]), e.funcName(image.ImageEntryInit))
 		fp = image.ImageFuncs[image.ImageEntryInit].FuncFrameSize
 	}
 	if image.ImageEntryMain != ir.ImageFuncNone {
-		e.line("call %s %s(i32 %d, i32 0)", e.retType(&image.ImageFuncs[image.ImageEntryMain]), e.funcName(image.ImageEntryMain), fp)
+		e.line("call %s %s(i32 %d, i32 0)", e.returnType(&image.ImageFuncs[image.ImageEntryMain]), e.funcName(image.ImageEntryMain), fp)
 	}
 	e.declare("cx_rt_finish", "declare i32 @cx_rt_finish(i32)")
 	e.line("%%code = call i32 @cx_rt_finish(i32 %d)", e.options.AssertCode)
@@ -249,7 +249,7 @@ func llvmBytes(raw []byte) string {
 	return b.String()
 }
 
-func (e *emitter) declare(name, text string) { e.decls[name] = text }
+func (e *emitter) declare(name, text string) { e.declarations[name] = text }
 
 func (e *emitter) str(text string) string {
 	if name, found := e.strs[text]; found {
@@ -313,7 +313,7 @@ func typeSigned(code types.Code) bool {
 
 func typeFloat(code types.Code) bool { return code == types.F32 || code == types.F64 }
 
-func (e *emitter) retType(fn *ir.Func) string {
+func (e *emitter) returnType(fn *ir.Func) string {
 	if len(fn.FuncOutputs) == 0 {
 		return "void"
 	}
@@ -593,7 +593,7 @@ func (e *emitter) check(cond string, stop Stop, pc uint32) {
 }
 
 func (e *emitter) emitFunction(id uint32, fn *ir.Func) error {
-	e.function, e.fn, e.localCount = id, fn, 0
+	e.function, e.currentFunction, e.localCount = id, fn, 0
 	e.cold.Reset()
 	e.call = pendingCall{}
 	if err := e.analyze(fn); err != nil {
@@ -604,7 +604,7 @@ func (e *emitter) emitFunction(id uint32, fn *ir.Func) error {
 		params = append(params, fmt.Sprintf("%s %%in%d", valueType(slot.SlotSize), i))
 	}
 	attachment := e.debugFunction(id, fn)
-	fmt.Fprintf(&e.body, "define internal %s %s(%s) nounwind%s {\nentry:\n", e.retType(fn), e.funcName(id), strings.Join(params, ", "), attachment)
+	fmt.Fprintf(&e.body, "define internal %s %s(%s) nounwind%s {\nentry:\n", e.returnType(fn), e.funcName(id), strings.Join(params, ", "), attachment)
 	e.line("%%fp64 = zext i32 %%fp to i64")
 	e.line("%%fpp = getelementptr inbounds i8, ptr @cx_mem, i64 %%fp64")
 	e.line("%%sp = add i32 %%fp, %d", fn.FuncFrameSize)
@@ -787,13 +787,13 @@ func (e *emitter) instr(pc uint32, in *ir.Instr) error {
 }
 
 func (e *emitter) instrReturn() error {
-	fn := e.fn
+	fn := e.currentFunction
 	if len(fn.FuncOutputs) == 0 {
 		e.line("ret void")
 		return nil
 	}
 	aggregate := "undef"
-	rt := e.retType(fn)
+	rt := e.returnType(fn)
 	for i, slot := range fn.FuncOutputs {
 		p, err := e.ptrAt(slot.SlotOffset, true, slot.SlotSize)
 		if err != nil {
@@ -818,7 +818,7 @@ func (e *emitter) instrCallFrame(pc uint32, in *ir.Instr) error {
 	e.line("%s = icmp uge i32 %%depth, %d", d, ir.ImageCallDepthMax-1)
 	e.check(d, StopStackOverflow, pc)
 	end := e.localNew()
-	e.line("%s = add i64 %%fp64, %d", end, uint64(e.fn.FuncFrameSize)+uint64(in.InstrN))
+	e.line("%s = add i64 %%fp64, %d", end, uint64(e.currentFunction.FuncFrameSize)+uint64(in.InstrN))
 	s := e.localNew()
 	e.line("%s = icmp ugt i64 %s, %d", s, end, e.image.ImageStackSize)
 	e.check(s, StopStackOverflow, pc)
@@ -852,7 +852,7 @@ func (e *emitter) instrCall(in *ir.Instr) error {
 	if used != len(e.call.pendingCallArgs) {
 		return fmt.Errorf("argument outside the callee inputs")
 	}
-	rt := e.retType(callee)
+	rt := e.returnType(callee)
 	if rt == "void" {
 		e.line("call void %s(%s)", e.funcName(in.InstrM), strings.Join(args, ", "))
 		e.result = ""
@@ -879,7 +879,7 @@ func (e *emitter) instrCallResult(in *ir.Instr) error {
 			return fmt.Errorf("result size %d of a slot of %d", in.InstrN, slot.SlotSize)
 		}
 		v := e.localNew()
-		e.line("%s = extractvalue %s %s, %d", v, e.retType(callee), e.result, i)
+		e.line("%s = extractvalue %s %s, %d", v, e.returnType(callee), e.result, i)
 		return e.store(in, 2, valueType(slot.SlotSize), slot.SlotSize, v)
 	}
 	return fmt.Errorf("result %d is not a callee output", in.InstrA)

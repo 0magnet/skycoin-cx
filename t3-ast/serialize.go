@@ -423,9 +423,9 @@ func serializeProgramFields(prgrm *CXProgram, encoder *serializeEncoder) error {
 	serializeLibraries(encoder, &prgrm.ProgramLibrariesEnabled)
 	serializeOpcodeSet(encoder, &prgrm.ProgramOperationsEnabled)
 
-	encoder.serializeEncoderLength(len(prgrm.SysInitExprs), prgrm.SysInitExprs == nil)
-	for i := range prgrm.SysInitExprs {
-		serializeExpression(encoder, &prgrm.SysInitExprs[i])
+	encoder.serializeEncoderLength(len(prgrm.SysInitExpressions), prgrm.SysInitExpressions == nil)
+	for i := range prgrm.SysInitExpressions {
+		serializeExpression(encoder, &prgrm.SysInitExpressions[i])
 	}
 	return nil
 }
@@ -483,9 +483,9 @@ func deserializeProgramFields(prgrm *CXProgram, decoder *serializeDecoder) []ser
 	deserializeOpcodeSet(decoder, &prgrm.ProgramOperationsEnabled)
 
 	if length := decoder.serializeDecoderLength(5); length >= 0 {
-		prgrm.SysInitExprs = make([]CXExpression, length)
-		for i := range prgrm.SysInitExprs {
-			deserializeExpression(decoder, &prgrm.SysInitExprs[i])
+		prgrm.SysInitExpressions = make([]CXExpression, length)
+		for i := range prgrm.SysInitExpressions {
+			deserializeExpression(decoder, &prgrm.SysInitExpressions[i])
 		}
 	}
 	return calls

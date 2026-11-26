@@ -348,7 +348,7 @@ func SysInitFunctionAdd(prgrm *ast.CXProgram) error {
 
 	globalsInitializersOrder(prgrm)
 	//Init Expressions
-	actions.FunctionDeclaration(prgrm, fnIdx, nil, nil, prgrm.SysInitExprs)
+	actions.FunctionDeclaration(prgrm, fnIdx, nil, nil, prgrm.SysInitExpressions)
 
 	if _, err := mainPkg.SelectFunction(prgrm, prgrm.CxIrState.CxIrStateNameMain); err != nil {
 		return err

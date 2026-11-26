@@ -10,19 +10,19 @@ import (
 )
 
 type Lexer struct {
-	l, c      int    //line and column numbers
-	lineStr   string // line string
-	b, r, e   int    //used for buffer mechanics
-	buf       []byte //buffer
-	scan      io.Reader
-	ch        rune //most recently read character
-	chw       int  //width of character, in bytes
-	errh      func(l, c int, msg string)
-	ioerr     error
-	bsize     uint //buffer size
-	nlsemi    bool //whether or not newline is SCOLON
-	eof       bool //eof
-	colbefore bool //used for colon keywords
+	line, column                       int    //line and column numbers
+	lineStr                            string // line string
+	bufferBegin, bufferRead, bufferEnd int    //used for buffer mechanics
+	buf                                []byte //buffer
+	scan                               io.Reader
+	ch                                 rune //most recently read character
+	chw                                int  //width of character, in bytes
+	errh                               func(l, c int, msg string)
+	ioerr                              error
+	bsize                              uint //buffer size
+	nlsemi                             bool //whether or not newline is SCOLON
+	eof                                bool //eof
+	colbefore                          bool //used for colon keywords
 
 	// braceDepth counts the braces open, which a global statement needs to be 1.
 	braceDepth int
@@ -39,7 +39,7 @@ const readCountMax = 10
 /* the following code is provided */
 func (s *Lexer) init(r io.Reader, errh func(l, c int, msg string)) {
 	s.scan = r
-	s.l, s.c, s.b, s.r, s.e = 0, 1, -1, 0, 0
+	s.line, s.column, s.bufferBegin, s.bufferRead, s.bufferEnd = 0, 1, -1, 0, 0
 	s.lineStr = ""
 	s.buf = make([]byte, 1<<LexerBufferMin)
 	s.buf[0] = sentinel
@@ -49,32 +49,32 @@ func (s *Lexer) init(r io.Reader, errh func(l, c int, msg string)) {
 	s.bsize = LexerBufferMin
 }
 
-func (s *Lexer) start() { s.b = s.r - s.chw }
+func (s *Lexer) start() { s.bufferBegin = s.bufferRead - s.chw }
 func (s *Lexer) stop() {
-	s.b = -1
+	s.bufferBegin = -1
 }
 func (s *Lexer) segment() []byte {
-	return s.buf[s.b : s.r-s.chw]
+	return s.buf[s.bufferBegin : s.bufferRead-s.chw]
 }
 
 func (s *Lexer) errorf(msg string) {
-	s.errh(s.l+1, s.c+1, msg)
+	s.errh(s.line+1, s.column+1, msg)
 	//panic("")
 }
 
 func (s *Lexer) rewind() {
 	// ok to verify precondition - rewind is rarely called
-	if s.b < 0 {
+	if s.bufferBegin < 0 {
 		panic("no active segment")
 	}
-	s.c -= s.r - s.b
-	s.r = s.b
+	s.column -= s.bufferRead - s.bufferBegin
+	s.bufferRead = s.bufferBegin
 	s.nextch()
 }
 
 func (s *Lexer) nextch() {
 redo:
-	s.c += int(s.chw)
+	s.column += int(s.chw)
 
 	if s.ch != '\n' {
 		s.lineStr = s.lineStr + string(s.ch)
@@ -83,15 +83,15 @@ redo:
 	s.tok.lineStr = s.lineStr
 
 	if s.ch == '\n' {
-		s.l++
-		s.c = 0
+		s.line++
+		s.column = 0
 
 		s.lineStr = ""
 	}
 
 	//first test for ASCII
-	if s.ch = rune(s.buf[s.r]); s.ch < sentinel {
-		s.r++
+	if s.ch = rune(s.buf[s.bufferRead]); s.ch < sentinel {
+		s.bufferRead++
 		s.chw = 1
 		if s.ch == 0 {
 			s.errorf("NUL")
@@ -100,12 +100,12 @@ redo:
 		return
 	}
 
-	for s.e-s.r < utf8.UTFMax && !utf8.FullRune(s.buf[s.r:s.e]) && s.ioerr == nil {
+	for s.bufferEnd-s.bufferRead < utf8.UTFMax && !utf8.FullRune(s.buf[s.bufferRead:s.bufferEnd]) && s.ioerr == nil {
 		s.fill()
 	}
 
 	//EOF
-	if s.r == s.e || s.ioerr == io.EOF {
+	if s.bufferRead == s.bufferEnd || s.ioerr == io.EOF {
 		if s.ioerr != io.EOF {
 			s.errorf("IO ProgramError: " + s.ioerr.Error())
 			s.ioerr = nil
@@ -115,8 +115,8 @@ redo:
 		return
 	}
 
-	s.ch, s.chw = utf8.DecodeRune(s.buf[s.r:s.e])
-	s.r += s.chw
+	s.ch, s.chw = utf8.DecodeRune(s.buf[s.bufferRead:s.bufferEnd])
+	s.bufferRead += s.chw
 	if s.ch == utf8.RuneError && s.chw == 1 {
 		s.errorf("invalid UTF-8 encoding!")
 		goto redo
@@ -124,7 +124,7 @@ redo:
 
 	//WATCH OUT FOR BOM
 	if s.ch == 0xfeff {
-		if s.l > 0 || s.c > 0 {
+		if s.line > 0 || s.column > 0 {
 			s.errorf("invalid UFT-8 byte-order mark in middle of file")
 		}
 		goto redo
@@ -132,12 +132,12 @@ redo:
 }
 
 func (s *Lexer) fill() {
-	b := s.r
-	if s.b >= 0 {
-		b = s.b
-		s.b = 0
+	b := s.bufferRead
+	if s.bufferBegin >= 0 {
+		b = s.bufferBegin
+		s.bufferBegin = 0
 	}
-	content := s.buf[b:s.e]
+	content := s.buf[b:s.bufferEnd]
 	if len(content)*2 > len(s.buf) {
 		s.bsize++
 		if s.bsize > LexerBufferMax {
@@ -148,23 +148,23 @@ func (s *Lexer) fill() {
 	} else if b > 0 {
 		copy(s.buf, content)
 	}
-	s.r -= b
-	s.e -= b
+	s.bufferRead -= b
+	s.bufferEnd -= b
 
 	for i := 0; i < readCountMax; i++ {
 		var n int
-		n, s.ioerr = s.scan.Read(s.buf[s.e : len(s.buf)-1])
+		n, s.ioerr = s.scan.Read(s.buf[s.bufferEnd : len(s.buf)-1])
 		if n < 0 {
 			panic("negative read!") //invalid io.Reader
 		}
 		if n > 0 || s.ioerr != nil {
-			s.e += n
-			s.buf[s.e] = sentinel
+			s.bufferEnd += n
+			s.buf[s.bufferEnd] = sentinel
 			return
 		}
 	}
 
-	s.buf[s.e] = sentinel
+	s.buf[s.bufferEnd] = sentinel
 	s.ioerr = io.ErrNoProgress
 }
 
@@ -182,8 +182,8 @@ redonext:
 	for s.ch == ' ' || s.ch == '\t' || s.ch == '\n' && !nlsemi || s.ch == '\r' {
 		s.nextch()
 	}
-	s.tok.line = s.l + 1
-	s.tok.column = s.c + 1
+	s.tok.line = s.line + 1
+	s.tok.column = s.column + 1
 
 	s.start()
 

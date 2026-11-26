@@ -146,7 +146,7 @@ func builtInOperatorRun(prgrm *CXProgram, expr *CXExpression, cxAtomicOp *CXAtom
 		}
 
 		value.FramePointer = fp
-		value.Expr = expr
+		value.Expression = expr
 		argIndex++
 	}
 
@@ -176,7 +176,7 @@ func builtInOperatorRun(prgrm *CXProgram, expr *CXExpression, cxAtomicOp *CXAtom
 		}
 
 		value.FramePointer = fp
-		value.Expr = expr
+		value.Expression = expr
 		argIndex++
 	}
 
@@ -188,10 +188,10 @@ func builtInOperatorRun(prgrm *CXProgram, expr *CXExpression, cxAtomicOp *CXAtom
 
 	// Expr points into fn.Expressions and is valid for this step only.
 	for i := range inputValues {
-		inputValues[i].Expr = nil
+		inputValues[i].Expression = nil
 	}
 	for i := range outputValues {
-		outputValues[i].Expr = nil
+		outputValues[i].Expression = nil
 	}
 
 	return nil

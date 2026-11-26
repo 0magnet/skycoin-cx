@@ -8,12 +8,12 @@ package ast
 
 import objmodel "github.com/skycoin/skycoin-cx/t1-cx-core-objmodel"
 
-// {{.Obj}}Gid names one {{.Obj}} in its manager, see docs/ObjectModel.md.
-type {{.Obj}}Gid int64
+// {{.Object}}Gid names one {{.Object}} in its manager, see docs/ObjectModel.md.
+type {{.Object}}Gid int64
 
 const (
-	{{.Obj}}GidTypeTag objmodel.TypeTag = {{.TypeTag}}
-	{{.Obj}}GidNil     {{.Obj}}Gid      = 0
+	{{.Object}}GidTypeTag objmodel.TypeTag = {{.TypeTag}}
+	{{.Object}}GidNil     {{.Object}}Gid      = 0
 )
 {{end}}
 
@@ -27,125 +27,125 @@ import (
 	objmodel "github.com/skycoin/skycoin-cx/t1-cx-core-objmodel"
 )
 
-// {{.Obj}}Mng is the only place a {{.Obj}} is allocated and released, a
+// {{.Object}}Mng is the only place a {{.Object}} is allocated and released, a
 // linear array of slots, see docs/ObjectModel.md.
-type {{.Obj}}Mng struct {
-	{{.Obj}}MngObjects     []{{.Obj}} // one per slot, len is the Cap
-	{{.Obj}}MngGenerations []uint32 // generation of each slot, 0 while never used
-	{{.Obj}}MngLive        []bool // slot holds a live object
-	{{.Obj}}MngFree        []uint32 // released slots that can be reused
-	{{.Obj}}MngNext        uint32 // first slot never used
-	{{.Obj}}MngRetired     uint32 // slots retired at objmodel.GidGenerationLast
-	{{.Obj}}MngLen         int // live objects
-	{{.Obj}}MngGrowable    bool // the grow boundary may grow it
+type {{.Object}}Mng struct {
+	{{.Object}}MngObjects     []{{.Object}} // one per slot, len is the Cap
+	{{.Object}}MngGenerations []uint32 // generation of each slot, 0 while never used
+	{{.Object}}MngLive        []bool // slot holds a live object
+	{{.Object}}MngFree        []uint32 // released slots that can be reused
+	{{.Object}}MngNext        uint32 // first slot never used
+	{{.Object}}MngRetired     uint32 // slots retired at objmodel.GidGenerationLast
+	{{.Object}}MngLen         int // live objects
+	{{.Object}}MngGrowable    bool // the grow boundary may grow it
 }
 
-// {{.Obj}}MngInit sets the Cap and whether the grow boundary may grow it.
+// {{.Object}}MngInit sets the Cap and whether the grow boundary may grow it.
 {{- if .StrhotInit}}
 // VIOLATION {{.StrhotInit}}: E, the assert text of a bad Init, built only when it fails, #412.
 {{- end}}
-func (manager *{{.Obj}}Mng) {{.Obj}}MngInit(capacity int, growable bool) {
-	if manager.{{.Obj}}MngLen != 0 {
-		assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}MngInit on a manager holding %d objects", manager.{{.Obj}}MngLen))
+func (manager *{{.Object}}Mng) {{.Object}}MngInit(capacity int, growable bool) {
+	if manager.{{.Object}}MngLen != 0 {
+		assert.PreconditionTrue(false, fmt.Sprintf("{{.Object}}MngInit on a manager holding %d objects", manager.{{.Object}}MngLen))
 	}
 	if capacity < 0 || uint64(capacity) > objmodel.GidCapMax {
-		assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}MngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
+		assert.PreconditionTrue(false, fmt.Sprintf("{{.Object}}MngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
 	}
-	*manager = {{.Obj}}Mng{
-		{{.Obj}}MngObjects:     make([]{{.Obj}}, capacity),
-		{{.Obj}}MngGenerations: make([]uint32, capacity),
-		{{.Obj}}MngLive:        make([]bool, capacity),
-		{{.Obj}}MngGrowable:    growable,
+	*manager = {{.Object}}Mng{
+		{{.Object}}MngObjects:     make([]{{.Object}}, capacity),
+		{{.Object}}MngGenerations: make([]uint32, capacity),
+		{{.Object}}MngLive:        make([]bool, capacity),
+		{{.Object}}MngGrowable:    growable,
 	}
 }
 
-// {{.Obj}}Alloc returns the Gid of a new zero {{.Obj}}. It never moves the
+// {{.Object}}Alloc returns the Gid of a new zero {{.Object}}. It never moves the
 // array, so a Get pointer stays valid until the next grow boundary. A full
 // manager asserts, an unhandled case for now, see docs/ObjectModel.md.
-func (manager *{{.Obj}}Mng) {{.Obj}}Alloc() {{.Obj}}Gid {
+func (manager *{{.Object}}Mng) {{.Object}}Alloc() {{.Object}}Gid {
 	var index uint32
-	if free := len(manager.{{.Obj}}MngFree); free > 0 {
-		index = manager.{{.Obj}}MngFree[free-1]
-		manager.{{.Obj}}MngFree = manager.{{.Obj}}MngFree[:free-1]
+	if free := len(manager.{{.Object}}MngFree); free > 0 {
+		index = manager.{{.Object}}MngFree[free-1]
+		manager.{{.Object}}MngFree = manager.{{.Object}}MngFree[:free-1]
 	} else {
-		if capacity := len(manager.{{.Obj}}MngObjects); int(manager.{{.Obj}}MngNext) == capacity {
-			assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}Alloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
+		if capacity := len(manager.{{.Object}}MngObjects); int(manager.{{.Object}}MngNext) == capacity {
+			assert.PreconditionTrue(false, fmt.Sprintf("{{.Object}}Alloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
 		}
-		index = manager.{{.Obj}}MngNext
-		manager.{{.Obj}}MngNext++
-		manager.{{.Obj}}MngGenerations[index] = objmodel.GidGenerationFirst
+		index = manager.{{.Object}}MngNext
+		manager.{{.Object}}MngNext++
+		manager.{{.Object}}MngGenerations[index] = objmodel.GidGenerationFirst
 	}
-	manager.{{.Obj}}MngObjects[index] = {{.Obj}}{}
-	manager.{{.Obj}}MngLive[index] = true
-	manager.{{.Obj}}MngLen++
-	if manager.{{.Obj}}MngLen != int(manager.{{.Obj}}MngNext)-len(manager.{{.Obj}}MngFree)-int(manager.{{.Obj}}MngRetired) {
-		assert.InvariantTrue(false, fmt.Sprintf("{{.Obj}}Alloc: Len %d is not the live slot count", manager.{{.Obj}}MngLen))
+	manager.{{.Object}}MngObjects[index] = {{.Object}}{}
+	manager.{{.Object}}MngLive[index] = true
+	manager.{{.Object}}MngLen++
+	if manager.{{.Object}}MngLen != int(manager.{{.Object}}MngNext)-len(manager.{{.Object}}MngFree)-int(manager.{{.Object}}MngRetired) {
+		assert.InvariantTrue(false, fmt.Sprintf("{{.Object}}Alloc: Len %d is not the live slot count", manager.{{.Object}}MngLen))
 	}
-	return {{.Obj}}Gid(objmodel.GidCompose({{.Obj}}GidTypeTag, manager.{{.Obj}}MngGenerations[index], index))
+	return {{.Object}}Gid(objmodel.GidCompose({{.Object}}GidTypeTag, manager.{{.Object}}MngGenerations[index], index))
 }
 
-// {{.Obj}}Release zeroes the object and frees its slot. The slot's
+// {{.Object}}Release zeroes the object and frees its slot. The slot's
 // generation goes up by one, and a slot reaching objmodel.GidGenerationLast
 // is retired instead of reused.
-func (manager *{{.Obj}}Mng) {{.Obj}}Release(gid {{.Obj}}Gid) {
+func (manager *{{.Object}}Mng) {{.Object}}Release(gid {{.Object}}Gid) {
 	index := objmodel.GidIndex(int64(gid))
-	if objmodel.GidTypeTag(int64(gid)) != {{.Obj}}GidTypeTag || uint64(index) >= uint64(len(manager.{{.Obj}}MngObjects)) ||
-		!manager.{{.Obj}}MngLive[index] || manager.{{.Obj}}MngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
-		objmodel.GidAssertFailure(int64(gid), {{.Obj}}GidTypeTag, len(manager.{{.Obj}}MngObjects))
-		if !manager.{{.Obj}}MngLive[index] {
-			assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}Release of slot %d, which is not live, a double release", index))
+	if objmodel.GidTypeTag(int64(gid)) != {{.Object}}GidTypeTag || uint64(index) >= uint64(len(manager.{{.Object}}MngObjects)) ||
+		!manager.{{.Object}}MngLive[index] || manager.{{.Object}}MngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
+		objmodel.GidAssertFailure(int64(gid), {{.Object}}GidTypeTag, len(manager.{{.Object}}MngObjects))
+		if !manager.{{.Object}}MngLive[index] {
+			assert.PreconditionTrue(false, fmt.Sprintf("{{.Object}}Release of slot %d, which is not live, a double release", index))
 		}
-		assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}Release of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.{{.Obj}}MngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("{{.Object}}Release of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.{{.Object}}MngGenerations[index]))
 	}
-	manager.{{.Obj}}MngObjects[index] = {{.Obj}}{}
-	manager.{{.Obj}}MngLive[index] = false
-	manager.{{.Obj}}MngGenerations[index]++
-	if manager.{{.Obj}}MngGenerations[index] == objmodel.GidGenerationLast {
-		manager.{{.Obj}}MngRetired++
+	manager.{{.Object}}MngObjects[index] = {{.Object}}{}
+	manager.{{.Object}}MngLive[index] = false
+	manager.{{.Object}}MngGenerations[index]++
+	if manager.{{.Object}}MngGenerations[index] == objmodel.GidGenerationLast {
+		manager.{{.Object}}MngRetired++
 	} else {
-		manager.{{.Obj}}MngFree = append(manager.{{.Obj}}MngFree, index)
+		manager.{{.Object}}MngFree = append(manager.{{.Object}}MngFree, index)
 	}
-	manager.{{.Obj}}MngLen--
-	if manager.{{.Obj}}MngLen < 0 || manager.{{.Obj}}MngLen != int(manager.{{.Obj}}MngNext)-len(manager.{{.Obj}}MngFree)-int(manager.{{.Obj}}MngRetired) {
-		assert.InvariantTrue(false, fmt.Sprintf("{{.Obj}}Release: Len %d is not the live slot count", manager.{{.Obj}}MngLen))
+	manager.{{.Object}}MngLen--
+	if manager.{{.Object}}MngLen < 0 || manager.{{.Object}}MngLen != int(manager.{{.Object}}MngNext)-len(manager.{{.Object}}MngFree)-int(manager.{{.Object}}MngRetired) {
+		assert.InvariantTrue(false, fmt.Sprintf("{{.Object}}Release: Len %d is not the live slot count", manager.{{.Object}}MngLen))
 	}
 }
 
-// {{.Obj}}Get returns a borrowed pointer to the object. It is stale after the
+// {{.Object}}Get returns a borrowed pointer to the object. It is stale after the
 // next grow boundary or a Release of gid.
 {{- if .StrhotGet}}
 // VIOLATION {{.StrhotGet}}: E, the assert text of a bad Gid, built only when the check fails, #412.
 {{- end}}
-func (manager *{{.Obj}}Mng) {{.Obj}}Get(gid {{.Obj}}Gid) *{{.Obj}} {
+func (manager *{{.Object}}Mng) {{.Object}}Get(gid {{.Object}}Gid) *{{.Object}} {
 	index := objmodel.GidIndex(int64(gid))
-	if objmodel.GidTypeTag(int64(gid)) != {{.Obj}}GidTypeTag || uint64(index) >= uint64(len(manager.{{.Obj}}MngObjects)) ||
-		!manager.{{.Obj}}MngLive[index] || manager.{{.Obj}}MngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
-		objmodel.GidAssertFailure(int64(gid), {{.Obj}}GidTypeTag, len(manager.{{.Obj}}MngObjects))
-		if !manager.{{.Obj}}MngLive[index] {
-			assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}Get of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
+	if objmodel.GidTypeTag(int64(gid)) != {{.Object}}GidTypeTag || uint64(index) >= uint64(len(manager.{{.Object}}MngObjects)) ||
+		!manager.{{.Object}}MngLive[index] || manager.{{.Object}}MngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
+		objmodel.GidAssertFailure(int64(gid), {{.Object}}GidTypeTag, len(manager.{{.Object}}MngObjects))
+		if !manager.{{.Object}}MngLive[index] {
+			assert.PreconditionTrue(false, fmt.Sprintf("{{.Object}}Get of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
 		}
-		assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}Get of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.{{.Obj}}MngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("{{.Object}}Get of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.{{.Object}}MngGenerations[index]))
 	}
-	return &manager.{{.Obj}}MngObjects[index]
+	return &manager.{{.Object}}MngObjects[index]
 }
 
-// {{.Obj}}Len is the number of live objects.
-func (manager *{{.Obj}}Mng) {{.Obj}}Len() int {
-	return manager.{{.Obj}}MngLen
+// {{.Object}}Len is the number of live objects.
+func (manager *{{.Object}}Mng) {{.Object}}Len() int {
+	return manager.{{.Object}}MngLen
 }
 
-// {{.Obj}}Cap is the number of slots, retired ones included.
-func (manager *{{.Obj}}Mng) {{.Obj}}Cap() int {
-	return len(manager.{{.Obj}}MngObjects)
+// {{.Object}}Cap is the number of slots, retired ones included.
+func (manager *{{.Object}}Mng) {{.Object}}Cap() int {
+	return len(manager.{{.Object}}MngObjects)
 }
 
-// {{.Obj}}MngGrowBoundary grows a growable manager whose free slots are under
+// {{.Object}}MngGrowBoundary grows a growable manager whose free slots are under
 // half of its Cap to the next power of two, and returns the old and new Cap.
 // It moves the array, so it runs only where no Get pointer is held.
-func (manager *{{.Obj}}Mng) {{.Obj}}MngGrowBoundary() (int, int) {
-	capacity := len(manager.{{.Obj}}MngObjects)
-	free := capacity - int(manager.{{.Obj}}MngNext) + len(manager.{{.Obj}}MngFree)
-	if !manager.{{.Obj}}MngGrowable || 2*free >= capacity && capacity > 0 || uint64(capacity) >= objmodel.GidCapMax {
+func (manager *{{.Object}}Mng) {{.Object}}MngGrowBoundary() (int, int) {
+	capacity := len(manager.{{.Object}}MngObjects)
+	free := capacity - int(manager.{{.Object}}MngNext) + len(manager.{{.Object}}MngFree)
+	if !manager.{{.Object}}MngGrowable || 2*free >= capacity && capacity > 0 || uint64(capacity) >= objmodel.GidCapMax {
 		return capacity, capacity
 	}
 	grown := uint64(1)
@@ -155,25 +155,25 @@ func (manager *{{.Obj}}Mng) {{.Obj}}MngGrowBoundary() (int, int) {
 	if grown > objmodel.GidCapMax {
 		grown = objmodel.GidCapMax
 	}
-	objects := make([]{{.Obj}}, grown)
-	copy(objects, manager.{{.Obj}}MngObjects)
-	manager.{{.Obj}}MngObjects = objects
+	objects := make([]{{.Object}}, grown)
+	copy(objects, manager.{{.Object}}MngObjects)
+	manager.{{.Object}}MngObjects = objects
 	generations := make([]uint32, grown)
-	copy(generations, manager.{{.Obj}}MngGenerations)
-	manager.{{.Obj}}MngGenerations = generations
+	copy(generations, manager.{{.Object}}MngGenerations)
+	manager.{{.Object}}MngGenerations = generations
 	live := make([]bool, grown)
-	copy(live, manager.{{.Obj}}MngLive)
-	manager.{{.Obj}}MngLive = live
+	copy(live, manager.{{.Object}}MngLive)
+	manager.{{.Object}}MngLive = live
 	return capacity, int(grown)
 }
 
-// {{.Obj}}MngTeardown asserts that Len is 0 and drops the arrays, which leaves
+// {{.Object}}MngTeardown asserts that Len is 0 and drops the arrays, which leaves
 // Cap at 0.
-func (manager *{{.Obj}}Mng) {{.Obj}}MngTeardown() {
-	if manager.{{.Obj}}MngLen != 0 {
-		assert.InvariantTrue(false, fmt.Sprintf("{{.Obj}}MngTeardown with %d live objects, a leak", manager.{{.Obj}}MngLen))
+func (manager *{{.Object}}Mng) {{.Object}}MngTeardown() {
+	if manager.{{.Object}}MngLen != 0 {
+		assert.InvariantTrue(false, fmt.Sprintf("{{.Object}}MngTeardown with %d live objects, a leak", manager.{{.Object}}MngLen))
 	}
-	*manager = {{.Obj}}Mng{}
+	*manager = {{.Object}}Mng{}
 }
 {{end}}
 
@@ -186,197 +186,197 @@ import (
 	objmodel "github.com/skycoin/skycoin-cx/t1-cx-core-objmodel"
 )
 
-func {{.Obj}}MngTestCheck(t *testing.T, manager *{{.Obj}}Mng, step string, wantLen int, wantCap int) {
+func {{.Object}}MngTestCheck(t *testing.T, manager *{{.Object}}Mng, step string, wantLen int, wantCap int) {
 	t.Helper()
-	if manager.{{.Obj}}Len() != wantLen || manager.{{.Obj}}Cap() != wantCap {
-		t.Fatalf("%s: Len %d Cap %d, want %d and %d", step, manager.{{.Obj}}Len(), manager.{{.Obj}}Cap(), wantLen, wantCap)
+	if manager.{{.Object}}Len() != wantLen || manager.{{.Object}}Cap() != wantCap {
+		t.Fatalf("%s: Len %d Cap %d, want %d and %d", step, manager.{{.Object}}Len(), manager.{{.Object}}Cap(), wantLen, wantCap)
 	}
 }
 
-func Test{{.Obj}}Mng(t *testing.T) {
-	var manager {{.Obj}}Mng
-	manager.{{.Obj}}MngInit(2, false)
-	{{.Obj}}MngTestCheck(t, &manager, "init", 0, 2)
+func Test{{.Object}}Mng(t *testing.T) {
+	var manager {{.Object}}Mng
+	manager.{{.Object}}MngInit(2, false)
+	{{.Object}}MngTestCheck(t, &manager, "init", 0, 2)
 
-	first := manager.{{.Obj}}Alloc()
-	{{call .Set (printf "manager.%sGet(first)" .Obj) "11"}}
-	second := manager.{{.Obj}}Alloc()
-	{{call .Set (printf "manager.%sGet(second)" .Obj) "22"}}
-	{{.Obj}}MngTestCheck(t, &manager, "two allocs", 2, 2)
-	if objmodel.GidTypeTag(int64(first)) != {{.Obj}}GidTypeTag || objmodel.GidGeneration(int64(first)) != objmodel.GidGenerationFirst {
+	first := manager.{{.Object}}Alloc()
+	{{call .Set (printf "manager.%sGet(first)" .Object) "11"}}
+	second := manager.{{.Object}}Alloc()
+	{{call .Set (printf "manager.%sGet(second)" .Object) "22"}}
+	{{.Object}}MngTestCheck(t, &manager, "two allocs", 2, 2)
+	if objmodel.GidTypeTag(int64(first)) != {{.Object}}GidTypeTag || objmodel.GidGeneration(int64(first)) != objmodel.GidGenerationFirst {
 		t.Fatalf("first Gid %#x has the wrong tag or generation", int64(first))
 	}
-	if {{call .Get (printf "manager.%sGet(first)" .Obj)}} != 11 || {{call .Get (printf "manager.%sGet(second)" .Obj)}} != 22 {
+	if {{call .Get (printf "manager.%sGet(first)" .Object)}} != 11 || {{call .Get (printf "manager.%sGet(second)" .Object)}} != 22 {
 		t.Fatal("Get does not return the allocated objects")
 	}
 
-	manager.{{.Obj}}Release(first)
-	{{.Obj}}MngTestCheck(t, &manager, "release", 1, 2)
-	third := manager.{{.Obj}}Alloc()
-	{{.Obj}}MngTestCheck(t, &manager, "reuse", 2, 2)
+	manager.{{.Object}}Release(first)
+	{{.Object}}MngTestCheck(t, &manager, "release", 1, 2)
+	third := manager.{{.Object}}Alloc()
+	{{.Object}}MngTestCheck(t, &manager, "reuse", 2, 2)
 	if objmodel.GidIndex(int64(third)) != objmodel.GidIndex(int64(first)) {
 		t.Fatal("Alloc did not reuse the released slot")
 	}
 	if objmodel.GidGeneration(int64(third)) != objmodel.GidGeneration(int64(first))+1 {
 		t.Fatalf("generation %d after one release, want %d", objmodel.GidGeneration(int64(third)), objmodel.GidGeneration(int64(first))+1)
 	}
-	if {{call .Get (printf "manager.%sGet(third)" .Obj)}} != 0 {
+	if {{call .Get (printf "manager.%sGet(third)" .Object)}} != 0 {
 		t.Fatal("a reused slot is not zeroed")
 	}
 
-	manager.{{.Obj}}Release(second)
-	manager.{{.Obj}}Release(third)
-	{{.Obj}}MngTestCheck(t, &manager, "release all", 0, 2)
-	manager.{{.Obj}}MngTeardown()
-	{{.Obj}}MngTestCheck(t, &manager, "teardown", 0, 0)
+	manager.{{.Object}}Release(second)
+	manager.{{.Object}}Release(third)
+	{{.Object}}MngTestCheck(t, &manager, "release all", 0, 2)
+	manager.{{.Object}}MngTeardown()
+	{{.Object}}MngTestCheck(t, &manager, "teardown", 0, 0)
 }
 
-func Test{{.Obj}}MngGrowth(t *testing.T) {
-	var manager {{.Obj}}Mng
-	manager.{{.Obj}}MngInit(4, true)
-	gids := make([]{{.Obj}}Gid, 0, 9)
+func Test{{.Object}}MngGrowth(t *testing.T) {
+	var manager {{.Object}}Mng
+	manager.{{.Object}}MngInit(4, true)
+	gids := make([]{{.Object}}Gid, 0, 9)
 	for i := 0; i < 2; i++ {
-		gids = append(gids, manager.{{.Obj}}Alloc())
-		{{call .Set (printf "manager.%sGet(gids[i])" .Obj) "i + 1"}}
+		gids = append(gids, manager.{{.Object}}Alloc())
+		{{call .Set (printf "manager.%sGet(gids[i])" .Object) "i + 1"}}
 	}
-	if oldCap, newCap := manager.{{.Obj}}MngGrowBoundary(); oldCap != 4 || newCap != 4 {
+	if oldCap, newCap := manager.{{.Object}}MngGrowBoundary(); oldCap != 4 || newCap != 4 {
 		t.Fatalf("half free: grew from %d to %d, want no growth", oldCap, newCap)
 	}
-	gids = append(gids, manager.{{.Obj}}Alloc())
-	{{call .Set (printf "manager.%sGet(gids[2])" .Obj) "3"}}
-	if oldCap, newCap := manager.{{.Obj}}MngGrowBoundary(); oldCap != 4 || newCap != 8 {
+	gids = append(gids, manager.{{.Object}}Alloc())
+	{{call .Set (printf "manager.%sGet(gids[2])" .Object) "3"}}
+	if oldCap, newCap := manager.{{.Object}}MngGrowBoundary(); oldCap != 4 || newCap != 8 {
 		t.Fatalf("one free of four: grew from %d to %d, want 4 to 8", oldCap, newCap)
 	}
 	for i := 3; i < 8; i++ {
-		gids = append(gids, manager.{{.Obj}}Alloc())
-		{{call .Set (printf "manager.%sGet(gids[i])" .Obj) "i + 1"}}
+		gids = append(gids, manager.{{.Object}}Alloc())
+		{{call .Set (printf "manager.%sGet(gids[i])" .Object) "i + 1"}}
 	}
-	if oldCap, newCap := manager.{{.Obj}}MngGrowBoundary(); oldCap != 8 || newCap != 16 {
+	if oldCap, newCap := manager.{{.Object}}MngGrowBoundary(); oldCap != 8 || newCap != 16 {
 		t.Fatalf("full: grew from %d to %d, want 8 to 16", oldCap, newCap)
 	}
-	{{.Obj}}MngTestCheck(t, &manager, "eight allocs", 8, 16)
+	{{.Object}}MngTestCheck(t, &manager, "eight allocs", 8, 16)
 	for i, gid := range gids {
-		if {{call .Get (printf "manager.%sGet(gid)" .Obj)}} != i+1 {
+		if {{call .Get (printf "manager.%sGet(gid)" .Object)}} != i+1 {
 			t.Fatalf("object %d lost by growth", i)
 		}
 	}
 	for _, gid := range gids {
-		manager.{{.Obj}}Release(gid)
+		manager.{{.Object}}Release(gid)
 	}
-	{{.Obj}}MngTestCheck(t, &manager, "release all", 0, 16)
-	manager.{{.Obj}}MngTeardown()
-	{{.Obj}}MngTestCheck(t, &manager, "teardown", 0, 0)
+	{{.Object}}MngTestCheck(t, &manager, "release all", 0, 16)
+	manager.{{.Object}}MngTeardown()
+	{{.Object}}MngTestCheck(t, &manager, "teardown", 0, 0)
 
-	var fixed {{.Obj}}Mng
-	fixed.{{.Obj}}MngInit(1, false)
-	gid := fixed.{{.Obj}}Alloc()
-	if oldCap, newCap := fixed.{{.Obj}}MngGrowBoundary(); oldCap != 1 || newCap != 1 {
+	var fixed {{.Object}}Mng
+	fixed.{{.Object}}MngInit(1, false)
+	gid := fixed.{{.Object}}Alloc()
+	if oldCap, newCap := fixed.{{.Object}}MngGrowBoundary(); oldCap != 1 || newCap != 1 {
 		t.Fatalf("fixed manager grew from %d to %d", oldCap, newCap)
 	}
-	fixed.{{.Obj}}Release(gid)
-	fixed.{{.Obj}}MngTeardown()
+	fixed.{{.Object}}Release(gid)
+	fixed.{{.Object}}MngTeardown()
 }
 
-func Test{{.Obj}}MngRetirement(t *testing.T) {
-	var manager {{.Obj}}Mng
-	manager.{{.Obj}}MngInit(2, false)
-	manager.{{.Obj}}Alloc()
-	manager.{{.Obj}}MngGenerations[0] = objmodel.GidGenerationLast - 1
-	manager.{{.Obj}}Release({{.Obj}}Gid(objmodel.GidCompose({{.Obj}}GidTypeTag, objmodel.GidGenerationLast-1, 0)))
-	{{.Obj}}MngTestCheck(t, &manager, "retire", 0, 2)
-	if manager.{{.Obj}}MngRetired != 1 || len(manager.{{.Obj}}MngFree) != 0 {
-		t.Fatalf("retired %d free %d, want 1 and 0", manager.{{.Obj}}MngRetired, len(manager.{{.Obj}}MngFree))
+func Test{{.Object}}MngRetirement(t *testing.T) {
+	var manager {{.Object}}Mng
+	manager.{{.Object}}MngInit(2, false)
+	manager.{{.Object}}Alloc()
+	manager.{{.Object}}MngGenerations[0] = objmodel.GidGenerationLast - 1
+	manager.{{.Object}}Release({{.Object}}Gid(objmodel.GidCompose({{.Object}}GidTypeTag, objmodel.GidGenerationLast-1, 0)))
+	{{.Object}}MngTestCheck(t, &manager, "retire", 0, 2)
+	if manager.{{.Object}}MngRetired != 1 || len(manager.{{.Object}}MngFree) != 0 {
+		t.Fatalf("retired %d free %d, want 1 and 0", manager.{{.Object}}MngRetired, len(manager.{{.Object}}MngFree))
 	}
-	next := manager.{{.Obj}}Alloc()
+	next := manager.{{.Object}}Alloc()
 	if objmodel.GidIndex(int64(next)) != 1 {
 		t.Fatalf("Alloc after retirement took slot %d, want 1", objmodel.GidIndex(int64(next)))
 	}
-	manager.{{.Obj}}Release(next)
-	manager.{{.Obj}}MngTeardown()
-	{{.Obj}}MngTestCheck(t, &manager, "teardown", 0, 0)
+	manager.{{.Object}}Release(next)
+	manager.{{.Object}}MngTeardown()
+	{{.Object}}MngTestCheck(t, &manager, "teardown", 0, 0)
 }
 
-// {{.Obj}}MngTestAsserts are the cases that must crash, with the assert kind
+// {{.Object}}MngTestAsserts are the cases that must crash, with the assert kind
 // and a part of the message.
-var {{.Obj}}MngTestAsserts = map[string]struct {
-	run  func(manager *{{.Obj}}Mng)
+var {{.Object}}MngTestAsserts = map[string]struct {
+	run  func(manager *{{.Object}}Mng)
 	want string
 }{
-	"get nil": {func(manager *{{.Obj}}Mng) { manager.{{.Obj}}Get({{.Obj}}GidNil) }, "is nil or negative"},
-	"get negative": {func(manager *{{.Obj}}Mng) { manager.{{.Obj}}Get(-1) }, "is nil or negative"},
-	"get other type": {func(manager *{{.Obj}}Mng) {
-		manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}Get({{.Obj}}Gid(objmodel.GidCompose({{.OtherTag}}, 1, 0)))
+	"get nil": {func(manager *{{.Object}}Mng) { manager.{{.Object}}Get({{.Object}}GidNil) }, "is nil or negative"},
+	"get negative": {func(manager *{{.Object}}Mng) { manager.{{.Object}}Get(-1) }, "is nil or negative"},
+	"get other type": {func(manager *{{.Object}}Mng) {
+		manager.{{.Object}}Alloc()
+		manager.{{.Object}}Get({{.Object}}Gid(objmodel.GidCompose({{.OtherTag}}, 1, 0)))
 	}, "has type tag"},
-	"get index at cap": {func(manager *{{.Obj}}Mng) {
-		manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}Get({{.Obj}}Gid(objmodel.GidCompose({{.Obj}}GidTypeTag, 1, 1)))
+	"get index at cap": {func(manager *{{.Object}}Mng) {
+		manager.{{.Object}}Alloc()
+		manager.{{.Object}}Get({{.Object}}Gid(objmodel.GidCompose({{.Object}}GidTypeTag, 1, 1)))
 	}, "Cap is 1"},
-	"get released": {func(manager *{{.Obj}}Mng) {
-		gid := manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}Release(gid)
-		manager.{{.Obj}}Get(gid)
+	"get released": {func(manager *{{.Object}}Mng) {
+		gid := manager.{{.Object}}Alloc()
+		manager.{{.Object}}Release(gid)
+		manager.{{.Object}}Get(gid)
 	}, "which is not live"},
-	"get stale": {func(manager *{{.Obj}}Mng) {
-		gid := manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}Release(gid)
-		manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}Get(gid)
+	"get stale": {func(manager *{{.Object}}Mng) {
+		gid := manager.{{.Object}}Alloc()
+		manager.{{.Object}}Release(gid)
+		manager.{{.Object}}Alloc()
+		manager.{{.Object}}Get(gid)
 	}, "stale Gid"},
-	"release double": {func(manager *{{.Obj}}Mng) {
-		gid := manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}Release(gid)
-		manager.{{.Obj}}Release(gid)
+	"release double": {func(manager *{{.Object}}Mng) {
+		gid := manager.{{.Object}}Alloc()
+		manager.{{.Object}}Release(gid)
+		manager.{{.Object}}Release(gid)
 	}, "a double release"},
-	"release stale": {func(manager *{{.Obj}}Mng) {
-		gid := manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}Release(gid)
-		manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}Release(gid)
+	"release stale": {func(manager *{{.Object}}Mng) {
+		gid := manager.{{.Object}}Alloc()
+		manager.{{.Object}}Release(gid)
+		manager.{{.Object}}Alloc()
+		manager.{{.Object}}Release(gid)
 	}, "stale Gid"},
-	"alloc full": {func(manager *{{.Obj}}Mng) {
-		manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}Alloc()
+	"alloc full": {func(manager *{{.Object}}Mng) {
+		manager.{{.Object}}Alloc()
+		manager.{{.Object}}Alloc()
 	}, "on a full manager"},
-	"alloc full growable": {func(manager *{{.Obj}}Mng) {
-		manager.{{.Obj}}MngInit(1, true)
-		manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}Alloc()
+	"alloc full growable": {func(manager *{{.Object}}Mng) {
+		manager.{{.Object}}MngInit(1, true)
+		manager.{{.Object}}Alloc()
+		manager.{{.Object}}Alloc()
 	}, "unhandled case"},
-	"alloc retired full": {func(manager *{{.Obj}}Mng) {
-		manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}MngGenerations[0] = objmodel.GidGenerationLast - 1
-		manager.{{.Obj}}Release({{.Obj}}Gid(objmodel.GidCompose({{.Obj}}GidTypeTag, objmodel.GidGenerationLast-1, 0)))
-		manager.{{.Obj}}Alloc()
+	"alloc retired full": {func(manager *{{.Object}}Mng) {
+		manager.{{.Object}}Alloc()
+		manager.{{.Object}}MngGenerations[0] = objmodel.GidGenerationLast - 1
+		manager.{{.Object}}Release({{.Object}}Gid(objmodel.GidCompose({{.Object}}GidTypeTag, objmodel.GidGenerationLast-1, 0)))
+		manager.{{.Object}}Alloc()
 	}, "on a full manager"},
-	"init holding objects": {func(manager *{{.Obj}}Mng) {
-		manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}MngInit(1, false)
+	"init holding objects": {func(manager *{{.Object}}Mng) {
+		manager.{{.Object}}Alloc()
+		manager.{{.Object}}MngInit(1, false)
 	}, "MngInit on a manager holding 1 objects"},
-	"teardown holding objects": {func(manager *{{.Obj}}Mng) {
-		manager.{{.Obj}}Alloc()
-		manager.{{.Obj}}MngTeardown()
+	"teardown holding objects": {func(manager *{{.Object}}Mng) {
+		manager.{{.Object}}Alloc()
+		manager.{{.Object}}MngTeardown()
 	}, "invariant violated"},
 }
 
-// Test{{.Obj}}MngAssertChild is the subprocess body. It does nothing in a
+// Test{{.Object}}MngAssertChild is the subprocess body. It does nothing in a
 // normal run.
-func Test{{.Obj}}MngAssertChild(t *testing.T) {
+func Test{{.Object}}MngAssertChild(t *testing.T) {
 	name := objmodelTestCaseName()
 	if name == "" {
 		t.Skip("subprocess only")
 	}
-	var manager {{.Obj}}Mng
-	manager.{{.Obj}}MngInit(1, false)
-	{{.Obj}}MngTestAsserts[name].run(&manager)
+	var manager {{.Object}}Mng
+	manager.{{.Object}}MngInit(1, false)
+	{{.Object}}MngTestAsserts[name].run(&manager)
 	t.Fatal("returned after a failed assert")
 }
 
-func Test{{.Obj}}MngAsserts(t *testing.T) {
-	for name, testCase := range {{.Obj}}MngTestAsserts {
+func Test{{.Object}}MngAsserts(t *testing.T) {
+	for name, testCase := range {{.Object}}MngTestAsserts {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			objmodelTestAssertSubprocess(t, "Test{{.Obj}}MngAssertChild", name, testCase.want)
+			objmodelTestAssertSubprocess(t, "Test{{.Object}}MngAssertChild", name, testCase.want)
 		})
 	}
 }
@@ -392,7 +392,7 @@ const objmodelgenTypeTagNameTemplate = `package objmodel
 // has an empty name.
 var GidTypeTagNameTable = [256]string{
 {{- range .}}
-	{{printf "0x%02X" .TypeTag}}: "{{.Obj}}",
+	{{printf "0x%02X" .TypeTag}}: "{{.Object}}",
 {{- end}}
 }
 `

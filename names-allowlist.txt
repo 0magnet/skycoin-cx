@@ -470,38 +470,6 @@ t9-astapi|directory||t9-astapi
 t9-cxparsing|directory||t9-cxparsing
 t9-token-fuzzer|directory||t9-token-fuzzer
 
-# Renames to come, by step of docs/NamingPlan.md.
-t0-cx-core-objmodelgen/main.go|field|objmodelgenObject|Obj
-t0-cx-tools-names/golang.go|function||ExprUsesIota
+# FuncDecl and GenDecl are the go/ast types these methods read.
 t0-cx-tools-names/golang.go|method|GoCollector|FuncDeclNames
 t0-cx-tools-names/golang.go|method|GoCollector|GenDeclNames
-t0-cx-tools-names/golang.go|method|GoCollector|TypeExprNames
-t10-generator/program_generator.go|function||calcFnSize
-t10-generator/program_generator.go|function||copySig
-t10-generator/program_generator.go|function||getRandFn
-t10-generator/program_generator.go|function||getRandInp
-t10-generator/program_generator.go|function||sigSize
-t10-generator/program_generator.go|function||sigType
-t3-ast/ast_cxvalue.go|field|CXValue|Expr
-t3-ast/cxprogram_def.go|field|CXProgram|SysInitExprs
-t3-ast/mem_offset.go|field|DereferenceStruct|idxCounter
-t3-cx-compiler-llvm/llvm.go|field|emitter|decls
-t3-cx-compiler-llvm/llvm.go|field|emitter|fn
-t3-cx-compiler-llvm/llvm.go|method|emitter|retType
-t4-actions/escape.go|field|escapeState|escapeStatePrgrm
-t4-actions/expressions.go|function||invalidPlaceholderTypeSig
-t4-actions/functions.go|field|shortDeclarationType|typ
-t4-actions/functions.go|function||checkMatchExprNumOfInputs
-t4-actions/functions.go|function||checkMatchExprNumOfOutputs
-t4-actions/functions.go|function||exprLine
-t4-cx-compiler-lower/lower.go|field|state|statePrgrm
-t5-cxpartialparsing/lex.go|field|Lexer|b
-t5-cxpartialparsing/lex.go|field|Lexer|c
-t5-cxpartialparsing/lex.go|field|Lexer|e
-t5-cxpartialparsing/lex.go|field|Lexer|l
-t5-cxpartialparsing/lex.go|field|Lexer|r
-t8-cxparsingcompletor/lex.go|field|Lexer|b
-t8-cxparsingcompletor/lex.go|field|Lexer|c
-t8-cxparsingcompletor/lex.go|field|Lexer|e
-t8-cxparsingcompletor/lex.go|field|Lexer|l
-t8-cxparsingcompletor/lex.go|field|Lexer|r
