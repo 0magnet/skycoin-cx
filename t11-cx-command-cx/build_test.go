@@ -35,7 +35,7 @@ func buildTestCore(t *testing.T, dir string, libraries ...string) string {
 	for _, library := range libraries {
 		tags = append(tags, "cxcorelibrary"+library)
 	}
-	cmd := exec.Command("go", "build", "-o", path, "-tags", strings.Join(tags, ","), "../t6-cx-core-run")
+	cmd := exec.Command("go", "build", "-o", path, "-tags", strings.Join(tags, ","), "../t6-cx-command-core")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("go build of the core %v: %v\n%s", libraries, err, out)
 	}

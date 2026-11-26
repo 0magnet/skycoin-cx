@@ -107,5 +107,5 @@ program_list.db
 
 ## Files the CX tests write
 tests/*.tmp
-t4-cx-core-image/program.cximage
+t4-cx-command-image/program.cximage
 _cx-mcu-*/

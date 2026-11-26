@@ -96,7 +96,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qemu-system-arm
       - run: tinygo test ./t0-cx-core-digest ./t1-cx-runtime-sandbox
-      - run: go test -count=1 -run 'TestBuildLlvmLinkerChoose|TestBuildLlvmTinygo' ./t11-cx
+      - run: go test -count=1 -run 'TestBuildLlvmLinkerChoose|TestBuildLlvmTinygo' ./t11-cx-command-cx
       - run: make run-mcu MCU_TARGET=cortex-m-qemu
       - run: make build-mcu MCU_TARGET=pico
       - run: make build-tinygo build-wasm-tinygo

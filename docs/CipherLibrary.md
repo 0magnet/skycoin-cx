@@ -95,7 +95,7 @@ The byte slices are read as views of program memory and copied into fixed
 arrays on the Go stack, and every digest, key and signature a function
 returns is a new `[]ui8` in program memory. Program memory is not Go memory
 (see [RunPathAllocations.md](RunPathAllocations.md)), so the hash functions
-make no Go allocation. `TestRunCipherAllocs` in `t11-cx` requires 0 per run
+make no Go allocation. `TestRunCipherAllocs` in `t11-cx-command-cx` requires 0 per run
 of 100 calls.
 
 `SignatureVerify`, `SignatureRecoverPubKey`, `SignatureSign` and
@@ -105,7 +105,7 @@ with `math/big`, VMALLOC-024. A verify makes 108 allocations there, and
 means fixed size field arithmetic in Skycoin's secp256k1, see decision D76.
 
 Measured on an Intel i7-3770S. The run is `BenchmarkRunCipher` in
-`t11-cx`, a run of the old loop divided by its 100 calls, which includes
+`t11-cx-command-cx`, a run of the old loop divided by its 100 calls, which includes
 about 2000 ns per call of run start and loop, its `LoopWithoutCalls`. The
 Go call is `BenchmarkCxHashOfBytes` in `t0-cx-core-digest` and
 `BenchmarkCipherSignatureVerify` in `t4-cx-library-cipher`.

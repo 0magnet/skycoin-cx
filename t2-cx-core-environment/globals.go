@@ -15,7 +15,7 @@ var (
 var CxProgramPath string = ""
 
 // VIOLATION: init chaining. Init 1: CXPATH, BINPATH, PKGPATH from the env,
-// called from Go package init. t11-cx CXPathGet sets them again.
+// called from Go package init. t11-cx-command-cx CXPathGet sets them again.
 // VIOLATION: state outside State. Owner: t2-cx-core-environment; moves to ConfigMng in phase 2.
 var CXPATH = os.Getenv("CXPATH") + "/"
 

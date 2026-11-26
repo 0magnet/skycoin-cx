@@ -2,13 +2,13 @@
 # Builds cx-core-image with an image embedded for a TinyGo target, runs it
 # in the emulator of that target and exits with the exit code of the run.
 #
-#   CX_MCU_TARGET=cortex-m-qemu t4-cx-core-image/emulator-run.sh program.cximage
+#   CX_MCU_TARGET=cortex-m-qemu t4-cx-command-image/emulator-run.sh program.cximage
 #
 # Targets: cortex-m-qemu, riscv-qemu, wasip1, esp32 and esp32c3. Needs
 # tinygo (TINYGO) and qemu-system-arm, qemu-system-riscv32, wasmtime, or the
 # Espressif QEMU (qemu-system-xtensa, qemu-system-riscv32) on PATH. As the
 # image-core runner of the execution records, see docs/Microcontrollers.md:
-#   CX_EXECUTION_RECORDS_IMAGE_CORE=$PWD/t4-cx-core-image/emulator-run.sh
+#   CX_EXECUTION_RECORDS_IMAGE_CORE=$PWD/t4-cx-command-image/emulator-run.sh
 set -u
 image=${1:?usage: CX_MCU_TARGET=target $0 program.cximage}
 target=${CX_MCU_TARGET:?set CX_MCU_TARGET}

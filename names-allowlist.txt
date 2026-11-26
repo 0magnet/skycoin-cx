@@ -422,11 +422,10 @@ t6-cx-library-graphics/op_opengl.go|constant||G
 t6-cx-library-graphics/op_opengl.go|constant||R
 
 
-# Package directories that are not t<N>-cx-<layer>-<subject> yet, renamed by
-# step 8 of docs/NamingPlan.md.
-t11-cx|directory||t11-cx
-t7-cxmobile|directory||t7-cxmobile
-
 # FuncDecl and GenDecl are the go/ast types these methods read.
 t0-cx-tools-names/golang.go|method|GoCollector|FuncDeclNames
 t0-cx-tools-names/golang.go|method|GoCollector|GenDeclNames
+
+# t7-cx-command-mobile/file_mobile.go is package cxcore under the os and mobile
+# build tags, a gomobile asset helper that is not built with the command.
+t7-cx-command-mobile|directory||t7-cx-command-mobile

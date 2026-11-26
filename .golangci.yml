@@ -85,7 +85,7 @@ linters:
       - linters:
           - gosec
         text: "G(204|702):"
-        path: (_test\.go|t11-cx/build_llvm\.go|t11-cx/build_llvm_tinygo\.go|t5-cx-library-fileopcodes/op_os\.go)
+        path: (_test\.go|t11-cx-command-cx/build_llvm\.go|t11-cx-command-cx/build_llvm_tinygo\.go|t5-cx-library-fileopcodes/op_os\.go)
       # Tests run the binaries they build on the files they write, in their
       # own temporary directories.
       - linters:
@@ -97,7 +97,7 @@ linters:
       - linters:
           - gosec
         text: "G103:"
-        path: (t2-cx-core-stringpool/|t11-cx/run_heap_test\.go)
+        path: (t2-cx-core-stringpool/|t11-cx-command-cx/run_heap_test\.go)
       # Lint debt from before golangci-lint ran in CI, one rule per file and
       # linter. Fixing a file removes its rule, and the list only shrinks.
       - path: ^t0-cx-tools-benchmarks/compare_test\.go$
@@ -144,39 +144,39 @@ linters:
         linters: [errcheck]
       - path: ^t10-cx-tools-programgenerator/program_generator\.go$
         linters: [errcheck, unconvert]
-      - path: ^t11-cx/affordance_test\.go$
+      - path: ^t11-cx-command-cx/affordance_test\.go$
         linters: [errcheck]
-      - path: ^t11-cx/build\.go$
+      - path: ^t11-cx-command-cx/build\.go$
         linters: [gosec]
-      - path: ^t11-cx/build_llvm\.go$
+      - path: ^t11-cx-command-cx/build_llvm\.go$
         linters: [errcheck]
-      - path: ^t11-cx/execution_records_test\.go$
+      - path: ^t11-cx-command-cx/execution_records_test\.go$
         linters: [errcheck]
-      - path: ^t11-cx/flags\.go$
+      - path: ^t11-cx-command-cx/flags\.go$
         linters: [errcheck, staticcheck]
-      - path: ^t11-cx/helpers\.go$
+      - path: ^t11-cx-command-cx/helpers\.go$
         linters: [errcheck, unparam]
-      - path: ^t11-cx/lower_compare_test\.go$
+      - path: ^t11-cx-command-cx/lower_compare_test\.go$
         linters: [errcheck, gosec, unparam]
-      - path: ^t11-cx/main\.go$
+      - path: ^t11-cx-command-cx/main\.go$
         linters: [errcheck]
-      - path: ^t11-cx/profile_test\.go$
+      - path: ^t11-cx-command-cx/profile_test\.go$
         linters: [errcheck, gosec]
-      - path: ^t11-cx/run_bench_test\.go$
+      - path: ^t11-cx-command-cx/run_bench_test\.go$
         linters: [errcheck]
-      - path: ^t11-cx/run_cipher_test\.go$
+      - path: ^t11-cx-command-cx/run_cipher_test\.go$
         linters: [unparam]
-      - path: ^t11-cx/run_heap_test\.go$
+      - path: ^t11-cx-command-cx/run_heap_test\.go$
         linters: [errcheck]
-      - path: ^t11-cx/run_net_test\.go$
+      - path: ^t11-cx-command-cx/run_net_test\.go$
         linters: [errcheck]
-      - path: ^t11-cx/run_parsefloat_test\.go$
+      - path: ^t11-cx-command-cx/run_parsefloat_test\.go$
         linters: [errcheck]
-      - path: ^t11-cx/serialize_test\.go$
+      - path: ^t11-cx-command-cx/serialize_test\.go$
         linters: [errcheck]
-      - path: ^t11-cx/step_test\.go$
+      - path: ^t11-cx-command-cx/step_test\.go$
         linters: [errcheck]
-      - path: ^t11-cx/test_output_test\.go$
+      - path: ^t11-cx-command-cx/test_output_test\.go$
         linters: [errcheck, gosec]
       - path: ^t1-cx-core-opcodetable/opcodes_test\.go$
         linters: [errcheck]
@@ -284,7 +284,7 @@ linters:
         linters: [staticcheck]
       - path: ^t5-cx-tools-packagefiles/main_test\.go$
         linters: [errcheck]
-      - path: ^t6-cx-core-run/main\.go$
+      - path: ^t6-cx-command-core/main\.go$
         linters: [errcheck]
       - path: ^t6-cx-compiler-declarationextractor/declaration_extractor\.go$
         linters: [unparam]

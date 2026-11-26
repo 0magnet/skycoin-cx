@@ -998,7 +998,7 @@ func executionRecordImageCore(t *testing.T, dir string) string {
 	if valuetypes.PointerSize == 8 {
 		tags += ",ptr64"
 	}
-	if out, err := exec.Command("go", "build", "-o", path, "-tags", tags, "../t4-cx-core-image").CombinedOutput(); err != nil {
+	if out, err := exec.Command("go", "build", "-o", path, "-tags", tags, "../t4-cx-command-image").CombinedOutput(); err != nil {
 		t.Fatalf("go build of cx-core-image: %v\n%s", err, out)
 	}
 	return path

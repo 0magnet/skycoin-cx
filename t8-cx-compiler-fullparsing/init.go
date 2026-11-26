@@ -11,8 +11,8 @@ import (
 // VIOLATION: state outside State. Owner: t8-cx-compiler-fullparsing; moves to CXNativeFunctionMng in phase 2.
 var Initialized bool
 
-// VIOLATION: init chaining. Init 4-9: the steps t11-cx Run calls, called from
-// the playgrounds, the generator and tests. Not from t11-cx.
+// VIOLATION: init chaining. Init 4-9: the steps t11-cx-command-cx Run calls, called from
+// the playgrounds, the generator and tests. Not from t11-cx-command-cx.
 func CXCoreInit() {
 	if !Initialized {
 		astbuild.ConstantsInit()

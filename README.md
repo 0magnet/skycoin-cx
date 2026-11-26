@@ -30,8 +30,8 @@ This puts `cx` and the `cx build` cores (`cx-core`, `cx-core-file` and the
 rest) in `bin/`. Add that directory to your `PATH` to run `cx` from anywhere.
 To update, `git pull` and `make build` again.
 
-`go install github.com/skycoin/skycoin-cx/t11-cx@latest` also works, but it
-installs the binary as `t11-cx` and builds no cores, so `cx build` needs the
+`go install github.com/skycoin/skycoin-cx/t11-cx-command-cx@latest` also works, but it
+installs the binary as `t11-cx-command-cx` and builds no cores, so `cx build` needs the
 cores from `make build`.
 
 ## Hello world
@@ -261,7 +261,7 @@ See [t0-cx-tools-benchmarks/README.md](t0-cx-tools-benchmarks/README.md).
   ([#30](https://github.com/skycoin/skycoin-cx/issues/30),
   [#31](https://github.com/skycoin/skycoin-cx/issues/31),
   [#32](https://github.com/skycoin/skycoin-cx/issues/32)).
-- `t7-cxmobile` does not compile and no target builds it
+- `t7-cx-command-mobile` does not compile and no target builds it
   ([#35](https://github.com/skycoin/skycoin-cx/issues/35)). The mobile files of
   t6-cx-library-graphics were removed in #432.
 
@@ -274,8 +274,8 @@ that [docs/ObjectModel.md](docs/ObjectModel.md) and
 
 Every Go package, binaries included, sits one level below the root as
 `t<N>-<name>`, where N is its tier in the import graph. A tier N package
-imports only packages of lower tiers. `t11-cx` is the cx binary,
-`t6-cx-core-run` the `cx build` core and `t1-cx-tools-programtest` the CX program test
+imports only packages of lower tiers. `t11-cx-command-cx` is the cx binary,
+`t6-cx-command-core` the `cx build` core and `t1-cx-tools-programtest` the CX program test
 runner. `tests/` holds the CX test programs, `lib/` CX libraries and
 `t0-cx-tools-benchmarks/` the benchmarks. `CLEANUP.md` lists every file of the former
 CX repositories with a keep, merge or delete recommendation.
@@ -284,7 +284,7 @@ The code follows these rules, each listed in
 [docs/Conventions.md](docs/Conventions.md).
 
 - No Go `func init()` outside package main. Setup is an explicit Init
-  function that `t11-cx` main calls in order.
+  function that `t11-cx-command-cx` main calls in order.
 - No interface embeds another interface.
 - Two classes of error and no `recover`. A failure outside the program
   returns its module's error struct, and anything else is an assert that
