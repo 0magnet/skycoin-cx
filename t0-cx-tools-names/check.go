@@ -105,7 +105,7 @@ func NameCheckFindings(rows []NameRow) map[string]string {
 			continue
 		}
 		if directory := path.Dir(row.File); row.Kind == "package" && !strings.Contains(directory, "/") && strings.HasPrefix(directory, "t") {
-			if finding := NameCheckDirectoryFinding(directory, row.Name); finding != "" {
+			if finding := NameCheckDirectoryFinding(directory, strings.TrimSuffix(row.Name, "_test")); finding != "" {
 				findings[directory+"|directory||"+directory] = finding
 			}
 		}

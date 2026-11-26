@@ -96,3 +96,12 @@ func TestNameCheckDirectoryFinding(test *testing.T) {
 		}
 	}
 }
+
+// A directory whose first file is an external test, package x_test, is
+// checked by the package x.
+func TestNameCheckFindingsExternalTest(test *testing.T) {
+	rows := []NameRow{{Language: "go", File: "t9-cx-core-astapi/arguments_test.go", Kind: "package", Name: "astapi_test", TestFile: true}}
+	if findings := NameCheckFindings(rows); len(findings) != 0 {
+		test.Errorf("findings = %v, want none", findings)
+	}
+}
