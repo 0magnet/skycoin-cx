@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"regexp"
 	"sort"
 	"strings"
 	"unicode"
@@ -100,7 +101,15 @@ func NameCheckKey(row NameRow) string {
 func NameCheckFindings(rows []NameRow) map[string]string {
 	findings := map[string]string{}
 	for _, row := range rows {
-		if row.Language != "go" || row.TestFile || row.Kind == "import" {
+		if row.Language != "go" || row.Kind == "import" {
+			continue
+		}
+		if directory := path.Dir(row.File); row.Kind == "package" && !strings.Contains(directory, "/") && strings.HasPrefix(directory, "t") {
+			if finding := NameCheckDirectoryFinding(directory, row.Name); finding != "" {
+				findings[directory+"|directory||"+directory] = finding
+			}
+		}
+		if row.TestFile {
 			continue
 		}
 		if finding := NameFinding(row); finding != "" {
@@ -222,4 +231,21 @@ func NameCheckPackageLevel(row NameRow) bool {
 		return true
 	}
 	return false
+}
+
+// NameCheckDirectoryPattern is the form of a package directory,
+// t<N>-cx-<layer>-<subject>, see docs/NamingPlan.md.
+var NameCheckDirectoryPattern = regexp.MustCompile(`^t[0-9]+-cx-(core|compiler|runtime|library|tools|command)-([a-z0-9]+)$`)
+
+// NameCheckDirectoryFinding returns why a package directory breaks the
+// form, or why its package clause is not its subject, or "".
+func NameCheckDirectoryFinding(directory string, packageName string) string {
+	match := NameCheckDirectoryPattern.FindStringSubmatch(directory)
+	if match == nil {
+		return "directory not t<N>-cx-<layer>-<subject>"
+	}
+	if packageName != "main" && packageName != match[2] {
+		return "package clause is not the directory subject " + match[2]
+	}
+	return ""
 }

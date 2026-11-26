@@ -421,6 +421,55 @@ t6-cxfx/op_opengl.go|constant||E
 t6-cxfx/op_opengl.go|constant||G
 t6-cxfx/op_opengl.go|constant||R
 
+
+# Package directories that are not t<N>-cx-<layer>-<subject> yet, renamed by
+# step 8 of docs/NamingPlan.md.
+t0-benchmarks|directory||t0-benchmarks
+t0-benchmarks-structser|directory||t0-benchmarks-structser
+t0-cxfiles|directory||t0-cxfiles
+t0-cxhash|directory||t0-cxhash
+t0-cxtestrunner|directory||t0-cxtestrunner
+t0-ifacecheck|directory||t0-ifacecheck
+t0-lz4codec|directory||t0-lz4codec
+t0-packages|directory||t0-packages
+t0-plbolt|directory||t0-plbolt
+t0-textsections|directory||t0-textsections
+t0-types|directory||t0-types
+t10-cxrepl|directory||t10-cxrepl
+t10-generator|directory||t10-generator
+t11-cx|directory||t11-cx
+t1-cipherstate|directory||t1-cipherstate
+t1-constants|directory||t1-constants
+t1-cxtest|directory||t1-cxtest
+t1-netbatch|directory||t1-netbatch
+t1-plloader|directory||t1-plloader
+t1-profiling|directory||t1-profiling
+t2-globals|directory||t2-globals
+t2-plencoder|directory||t2-plencoder
+t2-plgraph|directory||t2-plgraph
+t2-pltree|directory||t2-pltree
+t3-ast|directory||t3-ast
+t3-packageloader|directory||t3-packageloader
+t4-actions|directory||t4-actions
+t4-cipher|directory||t4-cipher
+t4-cxnet|directory||t4-cxnet
+t4-cxos-core|directory||t4-cxos-core
+t4-execute|directory||t4-execute
+t4-opcodes|directory||t4-opcodes
+t4-regexp|directory||t4-regexp
+t5-cxos|directory||t5-cxos
+t5-cxpartialparsing|directory||t5-cxpartialparsing
+t5-plfileoutput|directory||t5-plfileoutput
+t6-cxfx|directory||t6-cxfx
+t6-declextractor|directory||t6-declextractor
+t7-cxmobile|directory||t7-cxmobile
+t7-init|directory||t7-init
+t8-cxparsingcompletor|directory||t8-cxparsingcompletor
+t8-typechecker|directory||t8-typechecker
+t9-astapi|directory||t9-astapi
+t9-cxparsing|directory||t9-cxparsing
+t9-token-fuzzer|directory||t9-token-fuzzer
+
 # Renames to come, by step of docs/NamingPlan.md.
 t0-cx-core-assert/assert.go|constant||AssertExitCode
 t0-cx-core-assert/assert.go|function||AssertInvariantTrue
