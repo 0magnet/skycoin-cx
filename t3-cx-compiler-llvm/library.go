@@ -54,7 +54,7 @@ func (e *emitter) instrLibrary(in *ir.Instr) error {
 	}
 	sort.Slice(offsets, func(i, j int) bool { return offsets[i] < offsets[j] })
 	for _, offset := range offsets {
-		p := e.newTmp()
+		p := e.localNew()
 		e.line("%s = getelementptr inbounds i8, ptr %s, i64 %d", p, block, offset)
 		e.line("store %s %s, ptr %s, align 1", valueType(e.call.pendingCallSizes[offset]), e.call.pendingCallArgs[offset], p)
 	}
@@ -70,18 +70,18 @@ func (e *emitter) instrLibrary(in *ir.Instr) error {
 // block at sp to C.
 func (e *emitter) instrLibraryResult(in *ir.Instr) error {
 	block := e.libraryBlock()
-	p := e.newTmp()
+	p := e.localNew()
 	e.line("%s = getelementptr inbounds i8, ptr %s, i64 %d", p, block, in.InstrA)
-	v := e.newTmp()
+	v := e.localNew()
 	e.line("%s = load %s, ptr %s, align 1", v, valueType(in.InstrN), p)
 	return e.store(in, 2, valueType(in.InstrN), in.InstrN, v)
 }
 
 // libraryBlock returns a pointer to the block at sp in cx_mem.
 func (e *emitter) libraryBlock() string {
-	sp := e.newTmp()
+	sp := e.localNew()
 	e.line("%s = zext i32 %%sp to i64", sp)
-	block := e.newTmp()
+	block := e.localNew()
 	e.line("%s = getelementptr inbounds i8, ptr @cx_mem, i64 %s", block, sp)
 	return block
 }

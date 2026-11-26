@@ -49,7 +49,7 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 		byts1 = inputs[0].Get_bytes(prgrm)
 		byts2 = inputs[1].Get_bytes(prgrm)
 	} else if inputs[0].TypeSignature.Type == ast.TYPE_STRUCT || inputs[0].TypeSignature.Type == ast.TYPE_POINTER_STRUCT {
-		var isStr bool = false
+		var strTyped bool = false
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S1342.
 		structDetails := prgrm.GetCXTypeSignatureStructFromArray(inputs[0].TypeSignature.Meta)
@@ -60,11 +60,11 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 			// Now an arena getter, site S1343.
 			fld := prgrm.GetCXArgFromArray(structDetails.Fields[lenFlds-1])
 			if fld.Type == types.STR || fld.PointerTargetType == types.STR {
-				isStr = true
+				strTyped = true
 			}
 		}
 
-		if isStr {
+		if strTyped {
 			byts1 = inputs[0].Get_str_bytes(prgrm)
 			byts2 = inputs[1].Get_str_bytes(prgrm)
 		} else {

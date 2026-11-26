@@ -83,16 +83,16 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 
 			enumDecIdx := reEnumDec.FindIndex(line)
 
-			var tmp EnumDeclaration
+			var enumDeclaration EnumDeclaration
 
-			tmp.PackageID = pkg
-			tmp.FileID = fileName
+			enumDeclaration.PackageID = pkg
+			enumDeclaration.FileID = fileName
 
-			tmp.StartOffset = enumDecIdx[0] + currentOffset // offset is current line offset + match index
-			tmp.Length = enumDecIdx[1] - enumDecIdx[0]
-			tmp.LineNumber = lineno
+			enumDeclaration.StartOffset = enumDecIdx[0] + currentOffset // offset is current line offset + match index
+			enumDeclaration.Length = enumDecIdx[1] - enumDecIdx[0]
+			enumDeclaration.LineNumber = lineno
 
-			tmp.EnumName = string(enumDec[1])
+			enumDeclaration.EnumName = string(enumDec[1])
 
 			// If there is type declaration for Enum declaration
 			// i.e. [enum] [type] = iota
@@ -102,10 +102,10 @@ func ExtractEnums(source []byte, fileName string) ([]EnumDeclaration, error) {
 			}
 
 			// otherwise set it to previous type
-			tmp.Type = Type
+			enumDeclaration.Type = Type
 
-			tmp.Value = Index
-			EnumDeclarationsArray = append(EnumDeclarationsArray, tmp)
+			enumDeclaration.Value = Index
+			EnumDeclarationsArray = append(EnumDeclarationsArray, enumDeclaration)
 			Index++
 		}
 

@@ -63,13 +63,13 @@ func TestCxfxHandleTables(t *testing.T) {
 	defer func() { cxfxState = saved }()
 	cxfxState = CxfxState{}
 
-	first := cxfxTexturePixelsAdd(CxfxTexturePixels{CxfxTexturePixelsData: []float32{1}})
-	second := cxfxTexturePixelsAdd(CxfxTexturePixels{CxfxTexturePixelsData: []float32{2}})
-	if first != 0 || second != 1 || cxfxTexturePixelsGet(second).CxfxTexturePixelsData[0] != 2 {
+	first := cxfxTexturePixelsAdd(CxfxTexturePixels{CxfxTexturePixelsValues: []float32{1}})
+	second := cxfxTexturePixelsAdd(CxfxTexturePixels{CxfxTexturePixelsValues: []float32{2}})
+	if first != 0 || second != 1 || cxfxTexturePixelsGet(second).CxfxTexturePixelsValues[0] != 2 {
 		t.Fatalf("handles %d and %d", first, second)
 	}
 	*cxfxTexturePixelsGet(first) = CxfxTexturePixels{}
-	if again := cxfxTexturePixelsAdd(CxfxTexturePixels{CxfxTexturePixelsData: []float32{3}}); again != first {
+	if again := cxfxTexturePixelsAdd(CxfxTexturePixels{CxfxTexturePixelsValues: []float32{3}}); again != first {
 		t.Fatalf("a freed slot was not reused, got %d", again)
 	}
 	if handle := cxfxCallbackI32I32Add(7); handle != 0 || cxfxCallbackI32I32Get(0) != 7 {

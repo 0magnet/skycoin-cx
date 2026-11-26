@@ -32,7 +32,7 @@ func OpAlLoadWav(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 		panic(err)
 	}
 
-	data := encoder.Serialize(samples)
+	encoded := encoder.Serialize(samples)
 
 	outputs[0].Set_i32(prgrm, int32(wav.Header.AudioFormat))
 	outputs[1].Set_i32(prgrm, int32(wav.Header.NumChannels))
@@ -45,8 +45,8 @@ func OpAlLoadWav(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 
 	outputSlicePointer := outputs[8].Offset
 	outputSliceOffset := types.Read_ptr(prgrm.Memory, outputSlicePointer)
-	outputSliceOffset = ast.SliceResizeEx(prgrm, outputSliceOffset, types.Cast_int_to_ptr(len(data)), 1)
-	copy(ast.SliceElementsGet(prgrm, outputSliceOffset, 1), data)
+	outputSliceOffset = ast.SliceResizeEx(prgrm, outputSliceOffset, types.Cast_int_to_ptr(len(encoded)), 1)
+	copy(ast.SliceElementsGet(prgrm, outputSliceOffset, 1), encoded)
 	outputs[8].Set_ptr(prgrm, outputSliceOffset)
 }
 

@@ -13,9 +13,9 @@ import (
 var tbits int = 4
 var tchunks int = 100
 
-func lower(ch rune) rune     { return ('a' - 'A') | ch } // returns lower-case ch iff ch is ASCII letter
-func isLetter(ch rune) bool  { return 'a' <= lower(ch) && lower(ch) <= 'z' || ch == '_' }
-func isDecimal(ch rune) bool { return '0' <= ch && ch <= '9' }
+func lower(ch rune) rune       { return ('a' - 'A') | ch } // returns lower-case ch iff ch is ASCII letter
+func runeLetter(ch rune) bool  { return 'a' <= lower(ch) && lower(ch) <= 'z' || ch == '_' }
+func runeDecimal(ch rune) bool { return '0' <= ch && ch <= '9' }
 
 func randomString(length int, notIdent bool) string {
 	result := ""
@@ -23,7 +23,7 @@ func randomString(length int, notIdent bool) string {
 	for l >= 0 {
 		num := rand.Intn(128)
 		if l == length-1 {
-			if isDecimal(rune(num)) {
+			if runeDecimal(rune(num)) {
 				num = 0
 			}
 		}
@@ -33,7 +33,7 @@ func randomString(length int, notIdent bool) string {
 				l--
 			}
 		} else {
-			if isLetter(rune(num)) || isDecimal(rune(num)) {
+			if runeLetter(rune(num)) || runeDecimal(rune(num)) {
 				result += string([]byte{byte(num)})
 				l--
 			}

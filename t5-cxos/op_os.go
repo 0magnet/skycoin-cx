@@ -489,9 +489,9 @@ func OpOsReadF64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 			values := make([]float64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_f64(outputSliceData, i*sizeofElement, values[i])
+					types.Write_f64(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
@@ -510,9 +510,9 @@ func OpOsReadF32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 			values := make([]float32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_f32(outputSliceData, i*sizeofElement, values[i])
+					types.Write_f32(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
@@ -531,9 +531,9 @@ func OpOsReadUI64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 			values := make([]uint64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_ui64(outputSliceData, i*sizeofElement, values[i])
+					types.Write_ui64(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
@@ -552,9 +552,9 @@ func OpOsReadUI32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 			values := make([]uint32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_ui32(outputSliceData, i*sizeofElement, values[i])
+					types.Write_ui32(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
@@ -573,9 +573,9 @@ func OpOsReadUI16Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 			values := make([]uint16, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_ui16(outputSliceData, i*sizeofElement, values[i])
+					types.Write_ui16(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
@@ -594,9 +594,9 @@ func OpOsReadUI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 			values := make([]uint8, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_ui8(outputSliceData, i*sizeofElement, values[i])
+					types.Write_ui8(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
@@ -615,9 +615,9 @@ func OpOsReadI64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 			values := make([]int64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_i64(outputSliceData, i*sizeofElement, values[i])
+					types.Write_i64(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
@@ -636,9 +636,9 @@ func OpOsReadI32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 			values := make([]int32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_i32(outputSliceData, i*sizeofElement, values[i])
+					types.Write_i32(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
@@ -657,9 +657,9 @@ func OpOsReadI16Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 			values := make([]int16, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_i16(outputSliceData, i*sizeofElement, values[i])
+					types.Write_i16(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
@@ -678,9 +678,9 @@ func OpOsReadI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 			values := make([]int8, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceData := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
+				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_i8(outputSliceData, i*sizeofElement, values[i])
+					types.Write_i8(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
@@ -694,8 +694,8 @@ func OpOsReadI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 func OpOsWriteF64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if data := inputs[1].GetSlice_f64(prgrm); data != nil {
-			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
+		if elements := inputs[1].GetSlice_f64(prgrm); elements != nil {
+			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
@@ -707,8 +707,8 @@ func OpOsWriteF64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 func OpOsWriteF32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if data := inputs[1].GetSlice_f32(prgrm); data != nil {
-			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
+		if elements := inputs[1].GetSlice_f32(prgrm); elements != nil {
+			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
@@ -720,8 +720,8 @@ func OpOsWriteF32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 func OpOsWriteUI64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if data := inputs[1].GetSlice_f64(prgrm); data != nil {
-			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
+		if elements := inputs[1].GetSlice_f64(prgrm); elements != nil {
+			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
@@ -733,8 +733,8 @@ func OpOsWriteUI64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []as
 func OpOsWriteUI32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if data := inputs[1].GetSlice_ui32(prgrm); data != nil {
-			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
+		if elements := inputs[1].GetSlice_ui32(prgrm); elements != nil {
+			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
@@ -746,8 +746,8 @@ func OpOsWriteUI32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []as
 func OpOsWriteUI16Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if data := inputs[1].GetSlice_ui16(prgrm); data != nil {
-			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
+		if elements := inputs[1].GetSlice_ui16(prgrm); elements != nil {
+			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
@@ -759,8 +759,8 @@ func OpOsWriteUI16Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []as
 func OpOsWriteUI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if data := inputs[1].GetSlice_ui8(prgrm); data != nil {
-			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
+		if elements := inputs[1].GetSlice_ui8(prgrm); elements != nil {
+			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
@@ -772,8 +772,8 @@ func OpOsWriteUI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 func OpOsWriteI64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if data := inputs[1].GetSlice_i64(prgrm); data != nil {
-			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
+		if elements := inputs[1].GetSlice_i64(prgrm); elements != nil {
+			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
@@ -785,8 +785,8 @@ func OpOsWriteI64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 func OpOsWriteI32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if data := inputs[1].GetSlice_i32(prgrm); data != nil {
-			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
+		if elements := inputs[1].GetSlice_i32(prgrm); elements != nil {
+			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
@@ -798,8 +798,8 @@ func OpOsWriteI32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 func OpOsWriteI16Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if data := inputs[1].GetSlice_i16(prgrm); data != nil {
-			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
+		if elements := inputs[1].GetSlice_i16(prgrm); elements != nil {
+			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
@@ -811,8 +811,8 @@ func OpOsWriteI16Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 func OpOsWriteI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if data := inputs[1].GetSlice_i8(prgrm); data != nil {
-			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
+		if elements := inputs[1].GetSlice_i8(prgrm); elements != nil {
+			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}

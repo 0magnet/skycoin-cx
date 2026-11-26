@@ -84,12 +84,12 @@ func cxglGenBuffers(n int32, buffers *uint32) {
 }
 
 // cxgl_2_0
-func cxglBufferData(target uint32, size int, data []uint8, usage uint32) {
-	gl.BufferData(target, size, Slice_ui8_ToPtr(data), usage)
+func cxglBufferData(target uint32, size int, buffer []uint8, usage uint32) {
+	gl.BufferData(target, size, Slice_ui8_ToPtr(buffer), usage)
 }
 
-func cxglBufferSubData(target uint32, offset int, size int, data []uint8) {
-	gl.BufferSubData(target, offset, size, Slice_ui8_ToPtr(data))
+func cxglBufferSubData(target uint32, offset int, size int, buffer []uint8) {
+	gl.BufferSubData(target, offset, size, Slice_ui8_ToPtr(buffer))
 }
 
 func cxglDrawBuffers(size int32, bufs []uint8) {

@@ -136,7 +136,7 @@ func buildProgramImage() ([]byte, error) {
 func buildOptionsParse(args []string) (options buildOptions, problem string) {
 	for index := 0; index < len(args); index++ {
 		arg := args[index]
-		name, value, hasValue := strings.Cut(strings.TrimLeft(arg, "-"), "=")
+		name, value, valueGiven := strings.Cut(strings.TrimLeft(arg, "-"), "=")
 		if !strings.HasPrefix(arg, "-") {
 			if arg == "help" {
 				options.buildOptionsHelp = true
@@ -166,7 +166,7 @@ func buildOptionsParse(args []string) (options buildOptions, problem string) {
 			options.buildOptionsCompile = append(options.buildOptionsCompile, arg)
 			continue
 		}
-		if !hasValue {
+		if !valueGiven {
 			if index+1 == len(args) {
 				return options, fmt.Sprintf("flag %s needs a value", arg)
 			}
@@ -206,7 +206,7 @@ func buildOutputDefault(sources []string) (string, string) {
 		if strings.HasPrefix(arg, "++") {
 			continue
 		}
-		if info, err := filelog.Stat(filepath.Clean(arg)); err == nil && info.IsDir() {
+		if pathStat, err := filelog.Stat(filepath.Clean(arg)); err == nil && pathStat.IsDir() {
 			directories = append(directories, arg)
 		} else {
 			files = append(files, arg)
@@ -235,7 +235,7 @@ func buildOutputDefault(sources []string) (string, string) {
 	if runtime.GOOS == "windows" {
 		name += ".exe"
 	}
-	if info, err := os.Stat(name); err == nil && info.IsDir() {
+	if sourceStat, err := os.Stat(name); err == nil && sourceStat.IsDir() {
 		return "", fmt.Sprintf("%s is a directory", name)
 	}
 	return name, ""
@@ -257,7 +257,7 @@ func buildCoreFileName(libraries []string) string {
 // directory of the running cx when path is empty, holds the cores by
 // buildCoreFileName.
 func buildCorePath(path string, libraries []string) (string, string) {
-	if info, err := os.Stat(path); path != "" && (err != nil || !info.IsDir()) {
+	if pathStat, err := os.Stat(path); path != "" && (err != nil || !pathStat.IsDir()) {
 		return path, ""
 	}
 	directory := path
@@ -277,9 +277,9 @@ func buildCorePath(path string, libraries []string) (string, string) {
 
 // buildPathSame reports whether first and second name the same file.
 func buildPathSame(first, second string) bool {
-	firstInfo, firstErr := os.Stat(first)
-	secondInfo, secondErr := os.Stat(second)
-	return firstErr == nil && secondErr == nil && os.SameFile(firstInfo, secondInfo)
+	firstStat, firstErr := os.Stat(first)
+	secondStat, secondErr := os.Stat(second)
+	return firstErr == nil && secondErr == nil && os.SameFile(firstStat, secondStat)
 }
 
 func buildFail(message string) int {

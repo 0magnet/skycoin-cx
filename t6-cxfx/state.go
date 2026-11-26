@@ -48,7 +48,7 @@ type CxfxTexturePixels struct {
 	CxfxTexturePixelsWidth  int32
 	CxfxTexturePixelsHeight int32
 	CxfxTexturePixelsLevel  uint32
-	CxfxTexturePixelsData   []float32
+	CxfxTexturePixelsValues []float32
 }
 
 // CxfxShaderSourceArgument is the source pointer and length glShaderSource
@@ -156,7 +156,7 @@ func cxfxFontAdd(font *gltext.Font) int32 {
 }
 
 func cxfxTexturePixelsGet(handle int32) *CxfxTexturePixels {
-	if uint32(handle) >= CxfxTexturePixelsCountMax || cxfxState.CxfxTexturePixelsTable[handle].CxfxTexturePixelsData == nil {
+	if uint32(handle) >= CxfxTexturePixelsCountMax || cxfxState.CxfxTexturePixelsTable[handle].CxfxTexturePixelsValues == nil {
 		cxfxHandleAssertFailure(CxfxHandleKindTexturePixels, handle)
 	}
 	return &cxfxState.CxfxTexturePixelsTable[handle]
@@ -164,7 +164,7 @@ func cxfxTexturePixelsGet(handle int32) *CxfxTexturePixels {
 
 func cxfxTexturePixelsAdd(pixels CxfxTexturePixels) int32 {
 	for handle := range cxfxState.CxfxTexturePixelsTable {
-		if cxfxState.CxfxTexturePixelsTable[handle].CxfxTexturePixelsData == nil {
+		if cxfxState.CxfxTexturePixelsTable[handle].CxfxTexturePixelsValues == nil {
 			cxfxState.CxfxTexturePixelsTable[handle] = pixels
 			return int32(handle)
 		}

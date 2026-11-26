@@ -8,11 +8,11 @@ import (
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
 
-// debugInfo builds the DWARF metadata of a module, decision D8: a
+// debugMetadata builds the DWARF metadata of a module, decision D8: a
 // subprogram per function, a location per source line from ImageLines, and a
 // variable per frame variable of ImageLocals kept in an alloca, with its name
 // and type. Metadata !0 is the branch weights, so ids start at 1.
-type debugInfo struct {
+type debugMetadata struct {
 	debugMeta       []string
 	debugFiles      map[uint32]int
 	debugLocations  map[[2]uint32]int
@@ -23,19 +23,19 @@ type debugInfo struct {
 	debugCurrent    int
 }
 
-func debugInfoNew() *debugInfo {
-	d := &debugInfo{debugFiles: map[uint32]int{}, debugLocations: map[[2]uint32]int{}, debugTypes: map[string]int{}}
+func debugMetadataNew() *debugMetadata {
+	d := &debugMetadata{debugFiles: map[uint32]int{}, debugLocations: map[[2]uint32]int{}, debugTypes: map[string]int{}}
 	d.debugRoutine = d.add("!DISubroutineType(types: !{null})")
 	return d
 }
 
 // add appends a metadata node and returns its id.
-func (d *debugInfo) add(text string) int {
+func (d *debugMetadata) add(text string) int {
 	d.debugMeta = append(d.debugMeta, text)
 	return len(d.debugMeta)
 }
 
-func (d *debugInfo) file(image *ir.Image, index uint32) int {
+func (d *debugMetadata) file(image *ir.Image, index uint32) int {
 	if id, found := d.debugFiles[index]; found {
 		return id
 	}
@@ -52,7 +52,7 @@ func (d *debugInfo) file(image *ir.Image, index uint32) int {
 }
 
 // location returns the location of line in the current subprogram.
-func (d *debugInfo) location(line uint32) int {
+func (d *debugMetadata) location(line uint32) int {
 	key := [2]uint32{uint32(d.debugSubprogram), line}
 	if id, found := d.debugLocations[key]; found {
 		return id
@@ -64,7 +64,7 @@ func (d *debugInfo) location(line uint32) int {
 
 // typeOf returns the type of a variable, a basic type for a scalar and a
 // byte array named by its type name for any other.
-func (d *debugInfo) typeOf(code types.Code, name string, size uint32) int {
+func (d *debugMetadata) typeOf(code types.Code, name string, size uint32) int {
 	key := fmt.Sprintf("%d %s %d", code, name, size)
 	if id, found := d.debugTypes[key]; found {
 		return id

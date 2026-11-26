@@ -53,7 +53,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		}
 
 		// if operator is jmp, add then and else lines
-		if IsJumpOperator(op.AtomicOPCode) {
+		if OpcodeOperatorJump(op.AtomicOPCode) {
 			lineNumOptions := numExprs - len(prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx).Expressions)
 			if lineNumOptions < 0 {
 				lineNumOptions = (lineNumOptions * -1) - 2
@@ -89,7 +89,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 	fn.LineCount = len(fn.Expressions)
 }
 
-func IsJumpOperator(opCode int) bool {
+func OpcodeOperatorJump(opCode int) bool {
 	switch opCode {
 	case cxconstants.OP_JMP,
 		cxconstants.OP_ABS_JMP,

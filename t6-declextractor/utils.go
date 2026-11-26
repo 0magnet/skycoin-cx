@@ -8,25 +8,25 @@ import (
 )
 
 // Modified ScanLines to include "\r\n" or "\n" in line
-func scanLinesWithLineTerminator(data []byte, atEOF bool) (advance int, token []byte, err error) {
-	if atEOF && len(data) == 0 {
+func scanLinesWithLineTerminator(buffer []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(buffer) == 0 {
 		return 0, nil, nil
 	}
-	if i := bytes.IndexAny(data, "\r\n"); i >= 0 {
+	if i := bytes.IndexAny(buffer, "\r\n"); i >= 0 {
 		advance = i + 1 // i + 1 includes the line termninator
-		if data[i] == '\n' {
+		if buffer[i] == '\n' {
 			// We have a line terminated by single newline.
-			return advance, data[0:advance], nil
+			return advance, buffer[0:advance], nil
 		}
 
-		if len(data) > i+1 && data[i+1] == '\n' {
+		if len(buffer) > i+1 && buffer[i+1] == '\n' {
 			advance += 1
 		}
-		return advance, data[0:advance], nil
+		return advance, buffer[0:advance], nil
 	}
 	// If we're at EOF, we have a final, non-terminated line. Return it.
 	if atEOF {
-		return len(data), data, nil
+		return len(buffer), buffer, nil
 	}
 	// Request more data.
 	return 0, nil, nil

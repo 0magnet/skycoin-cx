@@ -65,32 +65,32 @@ func ParseDeclarationSpecifier(prgrm *ast.CXProgram, declarationSpecifierByte []
 		wordsIdx := reWords.FindAllIndex(declarationSpecifierByte, -1)
 		newLastIdx := wordsIdx[len(wordsIdx)-1][0]
 
-		dataType := words[len(words)-1]
-		splitDataType := bytes.Split(dataType, []byte("."))
+		typeWord := words[len(words)-1]
+		typeWordParts := bytes.Split(typeWord, []byte("."))
 
 		newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
 
-		if len(splitDataType) == 1 {
+		if len(typeWordParts) == 1 {
 
 			// Types like i32, str, aff, etc...
-			if val, ok := TypesMap[string(splitDataType[0])]; ok {
+			if val, ok := TypesMap[string(typeWordParts[0])]; ok {
 				newDeclarationSpecifierArg := actions.DeclarationSpecifiersBasic(prgrm, val)
 				return ParseDeclarationSpecifier(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 			}
 
 			// Structs
-			newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(splitDataType[0]), "", false, fileName, lineno, 0)
+			newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(typeWordParts[0]), "", false, fileName, lineno, 0)
 			return ParseDeclarationSpecifier(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 		}
 
 		// External types
-		if val, ok := TypesMap[string(splitDataType[0])]; ok {
-			newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(splitDataType[1]), val.Name(), true, fileName, lineno, 0)
+		if val, ok := TypesMap[string(typeWordParts[0])]; ok {
+			newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(typeWordParts[1]), val.Name(), true, fileName, lineno, 0)
 			return ParseDeclarationSpecifier(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 		}
 
 		// External structs
-		newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(splitDataType[1]), string(splitDataType[0]), true, fileName, lineno, 0)
+		newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(typeWordParts[1]), string(typeWordParts[0]), true, fileName, lineno, 0)
 		return ParseDeclarationSpecifier(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 	}
 

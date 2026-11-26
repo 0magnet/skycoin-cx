@@ -13,7 +13,7 @@ func Tokenize(r io.Reader, w io.Writer, lines []string, sourceFileName string) {
 	lex := NewLexer(r)
 	var token int = 1
 	var line, newLine int
-	var tmpOutput, packageName, funcName string
+	var lineTokens, packageName, funcName string
 	var printLine, parseFunc, parsePackage bool
 
 	for token > 0 {
@@ -42,18 +42,18 @@ func Tokenize(r io.Reader, w io.Writer, lines []string, sourceFileName string) {
 			parsePackage = true
 		}
 
-		if TokenName(token) == "SCOLON" || (newLine > line && printLine && tmpOutput != "") {
+		if TokenName(token) == "SCOLON" || (newLine > line && printLine && lineTokens != "") {
 			fmt.Fprintf(w, "#file: %s, line: %d\n", sourceFileName, newLine)
 			fmt.Fprintf(w, "#package: %s, #function: %s\n", packageName, funcName)
 			fmt.Fprintln(w, "#expression:", strings.TrimSpace(lines[newLine-1]))
-			fmt.Fprintln(w, strings.TrimSpace(tmpOutput))
+			fmt.Fprintln(w, strings.TrimSpace(lineTokens))
 			fmt.Fprintln(w, TokenName(token), TokenValue(token, &sym))
 
-			tmpOutput = ""
+			lineTokens = ""
 			line = newLine
 			printLine = false
 		} else {
-			tmpOutput += fmt.Sprintln(TokenName(token), TokenValue(token, &sym))
+			lineTokens += fmt.Sprintln(TokenName(token), TokenValue(token, &sym))
 		}
 	}
 }

@@ -50,9 +50,9 @@ func cipherBytesView(prgrm *ast.CXProgram, value *ast.CXValue) []byte {
 // a view of program memory, which the allocation may move.
 // GCREACH: allocates the output byte slice, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
-func cipherBytesOutput(prgrm *ast.CXProgram, output *ast.CXValue, data []byte) {
-	slice := ast.SliceResizeEx(prgrm, 0, types.Cast_int_to_ptr(len(data)), 1)
-	copy(ast.SliceElementsGet(prgrm, slice, 1), data)
+func cipherBytesOutput(prgrm *ast.CXProgram, output *ast.CXValue, content []byte) {
+	slice := ast.SliceResizeEx(prgrm, 0, types.Cast_int_to_ptr(len(content)), 1)
+	copy(ast.SliceElementsGet(prgrm, slice, 1), content)
 	output.Set_ptr(prgrm, slice)
 }
 
@@ -165,10 +165,10 @@ func OpCipherKeyPairGenerate(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs
 // the nil slice otherwise.
 // GCREACH: allocates the output byte slice through cipherBytesOutput, see
 // docs/GarbageCollector.md.
-func cipherSliceOutput(prgrm *ast.CXProgram, output *ast.CXValue, data []byte, written bool) {
+func cipherSliceOutput(prgrm *ast.CXProgram, output *ast.CXValue, content []byte, written bool) {
 	if !written {
 		output.Set_ptr(prgrm, 0)
 		return
 	}
-	cipherBytesOutput(prgrm, output, data)
+	cipherBytesOutput(prgrm, output, content)
 }

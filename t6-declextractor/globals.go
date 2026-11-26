@@ -80,19 +80,19 @@ func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error)
 
 			if inBlock == 0 {
 
-				var tmp GlobalDeclaration
+				var globalDeclaration GlobalDeclaration
 
-				tmp.PackageID = pkg
-				tmp.FileID = fileName
+				globalDeclaration.PackageID = pkg
+				globalDeclaration.FileID = fileName
 
-				tmp.StartOffset = matchGlobalIdx[0] + currentOffset // offset is match index + current line offset
-				tmp.Length = matchGlobalIdx[1] - matchGlobalIdx[0]
-				tmp.LineNumber = lineno
+				globalDeclaration.StartOffset = matchGlobalIdx[0] + currentOffset // offset is match index + current line offset
+				globalDeclaration.Length = matchGlobalIdx[1] - matchGlobalIdx[0]
+				globalDeclaration.LineNumber = lineno
 
 				// gets the name directly with submatch index + current line offset
-				tmp.GlobalVariableName = string(matchGlobal[1])
+				globalDeclaration.GlobalVariableName = string(matchGlobal[1])
 
-				GlobalDeclarationsArray = append(GlobalDeclarationsArray, tmp)
+				GlobalDeclarationsArray = append(GlobalDeclarationsArray, globalDeclaration)
 			}
 
 		}
