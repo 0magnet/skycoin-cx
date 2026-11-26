@@ -93,7 +93,7 @@ func IterationExpressions(prgrm *ast.CXProgram,
 			list := &prgrm.CxIrState.CompileErrorList
 			prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeLoopConditionNoValue, list.CompileErrorListTokenFile, list.CompileErrorListTokenLine, list.CompileErrorListTokenColumn, ast.CompileErrorOperands{})
 			// The condition reads a placeholder, so it reports nothing more.
-			lastCondExpressionOperatorOutputs = []ast.CXTypeSignatureIndex{invalidPlaceholderTypeSig(prgrm, ast.CXPackageIndex(pkg.Index))}
+			lastCondExpressionOperatorOutputs = []ast.CXTypeSignatureIndex{invalidPlaceholderTypeSignature(prgrm, ast.CXPackageIndex(pkg.Index))}
 		}
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0614.
@@ -1264,9 +1264,9 @@ func unaryOperatorOnValue(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExp
 	return append(operand, *expr), true
 }
 
-// invalidPlaceholderTypeSig returns a temporary of types.INVALID, the value
+// invalidPlaceholderTypeSignature returns a temporary of types.INVALID, the value
 // of an expression whose compile error is recorded.
-func invalidPlaceholderTypeSig(prgrm *ast.CXProgram, pkgIdx ast.CXPackageIndex) ast.CXTypeSignatureIndex {
+func invalidPlaceholderTypeSignature(prgrm *ast.CXProgram, pkgIdx ast.CXPackageIndex) ast.CXTypeSignatureIndex {
 	_, placeholder := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LocalPrefix), CurrentFile, LineNo)
 	placeholder.TypeSet(types.INVALID)
 	placeholder.Package = pkgIdx

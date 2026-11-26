@@ -116,7 +116,7 @@ func (c *GoCollector) GenDeclNames(declaration *ast.GenDecl, parent string) {
 			value := spec.(*ast.ValueSpec)
 			if value.Type != nil || len(value.Values) > 0 {
 				inheritedType = value.Type
-				inheritedIota = ExprUsesIota(value.Values)
+				inheritedIota = ExpressionUsesIota(value.Values)
 			}
 			kind := "constant"
 			if typeIdent, local := inheritedType.(*ast.Ident); local && types.Universe.Lookup(typeIdent.Name) == nil {
@@ -170,12 +170,12 @@ func (c *GoCollector) TypeSpecNames(spec *ast.TypeSpec, parent string) {
 		owner = parent + "." + owner
 	}
 	c.FieldListNames(spec.TypeParams, "type_parameter", owner)
-	c.TypeExprNames(spec.Type, owner, topLevel)
+	c.TypeExpressionNames(spec.Type, owner, topLevel)
 }
 
-// TypeExprNames records the fields and methods of struct and interface
+// TypeExpressionNames records the fields and methods of struct and interface
 // types, including anonymous ones nested in other types.
-func (c *GoCollector) TypeExprNames(expression ast.Expr, owner string, exported bool) {
+func (c *GoCollector) TypeExpressionNames(expression ast.Expr, owner string, exported bool) {
 	ast.Inspect(expression, func(node ast.Node) bool {
 		switch typed := node.(type) {
 		case *ast.StructType:
@@ -189,7 +189,7 @@ func (c *GoCollector) TypeExprNames(expression ast.Expr, owner string, exported 
 				}
 				for _, name := range field.Names {
 					c.Add(name, kind, owner, exported)
-					c.TypeExprNames(field.Type, owner+"."+name.Name, exported)
+					c.TypeExpressionNames(field.Type, owner+"."+name.Name, exported)
 				}
 			}
 			return false
@@ -350,8 +350,8 @@ func FuncTyped(expression ast.Expr) bool {
 	return false
 }
 
-// ExprUsesIota reports whether any of the expressions mentions iota.
-func ExprUsesIota(expressions []ast.Expr) bool {
+// ExpressionUsesIota reports whether any of the expressions mentions iota.
+func ExpressionUsesIota(expressions []ast.Expr) bool {
 	found := false
 	for _, expression := range expressions {
 		ast.Inspect(expression, func(node ast.Node) bool {

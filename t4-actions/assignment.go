@@ -424,7 +424,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 		} else if t, ok := shortDeclarationPointerType(prgrm, fromExpressionOutputTypeSig); ok && fromExpressionOutputTypeSig.PassBy == constants.PassByReference {
 			// x := &p of a pointer p is a pointer to a pointer.
 			_, sym = ast.ArgumentMake(prgrm, toExpressionOutputTypeSig.Name, CurrentFile, LineNo)
-			sym.Type, sym.PointerTargetType, sym.Size, sym.StructType = t.typ, t.pointerTargetType, t.size, t.structType
+			sym.Type, sym.PointerTargetType, sym.Size, sym.StructType = t.typeCode, t.pointerTargetType, t.size, t.structType
 			sym.DeclarationSpecifiers, sym.Lengths = t.specs, t.lengths
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true

@@ -25,7 +25,7 @@ import (
 // read a field of the object, OBJ and VALUE stand for the object and an int,
 // so the tests can tell objects apart.
 type objmodelgenObject struct {
-	Obj       string
+	Object    string
 	TypeTag   int
 	MarkerSet string
 	MarkerGet string
@@ -80,8 +80,8 @@ var objmodelgenStrhotCodes = map[string]string{
 // but a hand written manager, such as the string pool and the source files
 // of #413.
 var objmodelgenTagOnlyObjects = []objmodelgenObject{
-	{Obj: "String", TypeTag: 0x0F},
-	{Obj: "SourceFile", TypeTag: 0x10},
+	{Object: "String", TypeTag: 0x0F},
+	{Object: "SourceFile", TypeTag: 0x10},
 }
 
 // objmodelgenHeader starts every generated file, and -check finds stale
@@ -99,11 +99,11 @@ func objmodelgenRender(tmpl *template.Template, name string, object objmodelgenO
 		other = 0x02
 	}
 	templateFields := map[string]any{
-		"Obj":        object.Obj,
+		"Object":     object.Object,
 		"TypeTag":    fmt.Sprintf("0x%02X", object.TypeTag),
 		"OtherTag":   fmt.Sprintf("0x%02X", other),
-		"StrhotInit": objmodelgenStrhotCodes[object.Obj+"MngInit"],
-		"StrhotGet":  objmodelgenStrhotCodes[object.Obj+"Get"],
+		"StrhotInit": objmodelgenStrhotCodes[object.Object+"MngInit"],
+		"StrhotGet":  objmodelgenStrhotCodes[object.Object+"Get"],
 		"Set": func(target string, value string) string {
 			return strings.NewReplacer("OBJ", target, "VALUE", value).Replace(object.MarkerSet)
 		},
@@ -118,7 +118,7 @@ func objmodelgenRender(tmpl *template.Template, name string, object objmodelgenO
 	}
 	src, err := format.Source(buf.Bytes())
 	if err != nil {
-		return nil, fmt.Errorf("%s %s: %w\n%s", object.Obj, name, err, buf.Bytes())
+		return nil, fmt.Errorf("%s %s: %w\n%s", object.Object, name, err, buf.Bytes())
 	}
 	return src, nil
 }
@@ -142,17 +142,17 @@ func objmodelgenFiles(dir string, objmodelDir string) (map[string][]byte, error)
 	files := map[string][]byte{}
 	tags := map[int]string{}
 	for _, object := range objmodelgenTagOnlyObjects {
-		tags[object.TypeTag] = object.Obj
+		tags[object.TypeTag] = object.Object
 	}
 	for _, object := range objmodelgenObjects {
 		if object.TypeTag < 0x01 || object.TypeTag > 0x7F {
-			return nil, fmt.Errorf("%s: type tag %#x outside 0x01 to 0x7F", object.Obj, object.TypeTag)
+			return nil, fmt.Errorf("%s: type tag %#x outside 0x01 to 0x7F", object.Object, object.TypeTag)
 		}
 		if previous, ok := tags[object.TypeTag]; ok {
-			return nil, fmt.Errorf("%s and %s share type tag %#x", previous, object.Obj, object.TypeTag)
+			return nil, fmt.Errorf("%s and %s share type tag %#x", previous, object.Object, object.TypeTag)
 		}
-		tags[object.TypeTag] = object.Obj
-		base := objmodelgenFileName(object.Obj)
+		tags[object.TypeTag] = object.Object
+		base := objmodelgenFileName(object.Object)
 		for suffix, name := range map[string]string{"_gid.go": "gid", "_mng.go": "mng", "_mng_test.go": "test"} {
 			src, err := objmodelgenRender(tmpl, name, object)
 			if err != nil {

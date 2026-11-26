@@ -9,7 +9,7 @@ import (
 )
 
 func globalInitializerResolve(prgrm *ast.CXProgram, initializer []ast.CXExpression, glblIdx ast.CXTypeSignatureIndex) {
-	start := len(prgrm.SysInitExprs)
+	start := len(prgrm.SysInitExpressions)
 	glbl := prgrm.CXTypeSignatureFromArrayGet(glblIdx)
 	defer prgrm.CXProgramGlobalInitializerAdd(prgrm.CurrentPackage, glbl.Name, start)
 	initializerExpressionIdx := initializer[len(initializer)-1].Index
@@ -26,7 +26,7 @@ func globalInitializerResolve(prgrm *ast.CXProgram, initializer []ast.CXExpressi
 		prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
 
 		//add intialization statements, to array
-		prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
+		prgrm.SysInitExpressions = append(prgrm.SysInitExpressions, initializer...)
 	} else {
 		// then it's an expression
 		if initializer[len(initializer)-1].TypeStructLiteral() {
@@ -54,7 +54,7 @@ func globalInitializerResolve(prgrm *ast.CXProgram, initializer []ast.CXExpressi
 		}
 
 		//add intialization statements, to array
-		prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
+		prgrm.SysInitExpressions = append(prgrm.SysInitExpressions, initializer...)
 	}
 }
 
@@ -637,12 +637,12 @@ func globalsDeclareResults(prgrm *ast.CXProgram, names []*ast.CXArgument, spec *
 		prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeAssignmentCount, file, line, column, ast.CompileErrorOperands{int64(len(names)), int64(results)})
 		return
 	}
-	start := len(prgrm.SysInitExprs)
+	start := len(prgrm.SysInitExpressions)
 	call.Outputs = nil
 	for _, glblIdx := range globalIdxs {
 		call.OutputAdd(prgrm, glblIdx)
 	}
-	prgrm.SysInitExprs = append(prgrm.SysInitExprs, value...)
+	prgrm.SysInitExpressions = append(prgrm.SysInitExpressions, value...)
 	prgrm.CXProgramGlobalInitializerAdd(prgrm.CurrentPackage, names[0].Name, start, others...)
 	for _, name := range names {
 		prgrm.CXArgBuilderRelease(name)

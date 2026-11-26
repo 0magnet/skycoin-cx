@@ -488,7 +488,7 @@ type globalsInitializerReference struct {
 }
 
 // globalsInitializersOrder orders the initializers of the globals of each
-// package in SysInitExprs as Go does
+// package in SysInitExpressions as Go does
 // (https://go.dev/ref/spec#Package_initialization). A global comes after the
 // globals its initializer refers to, directly or through the functions it
 // calls, and the globals that are ready keep their order. A cycle of
@@ -497,7 +497,7 @@ type globalsInitializerReference struct {
 func globalsInitializersOrder(prgrm *ast.CXProgram) {
 	initializers := prgrm.CxIrState.CxIrStateGlobalInitializers
 	prgrm.CxIrState.CxIrStateGlobalInitializers = nil
-	ordered := make([]ast.CXExpression, 0, len(prgrm.SysInitExprs))
+	ordered := make([]ast.CXExpression, 0, len(prgrm.SysInitExpressions))
 	next := 0
 	functions := map[ast.CXFunctionGid][]globalsInitializerReference{}
 	for start := 0; start < len(initializers); {
@@ -506,14 +506,14 @@ func globalsInitializersOrder(prgrm *ast.CXProgram) {
 			end++
 		}
 		run := initializers[start:end]
-		ordered = append(ordered, prgrm.SysInitExprs[next:run[0].GlobalInitializerStart]...)
+		ordered = append(ordered, prgrm.SysInitExpressions[next:run[0].GlobalInitializerStart]...)
 		for _, index := range globalsInitializersRunOrder(prgrm, run, functions) {
-			ordered = append(ordered, prgrm.SysInitExprs[run[index].GlobalInitializerStart:run[index].GlobalInitializerEnd]...)
+			ordered = append(ordered, prgrm.SysInitExpressions[run[index].GlobalInitializerStart:run[index].GlobalInitializerEnd]...)
 		}
 		next = run[len(run)-1].GlobalInitializerEnd
 		start = end
 	}
-	prgrm.SysInitExprs = append(ordered, prgrm.SysInitExprs[next:]...)
+	prgrm.SysInitExpressions = append(ordered, prgrm.SysInitExpressions[next:]...)
 }
 
 // globalsInitializersRunOrder returns the order of the initializers of run,
@@ -532,7 +532,7 @@ func globalsInitializersRunOrder(prgrm *ast.CXProgram, run []ast.GlobalInitializ
 	}
 	dependencies := make([][]globalsInitializerReference, len(run))
 	for i, initializer := range run {
-		for _, reference := range globalsInitializerReferences(prgrm, pkg, prgrm.SysInitExprs[initializer.GlobalInitializerStart:initializer.GlobalInitializerEnd], functions) {
+		for _, reference := range globalsInitializerReferences(prgrm, pkg, prgrm.SysInitExpressions[initializer.GlobalInitializerStart:initializer.GlobalInitializerEnd], functions) {
 			if _, found := byName[reference.globalsInitializerReferenceName]; found {
 				dependencies[i] = append(dependencies[i], reference)
 			}
@@ -800,7 +800,7 @@ func globalsRecordNames(record ast.CompileErrorRecord, names ...stringpool.Strin
 // of the initializers, as box.Area() in var area = box.Area(), locals of the
 // init function fn. Pass two made them locals of the function it was in.
 func globalsMethodResultsDeclare(prgrm *ast.CXProgram, fn *ast.CXFunction) {
-	for _, expr := range prgrm.SysInitExprs {
+	for _, expr := range prgrm.SysInitExpressions {
 		if !expr.TypeMethodCall() {
 			continue
 		}

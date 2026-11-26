@@ -76,7 +76,7 @@ func (s *state) printf(code []ir.Instr, inputs []ast.CXTypeSignatureIndex, outpu
 
 // printfFormat returns the bytes of a str literal in the data segment.
 func (s *state) printfFormat(signatureIndex ast.CXTypeSignatureIndex) ([]byte, ReasonCode) {
-	prgrm := s.statePrgrm
+	prgrm := s.stateProgram
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	name := signature.Name
 	if signature.Type == ast.TypeCXArgumentDeprecate {
@@ -149,8 +149,8 @@ func (s *state) printfSteps(format []byte, inputs []ast.CXTypeSignatureIndex) ([
 		text([]byte("%!(EXTRA "))
 		extra := inputs[specifiers+1:]
 		for c, signatureIndex := range extra {
-			signature := s.statePrgrm.CXTypeSignatureFromArrayGet(signatureIndex)
-			text([]byte(signature.ValueTypeNameGet(s.statePrgrm) + "="))
+			signature := s.stateProgram.CXTypeSignatureFromArrayGet(signatureIndex)
+			text([]byte(signature.ValueTypeNameGet(s.stateProgram) + "="))
 			step, _, reason := s.printfVerb('v', signatureIndex)
 			if reason != ReasonNone {
 				return nil, reason
@@ -218,11 +218,11 @@ func (s *state) printfVerb(verb byte, signatureIndex ast.CXTypeSignatureIndex) (
 
 // printfType is the CXValue.Type builtInOperatorRun gives an input.
 func (s *state) printfType(signatureIndex ast.CXTypeSignatureIndex) types.Code {
-	signature := s.statePrgrm.CXTypeSignatureFromArrayGet(signatureIndex)
+	signature := s.stateProgram.CXTypeSignatureFromArrayGet(signatureIndex)
 	if signature.Type != ast.TypeCXArgumentDeprecate {
-		return signature.TypeGet(s.statePrgrm)
+		return signature.TypeGet(s.stateProgram)
 	}
-	arg := s.statePrgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta))
+	arg := s.stateProgram.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta))
 	if arg.Type == types.POINTER {
 		return arg.PointerTargetType
 	}
@@ -233,7 +233,7 @@ func (s *state) printfType(signatureIndex ast.CXTypeSignatureIndex) types.Code {
 // appendAtomic, the only case of %v the machine prints. Whole arrays and
 // structs, pointers and addresses stay outside.
 func (s *state) printfPrintableType(signatureIndex ast.CXTypeSignatureIndex) (types.Code, ReasonCode) {
-	prgrm := s.statePrgrm
+	prgrm := s.stateProgram
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	var typ types.Code
 	switch signature.Type {

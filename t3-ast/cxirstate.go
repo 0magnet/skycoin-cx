@@ -43,7 +43,7 @@ type CxIrState struct {
 	// CxIrStateGlobalsDeferred holds the globals whose type pass one cannot
 	// read, until the inference pass types them.
 	CxIrStateGlobalsDeferred []GlobalDeferred
-	// CxIrStateGlobalInitializers holds the run of SysInitExprs of each global.
+	// CxIrStateGlobalInitializers holds the run of SysInitExpressions of each global.
 	CxIrStateGlobalInitializers []GlobalInitializer
 	// CxIrStateAffordanceLiterals holds the aff literals whose value is written
 	// once every function body is compiled. It is not serialized.

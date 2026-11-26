@@ -21,7 +21,7 @@ type escapeKey struct {
 
 // escapeState is the analysis of one function.
 type escapeState struct {
-	escapeStatePrgrm *ast.CXProgram
+	escapeStateProgram *ast.CXProgram
 	// escapeStateLocals are the declaration specifiers of each local and
 	// input, inner type first.
 	escapeStateLocals map[stringpool.StringGid][]int
@@ -51,7 +51,7 @@ type escapeParam struct {
 // escapes, and where each input may keep the address it holds.
 func escapeAnalyze(prgrm *ast.CXProgram, params []escapeParam, results []*ast.CXArgument, exprs []ast.CXExpression) (map[stringpool.StringGid]bool, []ast.CXFunctionEscape) {
 	state := &escapeState{
-		escapeStatePrgrm:    prgrm,
+		escapeStateProgram:  prgrm,
 		escapeStateLocals:   map[stringpool.StringGid][]int{},
 		escapeStateStructs:  map[stringpool.StringGid]*ast.CXStruct{},
 		escapeStateResults:  map[stringpool.StringGid]bool{},
@@ -151,7 +151,7 @@ func escapeAtomicOp(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXAtomicO
 
 // escapeExpression follows the addresses one expression moves.
 func (state *escapeState) escapeExpression(expr *ast.CXExpression) {
-	prgrm := state.escapeStatePrgrm
+	prgrm := state.escapeStateProgram
 	op := escapeAtomicOp(prgrm, expr)
 	if op == nil {
 		return
@@ -196,7 +196,7 @@ func escapeOpcodeStores(opcode int) bool {
 // escapeMethodCall follows the receiver and arguments of a method call. A
 // value receiver of a method on a pointer gives its address.
 func (state *escapeState) escapeMethodCall(inputs, outputs []ast.CXTypeSignatureIndex) {
-	prgrm := state.escapeStatePrgrm
+	prgrm := state.escapeStateProgram
 	method := state.escapeMethod(inputs[0])
 	receiver := state.escapeSources(inputs[0])
 	if method == nil {
@@ -223,7 +223,7 @@ func (state *escapeState) escapeMethodCall(inputs, outputs []ast.CXTypeSignature
 // escapeMethod returns the method a receiver argument names, or nil when the
 // receiver is not a local struct this analysis can type.
 func (state *escapeState) escapeMethod(receiverIdx ast.CXTypeSignatureIndex) *ast.CXFunction {
-	prgrm := state.escapeStatePrgrm
+	prgrm := state.escapeStateProgram
 	sig := prgrm.CXTypeSignatureFromArrayGet(receiverIdx)
 	if sig.Type != ast.TypeCXArgumentDeprecate {
 		return nil
@@ -270,7 +270,7 @@ func (state *escapeState) escapeCallArgument(fn *ast.CXFunction, i int, sources 
 // escapeSources returns the locations whose address the value of an input
 // may be.
 func (state *escapeState) escapeSources(sigIdx ast.CXTypeSignatureIndex) map[escapeKey]bool {
-	prgrm := state.escapeStatePrgrm
+	prgrm := state.escapeStateProgram
 	sig := prgrm.CXTypeSignatureFromArrayGet(sigIdx)
 	if ast.CXTypeSignaturePassBy(prgrm, sig) == constants.PassByReference {
 		return state.escapeAddressSources(sigIdx)
@@ -301,7 +301,7 @@ func (state *escapeState) escapeSources(sigIdx ast.CXTypeSignatureIndex) map[esc
 // escapeAddressSources returns what an address of the input may point to,
 // the local, or what the local points to when the access goes through it.
 func (state *escapeState) escapeAddressSources(sigIdx ast.CXTypeSignatureIndex) map[escapeKey]bool {
-	prgrm := state.escapeStatePrgrm
+	prgrm := state.escapeStateProgram
 	sig := prgrm.CXTypeSignatureFromArrayGet(sigIdx)
 	name := StripNameNumber(prgrm, sig.Name)
 	specs, found := state.escapeStateLocals[name]
@@ -323,7 +323,7 @@ func (state *escapeState) escapeStore(outputIdx ast.CXTypeSignatureIndex, source
 	if len(sources) == 0 {
 		return
 	}
-	prgrm := state.escapeStatePrgrm
+	prgrm := state.escapeStateProgram
 	sig := prgrm.CXTypeSignatureFromArrayGet(outputIdx)
 	name := StripNameNumber(prgrm, sig.Name)
 	specs, found := state.escapeStateLocals[name]
@@ -609,7 +609,7 @@ func (state *escapeState) escapeStoreUnknown(outputs []ast.CXTypeSignatureIndex)
 // escapeStructLiteralTemporary reports whether sig reads the temporary of a
 // &T{...}, a *T that StructLiteralAssignment declares to hold the T itself.
 func (state *escapeState) escapeStructLiteralTemporary(name stringpool.StringGid, sig *ast.CXTypeSignature) bool {
-	prgrm := state.escapeStatePrgrm
+	prgrm := state.escapeStateProgram
 	specs := state.escapeStateLocals[name]
 	if !TemporaryVariable(prgrm, name) || state.escapeStateStructs[name] == nil || len(specs) == 0 || specs[len(specs)-1] != constants.DeclarationPointer {
 		return false

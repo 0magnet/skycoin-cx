@@ -10,7 +10,7 @@ type DereferenceStruct struct {
 	baseOffset    types.Pointer
 	sizeofElement types.Pointer
 	derefPointer  bool
-	idxCounter    int
+	indexCounter  int
 	// sliceIndexed is set once a slice index is applied.
 	sliceIndexed bool
 
@@ -439,31 +439,31 @@ func DereferenceSliceCalculate(prgrm *CXProgram, drfsStruct *DereferenceStruct) 
 	drfsStruct.finalOffset += constants.SliceHeaderSize
 
 	//TODO: delete
-	sizeToUse := DerefSizeGet(prgrm, drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, false) //TODO: is always arg.Size unless arg.StructType != nil
+	sizeToUse := DerefSizeGet(prgrm, drfsStruct.arg, drfsStruct.indexCounter, drfsStruct.derefPointer, false) //TODO: is always arg.Size unless arg.StructType != nil
 	drfsStruct.derefPointer = false
 
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0384.
-	indexOffset := finalOffsetCompute(prgrm, drfsStruct.fp, nil, prgrm.CXTypeSignatureFromArrayGet(drfsStruct.arg.Indexes[drfsStruct.idxCounter]), drfsStruct.fault)
+	indexOffset := finalOffsetCompute(prgrm, drfsStruct.fp, nil, prgrm.CXTypeSignatureFromArrayGet(drfsStruct.arg.Indexes[drfsStruct.indexCounter]), drfsStruct.fault)
 	indexValue := types.I32Read(prgrm.Memory, indexOffset)
 
 	drfsStruct.finalOffset += offsetIndexFromI32(indexValue, drfsStruct.fault) * sizeToUse // TODO:PTR Use ptr/PtrRead, array/slice indexing only works with i32.
 
 	offsetSliceIndexCheck(SliceIndexValid(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, sizeToUse), drfsStruct.fault)
 
-	drfsStruct.idxCounter++
+	drfsStruct.indexCounter++
 }
 
 func DereferenceArrayCalculate(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
-	if drfsStruct.fault != nil && drfsStruct.idxCounter >= len(drfsStruct.arg.Lengths) {
+	if drfsStruct.fault != nil && drfsStruct.indexCounter >= len(drfsStruct.arg.Lengths) {
 		*drfsStruct.fault = true
 		return
 	}
 	var subSize = types.Pointer(1)
 	elementSlice := false
-	lengths := drfsStruct.arg.Lengths[drfsStruct.idxCounter+1:]
-	if direct, behind := drfsStruct.arg.DirectDimensions(); behind && drfsStruct.idxCounter < direct {
-		lengths = drfsStruct.arg.Lengths[drfsStruct.idxCounter+1 : direct]
+	lengths := drfsStruct.arg.Lengths[drfsStruct.indexCounter+1:]
+	if direct, behind := drfsStruct.arg.DirectDimensions(); behind && drfsStruct.indexCounter < direct {
+		lengths = drfsStruct.arg.Lengths[drfsStruct.indexCounter+1 : direct]
 	}
 	for _, len := range lengths {
 		if len == 0 {
@@ -475,7 +475,7 @@ func DereferenceArrayCalculate(prgrm *CXProgram, drfsStruct *DereferenceStruct) 
 	}
 
 	//TODO: Delete
-	sizeToUse := DerefSizeGet(prgrm, drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, true) //TODO: is always arg.Size unless arg.StructType != nil
+	sizeToUse := DerefSizeGet(prgrm, drfsStruct.arg, drfsStruct.indexCounter, drfsStruct.derefPointer, true) //TODO: is always arg.Size unless arg.StructType != nil
 	if elementSlice {
 		sizeToUse = types.PointerSize
 	}
@@ -485,8 +485,8 @@ func DereferenceArrayCalculate(prgrm *CXProgram, drfsStruct *DereferenceStruct) 
 
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0385.
-	drfsStruct.finalOffset += offsetIndexFromI32(types.I32Read(prgrm.Memory, finalOffsetCompute(prgrm, drfsStruct.fp, nil, prgrm.CXTypeSignatureFromArrayGet(drfsStruct.arg.Indexes[drfsStruct.idxCounter]), drfsStruct.fault)), drfsStruct.fault) * drfsStruct.sizeofElement // TODO:PTR Use PtrRead
-	drfsStruct.idxCounter++
+	drfsStruct.finalOffset += offsetIndexFromI32(types.I32Read(prgrm.Memory, finalOffsetCompute(prgrm, drfsStruct.fp, nil, prgrm.CXTypeSignatureFromArrayGet(drfsStruct.arg.Indexes[drfsStruct.indexCounter]), drfsStruct.fault)), drfsStruct.fault) * drfsStruct.sizeofElement // TODO:PTR Use Read_ptr
+	drfsStruct.indexCounter++
 }
 
 func DereferencePointerCalculate(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
@@ -509,11 +509,11 @@ func DereferencesCalculate(prgrm *CXProgram, arg *CXArgument, finalOffset types.
 // for fault.
 func calculateDereferencesCompute(prgrm *CXProgram, arg *CXArgument, finalOffset types.Pointer, fp types.Pointer, fault *bool) types.Pointer {
 	drfsStruct := &DereferenceStruct{
-		idxCounter:  0,
-		arg:         arg,
-		finalOffset: finalOffset,
-		fp:          fp,
-		fault:       fault,
+		indexCounter: 0,
+		arg:          arg,
+		finalOffset:  finalOffset,
+		fp:           fp,
+		fault:        fault,
 	}
 
 	for _, op := range drfsStruct.arg.DereferenceOperations {

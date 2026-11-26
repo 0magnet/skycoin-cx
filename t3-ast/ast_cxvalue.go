@@ -10,7 +10,7 @@ type CXValue struct {
 	TypeSignature *CXTypeSignature // TODO:PTR remove Arg/TypeSignature
 	// OBJMODEL: CXExpressionGid, phase 5 #347.
 	// Now a pointer at rest, site S0334.
-	Expr         *CXExpression
+	Expression   *CXExpression
 	Type         types.Code
 	Offset       types.Pointer
 	Size         types.Pointer
