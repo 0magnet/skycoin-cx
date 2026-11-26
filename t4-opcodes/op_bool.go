@@ -9,32 +9,32 @@ import (
 )
 
 func OpBoolPrint(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	printFormattedLine(prgrm, strconv.AppendBool(formatBuffer(prgrm), inputs[0].Get_bool(prgrm)))
+	printFormattedLine(prgrm, strconv.AppendBool(formatBuffer(prgrm), inputs[0].BoolGet(prgrm)))
 }
 
 func OpBoolEqual(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_bool(prgrm) == inputs[1].Get_bool(prgrm)
-	outputs[0].Set_bool(prgrm, outV0)
+	outV0 := inputs[0].BoolGet(prgrm) == inputs[1].BoolGet(prgrm)
+	outputs[0].BoolSet(prgrm, outV0)
 }
 
 func OpBoolUnequal(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_bool(prgrm) != inputs[1].Get_bool(prgrm)
-	outputs[0].Set_bool(prgrm, outV0)
+	outV0 := inputs[0].BoolGet(prgrm) != inputs[1].BoolGet(prgrm)
+	outputs[0].BoolSet(prgrm, outV0)
 }
 
 func OpBoolNot(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := !inputs[0].Get_bool(prgrm)
-	outputs[0].Set_bool(prgrm, outV0)
+	outV0 := !inputs[0].BoolGet(prgrm)
+	outputs[0].BoolSet(prgrm, outV0)
 }
 
 func OpBoolAnd(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inpV0 := inputs[0].Get_bool(prgrm)
-	inpV1 := inputs[1].Get_bool(prgrm)
-	outputs[0].Set_bool(prgrm, inpV0 && inpV1)
+	inpV0 := inputs[0].BoolGet(prgrm)
+	inpV1 := inputs[1].BoolGet(prgrm)
+	outputs[0].BoolSet(prgrm, inpV0 && inpV1)
 }
 
 func OpBoolOr(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	inpV0 := inputs[0].Get_bool(prgrm)
-	inpV1 := inputs[1].Get_bool(prgrm)
-	outputs[0].Set_bool(prgrm, inpV0 || inpV1)
+	inpV0 := inputs[0].BoolGet(prgrm)
+	inpV1 := inputs[1].BoolGet(prgrm)
+	outputs[0].BoolSet(prgrm, inpV0 || inpV1)
 }

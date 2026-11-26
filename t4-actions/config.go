@@ -17,7 +17,7 @@ var LineNo int
 // VIOLATION: state outside State. Owner: t4-actions; moves to ParseMng in phase 2.
 var LineStr string
 
-// CXLineExpressionCurrentMake makes the CX_LINE marker of the line the parser
+// CXLineExpressionCurrentMake makes the CXOperationTypeLine marker of the line the parser
 // is at, interning its text.
 func CXLineExpressionCurrentMake(prgrm *ast.CXProgram) *ast.CXExpression {
 	return ast.CXLineExpressionMake(prgrm, CurrentFile, LineNo, prgrm.CXProgramNameIntern(LineStr))

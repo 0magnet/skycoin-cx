@@ -21,7 +21,7 @@ STRHOT-007 E open t3-ast/cxtypesignaturestruct_mng.go *CXTypeSignature_StructMng
 STRHOT-008 O removed t0-types/types_string.go AllocWrite_str_data not on the run path at dfcc46ab
 STRHOT-009 B removed t0-types/types_string.go Read_str_data deleted, only the affordance opcodes used it, D5 #500
 STRHOT-010 O removed t0-types/types_string.go Write_str not on the run path at dfcc46ab
-STRHOT-011 B open t0-types/types_string.go Read_str O fixed, boundary opcodes only
+STRHOT-011 B open t0-types/types_string.go StrRead O fixed, boundary opcodes only
 STRHOT-012 O removed t0-util/file.go CXOpenFile not on the run path at dfcc46ab
 STRHOT-013 O removed t0-util/file.go CXCreateFile not on the run path at dfcc46ab
 STRHOT-014 O removed t0-util/file.go CXReadFile not on the run path at dfcc46ab
@@ -37,10 +37,10 @@ STRHOT-023 O removed t3-ast/ast_cxprogram.go *CXProgram.NativeFunctionInArrayAdd
 STRHOT-024 O removed t3-ast/ast_cxprogram.go *CXProgram.PackageGet not on the run path at dfcc46ab
 STRHOT-025 O removed t3-ast/ast_cxprogram.go *CXProgram.FunctionGet not on the run path at dfcc46ab
 STRHOT-026 O removed t3-ast/ast_cxstruct.go *CXStruct.FieldGet not on the run path at dfcc46ab
-STRHOT-027 O removed t3-ast/ast_cxstruct.go *CXStruct.AddField_TypeSignature not on the run path at dfcc46ab
-STRHOT-028 O removed t3-ast/ast_cxstruct.go *CXStruct.AddField_Globals_CXAtomicOps not on the run path at dfcc46ab
-STRHOT-029 B open t3-ast/ast_cxvalue.go *CXValue.Get_str O fixed, boundary opcodes only
-STRHOT-030 B open t3-ast/ast_cxvalue.go *CXValue.Set_str O fixed, boundary opcodes only
+STRHOT-027 O removed t3-ast/ast_cxstruct.go *CXStruct.FieldTypeSignatureAdd not on the run path at dfcc46ab
+STRHOT-028 O removed t3-ast/ast_cxstruct.go *CXStruct.FieldGlobalsCXAtomicOpsAdd not on the run path at dfcc46ab
+STRHOT-029 B open t3-ast/ast_cxvalue.go *CXValue.StrGet O fixed, boundary opcodes only
+STRHOT-030 B open t3-ast/ast_cxvalue.go *CXValue.StrSet O fixed, boundary opcodes only
 STRHOT-031 O removed t3-ast/error.go CompilationError not on the run path at dfcc46ab
 STRHOT-032 O removed t3-ast/serialized_cx_program_skyencoder.go EncodeSerializedCXProgramToBuffer not on the run path at dfcc46ab
 STRHOT-033 O removed t3-ast/serialized_cx_program_skyencoder.go DecodeSerializedCXProgram not on the run path at dfcc46ab

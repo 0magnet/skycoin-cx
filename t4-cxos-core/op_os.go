@@ -9,6 +9,6 @@ import (
 )
 
 func OpOsExit(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	exitCode := inputs[0].Get_i32(prgrm)
+	exitCode := inputs[0].I32Get(prgrm)
 	os.Exit(int(exitCode))
 }

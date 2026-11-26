@@ -12,223 +12,223 @@ import (
 
 // The built-in str function returns the base 10 string representation of operand 1.
 func OpF32ToStr(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	formatted := strconv.AppendFloat(formatBuffer(prgrm), float64(inputs[0].Get_f32(prgrm)), 'f', -1, 32)
-	outputs[0].Set_str_bytes(prgrm, formatted)
+	formatted := strconv.AppendFloat(formatBuffer(prgrm), float64(inputs[0].F32Get(prgrm)), 'f', -1, 32)
+	outputs[0].StrBytesSet(prgrm, formatted)
 	formatBufferKeep(prgrm, formatted)
 }
 
 // The built-in i8 function returns operand 1 casted from type f32 to type i8.
 func OpF32ToI8(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := int8(inputs[0].Get_f32(prgrm))
-	outputs[0].Set_i8(prgrm, outV0)
+	outV0 := int8(inputs[0].F32Get(prgrm))
+	outputs[0].I8Set(prgrm, outV0)
 }
 
 // The built-in i16 function returns operand 1 casted from type f32 to type i16.
 func OpF32ToI16(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := int16(inputs[0].Get_f32(prgrm))
-	outputs[0].Set_i16(prgrm, outV0)
+	outV0 := int16(inputs[0].F32Get(prgrm))
+	outputs[0].I16Set(prgrm, outV0)
 }
 
 // The built-in i32 function return operand 1 casted from type f32 to type i32.
 func OpF32ToI32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := int32(inputs[0].Get_f32(prgrm))
-	outputs[0].Set_i32(prgrm, outV0)
+	outV0 := int32(inputs[0].F32Get(prgrm))
+	outputs[0].I32Set(prgrm, outV0)
 }
 
 // The built-in i64 function returns operand 1 casted from type f32 to type i64.
 func OpF32ToI64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := int64(inputs[0].Get_f32(prgrm))
-	outputs[0].Set_i64(prgrm, outV0)
+	outV0 := int64(inputs[0].F32Get(prgrm))
+	outputs[0].I64Set(prgrm, outV0)
 }
 
 // The built-in ui8 function returns operand 1 casted from type f32 to type ui8.
 func OpF32ToUI8(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := uint8(inputs[0].Get_f32(prgrm))
-	outputs[0].Set_ui8(prgrm, outV0)
+	outV0 := uint8(inputs[0].F32Get(prgrm))
+	outputs[0].UI8Set(prgrm, outV0)
 }
 
 // The built-in ui16 function returns the operand 1 casted from type f32 to type ui16.
 func OpF32ToUI16(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := uint16(inputs[0].Get_f32(prgrm))
-	outputs[0].Set_ui16(prgrm, outV0)
+	outV0 := uint16(inputs[0].F32Get(prgrm))
+	outputs[0].UI16Set(prgrm, outV0)
 }
 
 // The built-in ui32 function returns the operand 1 casted from type f32 to type ui32.
 func OpF32ToUI32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := uint32(inputs[0].Get_f32(prgrm))
-	outputs[0].Set_ui32(prgrm, outV0)
+	outV0 := uint32(inputs[0].F32Get(prgrm))
+	outputs[0].UI32Set(prgrm, outV0)
 }
 
 // The built-in ui64 function returns the operand 1 casted from type f32 to type ui64.
 func OpF32ToUI64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := uint64(inputs[0].Get_f32(prgrm))
-	outputs[0].Set_ui64(prgrm, outV0)
+	outV0 := uint64(inputs[0].F32Get(prgrm))
+	outputs[0].UI64Set(prgrm, outV0)
 }
 
 // The built-in f64 function returns operand 1 casted from type f32 to type f64.
 func OpF32ToF64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float64(inputs[0].Get_f32(prgrm))
-	outputs[0].Set_f64(prgrm, outV0)
+	outV0 := float64(inputs[0].F32Get(prgrm))
+	outputs[0].F64Set(prgrm, outV0)
 }
 
 // The built-in isnan function returns true if operand is nan value.
 func OpF32Isnan(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := math.IsNaN(float64(inputs[0].Get_f32(prgrm)))
-	outputs[0].Set_bool(prgrm, outV0)
+	outV0 := math.IsNaN(float64(inputs[0].F32Get(prgrm)))
+	outputs[0].BoolSet(prgrm, outV0)
 }
 
 // The print built-in function formats its arguments and prints them.
 func OpF32Print(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	printFormattedLine(prgrm, strconv.AppendFloat(formatBuffer(prgrm), float64(inputs[0].Get_f32(prgrm)), 'g', -1, 32))
+	printFormattedLine(prgrm, strconv.AppendFloat(formatBuffer(prgrm), float64(inputs[0].F32Get(prgrm)), 'g', -1, 32))
 }
 
 // The built-in add function returns the sum of the two operands.
 func OpF32Add(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_f32(prgrm) + inputs[1].Get_f32(prgrm)
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := inputs[0].F32Get(prgrm) + inputs[1].F32Get(prgrm)
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in sub function returns the difference between the two operands.
 func OpF32Sub(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_f32(prgrm) - inputs[1].Get_f32(prgrm)
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := inputs[0].F32Get(prgrm) - inputs[1].F32Get(prgrm)
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in neg function returns the opposite of operand 1.
 func OpF32Neg(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := -inputs[0].Get_f32(prgrm)
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := -inputs[0].F32Get(prgrm)
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in mul function returns the product of the two operands.
 func OpF32Mul(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_f32(prgrm) * inputs[1].Get_f32(prgrm)
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := inputs[0].F32Get(prgrm) * inputs[1].F32Get(prgrm)
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in div function returns the quotient between the two operands.
 func OpF32Div(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_f32(prgrm) / inputs[1].Get_f32(prgrm)
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := inputs[0].F32Get(prgrm) / inputs[1].F32Get(prgrm)
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in mod function return the floating-point remainder of operand 1 divided by operand 2.
 func OpF32Mod(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Mod(float64(inputs[0].Get_f32(prgrm)), float64(inputs[1].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Mod(float64(inputs[0].F32Get(prgrm)), float64(inputs[1].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in abs function returns the absolute value of the operand.
 func OpF32Abs(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Abs(float64(inputs[0].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Abs(float64(inputs[0].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in pow function returns x**n for n>0 otherwise 1.
 func OpF32Pow(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Pow(float64(inputs[0].Get_f32(prgrm)), float64(inputs[1].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Pow(float64(inputs[0].F32Get(prgrm)), float64(inputs[1].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in gt function returns true if operand 1 is greater than operand 2.
 func OpF32Gt(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_f32(prgrm) > inputs[1].Get_f32(prgrm)
-	outputs[0].Set_bool(prgrm, outV0)
+	outV0 := inputs[0].F32Get(prgrm) > inputs[1].F32Get(prgrm)
+	outputs[0].BoolSet(prgrm, outV0)
 }
 
 // The built-in gteq function returns true if the operand 1 is greater than or
 // equal to operand 2.
 func OpF32Gteq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_f32(prgrm) >= inputs[1].Get_f32(prgrm)
-	outputs[0].Set_bool(prgrm, outV0)
+	outV0 := inputs[0].F32Get(prgrm) >= inputs[1].F32Get(prgrm)
+	outputs[0].BoolSet(prgrm, outV0)
 }
 
 // The built-in lt function returns true if operand 1 is less than operand 2.
 func OpF32Lt(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_f32(prgrm) < inputs[1].Get_f32(prgrm)
-	outputs[0].Set_bool(prgrm, outV0)
+	outV0 := inputs[0].F32Get(prgrm) < inputs[1].F32Get(prgrm)
+	outputs[0].BoolSet(prgrm, outV0)
 }
 
 // The built-in lteq function returns true if operand 1 is less than or
 // equal to operand 2.
 func OpF32Lteq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_f32(prgrm) <= inputs[1].Get_f32(prgrm)
-	outputs[0].Set_bool(prgrm, outV0)
+	outV0 := inputs[0].F32Get(prgrm) <= inputs[1].F32Get(prgrm)
+	outputs[0].BoolSet(prgrm, outV0)
 }
 
 // The built-in eq function returns true if operand 1 is equal to operand 2.
 func OpF32Eq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_f32(prgrm) == inputs[1].Get_f32(prgrm)
-	outputs[0].Set_bool(prgrm, outV0)
+	outV0 := inputs[0].F32Get(prgrm) == inputs[1].F32Get(prgrm)
+	outputs[0].BoolSet(prgrm, outV0)
 }
 
 // The built-in uneq function returns true operand1 is different from operand 2.
 func OpF32Uneq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := inputs[0].Get_f32(prgrm) != inputs[1].Get_f32(prgrm)
-	outputs[0].Set_bool(prgrm, outV0)
+	outV0 := inputs[0].F32Get(prgrm) != inputs[1].F32Get(prgrm)
+	outputs[0].BoolSet(prgrm, outV0)
 }
 
 // The built-in rand function returns a pseudo-random number in [0.0,1.0) from the default Source
 func OpF32Rand(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_f32(prgrm, rand.Float32())
+	outputs[0].F32Set(prgrm, rand.Float32())
 }
 
 // The built-in acos function returns the arc cosine of the operand.
 func OpF32Acos(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Acos(float64(inputs[0].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Acos(float64(inputs[0].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in cos function returns the cosine of the operand.
 func OpF32Cos(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Cos(float64(inputs[0].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Cos(float64(inputs[0].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in asin function returns the arc sine of the operand.
 func OpF32Asin(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Asin(float64(inputs[0].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Asin(float64(inputs[0].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in sin function returns the sine of the operand.
 func OpF32Sin(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Sin(float64(inputs[0].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Sin(float64(inputs[0].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in sqrt function returns the square root of the operand.
 func OpF32Sqrt(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Sqrt(float64(inputs[0].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Sqrt(float64(inputs[0].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in log function returns the natural logarithm of the operand.
 func OpF32Log(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Log(float64(inputs[0].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Log(float64(inputs[0].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in log2 function returns the 2-logarithm of the operand.
 func OpF32Log2(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Log2(float64(inputs[0].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Log2(float64(inputs[0].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in log10 function returns the 10-logarithm of the operand.
 func OpF32Log10(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Log10(float64(inputs[0].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Log10(float64(inputs[0].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in max function returns the largest value of the two operands.
 func OpF32Max(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Max(float64(inputs[0].Get_f32(prgrm)), float64(inputs[1].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Max(float64(inputs[0].F32Get(prgrm)), float64(inputs[1].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }
 
 // The built-in min function returns the smallest value of the two operands.
 func OpF32Min(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outV0 := float32(math.Min(float64(inputs[0].Get_f32(prgrm)), float64(inputs[1].Get_f32(prgrm))))
-	outputs[0].Set_f32(prgrm, outV0)
+	outV0 := float32(math.Min(float64(inputs[0].F32Get(prgrm)), float64(inputs[1].F32Get(prgrm))))
+	outputs[0].F32Set(prgrm, outV0)
 }

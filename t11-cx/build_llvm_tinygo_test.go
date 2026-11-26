@@ -78,7 +78,7 @@ func TestBuildLlvmTinygo(t *testing.T) {
 		want := executionRecordProcess(t, executable, []string{"CX_TEST_RUN_MAIN=1"}, dir, "", "--executor=vm", source)
 		output := filepath.Join(dir, program.name)
 		build := executionRecordProcess(t, executable, []string{"CX_TEST_RUN_MAIN=1"}, dir, "", buildCommand, "--target="+buildTargetLlvm, "--llvm-linker="+buildLlvmLinkerTinygo, source, "-o", output)
-		if build.exitCode != types.CX_SUCCESS {
+		if build.exitCode != types.CXSuccess {
 			t.Fatalf("%s: cx build exit code %d, stderr %s", program.name, build.exitCode, build.stderr)
 		}
 		run := executionRecordProcess(t, output, nil, dir, "")

@@ -9,7 +9,7 @@ import (
 
 func OpIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var out1 *ast.CXArgument
-	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if outputs[0].TypeSignature.Type == ast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1302.
 		out1 = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
@@ -24,48 +24,48 @@ func OpIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		}
 
 		if ast.CXArgumentStringSlicePointer(elt) {
-			if ast.CXTypeSignaturePassBy(prgrm, inputs[0].TypeSignature) == constants.PASSBY_REFERENCE {
-				outputs[0].Set_ptr(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
+			if ast.CXTypeSignaturePassBy(prgrm, inputs[0].TypeSignature) == constants.PassByReference {
+				outputs[0].PtrSet(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
 			} else {
-				outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
+				outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
 			}
 		} else if ast.CXArgumentTakesAddress(prgrm, elt, inputs[0].TypeSignature) {
-			outputs[0].Set_ptr(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
+			outputs[0].PtrSet(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
 		} else {
 			// Pass by value
-			outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
+			outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
 		}
-	} else if outputs[0].TypeSignature.Type == ast.TYPE_ATOMIC {
-		if outputs[0].TypeSignature.PassBy == constants.PASSBY_REFERENCE {
-			outputs[0].Set_ptr(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
+	} else if outputs[0].TypeSignature.Type == ast.TypeAtomic {
+		if outputs[0].TypeSignature.PassBy == constants.PassByReference {
+			outputs[0].PtrSet(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
 		} else {
-			outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
+			outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
 		}
-	} else if outputs[0].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+	} else if outputs[0].TypeSignature.Type == ast.TypePointerAtomic {
 		if ast.CXTypeSignaturePointerValue(prgrm, inputs[0].TypeSignature) {
-			outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
+			outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
 		} else {
-			outputs[0].Set_ptr(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
+			outputs[0].PtrSet(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
 		}
-	} else if outputs[0].TypeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
-		outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
-	} else if outputs[0].TypeSignature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC || outputs[0].TypeSignature.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
-		if inputs[0].TypeSignature.PassBy == constants.PASSBY_REFERENCE {
-			outputs[0].Set_ptr(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
+	} else if outputs[0].TypeSignature.Type == ast.TypeArrayAtomic {
+		outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
+	} else if outputs[0].TypeSignature.Type == ast.TypePointerArrayAtomic || outputs[0].TypeSignature.Type == ast.TypePointerSliceAtomic {
+		if inputs[0].TypeSignature.PassBy == constants.PassByReference {
+			outputs[0].PtrSet(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
 		} else {
-			outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
+			outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
 		}
-	} else if outputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
-		if outputs[0].TypeSignature.PassBy == constants.PASSBY_REFERENCE {
-			outputs[0].Set_ptr(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
+	} else if outputs[0].TypeSignature.Type == ast.TypeSliceAtomic {
+		if outputs[0].TypeSignature.PassBy == constants.PassByReference {
+			outputs[0].PtrSet(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
 		} else {
-			outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
+			outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
 		}
-	} else if outputs[0].TypeSignature.Type == ast.TYPE_STRUCT || outputs[0].TypeSignature.Type == ast.TYPE_POINTER_STRUCT {
+	} else if outputs[0].TypeSignature.Type == ast.TypeStruct || outputs[0].TypeSignature.Type == ast.TypePointerStruct {
 		if ast.CXTypeSignatureStructTakesAddress(prgrm, outputs[0].TypeSignature, inputs[0].TypeSignature) {
-			outputs[0].Set_ptr(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
+			outputs[0].PtrSet(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
 		} else {
-			outputs[0].Set_bytes(prgrm, inputs[0].Get_bytes(prgrm))
+			outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
 		}
 	} else {
 		panic("type is not known")
@@ -97,7 +97,7 @@ func OpJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 		panic(err)
 	}
 
-	if inputs[0].Get_bool(prgrm) {
+	if inputs[0].BoolGet(prgrm) {
 		call.Line = call.Line + cxAtomicOp.ThenLines
 	} else {
 		call.Line = call.Line + cxAtomicOp.ElseLines
@@ -115,7 +115,7 @@ func OpAbsJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 		panic(err)
 	}
 
-	if inputs[0].Get_bool(prgrm) {
+	if inputs[0].BoolGet(prgrm) {
 		call.Line = cxAtomicOp.ThenLines
 	} else {
 		call.Line = cxAtomicOp.ElseLines
@@ -156,9 +156,9 @@ func OpNop(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 func OpPtrEq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_bool(prgrm, inputs[0].Get_ptr(prgrm) == inputs[1].Get_ptr(prgrm))
+	outputs[0].BoolSet(prgrm, inputs[0].PtrGet(prgrm) == inputs[1].PtrGet(prgrm))
 }
 
 func OpPtrUneq(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_bool(prgrm, inputs[0].Get_ptr(prgrm) != inputs[1].Get_ptr(prgrm))
+	outputs[0].BoolSet(prgrm, inputs[0].PtrGet(prgrm) != inputs[1].PtrGet(prgrm))
 }

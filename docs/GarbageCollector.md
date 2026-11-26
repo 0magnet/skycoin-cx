@@ -188,8 +188,8 @@ Lines are as of this document. Regenerate them with `./check-gcreach.sh -l`.
   the collector scratch between programs, :176 to :179 `SequenceAllocate` grows
   the heap and adds to it, :196 `StrAllocate`, :208 `StrAllocateAt`, :218
   `StrBytesAllocateAt`
-- t3-ast/ast_cxvalue.go:219 `CXValue.Set_str`, used by the system library
-  opcodes, :227 `Set_str_bytes` and :235 `Set_str_concat`, the path of every
+- t3-ast/ast_cxvalue.go:219 `CXValue.StrSet`, used by the system library
+  opcodes, :227 `StrBytesSet` and :235 `StrConcatSet`, the path of every
   other opcode that writes a str
 - t3-ast/mem_escape.go:57 `EscapedAllocate`, and its caller
   t3-ast/ast_cxcall.go:96 in `wipeDeclarationMemory`

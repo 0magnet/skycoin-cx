@@ -48,29 +48,29 @@ func eventLoop(a app.App) {
 					glctx, _ = e.DrawContext.(gl.Context)
 					cxfx.SetGLContext(glctx)
 					cxfx.SetGOApp(a)
-					cxfx.EventPush(cxfx.APP_START)
+					cxfx.EventPush(cxfx.AppStart)
 				case lifecycle.CrossOff:
-					cxfx.EventPush(cxfx.APP_STOP)
+					cxfx.EventPush(cxfx.AppStop)
 				}
 			case size.Event:
 				cxfx.FramebufferSizeEventPush(float64(e.WidthPx), float64(e.HeightPx))
 				cxfx.WindowSizeEventPush(float64(e.WidthPx), float64(e.HeightPx))
 			case paint.Event:
-				cxfx.EventPush(cxfx.APP_PAINT)
+				cxfx.EventPush(cxfx.AppPaint)
 				//if glctx == nil || e.External {
 				//	continue
 				//}
 			case touch.Event:
-				cxfxAction := cxfx.ACTION_RELEASE
+				cxfxAction := cxfx.ActionRelease
 				switch e.Type {
 				case touch.TypeBegin:
-					cxfxAction = cxfx.ACTION_PRESS
+					cxfxAction = cxfx.ActionPress
 				case touch.TypeMove:
-					cxfxAction = cxfx.ACTION_MOVE
+					cxfxAction = cxfx.ActionMove
 				case touch.TypeEnd:
-					cxfxAction = cxfx.ACTION_RELEASE
+					cxfxAction = cxfx.ActionRelease
 				}
-				cxfx.MouseEventPush(cxfx.APP_MOUSE, cxfxAction, int32(e.Sequence), int64(e.Sequence), 0, float64(e.X), float64(e.Y))
+				cxfx.MouseEventPush(cxfx.AppMouse, cxfxAction, int32(e.Sequence), int64(e.Sequence), 0, float64(e.X), float64(e.Y))
 			}
 		}
 	}()

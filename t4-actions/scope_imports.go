@@ -27,7 +27,7 @@ type importScopedShorthand struct {
 // importScopedShorthandKey is the expression of a shorthand.
 type importScopedShorthandKey struct {
 	index     int
-	operation ast.CXOPERATION_TYPE
+	operation ast.CXOperationType
 }
 
 // importScopedState holds the names of the function being parsed that hide

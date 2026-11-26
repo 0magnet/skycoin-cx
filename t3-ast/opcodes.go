@@ -29,15 +29,15 @@ var NativeFunctionHost func(prgrm *CXProgram, code int) *CXNativeFunction
 
 // OpcodeOperator reports whether opCode is an untyped operator.
 func OpcodeOperator(opCode int) bool {
-	return opCode > constants.START_OF_OPERATORS && opCode < constants.END_OF_OPERATORS
+	return opCode > constants.StartOfOperators && opCode < constants.EndOfOperators
 }
 
 func OpcodeOperatorArithmetic(opCode int) bool {
-	return opCode > constants.START_OF_ARITHMETIC_OPERATORS && opCode < constants.END_OF_ARITHMETIC_OPERATORS
+	return opCode > constants.StartOfArithmeticOperators && opCode < constants.EndOfArithmeticOperators
 }
 
 func OpcodeOperatorComparison(opCode int) bool {
-	return opCode > constants.START_OF_COMPARISON_OPERATORS && opCode < constants.END_OF_COMPARISON_OPERATORS
+	return opCode > constants.StartOfComparisonOperators && opCode < constants.EndOfComparisonOperators
 }
 
 // NativeFunctionOf returns the built-in function code names, an opcode
@@ -57,7 +57,7 @@ func NativeFunctionOf(prgrm *CXProgram, code int) *CXNativeFunction {
 		// OBJMODEL: state.CXNativeFunctionMng.CXNativeFunctionAlloc(), phase 4 #356.
 		// Now a heap literal, site S1789.
 		return &CXNativeFunction{
-			AtomicOPCode:          constants.OP_LIBRARY_CALL,
+			AtomicOPCode:          constants.OpLibraryCall,
 			LibraryNumber:         library,
 			LibraryFunctionNumber: function,
 			Inputs:                NativeParameters(prgrm, librarySignature.LibraryFunctionSignatureInputs()),

@@ -62,19 +62,19 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 		source, err := io.ReadAll(file)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
-			profiling.CleanupAndExit(types.CX_COMPILATION_ERROR)
+			profiling.CleanupAndExit(types.CXCompilationError)
 		}
 		sources[i] = string(source)
 	}
 
 	// Setting what function to start in if using the REPL.
-	repl.TargetFunction = constants.MAIN_FUNC
+	repl.TargetFunction = constants.MainFunction
 
 	if err := compileSourceStrings(fileNames, sources); err != nil {
 		if err != cxparsing.ErrCompilation {
 			fmt.Fprintln(os.Stdout, "error:", err)
 		}
-		profiling.CleanupAndExit(types.CX_COMPILATION_ERROR)
+		profiling.CleanupAndExit(types.CXCompilationError)
 	}
 
 	return true
@@ -184,7 +184,7 @@ func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File)
 	actions.AST.ProgramPrint()
 
 	if opcodes.AssertFailed() {
-		os.Exit(types.CX_ASSERT)
+		os.Exit(types.CXAssert)
 	}
 }
 
@@ -204,7 +204,7 @@ func parseMemoryString(s string) types.Pointer {
 			return types.InvalidPointer
 		}
 
-		return types.Cast_i64_to_ptr(num)
+		return types.I64ToPtrCast(num)
 	} else {
 		// then we have a suffix
 		num, err := strconv.ParseFloat(s[:len(s)-1], 64)
@@ -217,11 +217,11 @@ func parseMemoryString(s string) types.Pointer {
 		// The user can use suffixes to give as input gigabytes, megabytes or kilobytes.
 		switch suffix {
 		case 'G', 'g':
-			return types.Cast_f64_to_ptr(num * 1073741824)
+			return types.F64ToPtrCast(num * 1073741824)
 		case 'M', 'm':
-			return types.Cast_f64_to_ptr(num * 1048576)
+			return types.F64ToPtrCast(num * 1048576)
 		case 'K', 'k':
-			return types.Cast_f64_to_ptr(num * 1024)
+			return types.F64ToPtrCast(num * 1024)
 		default:
 			return types.InvalidPointer
 		}

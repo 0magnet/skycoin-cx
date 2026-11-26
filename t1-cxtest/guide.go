@@ -47,9 +47,9 @@ func runGuideSnippetTests(t *runner.TestRunner, workingDir string) {
 		}
 
 		source := strings.Join(block, "\n") + "\n"
-		expectedCode := types.CX_SUCCESS
+		expectedCode := types.CXSuccess
 		if fence == "```cx compile-error" {
-			expectedCode = types.CX_COMPILATION_ERROR
+			expectedCode = types.CXCompilationError
 		}
 		fence = ""
 		if !strings.Contains(source, "func main") {

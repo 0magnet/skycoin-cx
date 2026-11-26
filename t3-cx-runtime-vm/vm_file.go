@@ -14,11 +14,11 @@ import (
 func fileOpcodeRun(op ir.Opcode, memory []byte, offset uint32) {
 	switch op {
 	case ir.OpcodeFileClose:
-		types.Write_bool(memory, types.Pointer(offset+4), cxfiles.FileHandleClose(types.Read_i32(memory, types.Pointer(offset))))
+		types.BoolWrite(memory, types.Pointer(offset+4), cxfiles.FileHandleClose(types.I32Read(memory, types.Pointer(offset))))
 	case ir.OpcodeFileSeek:
-		position := cxfiles.FileHandleSeek(types.Read_i32(memory, types.Pointer(offset)), types.Read_i64(memory, types.Pointer(offset+4)), types.Read_i32(memory, types.Pointer(offset+12)))
-		types.Write_i64(memory, types.Pointer(offset+16), position)
+		position := cxfiles.FileHandleSeek(types.I32Read(memory, types.Pointer(offset)), types.I64Read(memory, types.Pointer(offset+4)), types.I32Read(memory, types.Pointer(offset+12)))
+		types.I64Write(memory, types.Pointer(offset+16), position)
 	case ir.OpcodeFileSync:
-		types.Write_bool(memory, types.Pointer(offset+4), cxfiles.FileHandleSync(types.Read_i32(memory, types.Pointer(offset))))
+		types.BoolWrite(memory, types.Pointer(offset+4), cxfiles.FileHandleSync(types.I32Read(memory, types.Pointer(offset))))
 	}
 }

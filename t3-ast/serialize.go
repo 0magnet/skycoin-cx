@@ -99,8 +99,8 @@ func SerializedHeaderCheck(b []byte) error {
 	if format := binary.LittleEndian.Uint32(b[position:]); format != serializeFormatVersion {
 		return fmt.Errorf("serialized program has format %d, this cx reads format %d, recompile it from source", format, serializeFormatVersion)
 	}
-	if pointerSize := binary.LittleEndian.Uint32(b[position+4:]); pointerSize != uint32(types.POINTER_SIZE) {
-		return fmt.Errorf("serialized program was compiled with %d byte pointers, this cx uses %d byte pointers, load it with a cx built to match (the ptr64 build tag gives 8)", pointerSize, types.POINTER_SIZE)
+	if pointerSize := binary.LittleEndian.Uint32(b[position+4:]); pointerSize != uint32(types.PointerSize) {
+		return fmt.Errorf("serialized program was compiled with %d byte pointers, this cx uses %d byte pointers, load it with a cx built to match (the ptr64 build tag gives 8)", pointerSize, types.PointerSize)
 	}
 	if version := int64(binary.LittleEndian.Uint64(b[position+8:])); version != constants.LanguageVersionCurrent {
 		return fmt.Errorf("serialized program is language version %d, this CX implements version %d, recompile it from source", version, constants.LanguageVersionCurrent)
@@ -118,7 +118,7 @@ func encodeCXProgram(prgrm *CXProgram, includeMemory bool) ([]byte, SerializedSi
 	encoder := serializeEncoder{serializeEncoderBytes: make([]byte, 0, 4096)}
 	encoder.serializeEncoderBytes = append(encoder.serializeEncoderBytes, serializeMagic...)
 	encoder.serializeEncoderBytes = binary.LittleEndian.AppendUint32(encoder.serializeEncoderBytes, serializeFormatVersion)
-	encoder.serializeEncoderBytes = binary.LittleEndian.AppendUint32(encoder.serializeEncoderBytes, uint32(types.POINTER_SIZE))
+	encoder.serializeEncoderBytes = binary.LittleEndian.AppendUint32(encoder.serializeEncoderBytes, uint32(types.PointerSize))
 	encoder.serializeEncoderBytes = binary.LittleEndian.AppendUint64(encoder.serializeEncoderBytes, uint64(prgrm.Version))
 	sizes.Header = len(encoder.serializeEncoderBytes)
 
@@ -464,7 +464,7 @@ func deserializeProgramFields(prgrm *CXProgram, decoder *serializeDecoder) []ser
 	if decoder.serializeDecoderError != nil {
 		return nil
 	}
-	if stackLength > uint64(constants.CALLSTACK_SIZE) || used > stackLength || used > uint64(decoder.serializeDecoderRemaining()/3) {
+	if stackLength > uint64(constants.CallStackSize) || used > stackLength || used > uint64(decoder.serializeDecoderRemaining()/3) {
 		decoder.serializeDecoderFailf("call stack of %d entries with %d in use", stackLength, used)
 		return nil
 	}
@@ -800,7 +800,7 @@ func deserializeFunction(prgrm *CXProgram, decoder *serializeDecoder, fn *CXFunc
 	fn.AtomicOPCode = decoder.serializeDecoderIntValue()
 	fn.LibraryNumber = decoder.serializeDecoderIntValue()
 	fn.LibraryFunctionNumber = decoder.serializeDecoderIntValue()
-	if fn.AtomicOPCode == constants.OP_LIBRARY_CALL && (fn.LibraryNumber <= 0 || fn.LibraryNumber >= constants.LibraryCount || fn.LibraryFunctionNumber <= 0) {
+	if fn.AtomicOPCode == constants.OpLibraryCall && (fn.LibraryNumber <= 0 || fn.LibraryNumber >= constants.LibraryCount || fn.LibraryFunctionNumber <= 0) {
 		decoder.serializeDecoderFailf("function %d calls library %d function %d, which does not exist", fn.Index, fn.LibraryNumber, fn.LibraryFunctionNumber)
 	}
 	fn.Inputs = deserializeOwnedStruct(decoder)
@@ -871,11 +871,11 @@ func serializeExpression(encoder *serializeEncoder, expr *CXExpression) {
 }
 
 func deserializeExpression(decoder *serializeDecoder, expr *CXExpression) {
-	expr.ExpressionType = CXEXPR_TYPE(decoder.serializeDecoderIntValue())
+	expr.ExpressionType = CXExpressionType(decoder.serializeDecoderIntValue())
 	expr.ExpressionScopeOpenCount = deserializeUint8(decoder)
 	expr.ExpressionScopeCloseCount = deserializeUint8(decoder)
 	expr.Index = decoder.serializeDecoderIntValue()
-	expr.Type = CXOPERATION_TYPE(decoder.serializeDecoderIntValue())
+	expr.Type = CXOperationType(decoder.serializeDecoderIntValue())
 }
 
 func serializeExpressions(prgrm *CXProgram, encoder *serializeEncoder) error {
@@ -1114,7 +1114,7 @@ func deserializeTypeSignatures(prgrm *CXProgram, decoder *serializeDecoder) {
 		signature.Index = CXTypeSignatureIndex(decoder.serializeDecoderIntValue())
 		signature.Name = stringpool.StringGid(decoder.serializeDecoderInt())
 		signature.Offset = decoder.serializeDecoderPointer()
-		signature.Type = CXTypeSignature_TYPE(decoder.serializeDecoderIntValue())
+		signature.Type = CXTypeSignatureType(decoder.serializeDecoderIntValue())
 		signature.Package = CXPackageIndex(decoder.serializeDecoderIntValue())
 		signature.PassBy = decoder.serializeDecoderIntValue()
 		signature.Deref = decoder.serializeDecoderBool()

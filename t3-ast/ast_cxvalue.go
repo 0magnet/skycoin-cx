@@ -17,221 +17,221 @@ type CXValue struct {
 	FramePointer types.Pointer // TODO:PTR remove FramePointer
 }
 
-func (value *CXValue) Get_bool(prgrm *CXProgram) bool {
-	return types.Read_bool(prgrm.Memory, value.Offset)
+func (value *CXValue) BoolGet(prgrm *CXProgram) bool {
+	return types.BoolRead(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) Get_i8(prgrm *CXProgram) int8 {
-	return types.Read_i8(prgrm.Memory, value.Offset)
+func (value *CXValue) I8Get(prgrm *CXProgram) int8 {
+	return types.I8Read(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) Get_i16(prgrm *CXProgram) int16 {
-	return types.Read_i16(prgrm.Memory, value.Offset)
+func (value *CXValue) I16Get(prgrm *CXProgram) int16 {
+	return types.I16Read(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) Get_i32(prgrm *CXProgram) int32 {
-	return types.Read_i32(prgrm.Memory, value.Offset)
+func (value *CXValue) I32Get(prgrm *CXProgram) int32 {
+	return types.I32Read(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) Get_i64(prgrm *CXProgram) int64 {
-	return types.Read_i64(prgrm.Memory, value.Offset)
+func (value *CXValue) I64Get(prgrm *CXProgram) int64 {
+	return types.I64Read(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) Get_ui8(prgrm *CXProgram) uint8 {
-	return types.Read_ui8(prgrm.Memory, value.Offset)
+func (value *CXValue) UI8Get(prgrm *CXProgram) uint8 {
+	return types.UI8Read(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) Get_ui16(prgrm *CXProgram) uint16 {
-	return types.Read_ui16(prgrm.Memory, value.Offset)
+func (value *CXValue) UI16Get(prgrm *CXProgram) uint16 {
+	return types.UI16Read(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) Get_ui32(prgrm *CXProgram) uint32 {
-	return types.Read_ui32(prgrm.Memory, value.Offset)
+func (value *CXValue) UI32Get(prgrm *CXProgram) uint32 {
+	return types.UI32Read(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) Get_ui64(prgrm *CXProgram) uint64 {
-	return types.Read_ui64(prgrm.Memory, value.Offset)
+func (value *CXValue) UI64Get(prgrm *CXProgram) uint64 {
+	return types.UI64Read(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) Get_f32(prgrm *CXProgram) float32 {
-	return types.Read_f32(prgrm.Memory, value.Offset)
+func (value *CXValue) F32Get(prgrm *CXProgram) float32 {
+	return types.F32Read(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) Get_f64(prgrm *CXProgram) float64 {
-	return types.Read_f64(prgrm.Memory, value.Offset)
+func (value *CXValue) F64Get(prgrm *CXProgram) float64 {
+	return types.F64Read(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) Get_ptr(prgrm *CXProgram) types.Pointer {
-	return types.Read_ptr(prgrm.Memory, value.Offset)
+func (value *CXValue) PtrGet(prgrm *CXProgram) types.Pointer {
+	return types.PtrRead(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) Get_bytes(prgrm *CXProgram) []byte {
-	return types.GetSlice_byte(prgrm.Memory, value.Offset, value.Size)
+func (value *CXValue) BytesGet(prgrm *CXProgram) []byte {
+	return types.SliceByteGet(prgrm.Memory, value.Offset, value.Size)
 }
 
 // VIOLATION STRHOT-029: B, only the boundary opcodes use Go strings, #412.
 // VIOLATION VMALLOC-003: a Go string copy of a str, for the boundary opcodes only, #407.
-func (value *CXValue) Get_str(prgrm *CXProgram) string {
-	return types.Read_str(prgrm.Memory, value.Offset)
+func (value *CXValue) StrGet(prgrm *CXProgram) string {
+	return types.StrRead(prgrm.Memory, value.Offset)
 }
 
-// Get_str_bytes returns the bytes of the str value, a view into prgrm.Memory
+// StrBytesGet returns the bytes of the str value, a view into prgrm.Memory
 // without a copy. An allocation may give prgrm a new Memory, and the view then
 // still holds the bytes it had.
-func (value *CXValue) Get_str_bytes(prgrm *CXProgram) []byte {
-	return types.Read_str_bytes(prgrm.Memory, value.Offset)
+func (value *CXValue) StrBytesGet(prgrm *CXProgram) []byte {
+	return types.StrBytesRead(prgrm.Memory, value.Offset)
 }
 
-func (value *CXValue) GetSlice_i8(prgrm *CXProgram) []int8 {
-	if mem := SliceElementsGet(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), 1); mem != nil {
-		return types.ReadSlice_i8(mem, 0)
+func (value *CXValue) SliceI8Get(prgrm *CXProgram) []int8 {
+	if mem := SliceElementsGet(prgrm, types.PtrRead(prgrm.Memory, value.Offset), 1); mem != nil {
+		return types.SliceI8Read(mem, 0)
 	}
 	return nil
 }
 
-func (value *CXValue) GetSlice_i16(prgrm *CXProgram) []int16 {
-	if mem := SliceElementsGet(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), 2); mem != nil {
-		return types.ReadSlice_i16(mem, 0)
+func (value *CXValue) SliceI16Get(prgrm *CXProgram) []int16 {
+	if mem := SliceElementsGet(prgrm, types.PtrRead(prgrm.Memory, value.Offset), 2); mem != nil {
+		return types.SliceI16Read(mem, 0)
 	}
 	return nil
 }
 
-func (value *CXValue) GetSlice_i32(prgrm *CXProgram) []int32 {
-	if mem := SliceElementsGet(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), 4); mem != nil {
-		return types.ReadSlice_i32(mem, 0)
+func (value *CXValue) SliceI32Get(prgrm *CXProgram) []int32 {
+	if mem := SliceElementsGet(prgrm, types.PtrRead(prgrm.Memory, value.Offset), 4); mem != nil {
+		return types.SliceI32Read(mem, 0)
 	}
 	return nil
 }
 
-func (value *CXValue) GetSlice_i64(prgrm *CXProgram) []int64 {
-	if mem := SliceElementsGet(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), 8); mem != nil {
-		return types.ReadSlice_i64(mem, 0)
+func (value *CXValue) SliceI64Get(prgrm *CXProgram) []int64 {
+	if mem := SliceElementsGet(prgrm, types.PtrRead(prgrm.Memory, value.Offset), 8); mem != nil {
+		return types.SliceI64Read(mem, 0)
 	}
 	return nil
 }
 
-func (value *CXValue) GetSlice_ui8(prgrm *CXProgram) []uint8 {
-	if mem := SliceElementsGet(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), 1); mem != nil {
-		return types.ReadSlice_ui8(mem, 0)
+func (value *CXValue) SliceUI8Get(prgrm *CXProgram) []uint8 {
+	if mem := SliceElementsGet(prgrm, types.PtrRead(prgrm.Memory, value.Offset), 1); mem != nil {
+		return types.SliceUI8Read(mem, 0)
 	}
 	return nil
 }
 
-func (value *CXValue) GetSlice_ui16(prgrm *CXProgram) []uint16 {
-	if mem := SliceElementsGet(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), 2); mem != nil {
-		return types.ReadSlice_ui16(mem, 0)
+func (value *CXValue) SliceUI16Get(prgrm *CXProgram) []uint16 {
+	if mem := SliceElementsGet(prgrm, types.PtrRead(prgrm.Memory, value.Offset), 2); mem != nil {
+		return types.SliceUI16Read(mem, 0)
 	}
 	return nil
 }
 
-func (value *CXValue) GetSlice_ui32(prgrm *CXProgram) []uint32 {
-	if mem := SliceElementsGet(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), 4); mem != nil {
-		return types.ReadSlice_ui32(mem, 0)
+func (value *CXValue) SliceUI32Get(prgrm *CXProgram) []uint32 {
+	if mem := SliceElementsGet(prgrm, types.PtrRead(prgrm.Memory, value.Offset), 4); mem != nil {
+		return types.SliceUI32Read(mem, 0)
 	}
 	return nil
 }
 
-func (value *CXValue) GetSlice_ui64(prgrm *CXProgram) []uint64 {
-	if mem := SliceElementsGet(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), 8); mem != nil {
-		return types.ReadSlice_ui64(mem, 0)
+func (value *CXValue) SliceUI64Get(prgrm *CXProgram) []uint64 {
+	if mem := SliceElementsGet(prgrm, types.PtrRead(prgrm.Memory, value.Offset), 8); mem != nil {
+		return types.SliceUI64Read(mem, 0)
 	}
 	return nil
 }
 
-func (value *CXValue) GetSlice_f32(prgrm *CXProgram) []float32 {
-	if mem := SliceElementsGet(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), 4); mem != nil {
-		return types.ReadSlice_f32(mem, 0)
+func (value *CXValue) SliceF32Get(prgrm *CXProgram) []float32 {
+	if mem := SliceElementsGet(prgrm, types.PtrRead(prgrm.Memory, value.Offset), 4); mem != nil {
+		return types.SliceF32Read(mem, 0)
 	}
 	return nil
 }
 
-func (value *CXValue) GetSlice_f64(prgrm *CXProgram) []float64 {
-	if mem := SliceElementsGet(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), 8); mem != nil {
-		return types.ReadSlice_f64(mem, 0)
+func (value *CXValue) SliceF64Get(prgrm *CXProgram) []float64 {
+	if mem := SliceElementsGet(prgrm, types.PtrRead(prgrm.Memory, value.Offset), 8); mem != nil {
+		return types.SliceF64Read(mem, 0)
 	}
 	return nil
 }
 
-// GetSlice_bytes returns the bytes of the elements of the slice value.
-func (value *CXValue) GetSlice_bytes(prgrm *CXProgram) []byte {
+// SliceBytesGet returns the bytes of the elements of the slice value.
+func (value *CXValue) SliceBytesGet(prgrm *CXProgram) []byte {
 	eltSize := value.Size
 	if value.TypeSignature != nil {
 		eltSize = DerefSizeSliceGet(prgrm, value.TypeSignature)
 	}
-	return SliceElementsGet(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), eltSize)
+	return SliceElementsGet(prgrm, types.PtrRead(prgrm.Memory, value.Offset), eltSize)
 }
 
-func (value *CXValue) Set_bool(prgrm *CXProgram, newValue bool) {
-	types.Write_bool(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) BoolSet(prgrm *CXProgram, newValue bool) {
+	types.BoolWrite(prgrm.Memory, value.Offset, newValue)
 }
 
-func (value *CXValue) Set_i8(prgrm *CXProgram, newValue int8) {
-	types.Write_i8(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) I8Set(prgrm *CXProgram, newValue int8) {
+	types.I8Write(prgrm.Memory, value.Offset, newValue)
 }
 
-func (value *CXValue) Set_i16(prgrm *CXProgram, newValue int16) {
-	types.Write_i16(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) I16Set(prgrm *CXProgram, newValue int16) {
+	types.I16Write(prgrm.Memory, value.Offset, newValue)
 }
 
-func (value *CXValue) Set_i32(prgrm *CXProgram, newValue int32) {
-	types.Write_i32(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) I32Set(prgrm *CXProgram, newValue int32) {
+	types.I32Write(prgrm.Memory, value.Offset, newValue)
 }
 
-func (value *CXValue) Set_i64(prgrm *CXProgram, newValue int64) {
-	types.Write_i64(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) I64Set(prgrm *CXProgram, newValue int64) {
+	types.I64Write(prgrm.Memory, value.Offset, newValue)
 }
 
-func (value *CXValue) Set_ui8(prgrm *CXProgram, newValue uint8) {
-	types.Write_ui8(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) UI8Set(prgrm *CXProgram, newValue uint8) {
+	types.UI8Write(prgrm.Memory, value.Offset, newValue)
 }
 
-func (value *CXValue) Set_ui16(prgrm *CXProgram, newValue uint16) {
-	types.Write_ui16(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) UI16Set(prgrm *CXProgram, newValue uint16) {
+	types.UI16Write(prgrm.Memory, value.Offset, newValue)
 }
 
-func (value *CXValue) Set_ui32(prgrm *CXProgram, newValue uint32) {
-	types.Write_ui32(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) UI32Set(prgrm *CXProgram, newValue uint32) {
+	types.UI32Write(prgrm.Memory, value.Offset, newValue)
 }
 
-func (value *CXValue) Set_ui64(prgrm *CXProgram, newValue uint64) {
-	types.Write_ui64(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) UI64Set(prgrm *CXProgram, newValue uint64) {
+	types.UI64Write(prgrm.Memory, value.Offset, newValue)
 }
 
-func (value *CXValue) Set_f32(prgrm *CXProgram, newValue float32) {
-	types.Write_f32(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) F32Set(prgrm *CXProgram, newValue float32) {
+	types.F32Write(prgrm.Memory, value.Offset, newValue)
 }
 
-func (value *CXValue) Set_f64(prgrm *CXProgram, newValue float64) {
-	types.Write_f64(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) F64Set(prgrm *CXProgram, newValue float64) {
+	types.F64Write(prgrm.Memory, value.Offset, newValue)
 }
 
-func (value *CXValue) Set_ptr(prgrm *CXProgram, newValue types.Pointer) {
-	types.Write_ptr(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) PtrSet(prgrm *CXProgram, newValue types.Pointer) {
+	types.PtrWrite(prgrm.Memory, value.Offset, newValue)
 }
 
-func (value *CXValue) Set_bytes(prgrm *CXProgram, newValue []byte) {
-	types.WriteSlice_byte(prgrm.Memory, value.Offset, newValue)
+func (value *CXValue) BytesSet(prgrm *CXProgram, newValue []byte) {
+	types.SliceByteWrite(prgrm.Memory, value.Offset, newValue)
 }
 
 // GCREACH: allocates a str object, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
 // VIOLATION STRHOT-030: B, only the boundary opcodes use Go strings, #412.
-func (value *CXValue) Set_str(prgrm *CXProgram, newValue string) {
+func (value *CXValue) StrSet(prgrm *CXProgram, newValue string) {
 	StrAllocateAt(prgrm, value.Offset, newValue)
 }
 
-// Set_str_bytes writes a new str holding data, which may be a view into
+// StrBytesSet writes a new str holding data, which may be a view into
 // prgrm.Memory.
 // GCREACH: allocates a str object, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
-func (value *CXValue) Set_str_bytes(prgrm *CXProgram, newValue []byte) {
+func (value *CXValue) StrBytesSet(prgrm *CXProgram, newValue []byte) {
 	StrBytesAllocateAt(prgrm, value.Offset, newValue, nil)
 }
 
-// Set_str_concat writes a new str holding first followed by second, either of
+// StrConcatSet writes a new str holding first followed by second, either of
 // which may be a view into prgrm.Memory.
 // GCREACH: allocates a str object, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
-func (value *CXValue) Set_str_concat(prgrm *CXProgram, first []byte, second []byte) {
+func (value *CXValue) StrConcatSet(prgrm *CXProgram, first []byte, second []byte) {
 	StrBytesAllocateAt(prgrm, value.Offset, first, second)
 }

@@ -483,7 +483,7 @@ declaration_specifiers:
                 element_specifiers
         |       indexing_literal array_element
                 {
-			$$ = actions.DeclarationSpecifiers($2, types.Cast_sint_to_sptr($1), constants.DECL_ARRAY)
+			$$ = actions.DeclarationSpecifiers($2, types.SintToSptrCast($1), constants.DeclarationArray)
                 }
                 ;
 
@@ -498,15 +498,15 @@ element_specifiers:
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1409.
 			arg.Outputs = Program.PointerArgsToCXArgsArrayAdd($3)
-			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
+			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DeclarationFunc)
 		}
         |       MUL_OP declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($2, []types.Pointer{0}, constants.DECL_POINTER)
+			$$ = actions.DeclarationSpecifiers($2, []types.Pointer{0}, constants.DeclarationPointer)
                 }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DECL_SLICE)
+			$$ = actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DeclarationSlice)
                 }
         |       type_specifier
                 {
@@ -547,11 +547,11 @@ array_element:
                 }
         |       MUL_OP declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($2, []types.Pointer{0}, constants.DECL_POINTER)
+			$$ = actions.DeclarationSpecifiers($2, []types.Pointer{0}, constants.DeclarationPointer)
                 }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DECL_SLICE)
+			$$ = actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DeclarationSlice)
                 }
                 ;
 

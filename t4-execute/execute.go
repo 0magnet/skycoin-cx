@@ -38,8 +38,8 @@ func runLoop(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall type
 		}
 
 		// checking if enough memory in stack
-		if cxprogram.Stack.Pointer > constants.STACK_SIZE {
-			panic(constants.STACK_OVERFLOW_ERROR)
+		if cxprogram.Stack.Pointer > constants.StackSize {
+			panic(constants.StackOverflowError)
 		}
 
 		opCount++
@@ -104,11 +104,11 @@ func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
 			for _, arg := range args {
 				argOffset := ast.StrAllocate(cxprogram, arg)
 
-				var argOffsetBytes [types.POINTER_SIZE]byte
-				types.Write_ptr(argOffsetBytes[:], 0, argOffset)
+				var argOffsetBytes [types.PointerSize]byte
+				types.PtrWrite(argOffsetBytes[:], 0, argOffset)
 				argsOffset = ast.SliceWrite(cxprogram, argsOffset, argOffsetBytes[:])
 			}
-			types.Write_ptr(cxprogram.Memory, ast.FinalOffsetGet(cxprogram, 0, nil, osGlbl), argsOffset)
+			types.PtrWrite(cxprogram.Memory, ast.FinalOffsetGet(cxprogram, 0, nil, osGlbl), argsOffset)
 		}
 	}
 	return nil
@@ -144,7 +144,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 			return err
 		}
 
-		// then the program is just starting and we need to run the SYS_INIT_FUNC
+		// then the program is just starting and we need to run the SysInitFunction
 		err = runSysInitFunc(cxprogram, mod)
 		if err != nil {
 			return err

@@ -6,57 +6,57 @@ import (
 )
 
 const (
-	CX_SUCCESS = iota //zero can be success
-	CX_COMPILATION_ERROR
-	CX_PANIC // 2
-	CX_INTERNAL_ERROR
-	CX_ASSERT
-	CX_RUNTIME_ERROR
-	CX_RUNTIME_STACK_OVERFLOW_ERROR
-	CX_RUNTIME_HEAP_EXHAUSTED_ERROR
-	CX_RUNTIME_INVALID_ARGUMENT
-	CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE
-	CX_RUNTIME_NOT_IMPLEMENTED
-	CX_RUNTIME_INVALID_CAST
-	CX_RUNTIME_LIBRARY_DISABLED
+	CXSuccess = iota //zero can be success
+	CXCompilationError
+	CXPanic // 2
+	CXInternalError
+	CXAssert
+	CXRuntimeError
+	CXRuntimeStackOverflowError
+	CXRuntimeHeapExhaustedError
+	CXRuntimeInvalidArgument
+	CXRuntimeSliceIndexOutOfRange
+	CXRuntimeNotImplemented
+	CXRuntimeInvalidCast
+	CXRuntimeLibraryDisabled
 )
 
 const (
-	MAX_INT   = int(MAX_UINT >> 1)
-	MAX_INT32 = int(MAX_UINT32 >> 1)
-	MIN_INT32 = -MAX_INT32 - 1
+	MaxInt   = int(MaxUint >> 1)
+	MaxInt32 = int(MaxUint32 >> 1)
+	MinInt32 = -MaxInt32 - 1
 
-	MAX_UINT   = ^uint(0)
-	MAX_UINT8  = ^uint8(0)
-	MAX_UINT16 = ^uint16(0)
-	MAX_UINT32 = ^uint32(0)
-	MAX_UINT64 = ^uint64(0)
+	MaxUint   = ^uint(0)
+	MaxUint8  = ^uint8(0)
+	MaxUint16 = ^uint16(0)
+	MaxUint32 = ^uint32(0)
+	MaxUint64 = ^uint64(0)
 )
 
 const (
-	BOOL_SIZE = Pointer(1)
+	BoolSize = Pointer(1)
 
-	I8_SIZE  = Pointer(1)
-	I16_SIZE = Pointer(2)
-	I32_SIZE = Pointer(4)
-	I64_SIZE = Pointer(8)
+	I8Size  = Pointer(1)
+	I16Size = Pointer(2)
+	I32Size = Pointer(4)
+	I64Size = Pointer(8)
 
-	UI8_SIZE  = Pointer(1)
-	UI16_SIZE = Pointer(2)
-	UI32_SIZE = Pointer(4)
-	UI64_SIZE = Pointer(8)
+	UI8Size  = Pointer(1)
+	UI16Size = Pointer(2)
+	UI32Size = Pointer(4)
+	UI64Size = Pointer(8)
 
-	F32_SIZE = Pointer(4)
-	F64_SIZE = Pointer(8)
+	F32Size = Pointer(4)
+	F64Size = Pointer(8)
 
-	ARRAY_SIZE = POINTER_SIZE
-	SLICE_SIZE = POINTER_SIZE
+	ArraySize = PointerSize
+	SliceSize = PointerSize
 
-	STR_SIZE = POINTER_SIZE
+	StrSize = PointerSize
 
-	// AFF_SIZE is an aff value, four i32 the compiler resolves from an aff
+	// AffSize is an aff value, four i32 the compiler resolves from an aff
 	// literal, see docs/IR.md.
-	AFF_SIZE = Pointer(16)
+	AffSize = Pointer(16)
 )
 
 type Code int
@@ -108,7 +108,7 @@ func (t Code) NameBytes() []byte {
 }
 
 func (t Code) Size() Pointer {
-	//	panicIf(!definitions[t].size.Valid(), CX_RUNTIME_INVALID_ARGUMENT)
+	//	panicIf(!definitions[t].size.Valid(), CXRuntimeInvalidArgument)
 	return definitions[t].size
 }
 
@@ -125,30 +125,30 @@ type Type struct {
 var definitions []Type = []Type{
 	{"UNUSED", InvalidPointer, false},
 
-	{"bool", BOOL_SIZE, true},
+	{"bool", BoolSize, true},
 
-	{"i8", I8_SIZE, true},
-	{"i16", I16_SIZE, true},
-	{"i32", I32_SIZE, true},
-	{"i64", I64_SIZE, true},
+	{"i8", I8Size, true},
+	{"i16", I16Size, true},
+	{"i32", I32Size, true},
+	{"i64", I64Size, true},
 
-	{"ui8", UI8_SIZE, true},
-	{"ui16", UI16_SIZE, true},
-	{"ui32", UI32_SIZE, true},
-	{"ui64", UI64_SIZE, true},
+	{"ui8", UI8Size, true},
+	{"ui16", UI16Size, true},
+	{"ui32", UI32Size, true},
+	{"ui64", UI64Size, true},
 
-	{"f32", F32_SIZE, true},
-	{"f64", F64_SIZE, true},
+	{"f32", F32Size, true},
+	{"f64", F64Size, true},
 
-	{"ptr", POINTER_SIZE, false},
-	{"str", STR_SIZE, false},
-	{"array", ARRAY_SIZE, false},
-	{"slice", SLICE_SIZE, false},
+	{"ptr", PointerSize, false},
+	{"str", StrSize, false},
+	{"array", ArraySize, false},
+	{"slice", SliceSize, false},
 	{"struct", InvalidPointer, false},
 	{"func", InvalidPointer, false},
-	{"aff", AFF_SIZE, false},
+	{"aff", AffSize, false},
 	{"und", InvalidPointer, false},
-	{"ident", POINTER_SIZE, false}, // TODO:PTR use InvalidPointer to track addressing issues.
+	{"ident", PointerSize, false}, // TODO:PTR use InvalidPointer to track addressing issues.
 	{"invalid type", 0, false},
 }
 
@@ -172,7 +172,7 @@ func (pointer *Pointer) Add(value Pointer) bool {
 	return false
 }
 
-func Cast_sint_to_sptr(value []int) []Pointer {
+func SintToSptrCast(value []int) []Pointer {
 	l := len(value)
 	if l == 0 {
 		return nil
@@ -180,190 +180,190 @@ func Cast_sint_to_sptr(value []int) []Pointer {
 
 	sptr := make([]Pointer, l)
 	for i, k := range value {
-		sptr[i] = Cast_int_to_ptr(k)
+		sptr[i] = IntToPtrCast(k)
 	}
 	return sptr
 }
 
-func Read_bool(memory []byte, offset Pointer) bool {
+func BoolRead(memory []byte, offset Pointer) bool {
 	memory = memory[offset:]
 	return memory[0] != 0
 }
 
-func Read_i8(memory []byte, offset Pointer) int8 {
+func I8Read(memory []byte, offset Pointer) int8 {
 	memory = memory[offset:]
 	return int8(memory[0])
 }
 
-func Read_i16(memory []byte, offset Pointer) int16 {
+func I16Read(memory []byte, offset Pointer) int16 {
 	memory = memory[offset:]
 	return int16(memory[0]) | int16(memory[1])<<8
 }
 
-func Read_i32(memory []byte, offset Pointer) int32 {
+func I32Read(memory []byte, offset Pointer) int32 {
 	memory = memory[offset:]
 	return int32(memory[0]) | int32(memory[1])<<8 | int32(memory[2])<<16 | int32(memory[3])<<24
 }
 
-func Read_i64(memory []byte, offset Pointer) int64 {
+func I64Read(memory []byte, offset Pointer) int64 {
 	memory = memory[offset:]
 	return int64(memory[0]) | int64(memory[1])<<8 | int64(memory[2])<<16 | int64(memory[3])<<24 |
 		int64(memory[4])<<32 | int64(memory[5])<<40 | int64(memory[6])<<48 | int64(memory[7])<<56
 }
 
-func Read_ui8(memory []byte, offset Pointer) uint8 {
+func UI8Read(memory []byte, offset Pointer) uint8 {
 	memory = memory[offset:]
 	return uint8(memory[0])
 }
 
-func Read_ui16(memory []byte, offset Pointer) uint16 {
+func UI16Read(memory []byte, offset Pointer) uint16 {
 	memory = memory[offset:]
 	return uint16(memory[0]) | uint16(memory[1])<<8
 }
 
-func Read_ui32(memory []byte, offset Pointer) uint32 {
+func UI32Read(memory []byte, offset Pointer) uint32 {
 	memory = memory[offset:]
 	return uint32(memory[0]) | uint32(memory[1])<<8 | uint32(memory[2])<<16 | uint32(memory[3])<<24
 }
 
-func Read_ui64(memory []byte, offset Pointer) uint64 {
+func UI64Read(memory []byte, offset Pointer) uint64 {
 	memory = memory[offset:]
 	return uint64(memory[0]) | uint64(memory[1])<<8 | uint64(memory[2])<<16 | uint64(memory[3])<<24 |
 		uint64(memory[4])<<32 | uint64(memory[5])<<40 | uint64(memory[6])<<48 | uint64(memory[7])<<56
 }
 
-func Read_f32(memory []byte, offset Pointer) float32 {
-	return math.Float32frombits(Read_ui32(memory, offset))
+func F32Read(memory []byte, offset Pointer) float32 {
+	return math.Float32frombits(UI32Read(memory, offset))
 }
 
-func Read_f64(memory []byte, offset Pointer) float64 {
-	return math.Float64frombits(Read_ui64(memory, offset))
+func F64Read(memory []byte, offset Pointer) float64 {
+	return math.Float64frombits(UI64Read(memory, offset))
 }
 
 // VIOLATION VMALLOC-012: copies a slice into a new Go slice, for the boundary opcodes only, #407.
-func ReadSlice_i8(memory []byte, offset Pointer) (out []int8) {
-	count := Cast_int_to_ptr(len(memory))
+func SliceI8Read(memory []byte, offset Pointer) (out []int8) {
+	count := IntToPtrCast(len(memory))
 	if count > 0 {
 		out = make([]int8, count)
 		for i := Pointer(0); i < count; i++ {
-			out[i] = Read_i8(memory, i)
+			out[i] = I8Read(memory, i)
 		}
 	}
 	return
 }
 
 // VIOLATION VMALLOC-012: copies a slice into a new Go slice, for the boundary opcodes only, #407.
-func ReadSlice_i16(memory []byte, offset Pointer) (out []int16) {
-	count := Cast_int_to_ptr(len(memory) / 2)
+func SliceI16Read(memory []byte, offset Pointer) (out []int16) {
+	count := IntToPtrCast(len(memory) / 2)
 	if count > 0 {
 		out = make([]int16, count)
 		for i := Pointer(0); i < count; i++ {
-			out[i] = Read_i16(memory, i*2)
+			out[i] = I16Read(memory, i*2)
 		}
 	}
 	return
 }
 
 // VIOLATION VMALLOC-012: copies a slice into a new Go slice, for the boundary opcodes only, #407.
-func ReadSlice_i32(memory []byte, offset Pointer) (out []int32) {
-	count := Cast_int_to_ptr(len(memory) / 4)
+func SliceI32Read(memory []byte, offset Pointer) (out []int32) {
+	count := IntToPtrCast(len(memory) / 4)
 	if count > 0 {
 		out = make([]int32, count)
 		for i := Pointer(0); i < count; i++ {
-			out[i] = Read_i32(memory, i*4)
+			out[i] = I32Read(memory, i*4)
 		}
 	}
 	return
 }
 
 // VIOLATION VMALLOC-012: copies a slice into a new Go slice, for the boundary opcodes only, #407.
-func ReadSlice_i64(memory []byte, offset Pointer) (out []int64) {
-	count := Cast_int_to_ptr(len(memory) / 8)
+func SliceI64Read(memory []byte, offset Pointer) (out []int64) {
+	count := IntToPtrCast(len(memory) / 8)
 	if count > 0 {
 		out = make([]int64, count)
 		for i := Pointer(0); i < count; i++ {
-			out[i] = Read_i64(memory, i*8)
+			out[i] = I64Read(memory, i*8)
 		}
 	}
 	return
 }
 
 // VIOLATION VMALLOC-012: copies a slice into a new Go slice, for the boundary opcodes only, #407.
-func ReadSlice_ui8(memory []byte, offset Pointer) (out []uint8) {
-	count := Cast_int_to_ptr(len(memory))
+func SliceUI8Read(memory []byte, offset Pointer) (out []uint8) {
+	count := IntToPtrCast(len(memory))
 	if count > 0 {
 		out = make([]uint8, count)
 		for i := Pointer(0); i < count; i++ {
-			out[i] = Read_ui8(memory, i)
+			out[i] = UI8Read(memory, i)
 		}
 	}
 	return
 }
 
 // VIOLATION VMALLOC-012: copies a slice into a new Go slice, for the boundary opcodes only, #407.
-func ReadSlice_ui16(memory []byte, offset Pointer) (out []uint16) {
-	count := Cast_int_to_ptr(len(memory) / 2)
+func SliceUI16Read(memory []byte, offset Pointer) (out []uint16) {
+	count := IntToPtrCast(len(memory) / 2)
 	if count > 0 {
 		out = make([]uint16, count)
 		for i := Pointer(0); i < count; i++ {
-			out[i] = Read_ui16(memory, i*2)
+			out[i] = UI16Read(memory, i*2)
 		}
 	}
 	return
 }
 
 // VIOLATION VMALLOC-012: copies a slice into a new Go slice, for the boundary opcodes only, #407.
-func ReadSlice_ui32(memory []byte, offset Pointer) (out []uint32) {
-	count := Cast_int_to_ptr(len(memory) / 4)
+func SliceUI32Read(memory []byte, offset Pointer) (out []uint32) {
+	count := IntToPtrCast(len(memory) / 4)
 	if count > 0 {
 		out = make([]uint32, count)
 		for i := Pointer(0); i < count; i++ {
-			out[i] = Read_ui32(memory, i*4)
+			out[i] = UI32Read(memory, i*4)
 		}
 	}
 	return
 }
 
-func ReadSlice_ui64(memory []byte, offset Pointer) (out []uint64) {
-	count := Cast_int_to_ptr(len(memory) / 8)
+func SliceUI64Read(memory []byte, offset Pointer) (out []uint64) {
+	count := IntToPtrCast(len(memory) / 8)
 	if count > 0 {
 		out = make([]uint64, count)
 		for i := Pointer(0); i < count; i++ {
-			out[i] = Read_ui64(memory, i*8)
+			out[i] = UI64Read(memory, i*8)
 		}
 	}
 	return
 }
 
 // VIOLATION VMALLOC-012: copies a slice into a new Go slice, for the boundary opcodes only, #407.
-func ReadSlice_f32(memory []byte, offset Pointer) (out []float32) {
-	count := Cast_int_to_ptr(len(memory) / 4)
+func SliceF32Read(memory []byte, offset Pointer) (out []float32) {
+	count := IntToPtrCast(len(memory) / 4)
 	if count > 0 {
 		out = make([]float32, count)
 		for i := Pointer(0); i < count; i++ {
-			out[i] = Read_f32(memory, i*4)
+			out[i] = F32Read(memory, i*4)
 		}
 	}
 	return
 }
 
 // VIOLATION VMALLOC-012: copies a slice into a new Go slice, for the boundary opcodes only, #407.
-func ReadSlice_f64(memory []byte, offset Pointer) (out []float64) {
-	count := Cast_int_to_ptr(len(memory) / 8)
+func SliceF64Read(memory []byte, offset Pointer) (out []float64) {
+	count := IntToPtrCast(len(memory) / 8)
 	if count > 0 {
 		out = make([]float64, count)
 		for i := Pointer(0); i < count; i++ {
-			out[i] = Read_f64(memory, i*8)
+			out[i] = F64Read(memory, i*8)
 		}
 	}
 	return
 }
 
-func GetSlice_byte(memory []byte, offset Pointer, size Pointer) []byte {
+func SliceByteGet(memory []byte, offset Pointer, size Pointer) []byte {
 	return memory[offset : offset+size]
 }
 
-func Write_bool(memory []byte, offset Pointer, value bool) {
+func BoolWrite(memory []byte, offset Pointer, value bool) {
 	if value {
 		memory[offset] = 1
 	} else {
@@ -371,23 +371,23 @@ func Write_bool(memory []byte, offset Pointer, value bool) {
 	}
 }
 
-func Write_i8(mem []byte, offset Pointer, v int8) {
+func I8Write(mem []byte, offset Pointer, v int8) {
 	mem[offset] = byte(v)
 }
 
-func Write_i16(mem []byte, offset Pointer, v int16) {
+func I16Write(mem []byte, offset Pointer, v int16) {
 	mem[offset] = byte(v)
 	mem[offset+1] = byte(v >> 8)
 }
 
-func Write_i32(mem []byte, offset Pointer, v int32) {
+func I32Write(mem []byte, offset Pointer, v int32) {
 	mem[offset] = byte(v)
 	mem[offset+1] = byte(v >> 8)
 	mem[offset+2] = byte(v >> 16)
 	mem[offset+3] = byte(v >> 24)
 }
 
-func Write_i64(mem []byte, offset Pointer, v int64) {
+func I64Write(mem []byte, offset Pointer, v int64) {
 	mem[offset] = byte(v)
 	mem[offset+1] = byte(v >> 8)
 	mem[offset+2] = byte(v >> 16)
@@ -398,23 +398,23 @@ func Write_i64(mem []byte, offset Pointer, v int64) {
 	mem[offset+7] = byte(v >> 56)
 }
 
-func Write_ui8(mem []byte, offset Pointer, v uint8) {
+func UI8Write(mem []byte, offset Pointer, v uint8) {
 	mem[offset] = v
 }
 
-func Write_ui16(mem []byte, offset Pointer, v uint16) {
+func UI16Write(mem []byte, offset Pointer, v uint16) {
 	mem[offset] = byte(v)
 	mem[offset+1] = byte(v >> 8)
 }
 
-func Write_ui32(memory []byte, offset Pointer, value uint32) {
+func UI32Write(memory []byte, offset Pointer, value uint32) {
 	memory[offset] = byte(value)
 	memory[offset+1] = byte(value >> 8)
 	memory[offset+2] = byte(value >> 16)
 	memory[offset+3] = byte(value >> 24)
 }
 
-func Write_ui64(memory []byte, offset Pointer, value uint64) {
+func UI64Write(memory []byte, offset Pointer, value uint64) {
 	memory[offset] = byte(value)
 	memory[offset+1] = byte(value >> 8)
 	memory[offset+2] = byte(value >> 16)
@@ -425,7 +425,7 @@ func Write_ui64(memory []byte, offset Pointer, value uint64) {
 	memory[offset+7] = byte(value >> 56)
 }
 
-func Write_f32(mem []byte, offset Pointer, f float32) {
+func F32Write(mem []byte, offset Pointer, f float32) {
 	v := math.Float32bits(f)
 	mem[offset] = byte(v)
 	mem[offset+1] = byte(v >> 8)
@@ -433,7 +433,7 @@ func Write_f32(mem []byte, offset Pointer, f float32) {
 	mem[offset+3] = byte(v >> 24)
 }
 
-func Write_f64(mem []byte, offset Pointer, f float64) {
+func F64Write(mem []byte, offset Pointer, f float64) {
 	v := math.Float64bits(f)
 	mem[offset] = byte(v)
 	mem[offset+1] = byte(v >> 8)
@@ -445,9 +445,9 @@ func Write_f64(mem []byte, offset Pointer, f float64) {
 	mem[offset+7] = byte(v >> 56)
 }
 
-func WriteSlice_byte(memory []byte, offset Pointer, byts []byte) {
+func SliceByteWrite(memory []byte, offset Pointer, byts []byte) {
 	// TODO:PTR use copy()
-	count := Cast_int_to_ptr(len(byts))
+	count := IntToPtrCast(len(byts))
 	for c := Pointer(0); c < count; c++ {
 		memory[offset+c] = byts[c]
 	}

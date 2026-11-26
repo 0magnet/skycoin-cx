@@ -30,17 +30,17 @@ func coreImageRun() int32 {
 	file, problem := coreImageFileRead()
 	if problem != "" {
 		coreImageWrite(os.Stderr, "cx-core-image: "+problem+"\n")
-		return types.CX_COMPILATION_ERROR
+		return types.CXCompilationError
 	}
 	image, fileProblem := ir.ImageFileDecode(file)
 	if fileProblem != ir.ImageFileProblemNone {
 		coreImageWrite(os.Stderr, "cx-core-image: "+ir.ImageFileProblemMessages[fileProblem]+"\n")
-		return types.CX_COMPILATION_ERROR
+		return types.CXCompilationError
 	}
 	for _, unlinked := range coreImageLibrariesUnlinked {
 		if coreImageOpcodesEnabled(&image.ImageOperationsEnabled, unlinked.coreImageLibraryOpcodeFirst, unlinked.coreImageLibraryOpcodeLast) {
 			coreImageWrite(os.Stderr, "cx-core-image: the image enables the "+constants.LibraryTable[unlinked.coreImageLibraryNumber-1].LibraryName+" library, which cx-core-image does not link\n")
-			return types.CX_RUNTIME_LIBRARY_DISABLED
+			return types.CXRuntimeLibraryDisabled
 		}
 	}
 	return coreImageMachineRun(vm.MachineNew(&image, coreImageOutputSize))
@@ -52,18 +52,18 @@ func coreImageMachineRun(machine *vm.Machine) int32 {
 	image := machine.MachineImage
 	framePointer := uint32(0)
 	if image.ImageEntryInit != ir.ImageFuncNone {
-		if code := coreImageEntryRun(machine, image.ImageEntryInit, 0); code != types.CX_SUCCESS {
+		if code := coreImageEntryRun(machine, image.ImageEntryInit, 0); code != types.CXSuccess {
 			return code
 		}
 		framePointer = image.ImageFuncs[image.ImageEntryInit].FuncFrameSize
 	}
-	if code := coreImageEntryRun(machine, image.ImageEntryMain, framePointer); code != types.CX_SUCCESS {
+	if code := coreImageEntryRun(machine, image.ImageEntryMain, framePointer); code != types.CXSuccess {
 		return code
 	}
 	if machine.MachineTestFailures > 0 {
-		return types.CX_ASSERT
+		return types.CXAssert
 	}
-	return types.CX_SUCCESS
+	return types.CXSuccess
 }
 
 // coreImageEntryRun runs one entry, draining the output at every stop. An
@@ -75,7 +75,7 @@ func coreImageEntryRun(machine *vm.Machine, entry uint32, framePointer uint32) i
 		coreImageOutputFlush(machine)
 		switch {
 		case stop == vm.StopReturn:
-			return types.CX_SUCCESS
+			return types.CXSuccess
 		case stop == vm.StopTestFailed:
 			coreImageTestFailurePrint(machine)
 		case !vm.Resumable(stop):
@@ -126,7 +126,7 @@ func coreImageErrorPrint(machine *vm.Machine, stop vm.Stop) {
 	fileName, lineNumber := coreImageStopLine(machine)
 	errorString, found := constants.ErrorStrings[int(vm.StopExitCodes[stop])]
 	if !found {
-		errorString = constants.ErrorStrings[types.CX_RUNTIME_ERROR]
+		errorString = constants.ErrorStrings[types.CXRuntimeError]
 	}
 	coreImageWrite(os.Stdout, "error: "+fileName+":"+lineNumber+", "+errorString+", "+vm.StopMessages[stop]+"\n")
 }

@@ -68,17 +68,17 @@ func (strct *CXStruct) FieldAdd(prgrm *CXProgram, cxArgument *CXArgument) *CXStr
 	// 	// Pre-compiling the offset of the field.
 	// 	lastTypeSignature := strct.Fields[numFlds-2]
 	// 	currentTypeSignature := strct.Fields[numFlds-1]
-	// 	if lastTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE && currentTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+	// 	if lastTypeSignature.Type == TypeCXArgumentDeprecate && currentTypeSignature.Type == TypeCXArgumentDeprecate {
 	// 		lastFldIdx := lastTypeSignature.Meta
 	// 		currFldIdx := currentTypeSignature.Meta
 	// 		prgrm.CXArgGet(CXArgumentIndex(currFldIdx)).Offset = prgrm.CXArgGet(CXArgumentIndex(lastFldIdx)).Offset + prgrm.CXArgGet(CXArgumentIndex(lastFldIdx)).TotalSize
-	// 	} else if lastTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE && currentTypeSignature.Type != TYPE_CXARGUMENT_DEPRECATE {
+	// 	} else if lastTypeSignature.Type == TypeCXArgumentDeprecate && currentTypeSignature.Type != TypeCXArgumentDeprecate {
 	// 		lastFldIdx := lastTypeSignature.Meta
 	// 		currentTypeSignature.Offset = prgrm.CXArgGet(CXArgumentIndex(lastFldIdx)).Offset + prgrm.CXArgGet(CXArgumentIndex(lastFldIdx)).TotalSize
-	// 	} else if lastTypeSignature.Type != TYPE_CXARGUMENT_DEPRECATE && currentTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+	// 	} else if lastTypeSignature.Type != TypeCXArgumentDeprecate && currentTypeSignature.Type == TypeCXArgumentDeprecate {
 	// 		currFldIdx := currentTypeSignature.Meta
 	// 		prgrm.CXArgGet(CXArgumentIndex(currFldIdx)).Offset = lastTypeSignature.Offset + lastTypeSignature.SizeGet(prgrm, false)
-	// 	} else if lastTypeSignature.Type != TYPE_CXARGUMENT_DEPRECATE && currentTypeSignature.Type != TYPE_CXARGUMENT_DEPRECATE {
+	// 	} else if lastTypeSignature.Type != TypeCXArgumentDeprecate && currentTypeSignature.Type != TypeCXArgumentDeprecate {
 	// 		currentTypeSignature.Offset = lastTypeSignature.Offset + lastTypeSignature.SizeGet(prgrm, false)
 	// 	}
 	// }
@@ -87,7 +87,7 @@ func (strct *CXStruct) FieldAdd(prgrm *CXProgram, cxArgument *CXArgument) *CXStr
 }
 
 // FieldAdd ...
-func (strct *CXStruct) AddField_TypeSignature(prgrm *CXProgram, fieldIdx CXTypeSignatureIndex) *CXStruct {
+func (strct *CXStruct) FieldTypeSignatureAdd(prgrm *CXProgram, fieldIdx CXTypeSignatureIndex) *CXStruct {
 	// Check if field already exist
 	for _, typeSignatureIdx := range strct.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
@@ -107,13 +107,13 @@ func (strct *CXStruct) AddField_TypeSignature(prgrm *CXProgram, fieldIdx CXTypeS
 	return strct
 }
 
-func (strct *CXStruct) AddField_CXAtomicOps(prgrm *CXProgram, fieldIdx CXTypeSignatureIndex) *CXStruct {
+func (strct *CXStruct) FieldCXAtomicOpsAdd(prgrm *CXProgram, fieldIdx CXTypeSignatureIndex) *CXStruct {
 	strct.Fields = append(strct.Fields, fieldIdx)
 
 	return strct
 }
 
-func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx CXArgumentIndex) *CXStruct {
+func (strct *CXStruct) FieldGlobalsCXAtomicOpsAdd(prgrm *CXProgram, cxArgIdx CXArgumentIndex) *CXStruct {
 	// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 	// Now an arena getter, site S0267.
 	cxArgument := prgrm.CXArgFromArrayGet(cxArgIdx)

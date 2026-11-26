@@ -151,7 +151,7 @@ func TestLowerCompare(t *testing.T) {
 		switch {
 		case last.Stage == lowerCompareStageMismatch:
 			mismatch = last.Mismatch
-		case last.Stage == lowerCompareStageLowered && last.VmCode == types.CX_SUCCESS && o.timedOut:
+		case last.Stage == lowerCompareStageLowered && last.VmCode == types.CXSuccess && o.timedOut:
 			mismatch = "the child timed out"
 		}
 		if mismatch != "" {
@@ -161,7 +161,7 @@ func TestLowerCompare(t *testing.T) {
 		}
 		matched++
 		matchedNames = append(matchedNames, name)
-		if last.VmCode != types.CX_SUCCESS {
+		if last.VmCode != types.CXSuccess {
 			stopped++
 			t.Logf("%s: vm exits with code %d", name, last.VmCode)
 		}
@@ -353,7 +353,7 @@ func lowerCompareChild(t *testing.T, program string) {
 	// does not enable, before either loop runs (D119).
 	core.LibrariesEnabledResolve(actions.AST)
 	if core.OperationRefused(actions.AST) != 0 {
-		lowerCompareEmit(t, lowerCompareResult{Stage: lowerCompareStageLowered, VmCode: types.CX_RUNTIME_LIBRARY_DISABLED})
+		lowerCompareEmit(t, lowerCompareResult{Stage: lowerCompareStageLowered, VmCode: types.CXRuntimeLibraryDisabled})
 		return
 	}
 
@@ -374,7 +374,7 @@ func lowerCompareChild(t *testing.T, program string) {
 		os.Exit(1)
 	}
 	lowerCompareEmit(t, lowerCompareResult{Stage: lowerCompareStageLowered, VmCode: vmCode})
-	if vmCode != types.CX_SUCCESS && vmCode != types.CX_ASSERT {
+	if vmCode != types.CXSuccess && vmCode != types.CXAssert {
 		// The error print copied the vm state into the program, and the
 		// runs of cx compare the output.
 		return

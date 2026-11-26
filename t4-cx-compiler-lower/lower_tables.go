@@ -25,10 +25,10 @@ func (s *state) localAdd(signatureIndex ast.CXTypeSignatureIndex, offset uint32,
 	code := types.UNDEFINED
 	typeName := ""
 	switch signature.Type {
-	case ast.TYPE_ATOMIC:
+	case ast.TypeAtomic:
 		code = types.Code(signature.Meta)
 		typeName = code.Name()
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta))
 		name = arg.Name
 		typeName = localArgumentTypeName(prgrm, arg)
@@ -37,8 +37,8 @@ func (s *state) localAdd(signatureIndex ast.CXTypeSignatureIndex, offset uint32,
 		}
 	default:
 		typeName = signature.TypeStringGet(prgrm)
-		if signature.Type == ast.TYPE_POINTER_ATOMIC || signature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC ||
-			signature.Type == ast.TYPE_POINTER_SLICE_ATOMIC || signature.Type == ast.TYPE_POINTER_STRUCT {
+		if signature.Type == ast.TypePointerAtomic || signature.Type == ast.TypePointerArrayAtomic ||
+			signature.Type == ast.TypePointerSliceAtomic || signature.Type == ast.TypePointerStruct {
 			typeName = "*" + typeName
 		}
 	}
@@ -136,13 +136,13 @@ func (s *state) readOnlyAdd(signatureIndex ast.CXTypeSignatureIndex, p place) {
 	prgrm := s.statePrgrm
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	name := signature.Name
-	if signature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if signature.Type == ast.TypeCXArgumentDeprecate {
 		arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta))
 		if len(arg.Indexes) > 0 || len(arg.Fields) > 0 || len(arg.DereferenceOperations) > 0 {
 			return
 		}
 		name = arg.Name
-	} else if signature.Type != ast.TYPE_ATOMIC {
+	} else if signature.Type != ast.TypeAtomic {
 		return
 	}
 	if name != stringpool.StringGidNil {

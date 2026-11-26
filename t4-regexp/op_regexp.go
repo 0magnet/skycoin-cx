@@ -7,7 +7,7 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/skycoin/skycoin-cx/t0-types" // thin: only Read_str, STR, Write_str; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-types" // thin: only StrRead, STR, Write_str; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -29,7 +29,7 @@ func expOffset(value ast.CXValue) types.Pointer {
 // VIOLATION STRHOT-142: B, hands a path or text to Go or the OS, #412.
 // VIOLATION VMALLOC-017: compiles and matches with the Go regexp package, #407.
 func regexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) error {
-	exp := inputs[0].Get_str(prgrm)
+	exp := inputs[0].StrGet(prgrm)
 
 	// The CX Regexp only holds the expression. The same expression in two
 	// parts of a program shares one compiled instance.
@@ -50,7 +50,7 @@ func OpRegexpMustCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []a
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
-		panic(types.CX_RUNTIME_ERROR)
+		panic(types.CXRuntimeError)
 	}
 
 }
@@ -67,19 +67,19 @@ func OpRegexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	if err != nil {
 		errStr = err.Error()
 	}
-	outputs[1].Set_str(prgrm, errStr)
+	outputs[1].StrSet(prgrm, errStr)
 }
 
 // OpRegexpFind is a wrapper for golang's `regexp`'s `Find`.
 // VIOLATION STRHOT-144: B, hands a path or text to Go or the OS, #412.
 // VIOLATION VMALLOC-017: compiles and matches with the Go regexp package, #407.
 func OpRegexpFind(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	exp := types.Read_str(prgrm.Memory, expOffset(inputs[0]))
+	exp := types.StrRead(prgrm.Memory, expOffset(inputs[0]))
 	r, ok := regexps[exp]
 	if !ok {
 		fmt.Fprintln(os.Stderr, "regexp: Find on a Regexp that did not compile: "+exp)
-		panic(types.CX_RUNTIME_ERROR)
+		panic(types.CXRuntimeError)
 	}
 
-	outputs[0].Set_str(prgrm, string(r.Find([]byte(inputs[1].Get_str(prgrm)))))
+	outputs[0].StrSet(prgrm, string(r.Find([]byte(inputs[1].StrGet(prgrm)))))
 }

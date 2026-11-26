@@ -52,7 +52,7 @@ func coreRun(args []string) int32 {
 	program, args, problem := coreProgramLoad(args)
 	if problem != "" {
 		fmt.Fprintln(os.Stderr, "cx-core:", problem)
-		return types.CX_COMPILATION_ERROR
+		return types.CXCompilationError
 	}
 
 	core.Register(core.ProgramMake(), coreLibraryRegisters...)
@@ -60,16 +60,16 @@ func coreRun(args []string) int32 {
 	prgrm, err := ast.Deserialize(program, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "cx-core: %s\n", err)
-		return types.CX_COMPILATION_ERROR
+		return types.CXCompilationError
 	}
 	if missing := core.OpcodesMissing(prgrm); len(missing) > 0 {
 		fmt.Fprintf(os.Stderr, "cx-core: the program uses opcodes this core does not include: %s\n", strings.Join(missing, ", "))
-		return types.CX_COMPILATION_ERROR
+		return types.CXCompilationError
 	}
 	core.LibrariesEnabledResolve(prgrm)
 	if missing := core.LibrariesMissing(prgrm, coreLibraryOpcodesLinked); len(missing) > 0 {
 		fmt.Fprintf(os.Stderr, "cx-core: the program enables system libraries this core does not link: %s\n", strings.Join(missing, ", "))
-		return types.CX_COMPILATION_ERROR
+		return types.CXCompilationError
 	}
 	if core.LibrariesActive(prgrm)[constants.LibraryNumberFile] {
 		// The file library resolves paths in the working directory, as cx
@@ -77,7 +77,7 @@ func coreRun(args []string) int32 {
 		root, fileError := sandbox.RootOpen("")
 		if fileError != nil {
 			fmt.Fprintf(os.Stderr, "cx-core: cannot open the sandbox: %s\n", fileError.FileErrorMessage)
-			return types.CX_COMPILATION_ERROR
+			return types.CXCompilationError
 		}
 		defer root.Close()
 		prgrm.ProgramSandboxRoot = root

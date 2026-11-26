@@ -97,7 +97,7 @@ func TestSerializeHeaderMismatch(t *testing.T) {
 		want   string
 	}{
 		{8, 1, "format 1"},
-		{12, uint32(16 - types.POINTER_SIZE), "byte pointers"},
+		{12, uint32(16 - types.PointerSize), "byte pointers"},
 		{16, 1, "language version"},
 	}
 	for _, tc := range cases {

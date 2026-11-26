@@ -76,7 +76,7 @@ func main() {
 	check("add", "c", 4, types.I32, "i32")
 	check("main", "x", 4, types.I32, "i32")
 	check("main", "p", 8, types.UNDEFINED, "point")
-	check("main", "q", uint32(types.POINTER_SIZE), types.UNDEFINED, "*i32")
+	check("main", "q", uint32(types.PointerSize), types.UNDEFINED, "*i32")
 
 	readOnly := func(value uint32) bool {
 		for _, span := range image.ImageReadOnly {

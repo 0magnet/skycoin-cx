@@ -34,9 +34,9 @@ func LibraryFunctionLinked(library int, function int) bool {
 }
 
 // BuiltInName returns the name of the built-in fn calls, the library function
-// for constants.OP_LIBRARY_CALL and the opcode otherwise.
+// for constants.OpLibraryCall and the opcode otherwise.
 func (fn *CXFunction) BuiltInName() string {
-	if fn.AtomicOPCode == constants.OP_LIBRARY_CALL {
+	if fn.AtomicOPCode == constants.OpLibraryCall {
 		// A binary that does not link the library, such as a cx build core,
 		// has no NativeNames entry for it.
 		row, _ := constants.LibraryFunctionLiveByNumber(fn.LibraryNumber, fn.LibraryFunctionNumber)
@@ -48,7 +48,7 @@ func (fn *CXFunction) BuiltInName() string {
 // BuiltInNameBytes returns the bytes of BuiltInName without building a
 // string, for printing on the run path. The caller must not write to them.
 func (fn *CXFunction) BuiltInNameBytes() []byte {
-	if fn.AtomicOPCode == constants.OP_LIBRARY_CALL {
+	if fn.AtomicOPCode == constants.OpLibraryCall {
 		return constants.LibraryFunctionLiveNameBytes(fn.LibraryNumber, fn.LibraryFunctionNumber)
 	}
 	return constants.OpcodeNameBytesOf(fn.AtomicOPCode)
@@ -75,6 +75,6 @@ func libraryCall(prgrm *CXProgram, fn *CXFunction, inputs []CXValue, outputs []C
 	}
 	dispatch := LibraryDispatches[fn.LibraryNumber]
 	if dispatch == nil || !dispatch(prgrm, fn.LibraryFunctionNumber, inputs, outputs) {
-		panic(RuntimeOpcodeUnlinked(constants.OP_LIBRARY_CALL))
+		panic(RuntimeOpcodeUnlinked(constants.OpLibraryCall))
 	}
 }

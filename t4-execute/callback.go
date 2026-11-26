@@ -33,7 +33,7 @@ func Callback(cxprogram *ast.CXProgram, gid ast.CXFunctionGid, inputs [][]byte) 
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S1247.
 		newCallOperatorInputTypeSig := cxprogram.CXTypeSignatureFromArrayGet(newCallOperatorInputs[i])
-		types.WriteSlice_byte(cxprogram.Memory, ast.FinalOffsetGet(cxprogram, newFP, nil, newCallOperatorInputTypeSig), inp)
+		types.SliceByteWrite(cxprogram.Memory, ast.FinalOffsetGet(cxprogram, newFP, nil, newCallOperatorInputTypeSig), inp)
 	}
 
 	var maxOps = 0
@@ -45,7 +45,7 @@ func Callback(cxprogram *ast.CXProgram, gid ast.CXFunctionGid, inputs [][]byte) 
 	err := runLoop(cxprogram, true, maxOps, previousCall, &values.CallbackValuesInputs, &values.CallbackValuesOutputs)
 	cxprogram.ProgramCallbackDepth--
 	if err != nil {
-		os.Exit(types.CX_INTERNAL_ERROR)
+		os.Exit(types.CXInternalError)
 	}
 
 	cxprogram.CallCounter = previousCall

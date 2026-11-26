@@ -73,7 +73,7 @@ func TestLibraryFunctionsMatchLifecycleTable(t *testing.T) {
 		}
 		native := ast.NativeFunctionOf(prgrm, key)
 		signature := constants.LibraryFunctionSignatureOf(row.LibraryNumber, row.Number)
-		if live && (native == nil || native.AtomicOPCode != constants.OP_LIBRARY_CALL || native.LibraryNumber != row.LibraryNumber || native.LibraryFunctionNumber != row.Number || len(native.Inputs) != len(signature.LibraryFunctionSignatureInputs()) || len(native.Outputs) != len(signature.LibraryFunctionSignatureOutputs())) {
+		if live && (native == nil || native.AtomicOPCode != constants.OpLibraryCall || native.LibraryNumber != row.LibraryNumber || native.LibraryFunctionNumber != row.Number || len(native.Inputs) != len(signature.LibraryFunctionSignatureInputs()) || len(native.Outputs) != len(signature.LibraryFunctionSignatureOutputs())) {
 			t.Errorf("library %d function %d %q: native %+v", row.LibraryNumber, row.Number, row.Name, native)
 		}
 		if !live && native != nil {
@@ -127,12 +127,12 @@ func TestOpcodeNativesAndDispatch(t *testing.T) {
 	if constants.OpcodeLinked(nativeCode("regexp.Compile")) && (compile.Outputs[0].Type != types.STRUCT || prgrm.CXProgramNameText(compile.Outputs[0].Name) != "r") {
 		t.Errorf("regexp.Compile returns %+v", compile.Outputs[0])
 	}
-	for _, code := range []int{0, constants.OP_JMP_EQ, constants.OP_ADD, constants.OP_LIBRARY_CALL, 4096} {
+	for _, code := range []int{0, constants.OpJmpEq, constants.OpAdd, constants.OpLibraryCall, 4096} {
 		if ast.OpcodeDispatch(prgrm, code, nil, nil) {
 			t.Errorf("opcode %d ran in the switch", code)
 		}
 	}
-	if constants.OpcodeOperatorOf(types.I32, constants.OP_ADD) != nativeCode("i32.add") {
+	if constants.OpcodeOperatorOf(types.I32, constants.OpAdd) != nativeCode("i32.add") {
 		t.Errorf("i32 add is not i32.add")
 	}
 }

@@ -5,7 +5,7 @@ package ast
 // All statements in CX are expressions, including for loops and other control
 // flow.
 type CXExpression struct {
-	ExpressionType CXEXPR_TYPE
+	ExpressionType CXExpressionType
 
 	// ExpressionScopeOpenCount and ExpressionScopeCloseCount are the number
 	// of block scopes that start and end at this expression.
@@ -14,5 +14,5 @@ type CXExpression struct {
 
 	// For new CX AST Format
 	Index int
-	Type  CXOPERATION_TYPE
+	Type  CXOperationType
 }

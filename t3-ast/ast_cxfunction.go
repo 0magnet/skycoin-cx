@@ -102,7 +102,7 @@ func (fn *CXFunction) InputAdd(prgrm *CXProgram, param *CXArgument) *CXFunction 
 		fn.Inputs = &CXStruct{}
 	}
 
-	fn.Inputs.AddField_TypeSignature(prgrm, newFieldIdx)
+	fn.Inputs.FieldTypeSignatureAdd(prgrm, newFieldIdx)
 
 	return fn
 }
@@ -163,7 +163,7 @@ func (fn *CXFunction) OutputAdd(prgrm *CXProgram, param *CXArgument) *CXFunction
 		fn.Outputs = &CXStruct{}
 	}
 
-	fn.Outputs.AddField_TypeSignature(prgrm, newFieldIdx)
+	fn.Outputs.FieldTypeSignatureAdd(prgrm, newFieldIdx)
 
 	return fn
 }
@@ -196,7 +196,7 @@ func (fn *CXFunction) OutputsGet(prgrm *CXProgram) []CXTypeSignatureIndex {
 
 // ExpressionAdd ...
 func (fn *CXFunction) ExpressionAdd(prgrm *CXProgram, expr *CXExpression) *CXFunction {
-	if expr.Type == CX_ATOMIC_OPERATOR {
+	if expr.Type == CXOperationTypeAtomicOperator {
 		// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 		// Now an arena getter, site S0142.
 		cxAtomicOp, err := prgrm.CXAtomicOpGet(expr.Index)
@@ -306,7 +306,7 @@ func AtomicOperatorExpressionMake(prgrm *CXProgram, op *CXNativeFunction) *CXExp
 	// Now a heap literal, site S0152.
 	return &CXExpression{
 		Index: index,
-		Type:  CX_ATOMIC_OPERATOR,
+		Type:  CXOperationTypeAtomicOperator,
 	}
 }
 
@@ -326,7 +326,7 @@ func CXLineExpressionMake(prgrm *CXProgram, fileName SourceFileGid, lineNo int, 
 	// Now a heap literal, site S0156.
 	return &CXExpression{
 		Index: index,
-		Type:  CX_LINE,
+		Type:  CXOperationTypeLine,
 	}
 }
 

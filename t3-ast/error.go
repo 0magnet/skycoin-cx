@@ -6,7 +6,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t2-globals" // thin: only DBG_GOLANG_STACK_TRACE, HeapOffset; core globals, keep
+	"github.com/skycoin/skycoin-cx/t2-globals" // thin: only DebugGolangStackTrace, HeapOffset; core globals, keep
 )
 
 // RuntimeErrorRecord is a runtime error of the old loop as data. The loop
@@ -15,7 +15,7 @@ import (
 type RuntimeErrorRecord struct {
 	// RuntimeErrorRecordRaised is set once a runtime error ended the loop.
 	RuntimeErrorRecordRaised bool
-	// RuntimeErrorRecordCode is the CX exit code, a CX_RUNTIME_* or CX_ASSERT.
+	// RuntimeErrorRecordCode is the CX exit code, a CX_RUNTIME_* or CXAssert.
 	RuntimeErrorRecordCode int
 	// RuntimeErrorRecordPanicValue is the value the panic carried. A Go
 	// runtime error formats its own message only when it is printed.
@@ -39,7 +39,7 @@ func ErrorString(code int) string {
 	if str, found := constants.ErrorStrings[code]; found {
 		return str
 	}
-	return constants.ErrorStrings[types.CX_RUNTIME_ERROR]
+	return constants.ErrorStrings[types.CXRuntimeError]
 }
 
 // RuntimeOutOfMemory is the panic value of an allocation of
@@ -64,13 +64,13 @@ func errorCode(r interface{}) int {
 	case int:
 		return int(v)
 	case RuntimeOutOfMemory:
-		return types.CX_RUNTIME_HEAP_EXHAUSTED_ERROR
+		return types.CXRuntimeHeapExhaustedError
 	case RuntimeLibraryDisabled:
-		return types.CX_RUNTIME_LIBRARY_DISABLED
+		return types.CXRuntimeLibraryDisabled
 	case RuntimeOpcodeUnlinked:
-		return types.CX_RUNTIME_NOT_IMPLEMENTED
+		return types.CXRuntimeNotImplemented
 	default:
-		return types.CX_RUNTIME_ERROR
+		return types.CXRuntimeError
 	}
 }
 
@@ -79,7 +79,7 @@ func errorCode(r interface{}) int {
 func runtimeErrorRecordSet(prgrm *CXProgram, r interface{}, stackPrint bool, defaultError int) {
 	call := prgrm.CallStack[prgrm.CallCounter]
 	code := errorCode(r)
-	if code == types.CX_RUNTIME_ERROR {
+	if code == types.CXRuntimeError {
 		code = defaultError
 	}
 
@@ -92,7 +92,7 @@ func runtimeErrorRecordSet(prgrm *CXProgram, r interface{}, stackPrint bool, def
 	record.RuntimeErrorRecordStackPrint = stackPrint
 
 	// The Go stack of the panic exists only here, so it is printed here.
-	if globals.DBG_GOLANG_STACK_TRACE {
+	if globals.DebugGolangStackTrace {
 		debug.PrintStack()
 	}
 }
@@ -102,13 +102,13 @@ func runtimeErrorRecordSet(prgrm *CXProgram, r interface{}, stackPrint bool, def
 func RuntimeError(prgrm *CXProgram) {
 	if r := recover(); r != nil {
 		switch r {
-		case constants.STACK_OVERFLOW_ERROR:
+		case constants.StackOverflowError:
 			// callPush never pushes a frame that does not fit, so the caller is
 			// the current call. Only the entry frame leaves the pointer past the stack.
-			stackPrint := prgrm.Stack.Pointer <= constants.STACK_SIZE
-			runtimeErrorRecordSet(prgrm, r, stackPrint, types.CX_RUNTIME_STACK_OVERFLOW_ERROR)
+			stackPrint := prgrm.Stack.Pointer <= constants.StackSize
+			runtimeErrorRecordSet(prgrm, r, stackPrint, types.CXRuntimeStackOverflowError)
 		default:
-			runtimeErrorRecordSet(prgrm, r, true, types.CX_RUNTIME_ERROR)
+			runtimeErrorRecordSet(prgrm, r, true, types.CXRuntimeError)
 		}
 	}
 }

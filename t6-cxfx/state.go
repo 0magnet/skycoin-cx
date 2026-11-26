@@ -81,7 +81,7 @@ type State struct {
 	CxfxCallbackI32I32Count int32
 
 	// CxfxAppCallbackTable is the callback of each event type.
-	CxfxAppCallbackTable [APP_EVENT_COUNT]Callback
+	CxfxAppCallbackTable [AppEventCount]Callback
 
 	// CxfxCallbackInputs are views of CxfxCallbackInputBytes that a callback
 	// passes to execute.Callback, so an event allocates nothing.
@@ -234,18 +234,18 @@ func cxfxTextNulTerminated(text []byte) *uint8 {
 
 // cxfxCallbackInputsI32 writes value as input index of an event callback.
 func cxfxCallbackInputsI32(index int, value int32) {
-	types.Write_i32(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
+	types.I32Write(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
 	cxfxState.CxfxCallbackInputs[index] = cxfxState.CxfxCallbackInputBytes[index][:4]
 }
 
 // cxfxCallbackInputsI64 writes value as input index of an event callback.
 func cxfxCallbackInputsI64(index int, value int64) {
-	types.Write_i64(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
+	types.I64Write(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
 	cxfxState.CxfxCallbackInputs[index] = cxfxState.CxfxCallbackInputBytes[index][:8]
 }
 
 // cxfxCallbackInputsF64 writes value as input index of an event callback.
 func cxfxCallbackInputsF64(index int, value float64) {
-	types.Write_f64(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
+	types.F64Write(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
 	cxfxState.CxfxCallbackInputs[index] = cxfxState.CxfxCallbackInputBytes[index][:8]
 }

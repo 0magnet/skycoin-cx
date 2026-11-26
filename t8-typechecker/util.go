@@ -111,12 +111,12 @@ func DeclarationSpecifierParse(prgrm *ast.CXProgram, declarationSpecifierByte []
 			}
 
 			// Parsed right to left, so each length goes in front: outermost first.
-			newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{types.Pointer(byteToInt)}, constants.DECL_ARRAY)
+			newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{types.Pointer(byteToInt)}, constants.DeclarationArray)
 			return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 		}
 
 		// Slices
-		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DECL_SLICE)
+		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DeclarationSlice)
 		return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 	}
 
@@ -124,7 +124,7 @@ func DeclarationSpecifierParse(prgrm *ast.CXProgram, declarationSpecifierByte []
 	if lastByte == '*' {
 		newLastIdx := bytes.LastIndex(declarationSpecifierByte, []byte("*"))
 		newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
-		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DECL_POINTER)
+		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DeclarationPointer)
 		return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 
 	}

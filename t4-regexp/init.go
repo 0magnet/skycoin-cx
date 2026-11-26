@@ -3,7 +3,7 @@
 package regexp
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types" // thin: only Read_str, STR, Write_str; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-types" // thin: only StrRead, STR, Write_str; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 

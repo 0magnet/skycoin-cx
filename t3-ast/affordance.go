@@ -44,7 +44,7 @@ const (
 // Read only.
 var AffordanceMemoryNames = [AffordanceMemoryCount]string{"data", "stack", "heap"}
 
-// AffordanceValue is an aff value, types.AFF_SIZE bytes of program memory,
+// AffordanceValue is an aff value, types.AffSize bytes of program memory,
 // four little endian i32 in field order. Indexes are -1 when unused.
 type AffordanceValue struct {
 	AffordanceValueKind     AffordanceKind
@@ -55,19 +55,19 @@ type AffordanceValue struct {
 
 // AffordanceValueWrite writes value at offset of memory.
 func AffordanceValueWrite(memory []byte, offset types.Pointer, value AffordanceValue) {
-	types.Write_i32(memory, offset, int32(value.AffordanceValueKind))
-	types.Write_i32(memory, offset+4, int32(value.AffordanceValuePackage))
-	types.Write_i32(memory, offset+8, value.AffordanceValueTarget)
-	types.Write_i32(memory, offset+12, int32(value.AffordanceValueVariable))
+	types.I32Write(memory, offset, int32(value.AffordanceValueKind))
+	types.I32Write(memory, offset+4, int32(value.AffordanceValuePackage))
+	types.I32Write(memory, offset+8, value.AffordanceValueTarget)
+	types.I32Write(memory, offset+12, int32(value.AffordanceValueVariable))
 }
 
 // AffordanceValueRead reads the aff value at offset of memory.
 func AffordanceValueRead(memory []byte, offset types.Pointer) AffordanceValue {
 	return AffordanceValue{
-		AffordanceValueKind:     AffordanceKind(types.Read_i32(memory, offset)),
-		AffordanceValuePackage:  CXPackageIndex(types.Read_i32(memory, offset+4)),
-		AffordanceValueTarget:   types.Read_i32(memory, offset+8),
-		AffordanceValueVariable: CXTypeSignatureIndex(types.Read_i32(memory, offset+12)),
+		AffordanceValueKind:     AffordanceKind(types.I32Read(memory, offset)),
+		AffordanceValuePackage:  CXPackageIndex(types.I32Read(memory, offset+4)),
+		AffordanceValueTarget:   types.I32Read(memory, offset+8),
+		AffordanceValueVariable: CXTypeSignatureIndex(types.I32Read(memory, offset+12)),
 	}
 }
 
@@ -156,7 +156,7 @@ func AffordanceSerialize(prgrm *CXProgram, value AffordanceValue) ([]byte, bool)
 	encoder := serializeEncoder{serializeEncoderBytes: make([]byte, 0, 256)}
 	encoder.serializeEncoderBytes = append(encoder.serializeEncoderBytes, serializeAffordanceMagic...)
 	encoder.serializeEncoderBytes = binary.LittleEndian.AppendUint32(encoder.serializeEncoderBytes, serializeFormatVersion)
-	encoder.serializeEncoderBytes = binary.LittleEndian.AppendUint32(encoder.serializeEncoderBytes, uint32(types.POINTER_SIZE))
+	encoder.serializeEncoderBytes = binary.LittleEndian.AppendUint32(encoder.serializeEncoderBytes, uint32(types.PointerSize))
 	encoder.serializeEncoderBytes = binary.LittleEndian.AppendUint64(encoder.serializeEncoderBytes, uint64(prgrm.Version))
 	encoder.serializeEncoderUint(uint64(value.AffordanceValueKind))
 	pkg := &prgrm.CXPackages[value.AffordanceValuePackage]
@@ -242,15 +242,15 @@ func affordanceIndexesSorted[Index ~int](names map[stringpool.StringGid]Index) [
 // an index, a field or a dereference.
 func CXTypeSignatureWhole(prgrm *CXProgram, sig *CXTypeSignature) bool {
 	switch sig.Type {
-	case TYPE_ATOMIC, TYPE_SLICE_ATOMIC:
-		return sig.Type == TYPE_ATOMIC || len(prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta).Indexes) == 0
-	case TYPE_POINTER_ATOMIC, TYPE_POINTER_SLICE_ATOMIC:
+	case TypeAtomic, TypeSliceAtomic:
+		return sig.Type == TypeAtomic || len(prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta).Indexes) == 0
+	case TypePointerAtomic, TypePointerSliceAtomic:
 		return !sig.Deref
-	case TYPE_ARRAY_ATOMIC, TYPE_POINTER_ARRAY_ATOMIC:
+	case TypeArrayAtomic, TypePointerArrayAtomic:
 		return !sig.Deref && len(prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta).Indexes) == 0
-	case TYPE_STRUCT, TYPE_POINTER_STRUCT:
+	case TypeStruct, TypePointerStruct:
 		return !sig.Deref && len(prgrm.CXTypeSignatureStructFromArrayGet(sig.Meta).Fields) == 0
-	case TYPE_CXARGUMENT_DEPRECATE:
+	case TypeCXArgumentDeprecate:
 		arg := prgrm.CXArgFromArrayGet(CXArgumentIndex(sig.Meta))
 		return len(arg.Fields) == 0 && len(arg.Indexes) == 0 && len(arg.DereferenceOperations) == 0
 	}

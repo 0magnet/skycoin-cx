@@ -20,9 +20,9 @@ import (
 )
 
 const (
-	OS_SEEK_SET = iota
-	OS_SEEK_CUR
-	OS_SEEK_END
+	OsSeekSet = iota
+	OsSeekCurrent
+	OsSeekEnd
 )
 
 // ValidFile returns the open file of handle, nil for one that is not open.
@@ -31,7 +31,7 @@ func ValidFile(handle int32) *os.File {
 }
 
 func OpOsLogFile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	filelog.Enable(inputs[0].Get_bool(prgrm))
+	filelog.Enable(inputs[0].BoolGet(prgrm))
 }
 
 // VIOLATION STRHOT-131: B, hands a path or text to Go or the OS, #412.
@@ -39,11 +39,11 @@ func OpOsReadAllText(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	success := false
 
 	if byts, fileError := ast.ProgramSandboxFileRead(prgrm, &inputs[0]); fileError == nil {
-		outputs[0].Set_str(prgrm, string(byts))
+		outputs[0].StrSet(prgrm, string(byts))
 		success = true
 	}
 
-	outputs[1].Set_bool(prgrm, success)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
@@ -53,7 +53,7 @@ func OpOsOpen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 		handle = cxfiles.FileHandleTake(file)
 	}
 
-	outputs[0].Set_i32(prgrm, int32(handle))
+	outputs[0].I32Set(prgrm, int32(handle))
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
@@ -63,7 +63,7 @@ func OpOsCreate(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		handle = cxfiles.FileHandleTake(file)
 	}
 
-	outputs[0].Set_i32(prgrm, int32(handle))
+	outputs[0].I32Set(prgrm, int32(handle))
 }
 
 // OpOsOpenReadWrite is os.OpenReadWrite(path str) (handle i32): the file at
@@ -74,28 +74,28 @@ func OpOsOpenReadWrite(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 	if file, fileError := ast.ProgramSandboxFileOpenReadWrite(prgrm, &inputs[0]); fileError == nil {
 		handle = cxfiles.FileHandleTake(file)
 	}
-	outputs[0].Set_i32(prgrm, handle)
+	outputs[0].I32Set(prgrm, handle)
 }
 
 // OpOsRemove is os.Remove(path str) (removed bool): removes the file or empty
 // directory at path inside the sandbox.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsRemove(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_bool(prgrm, ast.ProgramSandboxFileRemove(prgrm, &inputs[0]) == nil)
+	outputs[0].BoolSet(prgrm, ast.ProgramSandboxFileRemove(prgrm, &inputs[0]) == nil)
 }
 
 func OpOsClose(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_bool(prgrm, cxfiles.FileHandleClose(inputs[0].Get_i32(prgrm)))
+	outputs[0].BoolSet(prgrm, cxfiles.FileHandleClose(inputs[0].I32Get(prgrm)))
 }
 
 // OpOsSync is os.Sync(handle i32) (synced bool): commits what was written to
 // the file of handle to stable storage.
 func OpOsSync(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_bool(prgrm, cxfiles.FileHandleSync(inputs[0].Get_i32(prgrm)))
+	outputs[0].BoolSet(prgrm, cxfiles.FileHandleSync(inputs[0].I32Get(prgrm)))
 }
 
 func OpOsSeek(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_i64(prgrm, cxfiles.FileHandleSeek(inputs[0].Get_i32(prgrm), inputs[1].Get_i64(prgrm), inputs[2].Get_i32(prgrm)))
+	outputs[0].I64Set(prgrm, cxfiles.FileHandleSeek(inputs[0].I32Get(prgrm), inputs[1].I64Get(prgrm), inputs[2].I32Get(prgrm)))
 }
 
 // VIOLATION STRHOT-134: B, hands a path or text to Go or the OS, #412.
@@ -104,7 +104,7 @@ func OpOsReadStr(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	var len uint64
 	var value string
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &len); err == nil {
 			bytes := make([]byte, len)
 			if err := binary.Read(file, binary.LittleEndian, &bytes); err == nil {
@@ -113,170 +113,170 @@ func OpOsReadStr(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 			}
 		}
 	}
-	outputs[0].Set_str(prgrm, value)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].StrSet(prgrm, value)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsReadF64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value float64
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_f64(prgrm, value)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].F64Set(prgrm, value)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsReadF32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value float32
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_f32(prgrm, value)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].F32Set(prgrm, value)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsReadUI64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value uint64
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_ui64(prgrm, value)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].UI64Set(prgrm, value)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsReadUI32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value uint32
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_ui32(prgrm, value)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].UI32Set(prgrm, value)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsReadUI16(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value uint16
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_ui16(prgrm, value)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].UI16Set(prgrm, value)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsReadUI8(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value uint8
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_ui8(prgrm, value)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].UI8Set(prgrm, value)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsReadI64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value int64
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_i64(prgrm, value)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].I64Set(prgrm, value)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsReadI32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value int32
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_i32(prgrm, value)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].I32Set(prgrm, value)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsReadI16(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value int16
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_i16(prgrm, value)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].I16Set(prgrm, value)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsReadI8(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value int8
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_i8(prgrm, value)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].I8Set(prgrm, value)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsReadBOOL(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var value bool
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, value)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, value)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION STRHOT-135: B, hands a path or text to Go or the OS, #412.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteStr(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		value := inputs[1].Get_str(prgrm)
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		value := inputs[1].StrGet(prgrm)
 		len := len(value)
 		if err := binary.Write(file, binary.LittleEndian, uint64(len)); err == nil {
 			if err := binary.Write(file, binary.LittleEndian, []byte(value)); err == nil {
@@ -285,139 +285,139 @@ func OpOsWriteStr(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteF64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_f64(prgrm)); err == nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].F64Get(prgrm)); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteF32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_f32(prgrm)); err == nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].F32Get(prgrm)); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteUI64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_ui64(prgrm)); err == nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].UI64Get(prgrm)); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteUI32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i32(prgrm)); err == nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].I32Get(prgrm)); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteUI16(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_ui16(prgrm)); err == nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].UI16Get(prgrm)); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteUI8(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_ui8(prgrm)); err == nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].UI8Get(prgrm)); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteI64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i64(prgrm)); err == nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].I64Get(prgrm)); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteI32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i32(prgrm)); err == nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].I32Get(prgrm)); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteI16(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i16(prgrm)); err == nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].I16Get(prgrm)); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteI8(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_i8(prgrm)); err == nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].I8Get(prgrm)); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteBOOL(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if err := binary.Write(file, binary.LittleEndian, inputs[1].Get_bool(prgrm)); err == nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if err := binary.Write(file, binary.LittleEndian, inputs[1].BoolGet(prgrm)); err == nil {
 			success = true
 		}
 	}
 
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (outputSlicePointer types.Pointer, outputSliceOffset types.Pointer, sizeofElement types.Pointer, count types.Pointer) {
@@ -426,7 +426,7 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	var inpType, outType types.Code
 	var inpIsSlice, outIsSlice bool
 	var inpSize types.Pointer
-	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if inputs[1].TypeSignature.Type == ast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1388.
 		inp1 = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
@@ -434,7 +434,7 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 		inpType = inp1.Type
 		inpIsSlice = (inp1.AssignmentElementGet(prgrm)).SliceTyped()
 		inpSize = (inp1.AssignmentElementGet(prgrm)).Size
-	} else if inputs[1].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
+	} else if inputs[1].TypeSignature.Type == ast.TypeSliceAtomic {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S1389.
 		sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(inputs[1].TypeSignature.Meta)
@@ -445,14 +445,14 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 		panic("type is not type cx argument deprecate\n\n")
 	}
 
-	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if outputs[0].TypeSignature.Type == ast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1390.
 		out0 = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
 
 		outType = out0.Type
 		outIsSlice = (out0.AssignmentElementGet(prgrm)).SliceTyped()
-	} else if outputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
+	} else if outputs[0].TypeSignature.Type == ast.TypeSliceAtomic {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S1391.
 		sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(outputs[0].TypeSignature.Meta)
@@ -464,13 +464,13 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	}
 
 	if inpType != outType || !inpIsSlice || !outIsSlice {
-		panic(types.CX_RUNTIME_INVALID_ARGUMENT)
+		panic(types.CXRuntimeInvalidArgument)
 	}
 
 	outputSlicePointer = outputs[0].Offset
 	sizeofElement = inpSize
 	// The count is a ui64. One past what the heap can hold reads nothing.
-	count64 := inputs[2].Get_ui64(prgrm)
+	count64 := inputs[2].UI64Get(prgrm)
 	if count64 > uint64(ast.SliceElementLimit(prgrm, sizeofElement)) {
 		outputSliceOffset = ast.SliceOffsetGet(prgrm, inputs[1].FramePointer, inputs[1].TypeSignature)
 		return
@@ -485,20 +485,20 @@ func OpOsReadF64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(prgrm, inputs, outputs)
 	if count > 0 {
-		if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+		if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 			values := make([]float64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
 				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_f64(outputSliceElements, i*sizeofElement, values[i])
+					types.F64Write(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
 	}
 
-	outputs[0].Set_ptr(prgrm, outputSliceOffset)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].PtrSet(prgrm, outputSliceOffset)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
@@ -506,20 +506,20 @@ func OpOsReadF32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(prgrm, inputs, outputs)
 	if count > 0 {
-		if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+		if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 			values := make([]float32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
 				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_f32(outputSliceElements, i*sizeofElement, values[i])
+					types.F32Write(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
 	}
 
-	outputs[0].Set_ptr(prgrm, outputSliceOffset)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].PtrSet(prgrm, outputSliceOffset)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
@@ -527,20 +527,20 @@ func OpOsReadUI64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(prgrm, inputs, outputs)
 	if count > 0 {
-		if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+		if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 			values := make([]uint64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
 				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_ui64(outputSliceElements, i*sizeofElement, values[i])
+					types.UI64Write(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
 	}
 
-	outputs[0].Set_ptr(prgrm, outputSliceOffset)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].PtrSet(prgrm, outputSliceOffset)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
@@ -548,20 +548,20 @@ func OpOsReadUI32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(prgrm, inputs, outputs)
 	if count > 0 {
-		if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+		if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 			values := make([]uint32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
 				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_ui32(outputSliceElements, i*sizeofElement, values[i])
+					types.UI32Write(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
 	}
 
-	outputs[0].Set_ptr(prgrm, outputSliceOffset)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].PtrSet(prgrm, outputSliceOffset)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
@@ -569,20 +569,20 @@ func OpOsReadUI16Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(prgrm, inputs, outputs)
 	if count > 0 {
-		if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+		if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 			values := make([]uint16, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
 				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_ui16(outputSliceElements, i*sizeofElement, values[i])
+					types.UI16Write(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
 	}
 
-	outputs[0].Set_ptr(prgrm, outputSliceOffset)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].PtrSet(prgrm, outputSliceOffset)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
@@ -590,20 +590,20 @@ func OpOsReadUI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(prgrm, inputs, outputs)
 	if count > 0 {
-		if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+		if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 			values := make([]uint8, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
 				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_ui8(outputSliceElements, i*sizeofElement, values[i])
+					types.UI8Write(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
 	}
 
-	outputs[0].Set_ptr(prgrm, outputSliceOffset)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].PtrSet(prgrm, outputSliceOffset)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
@@ -611,20 +611,20 @@ func OpOsReadI64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(prgrm, inputs, outputs)
 	if count > 0 {
-		if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+		if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 			values := make([]int64, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
 				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_i64(outputSliceElements, i*sizeofElement, values[i])
+					types.I64Write(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
 	}
 
-	outputs[0].Set_ptr(prgrm, outputSliceOffset)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].PtrSet(prgrm, outputSliceOffset)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
@@ -632,20 +632,20 @@ func OpOsReadI32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(prgrm, inputs, outputs)
 	if count > 0 {
-		if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+		if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 			values := make([]int32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
 				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_i32(outputSliceElements, i*sizeofElement, values[i])
+					types.I32Write(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
 	}
 
-	outputs[0].Set_ptr(prgrm, outputSliceOffset)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].PtrSet(prgrm, outputSliceOffset)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
@@ -653,20 +653,20 @@ func OpOsReadI16Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(prgrm, inputs, outputs)
 	if count > 0 {
-		if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+		if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 			values := make([]int16, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
 				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_i16(outputSliceElements, i*sizeofElement, values[i])
+					types.I16Write(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
 	}
 
-	outputs[0].Set_ptr(prgrm, outputSliceOffset)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].PtrSet(prgrm, outputSliceOffset)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
@@ -674,150 +674,150 @@ func OpOsReadI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	success := false
 	_, outputSliceOffset, sizeofElement, count := getSlice(prgrm, inputs, outputs)
 	if count > 0 {
-		if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
+		if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 			values := make([]int8, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
 				outputSliceElements := ast.SliceElementsGet(prgrm, outputSliceOffset, sizeofElement)
 				for i := types.Pointer(0); i < count; i++ {
-					types.Write_i8(outputSliceElements, i*sizeofElement, values[i])
+					types.I8Write(outputSliceElements, i*sizeofElement, values[i])
 				}
 			}
 		}
 	}
 
-	outputs[0].Set_ptr(prgrm, outputSliceOffset)
-	outputs[1].Set_bool(prgrm, success)
+	outputs[0].PtrSet(prgrm, outputSliceOffset)
+	outputs[1].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteF64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if elements := inputs[1].GetSlice_f64(prgrm); elements != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if elements := inputs[1].SliceF64Get(prgrm); elements != nil {
 			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
 	}
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteF32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if elements := inputs[1].GetSlice_f32(prgrm); elements != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if elements := inputs[1].SliceF32Get(prgrm); elements != nil {
 			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
 	}
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteUI64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if elements := inputs[1].GetSlice_f64(prgrm); elements != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if elements := inputs[1].SliceF64Get(prgrm); elements != nil {
 			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
 	}
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteUI32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if elements := inputs[1].GetSlice_ui32(prgrm); elements != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if elements := inputs[1].SliceUI32Get(prgrm); elements != nil {
 			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
 	}
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteUI16Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if elements := inputs[1].GetSlice_ui16(prgrm); elements != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if elements := inputs[1].SliceUI16Get(prgrm); elements != nil {
 			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
 	}
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteUI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if elements := inputs[1].GetSlice_ui8(prgrm); elements != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if elements := inputs[1].SliceUI8Get(prgrm); elements != nil {
 			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
 	}
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteI64Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if elements := inputs[1].GetSlice_i64(prgrm); elements != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if elements := inputs[1].SliceI64Get(prgrm); elements != nil {
 			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
 	}
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteI32Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if elements := inputs[1].GetSlice_i32(prgrm); elements != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if elements := inputs[1].SliceI32Get(prgrm); elements != nil {
 			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
 	}
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteI16Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if elements := inputs[1].GetSlice_i16(prgrm); elements != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if elements := inputs[1].SliceI16Get(prgrm); elements != nil {
 			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
 	}
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
-	if file := ValidFile(inputs[0].Get_i32(prgrm)); file != nil {
-		if elements := inputs[1].GetSlice_i8(prgrm); elements != nil {
+	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
+		if elements := inputs[1].SliceI8Get(prgrm); elements != nil {
 			if err := binary.Write(file, binary.LittleEndian, elements); err == nil {
 				success = true
 			}
 		}
 	}
-	outputs[0].Set_bool(prgrm, success)
+	outputs[0].BoolSet(prgrm, success)
 }
 
 // VIOLATION STRHOT-136: B, hands a path or text to Go or the OS, #412.
@@ -826,25 +826,25 @@ func OpOsGetWorkingDirectory(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs
 	if err == nil && !strings.HasSuffix(wd, string(os.PathSeparator)) {
 		wd += string(os.PathSeparator)
 	}
-	outputs[0].Set_str(prgrm, wd)
+	outputs[0].StrSet(prgrm, wd)
 }
 
 // VIOLATION STRHOT-137: B, hands a path or text to Go or the OS, #412.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsRun(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	var runError int32 = OS_RUN_SUCCESS
+	var runError int32 = OsRunSuccess
 
-	command := inputs[0].Get_str(prgrm)
-	dir := inputs[3].Get_str(prgrm)
+	command := inputs[0].StrGet(prgrm)
+	dir := inputs[3].StrGet(prgrm)
 	args, err := splitCommand(command)
 	if err != nil || len(args) == 0 {
-		runError = OS_RUN_EMPTY_CMD
+		runError = OsRunEmptyCommand
 		if err != nil {
-			runError = OS_RUN_START_FAILED
+			runError = OsRunStartFailed
 		}
-		outputs[0].Set_i32(prgrm, runError)
-		outputs[1].Set_i32(prgrm, 0)
-		outputs[2].Set_str(prgrm, "")
+		outputs[0].I32Set(prgrm, runError)
+		outputs[1].I32Set(prgrm, 0)
+		outputs[2].StrSet(prgrm, "")
 		return
 	}
 
@@ -856,14 +856,14 @@ func OpOsRun(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 
 	var cmdError int32 = 0
 
-	timeoutMs := inputs[2].Get_i32(prgrm)
+	timeoutMs := inputs[2].I32Get(prgrm)
 	timeout := time.Duration(math.MaxInt64)
 	if timeoutMs > 0 {
 		timeout = time.Duration(timeoutMs) * time.Millisecond
 	}
 
 	if err := cmd.Start(); err != nil {
-		runError = OS_RUN_START_FAILED
+		runError = OsRunStartFailed
 	} else {
 		done := make(chan error)
 		go func() { done <- cmd.Wait() }()
@@ -871,7 +871,7 @@ func OpOsRun(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 		select {
 		case <-time.After(timeout):
 			cmd.Process.Kill()
-			runError = OS_RUN_TIMEOUT
+			runError = OsRunTimeout
 		case err := <-done:
 			if err != nil {
 				if exiterr, ok := err.(*exec.ExitError); ok {
@@ -885,21 +885,21 @@ func OpOsRun(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 						cmdError = int32(status.ExitStatus())
 					}
 				} else {
-					runError = OS_RUN_WAIT_FAILED
+					runError = OsRunWaitFailed
 				}
 			}
 		}
 	}
 
 	stdOutBytes := out.Bytes()
-	maxSize := inputs[1].Get_i32(prgrm)
+	maxSize := inputs[1].I32Get(prgrm)
 	if (maxSize > 0) && (len(stdOutBytes) > int(maxSize)) {
 		stdOutBytes = stdOutBytes[0:maxSize]
 	}
 
-	outputs[0].Set_i32(prgrm, runError)
-	outputs[1].Set_i32(prgrm, cmdError)
-	outputs[2].Set_str(prgrm, string(stdOutBytes))
+	outputs[0].I32Set(prgrm, runError)
+	outputs[1].I32Set(prgrm, cmdError)
+	outputs[2].StrSet(prgrm, string(stdOutBytes))
 }
 
 // splitCommand splits an os.Run command into words at spaces and tabs.

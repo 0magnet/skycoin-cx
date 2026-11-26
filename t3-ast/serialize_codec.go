@@ -178,7 +178,7 @@ func (decoder *serializeDecoder) serializeDecoderBool() bool {
 func (decoder *serializeDecoder) serializeDecoderPointer() types.Pointer {
 	value := decoder.serializeDecoderUint()
 	if value > uint64(types.InvalidPointer) {
-		decoder.serializeDecoderFailf("pointer %d does not fit %d bytes", value, types.POINTER_SIZE)
+		decoder.serializeDecoderFailf("pointer %d does not fit %d bytes", value, types.PointerSize)
 		return 0
 	}
 	return types.Pointer(value)

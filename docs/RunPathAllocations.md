@@ -66,7 +66,7 @@ allocates only when it fails, and is marked by its STRHOT E code instead
 | --- | --- | --- |
 | VMALLOC-001 | fixed in #422 | the expression copy in `CXCall.Call` |
 | VMALLOC-002 | fixed | operand buffers, sized by `RunBuffersPrepare`, those of a `Callback` loop included |
-| VMALLOC-003 | open, boundary | `Read_str`, `CXValue.Get_str`, Go string copies the system library opcodes use. The str opcodes read views |
+| VMALLOC-003 | open, boundary | `StrRead`, `CXValue.StrGet`, Go string copies the system library opcodes use. The str opcodes read views |
 | VMALLOC-004 | fixed | `fmt.Println` in the print opcodes |
 | VMALLOC-005 | fixed | printf and sprintf append to the format buffer, `%v` and extra arguments included |
 | VMALLOC-006 | fixed | the number to str conversions |
@@ -76,7 +76,7 @@ allocates only when it fails, and is marked by its STRHOT E code instead
 | VMALLOC-010 | fixed (D42) | `MemoryResize` grows the heap into the memory `EnsureMinimumHeapSize` allocated once for the heap cap |
 | VMALLOC-011 | fixed (D42), one rest | the root table, type cache and scratch of the collector are built before the run. A collection grows `StateViews` only when more than memory/512 pointers into objects are pending at once, D97 |
 | VMALLOC-012 | open, boundary | `ReadSlice_*`, used by the serialize and file opcodes |
-| VMALLOC-013 | not on the run path | `Make_obj` and `StrPayloadWrite` run at compile time |
+| VMALLOC-013 | not on the run path | `ObjectMake` and `StrPayloadWrite` run at compile time |
 | VMALLOC-014 | failure only | the getters build an error only on a miss |
 | VMALLOC-015 | fixed | `PrintableValueAppend` and the stack dump of the debug opcode and of a runtime error append to the format buffer |
 | VMALLOC-016 | fixed | assert builds its text only when it fails |

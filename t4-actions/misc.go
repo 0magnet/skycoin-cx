@@ -42,25 +42,25 @@ func PrimaryWrite(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, storag
 	arg.TypeSet(typeCode)
 	arg.Package = ast.CXPackageIndex(pkg.Index)
 
-	size := types.Cast_int_to_ptr(len(byts))
+	size := types.IntToPtrCast(len(byts))
 
 	arg.Size = typeCode.Size()
 	arg.Offset = prgrm.Data.Size + prgrm.Data.StartsAt
 
 	if arg.Type == types.STR {
-		arg.Size = types.POINTER_SIZE
+		arg.Size = types.PointerSize
 		if !storage {
-			types.Write_ptr(byts, 0, arg.Offset)
+			types.PtrWrite(byts, 0, arg.Offset)
 		}
 	}
 
-	// A CX program allocates min(INIT_HEAP_SIZE, MAX_HEAP_SIZE) bytes
+	// A CX program allocates min(HeapSizeInit, MaxHeapSize) bytes
 	// after the stack segment. These bytes are used to allocate the data segment
-	// at compile time. If the data segment is bigger than min(INIT_HEAP_SIZE, MAX_HEAP_SIZE),
+	// at compile time. If the data segment is bigger than min(HeapSizeInit, MaxHeapSize),
 	// we'll start appending the bytes to prgrm.Memory.
 	// After compilation, we calculate how many bytes we need to add to have a heap segment
 	// equal to `minHeapSize()` that is allocated after the data segment.
-	memSize := types.Cast_int_to_ptr(len(prgrm.Memory))
+	memSize := types.IntToPtrCast(len(prgrm.Memory))
 	if (size + prgrm.Data.Size + prgrm.Data.StartsAt) > memSize {
 		var i types.Pointer
 		// First we need to fill the remaining free bytes in
@@ -72,7 +72,7 @@ func PrimaryWrite(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, storag
 		prgrm.Memory = append(prgrm.Memory, byts[i:]...)
 	} else {
 		for i, byt := range byts {
-			prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+types.Cast_int_to_ptr(i)] = byt
+			prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+types.IntToPtrCast(i)] = byt
 		}
 	}
 	prgrm.Data.Size += size
@@ -158,7 +158,7 @@ func ArgsAllBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 		var inpType types.Code
 
 		var inp *ast.CXArgument
-		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if input.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1087.
 			inp = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(input.Meta))

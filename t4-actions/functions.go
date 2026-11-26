@@ -33,7 +33,7 @@ type SymbolTable struct {
 	escaped      map[stringpool.StringGid]bool
 	escapedSlots []escapeSlot
 	// shortDeclarationNew is whether the := being declared has declared a
-	// new name yet, see CXEXPR_SHORT_DECLARATION_SHARED.
+	// new name yet, see CXExpressionTypeShortDeclarationShared.
 	shortDeclarationNew bool
 	// shortDeclarationFirst is the first name of that :=, where a := that
 	// declares nothing is reported.
@@ -129,7 +129,7 @@ func MethodReceiverName(prgrm *ast.CXProgram, receiver *ast.CXArgument, file ast
 // literalElementTypeCode is the error code of a literal element of the wrong
 // type, written to the element variable name.
 func literalElementTypeCode(prgrm *ast.CXProgram, name stringpool.StringGid) ast.CompileErrorCode {
-	if bytes.HasPrefix(prgrm.CXProgramNameBytes(name), []byte(constants.ARRAY_ELEMENT_PREFIX)) {
+	if bytes.HasPrefix(prgrm.CXProgramNameBytes(name), []byte(constants.ArrayElementPrefix)) {
 		return ast.CompileErrorCodeArrayLiteralElementType
 	}
 	return ast.CompileErrorCodeSliceLiteralElementType
@@ -138,7 +138,7 @@ func literalElementTypeCode(prgrm *ast.CXProgram, name stringpool.StringGid) ast
 // assignValueTypeError is the error of a value of type inputType written to
 // target of type outputType. The unnamed result of func f() T is a return.
 func assignValueTypeError(prgrm *ast.CXProgram, inputType string, target stringpool.StringGid, outputType string) (ast.CompileErrorCode, ast.CompileErrorOperands) {
-	if strings.HasPrefix(prgrm.CXProgramNameText(target), constants.RESULT_NAME) {
+	if strings.HasPrefix(prgrm.CXProgramNameText(target), constants.ResultName) {
 		return ast.CompileErrorCodeReturnValueType, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(inputType), prgrm.CXProgramCompileErrorText(outputType)}
 	}
 	return ast.CompileErrorCodeAssignValueType, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(inputType), int64(target), prgrm.CXProgramCompileErrorText(outputType)}
@@ -158,7 +158,7 @@ func FunctionResultsUnnamed(prgrm *ast.CXProgram, results []*ast.CXArgument) []*
 		if err == nil {
 			result.Package = ast.CXPackageIndex(pkg.Index)
 		}
-		name := constants.RESULT_NAME
+		name := constants.ResultName
 		if i > 0 {
 			name += strconv.Itoa(i)
 		}
@@ -214,7 +214,7 @@ func parseOperator(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 		panic(err)
 	}
 	exprAtomicOpOperator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(exprAtomicOp.Operator)
-	if exprAtomicOpOperator != nil && exprAtomicOpOperator.AtomicOPCode > constants.START_PARSE_OPS && exprAtomicOpOperator.AtomicOPCode < constants.END_PARSE_OPS {
+	if exprAtomicOpOperator != nil && exprAtomicOpOperator.AtomicOPCode > constants.StartParseOps && exprAtomicOpOperator.AtomicOPCode < constants.EndParseOps {
 		return true
 	}
 	return false
@@ -266,7 +266,7 @@ func FunctionParametersDeclare(prgrm *ast.CXProgram, symbolTable *SymbolTable, o
 		// Now an arena getter, site S0732.
 		typeSig := prgrm.CXTypeSignatureFromArrayGet(paramIdx)
 		var param *ast.CXArgument
-		if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if typeSig.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0733.
 			param = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta))
@@ -326,7 +326,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionGid, inputs, 
 	FunctionParametersDeclare(prgrm, symbolTable, &offset, fnIdx, fn.OutputsGet(prgrm))
 
 	for i, expr := range fn.Expressions {
-		if expr.Type == ast.CX_LINE {
+		if expr.Type == ast.CXOperationTypeLine {
 			continue
 		}
 		// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
@@ -441,8 +441,8 @@ func operatorOperandType(prgrm *ast.CXProgram, sigIdx ast.CXTypeSignatureIndex) 
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0739.
 	sig := prgrm.CXTypeSignatureFromArrayGet(sigIdx)
-	if sig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
-		if sig.Type == ast.TYPE_POINTER_ATOMIC {
+	if sig.Type != ast.TypeCXArgumentDeprecate {
+		if sig.Type == ast.TypePointerAtomic {
 			return types.POINTER
 		}
 		return sig.TypeGet(prgrm)
@@ -463,7 +463,7 @@ func declaredAsPointer(specs []int) bool {
 	var stack []int
 	for _, spec := range specs {
 		switch spec {
-		case constants.DECL_DEREF, constants.DECL_INDEXING:
+		case constants.DeclarationDeref, constants.DeclarationIndexing:
 			if len(stack) > 0 {
 				stack = stack[:len(stack)-1]
 			}
@@ -471,7 +471,7 @@ func declaredAsPointer(specs []int) bool {
 			stack = append(stack, spec)
 		}
 	}
-	return len(stack) > 0 && stack[len(stack)-1] == constants.DECL_POINTER
+	return len(stack) > 0 && stack[len(stack)-1] == constants.DeclarationPointer
 }
 
 // pointerIndexedBeforeDeref reports whether specs index a pointer before the
@@ -479,9 +479,9 @@ func declaredAsPointer(specs []int) bool {
 func pointerIndexedBeforeDeref(specs []int) bool {
 	for _, spec := range specs {
 		switch spec {
-		case constants.DECL_DEREF:
+		case constants.DeclarationDeref:
 			return false
-		case constants.DECL_INDEXING:
+		case constants.DeclarationIndexing:
 			return true
 		}
 	}
@@ -489,24 +489,24 @@ func pointerIndexedBeforeDeref(specs []int) bool {
 }
 
 var operatorSymbols = map[int]string{
-	constants.OP_EQUAL:    "==",
-	constants.OP_UNEQUAL:  "!=",
-	constants.OP_LT:       "<",
-	constants.OP_GT:       ">",
-	constants.OP_LTEQ:     "<=",
-	constants.OP_GTEQ:     ">=",
-	constants.OP_BITAND:   "&",
-	constants.OP_BITOR:    "|",
-	constants.OP_BITXOR:   "^",
-	constants.OP_BITCLEAR: "&^",
-	constants.OP_BITSHL:   "<<",
-	constants.OP_BITSHR:   ">>",
-	constants.OP_MUL:      "*",
-	constants.OP_DIV:      "/",
-	constants.OP_MOD:      "%",
-	constants.OP_ADD:      "+",
-	constants.OP_SUB:      "-",
-	constants.OP_NEG:      "-",
+	constants.OpEqual:    "==",
+	constants.OpUnequal:  "!=",
+	constants.OpLt:       "<",
+	constants.OpGt:       ">",
+	constants.OpLteq:     "<=",
+	constants.OpGteq:     ">=",
+	constants.OpBitand:   "&",
+	constants.OpBitor:    "|",
+	constants.OpBitxor:   "^",
+	constants.OpBitclear: "&^",
+	constants.OpBitshl:   "<<",
+	constants.OpBitshr:   ">>",
+	constants.OpMul:      "*",
+	constants.OpDiv:      "/",
+	constants.OpMod:      "%",
+	constants.OpAdd:      "+",
+	constants.OpSub:      "-",
+	constants.OpNeg:      "-",
 }
 
 // checkOperatorOperands rejects the operators that language revision 1
@@ -527,18 +527,18 @@ func checkOperatorOperands(prgrm *ast.CXProgram, exprs []ast.CXExpression, currI
 	switch operatorOperandType(prgrm, expression.InputsGet(prgrm)[0]) {
 	case types.STR:
 		switch opCode {
-		case constants.OP_EQUAL, constants.OP_UNEQUAL:
+		case constants.OpEqual, constants.OpUnequal:
 			code = ast.CompileErrorCodeStrEqualityOperator
-		case constants.OP_LT, constants.OP_GT, constants.OP_LTEQ, constants.OP_GTEQ:
+		case constants.OpLt, constants.OpGt, constants.OpLteq, constants.OpGteq:
 			code = ast.CompileErrorCodeStrOrderingOperator
-		case constants.OP_ADD:
+		case constants.OpAdd:
 			code = ast.CompileErrorCodeStrConcatenation
 		default:
 			code = ast.CompileErrorCodeStrArithmeticOperator
 		}
 	case types.POINTER:
 		switch opCode {
-		case constants.OP_LT, constants.OP_GT, constants.OP_LTEQ, constants.OP_GTEQ:
+		case constants.OpLt, constants.OpGt, constants.OpLteq, constants.OpGteq:
 			code = ast.CompileErrorCodePointerOrderingOperator
 		}
 	}
@@ -588,7 +588,7 @@ func checkOperatorResultType(prgrm *ast.CXProgram, exprs []ast.CXExpression, cur
 		return
 	}
 	outputName := outputTypeSig.Name
-	if outputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if outputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 		outputName = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(outputTypeSig.Meta)).AssignmentElementGet(prgrm).Name
 	}
 	file, line := exprLine(prgrm, exprs, currIndex)
@@ -625,7 +625,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 		expressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.OutputsGet(prgrm)[0])
 		// A possible method call has fields, an atomic output has none.
 		fieldless := true
-		if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if expressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0747.
 			fieldless = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionOutputTypeSig.Meta)).Fields == nil
@@ -649,7 +649,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 			expression.Operator = invalidFunctionIndex(prgrm, opPkgIdx, opName)
 		} else {
 			// The receiver names the method as its last field and is the first input.
-			exprs[len(exprs)-1].ExpressionType = ast.CXEXPR_METHOD_CALL
+			exprs[len(exprs)-1].ExpressionType = ast.CXExpressionTypeMethodCall
 			receiverIdx := expression.OutputsGet(prgrm)[0]
 			arguments := expression.InputsGet(prgrm)
 			expression.Outputs = nil
@@ -665,13 +665,13 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 		}
 	}
 	if !exprs[len(exprs)-1].TypeMethodCall() {
-		exprs[len(exprs)-1].ExpressionType = ast.CXEXPR_FUNCTION_CALL
+		exprs[len(exprs)-1].ExpressionType = ast.CXExpressionTypeFunctionCall
 	}
 
 	args, argumentLast := functionCallArguments(arguments)
 	var nestedExprs []ast.CXExpression
 	for i, inpExpr := range args {
-		if inpExpr.Type == ast.CX_LINE {
+		if inpExpr.Type == ast.CXOperationTypeLine {
 			continue
 		}
 
@@ -694,7 +694,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 			continue
 		}
 
-		if inpExprAtomicOpOperator != nil && inpExprAtomicOpOperator.AtomicOPCode == constants.OP_JMP {
+		if inpExprAtomicOpOperator != nil && inpExprAtomicOpOperator.AtomicOPCode == constants.OpJmp {
 			// A short-circuit jmp of && or || inside an argument.
 			nestedExprs = append(nestedExprs, inpExpr)
 			continue
@@ -707,18 +707,18 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 			// // TODO: This is still to be improved
 			// // Get its CX argument if its type cx arg deprecate
 			// var typeSigArg *ast.CXArgument = &ast.CXArgument{}
-			// if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			// if typeSig.Type == ast.TypeCXArgumentDeprecate {
 			// 	typeSigArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta))
 
 			// 	// If an atomic type, convert cx type signature to type atomic/
 			// 	if ast.CXArgumentTypeAtomic(typeSigArg) {
 			// 		typeSig.Name = typeSigArg.Name
-			// 		typeSig.Type = ast.TYPE_ATOMIC
+			// 		typeSig.Type = ast.TypeAtomic
 			// 		typeSig.Meta = int(typeSigArg.Type)
 			// 		typeSig.Offset = typeSigArg.Offset
 			// 		typeSig.Package = typeSigArg.Package
 			// 	}
-			// } else if typeSig.Type == ast.TYPE_ATOMIC || typeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			// } else if typeSig.Type == ast.TypeAtomic || typeSig.Type == ast.TypePointerAtomic {
 			// 	// do nothing
 			// }
 
@@ -738,7 +738,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 				// Now an arena getter, site S0753.
 				inpExprAtomicOpOperatorOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(inpExprAtomicOpOperatorOutputs[0])
 				var inpExprAtomicOpOperatorOutputArg *ast.CXArgument
-				if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S0755.
 					inpExprAtomicOpOperatorOutputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(inpExprAtomicOpOperatorOutputTypeSig.Meta))
@@ -752,12 +752,12 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 						inpExprAtomicOpInputTypeSig := prgrm.CXTypeSignatureFromArrayGet(inpExprAtomicOp.InputsGet(prgrm)[0])
 
 						var inpExprAtomicOpInputArg *ast.CXArgument
-						if inpExprAtomicOpInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+						if inpExprAtomicOpInputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 							// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 							// Now an arena getter, site S0758.
 							inpExprAtomicOpInputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(inpExprAtomicOpInputTypeSig.Meta))
 
-							_, out = ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber)
+							_, out = ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LocalPrefix), CurrentFile, inpExprCXLine.LineNumber)
 							if len(inpExprAtomicOpInputArg.Fields) == 0 {
 								out.TypeSet(inpExprAtomicOpInputArg.Type)
 								out.StructType = inpExprAtomicOpInputArg.StructType
@@ -773,7 +773,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 							out.Package = inpExprAtomicOp.Package
 
 							typeSigIdx = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, out)
-						} else if inpExprAtomicOpInputTypeSig.Type == ast.TYPE_ATOMIC || inpExprAtomicOpInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC && operandIndexed(prgrm, inpExprAtomicOpInputTypeSig) {
+						} else if inpExprAtomicOpInputTypeSig.Type == ast.TypeAtomic || inpExprAtomicOpInputTypeSig.Type == ast.TypeSliceAtomic && operandIndexed(prgrm, inpExprAtomicOpInputTypeSig) {
 							argDetailsGid := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugAlloc()
 							argDetails := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet(argDetailsGid)
 							argDetails.FileName = CurrentFile
@@ -781,10 +781,10 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 							argDetails.FileColumn = prgrm.CXProgramCompileErrorColumn(argDetails.FileName, argDetails.FileLine)
 							_, outTypeSig := prgrm.CXTypeSignatureAlloc()
 							outTypeSig.ArgDetails = argDetailsGid
-							outTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
-							outTypeSig.Type = ast.TYPE_ATOMIC
+							outTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
+							outTypeSig.Type = ast.TypeAtomic
 							outTypeSig.Meta = inpExprAtomicOpInputTypeSig.Meta
-							if inpExprAtomicOpInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+							if inpExprAtomicOpInputTypeSig.Type == ast.TypeSliceAtomic {
 								// An element of the slice placeholder of f()[i].
 								outTypeSig.Meta = prgrm.CXTypeSignatureArrayFromArrayGet(inpExprAtomicOpInputTypeSig.Meta).Meta
 							}
@@ -792,7 +792,7 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 							outTypeSig.Offset = inpExprAtomicOpInputTypeSig.Offset
 
 							typeSigIdx = outTypeSig.Index
-						} else if inpExprAtomicOpInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+						} else if inpExprAtomicOpInputTypeSig.Type == ast.TypePointerAtomic {
 							argDetailsGid := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugAlloc()
 							argDetails := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet(argDetailsGid)
 							argDetails.FileName = CurrentFile
@@ -800,17 +800,17 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 							argDetails.FileColumn = prgrm.CXProgramCompileErrorColumn(argDetails.FileName, argDetails.FileLine)
 							_, outTypeSig := prgrm.CXTypeSignatureAlloc()
 							outTypeSig.ArgDetails = argDetailsGid
-							outTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
-							outTypeSig.Type = ast.TYPE_POINTER_ATOMIC
+							outTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
+							outTypeSig.Type = ast.TypePointerAtomic
 							outTypeSig.Meta = inpExprAtomicOpInputTypeSig.Meta
 							outTypeSig.Package = inpExprAtomicOpInputTypeSig.Package
 							outTypeSig.Offset = inpExprAtomicOpInputTypeSig.Offset
 
 							typeSigIdx = outTypeSig.Index
-						} else if inpExprAtomicOpInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+						} else if inpExprAtomicOpInputTypeSig.Type == ast.TypeSliceAtomic {
 							// A whole slice result, as append(f(), v) passes it.
 							_, outTypeSig := prgrm.CXTypeSignatureCopyAlloc(inpExprAtomicOpInputTypeSig)
-							outTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+							outTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 							outTypeSig.Package = inpExprAtomicOp.Package
 
 							typeSigIdx = outTypeSig.Index
@@ -819,11 +819,11 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 						}
 
 					} else {
-						_, out = ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), CurrentFile, inpExprCXLine.LineNumber)
+						_, out = ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LocalPrefix), CurrentFile, inpExprCXLine.LineNumber)
 						argumentTypeCopy(out, inpExprAtomicOpOperatorOutputArg)
-						out.PassBy = constants.PASSBY_VALUE
+						out.PassBy = constants.PassByValue
 
-						if specs := inpExprAtomicOpOperatorOutputArg.DeclarationSpecifiers; inpExprAtomicOpOperatorOutputArg.StructType != nil && (len(specs) < 2 || specs[1] != constants.DECL_POINTER) {
+						if specs := inpExprAtomicOpOperatorOutputArg.DeclarationSpecifiers; inpExprAtomicOpOperatorOutputArg.StructType != nil && (len(specs) < 2 || specs[1] != constants.DeclarationPointer) {
 							// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 							// Now an arena getter, site S0768.
 							inpExprPkg, err := prgrm.PackageFromArrayGet(inpExprAtomicOp.Package)
@@ -842,11 +842,11 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 
 					inpExprAtomicOp.OutputAdd(prgrm, typeSigIdx)
 					expression.InputAdd(prgrm, typeSigIdx)
-				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC || inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC || inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TypeAtomic || inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TypeArrayAtomic || inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TypeSliceAtomic {
 					_, newTypeSig := prgrm.CXTypeSignatureCopyAlloc(inpExprAtomicOpOperatorOutputTypeSig)
-					newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+					newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 					newTypeSig.Package = inpExprAtomicOp.Package
-					if newTypeSig.Type == ast.TYPE_SLICE_ATOMIC && newTypeSig.ArgDetails == ast.CXArgumentDebugGidNil {
+					if newTypeSig.Type == ast.TypeSliceAtomic && newTypeSig.ArgDetails == ast.CXArgumentDebugGidNil {
 						// A native []T result has no position, so it takes the call's.
 						argDetailsGid := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugAlloc()
 						argDetails := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet(argDetailsGid)
@@ -859,17 +859,17 @@ func FunctionCall(prgrm *ast.CXProgram, exprs []ast.CXExpression, arguments [][]
 
 					inpExprAtomicOp.OutputAdd(prgrm, newTypeSigIdx)
 					expression.InputAdd(prgrm, newTypeSigIdx)
-				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TypePointerAtomic {
 					_, newTypeSig := prgrm.CXTypeSignatureCopyAlloc(inpExprAtomicOpOperatorOutputTypeSig)
-					newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+					newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 					newTypeSig.Package = inpExprAtomicOp.Package
 					newTypeSigIdx := newTypeSig.Index
 
 					inpExprAtomicOp.OutputAdd(prgrm, newTypeSigIdx)
 					expression.InputAdd(prgrm, newTypeSigIdx)
-				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_STRUCT || inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TYPE_POINTER_STRUCT || typeSignatureCollection(inpExprAtomicOpOperatorOutputTypeSig) {
+				} else if inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TypeStruct || inpExprAtomicOpOperatorOutputTypeSig.Type == ast.TypePointerStruct || typeSignatureCollection(inpExprAtomicOpOperatorOutputTypeSig) {
 					_, newTypeSig := prgrm.CXTypeSignatureCopyAlloc(inpExprAtomicOpOperatorOutputTypeSig)
-					newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+					newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 					newTypeSig.Package = inpExprAtomicOp.Package
 					newTypeSigIdx := newTypeSig.Index
 
@@ -910,7 +910,7 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0777.
 	expressionInputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.InputsGet(prgrm)[0])
-	if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if expressionInputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0778.
 		expressionInputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
@@ -929,7 +929,7 @@ func checkSameNativeType(prgrm *ast.CXProgram, expr *ast.CXExpression) error {
 		input := prgrm.CXTypeSignatureFromArrayGet(inputIdx)
 
 		var inpType types.Code
-		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if input.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0780.
 			inp := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(input.Meta))
@@ -970,7 +970,7 @@ func OperatorExpressionOutputsSize(prgrm *ast.CXProgram, expr *ast.CXExpression)
 			output := prgrm.CXTypeSignatureFromArrayGet(outputIdx)
 
 			var outIdx ast.CXArgumentIndex
-			if output.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if output.Type == ast.TypeCXArgumentDeprecate {
 				outIdx = ast.CXArgumentIndex(output.Meta)
 
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
@@ -984,7 +984,7 @@ func OperatorExpressionOutputsSize(prgrm *ast.CXProgram, expr *ast.CXExpression)
 					expressionInputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.InputsGet(prgrm)[0])
 
 					var expressionInputArg *ast.CXArgument
-					if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					if expressionInputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 						// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 						// Now an arena getter, site S0787.
 						expressionInputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
@@ -996,9 +996,9 @@ func OperatorExpressionOutputsSize(prgrm *ast.CXProgram, expr *ast.CXExpression)
 				}
 
 				out.Size = size
-			} else if output.Type == ast.TYPE_ATOMIC || output.Type == ast.TYPE_POINTER_ATOMIC {
+			} else if output.Type == ast.TypeAtomic || output.Type == ast.TypePointerAtomic {
 				continue
-			} else if output.Type == ast.TYPE_STRUCT {
+			} else if output.Type == ast.TypeStruct {
 				continue
 			} else {
 				panic("type is not known")
@@ -1019,27 +1019,27 @@ func sliceResultTemporaryTypeAdopt(prgrm *ast.CXProgram, expression *ast.CXAtomi
 		return
 	}
 	operatorOutput := prgrm.CXTypeSignatureFromArrayGet(operatorOutputs[0])
-	if operatorOutput.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if operatorOutput.Type != ast.TypeCXArgumentDeprecate {
 		return
 	}
 	operatorOutputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(operatorOutput.Meta))
-	if operatorOutputArg.Type != types.UNDEFINED || !declarationSpecifierFound(operatorOutputArg, constants.DECL_SLICE) {
+	if operatorOutputArg.Type != types.UNDEFINED || !declarationSpecifierFound(operatorOutputArg, constants.DeclarationSlice) {
 		return
 	}
 	output := prgrm.CXTypeSignatureFromArrayGet(expression.OutputsGet(prgrm)[0])
 	input := prgrm.CXTypeSignatureFromArrayGet(expression.InputsGet(prgrm)[0])
-	if output.Type != ast.TYPE_CXARGUMENT_DEPRECATE || !TemporaryVariable(prgrm, output.Name) {
+	if output.Type != ast.TypeCXArgumentDeprecate || !TemporaryVariable(prgrm, output.Name) {
 		return
 	}
 	// The type x := s would give, so m[0] of an m [][]i32 is a []i32.
 	t, ok := shortDeclarationCollectionValue(prgrm, input, false)
-	if !ok || t.specs[len(t.specs)-1] != constants.DECL_SLICE {
+	if !ok || t.specs[len(t.specs)-1] != constants.DeclarationSlice {
 		return
 	}
 	out := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(output.Meta))
 	out.Type, out.PointerTargetType, out.Size, out.StructType = t.typ, t.pointerTargetType, t.size, t.structType
 	out.DeclarationSpecifiers, out.Lengths = t.specs, t.lengths
-	out.PassBy = constants.PASSBY_VALUE
+	out.PassBy = constants.PassByValue
 }
 
 // PointerStructsResolve checks and processes if any args is a pointer struct.
@@ -1062,26 +1062,26 @@ func PointerStructsResolve(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		argTypeSig := prgrm.CXTypeSignatureFromArrayGet(argTypeSigIdx)
 
 		var arg *ast.CXArgument
-		if argTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if argTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0791.
 			arg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(argTypeSig.Meta))
-		} else if argTypeSig.Type == ast.TYPE_ATOMIC || argTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+		} else if argTypeSig.Type == ast.TypeAtomic || argTypeSig.Type == ast.TypePointerAtomic {
 			continue
-		} else if argTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+		} else if argTypeSig.Type == ast.TypeArrayAtomic {
 			continue
-		} else if argTypeSig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
+		} else if argTypeSig.Type == ast.TypePointerArrayAtomic {
 			continue
-		} else if argTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+		} else if argTypeSig.Type == ast.TypeSliceAtomic {
 			continue
-		} else if argTypeSig.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
+		} else if argTypeSig.Type == ast.TypePointerSliceAtomic {
 			continue
-		} else if argTypeSig.Type == ast.TYPE_STRUCT {
+		} else if argTypeSig.Type == ast.TypeStruct {
 			// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 			// Now an arena getter.
 			pointerFieldsDeref(prgrm, prgrm.CXTypeSignatureStructFromArrayGet(argTypeSig.Meta).Fields)
 			continue
-		} else if argTypeSig.Type == ast.TYPE_POINTER_STRUCT {
+		} else if argTypeSig.Type == ast.TypePointerStruct {
 			// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 			// Now an arena getter, site S0792.
 			structDetails := prgrm.CXTypeSignatureStructFromArrayGet(argTypeSig.Meta)
@@ -1098,14 +1098,14 @@ func PointerStructsResolve(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 		doesArgHaveDerefPointer := false
 		for _, deref := range arg.DereferenceOperations {
-			if deref == constants.DEREF_POINTER {
+			if deref == constants.DerefPointer {
 				doesArgHaveDerefPointer = true
 			}
 		}
 		if arg.StructTyped() && arg.PointerTyped() && len(arg.Fields) > 0 && !doesArgHaveDerefPointer && !pointerTypeOfLastField(prgrm, arg) {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1679.
-			prgrm.CXArgGet(ast.CXArgumentIndex(arg.Index)).DereferenceOperations = append(arg.DereferenceOperations, constants.DEREF_POINTER)
+			prgrm.CXArgGet(ast.CXArgumentIndex(arg.Index)).DereferenceOperations = append(arg.DereferenceOperations, constants.DerefPointer)
 		}
 	}
 }
@@ -1117,8 +1117,8 @@ func pointerFieldsDeref(prgrm *ast.CXProgram, fields []ast.CXArgumentIndex) {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0793.
 		fld := prgrm.CXArgFromArrayGet(fldIdx)
-		if fld.PointerTyped() && !derefOpFound(fld, constants.DEREF_POINTER) {
-			fld.DereferenceOperations = append(fld.DereferenceOperations, constants.DEREF_POINTER)
+		if fld.PointerTyped() && !derefOpFound(fld, constants.DerefPointer) {
+			fld.DereferenceOperations = append(fld.DereferenceOperations, constants.DerefPointer)
 		}
 	}
 }
@@ -1144,7 +1144,7 @@ func testExpressionResolve(prgrm *ast.CXProgram, exprs []ast.CXExpression, currI
 
 	if expressionOperator != nil {
 		opCode := expressionOperator.AtomicOPCode
-		if opCode == constants.OP_ASSERT || opCode == constants.OP_TEST || opCode == constants.OP_PANIC {
+		if opCode == constants.OpAssert || opCode == constants.OpTest || opCode == constants.OpPanic {
 			var inp1Type, inp2Type string
 
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
@@ -1202,7 +1202,7 @@ func ExpressionArgumentsResolve(prgrm *ast.CXProgram, symbolTable *SymbolTable, 
 		// Now an arena getter, site S0801.
 		typeSignature := prgrm.CXTypeSignatureFromArrayGet(typeSignatureIdx)
 		var argIdx ast.CXArgumentIndex
-		if typeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if typeSignature.Type == ast.TypeCXArgumentDeprecate {
 			argIdx = ast.CXArgumentIndex(typeSignature.Meta)
 		} else {
 			argIdx = -1
@@ -1250,7 +1250,7 @@ func ExpressionArgumentsResolve(prgrm *ast.CXProgram, symbolTable *SymbolTable, 
 					GiveOffset(prgrm, symbolTable, idxIdx)
 				}
 			}
-		} else if typeSignature.Type == ast.TYPE_SLICE_ATOMIC {
+		} else if typeSignature.Type == ast.TypeSliceAtomic {
 			// The slice placeholder of f()[i] keeps its indexes in its details.
 			for _, idxIdx := range prgrm.CXTypeSignatureArrayFromArrayGet(typeSignature.Meta).Indexes {
 				SymbolsTableUpdate(prgrm, symbolTable, idxIdx, offset, true)
@@ -1308,7 +1308,7 @@ func PointerAdd(prgrm *ast.CXProgram, fn *ast.CXFunction, typeSigIdx ast.CXTypeS
 	// Now an arena getter, site S0804.
 	typeSig := prgrm.CXTypeSignatureFromArrayGet(typeSigIdx)
 	var sym *ast.CXArgument
-	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if typeSig.Type == ast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0806.
 		sym = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta))
@@ -1360,7 +1360,7 @@ func PointerAdd(prgrm *ast.CXProgram, fn *ast.CXFunction, typeSigIdx ast.CXTypeS
 // dereferences and indexes leave a pointer to a struct, as (*pp).f does for
 // a **T pp and (*s[0]).f for a []**T s.
 func fieldPointerDeref(sym *ast.CXArgument, arg *ast.CXArgument) {
-	if arg.StructType == nil || !derefOpFound(sym, constants.DEREF_POINTER) {
+	if arg.StructType == nil || !derefOpFound(sym, constants.DerefPointer) {
 		return
 	}
 	specs := append([]int(nil), arg.DeclarationSpecifiers...)
@@ -1370,15 +1370,15 @@ func fieldPointerDeref(sym *ast.CXArgument, arg *ast.CXArgument) {
 		}
 		top := specs[len(specs)-1]
 		switch {
-		case deref == constants.DEREF_POINTER && top == constants.DECL_POINTER:
-		case (deref == constants.DEREF_ARRAY || deref == constants.DEREF_SLICE) && (top == constants.DECL_ARRAY || top == constants.DECL_SLICE):
+		case deref == constants.DerefPointer && top == constants.DeclarationPointer:
+		case (deref == constants.DerefArray || deref == constants.DerefSlice) && (top == constants.DeclarationArray || top == constants.DeclarationSlice):
 		default:
 			return
 		}
 		specs = specs[:len(specs)-1]
 	}
-	if len(specs) == 2 && specs[0] == constants.DECL_STRUCT && specs[1] == constants.DECL_POINTER {
-		sym.DereferenceOperations = append(sym.DereferenceOperations, constants.DEREF_POINTER)
+	if len(specs) == 2 && specs[0] == constants.DeclarationStruct && specs[1] == constants.DeclarationPointer {
+		sym.DereferenceOperations = append(sym.DereferenceOperations, constants.DerefPointer)
 	}
 }
 
@@ -1420,13 +1420,13 @@ func RedeclaredCheck(prgrm *ast.CXProgram, symbolTable *SymbolTable, expr *ast.C
 
 		_, found := (symbolTable.symbolsIndex)[lastIdx][SymbolTableKey{SymbolTableKeyPackage: symPkg.Name, SymbolTableKeyName: typeSig.Name}]
 		switch expr.ExpressionType {
-		case ast.CXEXPR_SHORT_DECLARATION_SHARED, ast.CXEXPR_SHORT_DECLARATION_SHARED_LAST:
+		case ast.CXExpressionTypeShortDeclarationShared, ast.CXExpressionTypeShortDeclarationSharedLast:
 			// https://go.dev/ref/spec#Short_variable_declarations
 			if !symbolTable.shortDeclarationOpen {
 				symbolTable.shortDeclarationFirst, symbolTable.shortDeclarationOpen = typeSig.ArgDetails, true
 			}
 			symbolTable.shortDeclarationNew = symbolTable.shortDeclarationNew || !found
-			if expr.ExpressionType == ast.CXEXPR_SHORT_DECLARATION_SHARED_LAST {
+			if expr.ExpressionType == ast.CXExpressionTypeShortDeclarationSharedLast {
 				if !symbolTable.shortDeclarationNew {
 					prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeShortDeclarationNoNew, symbolTable.shortDeclarationFirst, ast.CompileErrorOperands{})
 				}
@@ -1457,7 +1457,7 @@ func GoTosResolve(prgrm *ast.CXProgram, exprs []ast.CXExpression) {
 		expressionOperatorInputs := expressionOperator.InputsGet(prgrm)
 		expressionOperatorOutputs := expressionOperator.OutputsGet(prgrm)
 
-		opGotoFn := ast.NativeFunctionOf(prgrm, constants.OP_GOTO)
+		opGotoFn := ast.NativeFunctionOf(prgrm, constants.OpGoto)
 		opGoto := false
 		if expressionOperator != nil && expressionOperator.AtomicOPCode == opGotoFn.AtomicOPCode && len(expressionOperatorInputs) == len(opGotoFn.Inputs) && len(expressionOperatorOutputs) == len(opGotoFn.Outputs) {
 			opGoto = true
@@ -1479,7 +1479,7 @@ func GoTosResolve(prgrm *ast.CXProgram, exprs []ast.CXExpression) {
 				}
 			}
 			// A return jumps past the end with a generated label and no target.
-			if !labelFound && !strings.HasPrefix(prgrm.CXProgramNameText(expression.Label), constants.LABEL_PREFIX) {
+			if !labelFound && !strings.HasPrefix(prgrm.CXProgramNameText(expression.Label), constants.LabelPrefix) {
 				file, line := exprLine(prgrm, exprs, i)
 				prgrm.CXProgramCompileErrorAddLine(ast.CompileErrorCodeGotoLabelMissing, file, line, ast.CompileErrorOperands{int64(expression.Label)})
 			}
@@ -1520,13 +1520,13 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		expectedTypeSig := prgrm.CXTypeSignatureFromArrayGet(expectedTypeSigIdx)
 		// An atomic expected type is neither a pointer argument nor undefined.
 		var expectedPointer, expectedUndefined, expectedSlice bool
-		if expectedTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if expectedTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0820.
 			expectedArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expectedTypeSig.Meta))
 			expectedPointer = expectedArg.PointerTyped()
 			expectedUndefined = expectedArg.Type == types.UNDEFINED
-			expectedSlice = expectedUndefined && declarationSpecifierFound(expectedArg, constants.DECL_SLICE)
+			expectedSlice = expectedUndefined && declarationSpecifierFound(expectedArg, constants.DeclarationSlice)
 			if expectedArg.Type == types.FUNC {
 				// functionReferenceInputsResolve checked it and made it an i64.
 				continue
@@ -1543,7 +1543,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		}
 
 		// MethodCallResolve passes a receiver by reference to a pointer receiver.
-		if inputsChecked && expr.TypeMethodCall() && i == 0 && (expectedPointer || expectedTypeSig.Type == ast.TYPE_POINTER_STRUCT) && !strings.HasPrefix(receivedType, "*") {
+		if inputsChecked && expr.TypeMethodCall() && i == 0 && (expectedPointer || expectedTypeSig.Type == ast.TypePointerStruct) && !strings.HasPrefix(receivedType, "*") {
 			expectedType = strings.TrimPrefix(expectedType, "*")
 		}
 
@@ -1562,7 +1562,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 				// Now an arena getter, site S0822.
 				expressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.OutputsGet(prgrm)[i])
 				// A call element of a []T literal writes its result to the element.
-				if bytes.HasPrefix(prgrm.CXProgramNameBytes(expressionOutputTypeSig.Name), []byte(constants.ELEMENT_PREFIX)) {
+				if bytes.HasPrefix(prgrm.CXProgramNameBytes(expressionOutputTypeSig.Name), []byte(constants.ElementPrefix)) {
 					prgrm.CXProgramCompileErrorAddDebug(literalElementTypeCode(prgrm, expressionOutputTypeSig.Name), expressionOutputTypeSig.ArgDetails, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(expectedType), prgrm.CXProgramCompileErrorText(receivedType)})
 					continue
 				}
@@ -1573,7 +1573,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		}
 
 		var expressionOutputTypeSig *ast.CXTypeSignature
-		if expressionOperator.AtomicOPCode == constants.OP_IDENTITY {
+		if expressionOperator.AtomicOPCode == constants.OpIdentity {
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 			// Now an arena getter, site S0823.
 			expressionOutputTypeSig = prgrm.CXTypeSignatureFromArrayGet(expression.OutputsGet(prgrm)[0])
@@ -1582,7 +1582,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 		// FIXME: There are some expressions added by the cxgo where temporary variables are used.
 		// These temporary variables' types are not properly being set. That's why we use !cxcore.TemporaryVariable to
 		// exclude these cases for now.
-		if expressionOperator.AtomicOPCode == constants.OP_IDENTITY && !TemporaryVariable(prgrm, expressionOutputTypeSig.Name) {
+		if expressionOperator.AtomicOPCode == constants.OpIdentity && !TemporaryVariable(prgrm, expressionOutputTypeSig.Name) {
 			var outType, inpType string
 
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
@@ -1592,7 +1592,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 
 			var expressionOutputArg *ast.CXArgument
 			expressionOutputTypeSigName := expressionOutputTypeSig.Name
-			if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if expressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0826.
 				expressionOutputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
@@ -1605,7 +1605,7 @@ func checkMatchParamTypes(prgrm *ast.CXProgram, expr *ast.CXExpression, expected
 			// Otherwise we'd print the error twice: once for the input and again for the output
 			if inpType != outType && inputsChecked {
 				targetName := StripNameNumber(prgrm, expressionOutputTypeSigName)
-				if bytes.HasPrefix(prgrm.CXProgramNameBytes(targetName), []byte(constants.ELEMENT_PREFIX)) {
+				if bytes.HasPrefix(prgrm.CXProgramNameBytes(targetName), []byte(constants.ElementPrefix)) {
 					// The element of a []T literal is at the element start.
 					prgrm.CXProgramCompileErrorAddDebug(literalElementTypeCode(prgrm, targetName), expressionOutputTypeSig.ArgDetails, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(inpType), prgrm.CXProgramCompileErrorText(outType)})
 				} else {
@@ -1637,13 +1637,13 @@ func checkMatchExprNumOfInputs(prgrm *ast.CXProgram, expression *ast.CXAtomicOpe
 		// Now an arena getter, site S0827.
 		lastTypeSig := prgrm.CXTypeSignatureFromArrayGet(expressionOperatorInputs[len(expressionOperatorInputs)-1])
 		switch lastTypeSig.Type {
-		case ast.TYPE_CXARGUMENT_DEPRECATE:
+		case ast.TypeCXArgumentDeprecate:
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0828.
 			if prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(lastTypeSig.Meta)).Type == types.UNDEFINED {
 				return true
 			}
-		case ast.TYPE_ATOMIC:
+		case ast.TypeAtomic:
 			if types.Code(lastTypeSig.Meta) == types.UNDEFINED {
 				return true
 			}
@@ -1687,7 +1687,7 @@ func TypesCheck(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) b
 		}
 	}
 
-	if expressionOperator != nil && expressionOperator.BuiltIn() && expressionOperator.AtomicOPCode == constants.OP_IDENTITY {
+	if expressionOperator != nil && expressionOperator.BuiltIn() && expressionOperator.AtomicOPCode == constants.OpIdentity {
 		for i := range expression.InputsGet(prgrm) {
 			var expectedType string
 			var receivedType string
@@ -1695,7 +1695,7 @@ func TypesCheck(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) b
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 			// Now an arena getter, site S0830.
 			expressionInputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.InputsGet(prgrm)[i])
-			if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if expressionInputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0831.
 				expressionInputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
@@ -1722,7 +1722,7 @@ func TypesCheck(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) b
 			var expressionOutputArg *ast.CXArgument
 			// baseOutputArg is the struct of a struct literal, expressionOutputArg its field.
 			var baseOutputArg *ast.CXArgument
-			if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if expressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0834.
 				expressionOutputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
@@ -1769,7 +1769,7 @@ func TypesCheck(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) b
 	return true
 }
 
-// StringAssignmentPassBySet sets the args PassBy to PASSBY_VALUE if the type is string.
+// StringAssignmentPassBySet sets the args PassBy to PassByValue if the type is string.
 func StringAssignmentPassBySet(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S0836.
@@ -1781,7 +1781,7 @@ func StringAssignmentPassBySet(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	expressionOperatorInputs := expressionOperator.InputsGet(prgrm)
 	expressionOperatorOutputs := expressionOperator.OutputsGet(prgrm)
 
-	opIdentFn := ast.NativeFunctionOf(prgrm, constants.OP_IDENTITY)
+	opIdentFn := ast.NativeFunctionOf(prgrm, constants.OpIdentity)
 	opIdent := false
 	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperatorInputs) == len(opIdentFn.Inputs) && len(expressionOperatorOutputs) == len(opIdentFn.Outputs) {
 		opIdent = true
@@ -1793,7 +1793,7 @@ func StringAssignmentPassBySet(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			output := prgrm.CXTypeSignatureFromArrayGet(outputIdx)
 
 			// Only a CXArgument can hold a str value, typed signatures are never strings.
-			if output.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+			if output.Type != ast.TypeCXArgumentDeprecate {
 				continue
 			}
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
@@ -1804,7 +1804,7 @@ func StringAssignmentPassBySet(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S0840.
 				expressionInputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.InputsGet(prgrm)[i])
-				if expressionInputTypeSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+				if expressionInputTypeSig.Type != ast.TypeCXArgumentDeprecate {
 					continue
 				}
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
@@ -1816,7 +1816,7 @@ func StringAssignmentPassBySet(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 				if out.Type == types.STR && out.Name != stringpool.StringGidNil &&
 					inp.Type == types.STR && inp.Name != stringpool.StringGidNil {
-					out.PassBy = constants.PASSBY_VALUE
+					out.PassBy = constants.PassByValue
 				}
 			}
 		}
@@ -1834,8 +1834,8 @@ func StringAssignmentPassBySet(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 // 	for _, outIdx := range expression.Outputs {
 // 		out := prgrm.CXArgFromArrayGet(outIdx)
 // 		elt := out.AssignmentElementGet(prgrm)
-// 		if elt.PassBy == constants.PASSBY_REFERENCE &&
-// 			!declarationSpecifierFound(elt, constants.DECL_POINTER) &&
+// 		if elt.PassBy == constants.PassByReference &&
+// 			!declarationSpecifierFound(elt, constants.DeclarationPointer) &&
 // 			elt.PointerTargetType != types.STR && elt.Type != types.STR && !elt.SliceTyped {
 // 			println(ast.CompilationError(prgrm.CXProgramSourceFileText(CurrentFile), LineNo), "invalid reference assignment", elt.Name)
 // 		}
@@ -1861,7 +1861,7 @@ func ShortDeclarationComplete(prgrm *ast.CXProgram, expr *ast.CXExpression, expr
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0843.
 		expressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.OutputsGet(prgrm)[0])
-		if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if expressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0844.
 			expressionOutputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
@@ -1898,17 +1898,17 @@ func ShortDeclarationComplete(prgrm *ast.CXProgram, expr *ast.CXExpression, expr
 			// Now an arena getter, site S0846.
 			expressionOperatorOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expressionOperatorOutputs[0])
 
-			if expressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if expressionOperatorOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0847.
 				expressionOperatorOutputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionOperatorOutputTypeSig.Meta))
 				argType = expressionOperatorOutputArg.Type
 				argPointerTargetType = expressionOperatorOutputArg.PointerTargetType
 				argSize = expressionOperatorOutputArg.Size
-			} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+			} else if expressionOperatorOutputTypeSig.Type == ast.TypeAtomic {
 				argType = types.Code(expressionOperatorOutputTypeSig.Meta)
 				argSize = types.Code(expressionOperatorOutputTypeSig.Meta).Size()
-			} else if expressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			} else if expressionOperatorOutputTypeSig.Type == ast.TypePointerAtomic {
 				argType = types.Code(expressionOperatorOutputTypeSig.Meta)
 				argSize = types.Code(expressionOperatorOutputTypeSig.Meta).Size()
 			} else {
@@ -1924,7 +1924,7 @@ func ShortDeclarationComplete(prgrm *ast.CXProgram, expr *ast.CXExpression, expr
 			if t, ok := shortDeclarationCollectionType(prgrm, expressionInputTypeSig); ok && shortDeclarationCollectionSet(prgrm, prevExpression, expression, t, offset) {
 				return
 			}
-			if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if expressionInputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S0849.
 				expressionInputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
@@ -1935,25 +1935,25 @@ func ShortDeclarationComplete(prgrm *ast.CXProgram, expr *ast.CXExpression, expr
 				if expressionInputArg.StructType != nil && len(expressionInputArg.Fields) == 0 && len(expressionInputArg.Lengths) == 0 && expressionInputArg.Type != types.POINTER {
 					argType, argSize, argStructType = types.STRUCT, expressionInputArg.StructType.StructSizeGet(prgrm), expressionInputArg.StructType
 				}
-			} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
+			} else if expressionInputTypeSig.Type == ast.TypeAtomic {
 				argType = types.Code(expressionInputTypeSig.Meta)
 				argSize = types.Code(expressionInputTypeSig.Meta).Size()
-			} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			} else if expressionInputTypeSig.Type == ast.TypePointerAtomic {
 				argType = types.Code(expressionInputTypeSig.Meta)
 				argSize = types.Code(expressionInputTypeSig.Meta).Size()
-			} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+			} else if expressionInputTypeSig.Type == ast.TypeArrayAtomic {
 				// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 				// Now an arena getter, site S0850.
 				arrDetails := prgrm.CXTypeSignatureArrayFromArrayGet(expressionInputTypeSig.Meta)
 				argType = types.Code(arrDetails.Meta)
 				argSize = types.Code(arrDetails.Meta).Size()
-			} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+			} else if expressionInputTypeSig.Type == ast.TypeSliceAtomic {
 				// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 				// Now an arena getter, site S0851.
 				sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(expressionInputTypeSig.Meta)
 				argType = types.Code(sliceDetails.Meta)
 				argSize = types.Code(sliceDetails.Meta).Size()
-			} else if expressionInputTypeSig.Type == ast.TYPE_STRUCT || expressionInputTypeSig.Type == ast.TYPE_POINTER_STRUCT {
+			} else if expressionInputTypeSig.Type == ast.TypeStruct || expressionInputTypeSig.Type == ast.TypePointerStruct {
 				argType, argPointerTargetType, argSize, argStructType = shortDeclarationStructValue(prgrm, expressionInputTypeSig)
 			} else {
 				panic("type is not known")
@@ -1969,7 +1969,7 @@ func ShortDeclarationComplete(prgrm *ast.CXProgram, expr *ast.CXExpression, expr
 		var relocatedOffset types.Pointer
 		relocated := false
 		var prevExpressionOutputIdx ast.CXArgumentIndex
-		if prevExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if prevExpressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			prevExpressionOutputIdx = ast.CXArgumentIndex(prevExpressionOutputTypeSig.Meta)
 			reservedSize := ast.ArgSizeGet(prgrm, prgrm.CXArgGet(prevExpressionOutputIdx))
 
@@ -1993,17 +1993,17 @@ func ShortDeclarationComplete(prgrm *ast.CXProgram, expr *ast.CXExpression, expr
 				prevExpressionOutputTypeSig.Offset = relocatedOffset
 				updateSymbolsTableOffsetAdd(prgrm, prevExpressionOutputTypeSig, offset, declSize)
 			}
-		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+		} else if prevExpressionOutputTypeSig.Type == ast.TypeAtomic {
 			prevExpressionOutputTypeSig.Meta = int(argType)
-		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+		} else if prevExpressionOutputTypeSig.Type == ast.TypePointerAtomic {
 			prevExpressionOutputTypeSig.Meta = int(argType)
-		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+		} else if prevExpressionOutputTypeSig.Type == ast.TypeArrayAtomic {
 			// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 			// Now an arena getter, site S0853.
 			arrDetails := prgrm.CXTypeSignatureArrayFromArrayGet(prevExpressionOutputTypeSig.Meta)
 			arrDetails.Meta = int(argType)
 
-		} else if prevExpressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+		} else if prevExpressionOutputTypeSig.Type == ast.TypeSliceAtomic {
 			// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 			// Now an arena getter, site S0854.
 			sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(prevExpressionOutputTypeSig.Meta)
@@ -2016,7 +2016,7 @@ func ShortDeclarationComplete(prgrm *ast.CXProgram, expr *ast.CXExpression, expr
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0855.
 		expressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.OutputsGet(prgrm)[0])
-		if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if expressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			expressionOutputIdx := ast.CXArgumentIndex(expressionOutputTypeSig.Meta)
 
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
@@ -2036,16 +2036,16 @@ func ShortDeclarationComplete(prgrm *ast.CXProgram, expr *ast.CXExpression, expr
 				prgrm.CXArgGet(expressionOutputIdx).Offset = relocatedOffset
 				expressionOutputTypeSig.Offset = relocatedOffset
 			}
-		} else if expressionOutputTypeSig.Type == ast.TYPE_ATOMIC {
+		} else if expressionOutputTypeSig.Type == ast.TypeAtomic {
 			expressionOutputTypeSig.Meta = int(argType)
-		} else if expressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+		} else if expressionOutputTypeSig.Type == ast.TypePointerAtomic {
 			expressionOutputTypeSig.Meta = int(argType)
-		} else if expressionOutputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+		} else if expressionOutputTypeSig.Type == ast.TypeArrayAtomic {
 			// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 			// Now an arena getter, site S0856.
 			arrDetails := prgrm.CXTypeSignatureArrayFromArrayGet(expressionOutputTypeSig.Meta)
 			arrDetails.Meta = int(argType)
-		} else if expressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+		} else if expressionOutputTypeSig.Type == ast.TypeSliceAtomic {
 			// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 			// Now an arena getter, site S0857.
 			sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(expressionOutputTypeSig.Meta)
@@ -2076,14 +2076,14 @@ func SliceDereferenceSet(prgrm *ast.CXProgram, inpIdx ast.CXArgumentIndex) {
 	}
 
 	// *ps[i] on a []*T dereferences the element, which is not a slice.
-	if elt.SliceTyped() && len(elt.Indexes) < len(elt.Lengths) && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == constants.DEREF_POINTER {
+	if elt.SliceTyped() && len(elt.Indexes) < len(elt.Lengths) && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == constants.DerefPointer {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations)-1]
 		return
 	}
 
 	if elt.SliceTyped() && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
 		return
-		// elt.DereferenceOperations = append([]int{cxcore.DEREF_POINTER}, elt.DereferenceOperations...)
+		// elt.DereferenceOperations = append([]int{cxcore.DerefPointer}, elt.DereferenceOperations...)
 	}
 }
 
@@ -2099,7 +2099,7 @@ func SliceAssignmentComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	expressionOperatorInputs := expressionOperator.InputsGet(prgrm)
 	expressionOperatorOutputs := expressionOperator.OutputsGet(prgrm)
 
-	opIdentFn := ast.NativeFunctionOf(prgrm, constants.OP_IDENTITY)
+	opIdentFn := ast.NativeFunctionOf(prgrm, constants.OpIdentity)
 	opIdent := false
 	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperatorInputs) == len(opIdentFn.Inputs) && len(expressionOperatorOutputs) == len(opIdentFn.Outputs) {
 		opIdent = true
@@ -2113,7 +2113,7 @@ func SliceAssignmentComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		// Now an arena getter, site S0865.
 		expressionInputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.InputsGet(prgrm)[0])
 		var expressionInputArg *ast.CXArgument
-		if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if expressionInputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0867.
 			expressionInputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
@@ -2126,7 +2126,7 @@ func SliceAssignmentComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		// Now an arena getter, site S0868.
 		expressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.OutputsGet(prgrm)[0])
 		var expressionOutputArg *ast.CXArgument
-		if expressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if expressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0870.
 			expressionOutputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
@@ -2139,7 +2139,7 @@ func SliceAssignmentComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		out = expressionOutputArg.AssignmentElementGet(prgrm)
 
 		if inp.SliceTyped() && out.SliceTyped() && len(inp.Indexes) == 0 && len(out.Indexes) == 0 {
-			out.PassBy = constants.PASSBY_VALUE
+			out.PassBy = constants.PassByValue
 		}
 	}
 	if expressionOperator != nil && !expressionOperator.BuiltIn() {
@@ -2150,7 +2150,7 @@ func SliceAssignmentComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 			input := prgrm.CXTypeSignatureFromArrayGet(inputIdx)
 
 			// Only a CXArgument slice needs its PassBy changed here.
-			if input.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+			if input.Type != ast.TypeCXArgumentDeprecate {
 				continue
 			}
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
@@ -2161,8 +2161,8 @@ func SliceAssignmentComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 
 			// we want to pass by value if we're sending the slice as a whole (no indexing)
 			// unless it's a pointer to the slice
-			if assignElt.SliceTyped() && len(assignElt.Indexes) == 0 && !declarationSpecifierFound(assignElt, constants.DECL_POINTER) {
-				assignElt.PassBy = constants.PASSBY_VALUE
+			if assignElt.SliceTyped() && len(assignElt.Indexes) == 0 && !declarationSpecifierFound(assignElt, constants.DeclarationPointer) {
+				assignElt.PassBy = constants.PassByValue
 			}
 		}
 	}
@@ -2202,7 +2202,7 @@ func lookupSymbol(prgrm *ast.CXProgram, pkgName stringpool.StringGid, ident stri
 	fnArgTypeSig.Name = fnArg.Name
 	fnArgTypeSig.Offset = fnArg.Offset
 	fnArgTypeSig.Package = fnArg.Package
-	fnArgTypeSig.Type = ast.TYPE_CXARGUMENT_DEPRECATE
+	fnArgTypeSig.Type = ast.TypeCXArgumentDeprecate
 	fnArgTypeSig.Meta = int(fnArgIdx)
 	fnArgTypeSig.ArgDetails = fnArg.ArgDetails
 	symbolTable.functionSymbols = append(symbolTable.functionSymbols, fnArgTypeSig.Index)
@@ -2217,7 +2217,7 @@ func SymbolsTableUpdate(prgrm *ast.CXProgram, symbolTable *SymbolTable, typeSigI
 	typeSig := prgrm.CXTypeSignatureFromArrayGet(typeSigIdx)
 
 	var sym *ast.CXArgument
-	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if typeSig.Type == ast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0878.
 		sym = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta))
@@ -2317,7 +2317,7 @@ func MethodCallResolve(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolTable
 	}
 	expression := &prgrm.CXAtomicOps[expr.Index]
 	receiverTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.InputsGet(prgrm)[0])
-	assert.InvariantTrue(receiverTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE, "ProcessMethodCall: receiver is not an argument")
+	assert.InvariantTrue(receiverTypeSig.Type == ast.TypeCXArgumentDeprecate, "ProcessMethodCall: receiver is not an argument")
 	receiver := prgrm.CXArgGet(ast.CXArgumentIndex(receiverTypeSig.Meta))
 	receiverPkg, err := prgrm.PackageFromArrayGet(receiver.Package)
 	if err != nil {
@@ -2381,13 +2381,13 @@ func MethodCallResolve(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolTable
 	methodInputs := prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx).InputsGet(prgrm)
 	methodPointer := len(methodInputs) > 0 && typeSignaturePointer(prgrm, prgrm.CXTypeSignatureFromArrayGet(methodInputs[0]))
 	if !receiverPointer && methodPointer {
-		if !indirect && receiver.PassBy != constants.PASSBY_REFERENCE && len(receiver.Indexes) == 0 && TemporaryVariable(prgrm, receiver.Name) {
+		if !indirect && receiver.PassBy != constants.PassByReference && len(receiver.Indexes) == 0 && TemporaryVariable(prgrm, receiver.Name) {
 			// A literal or a call result is not addressable
 			// (https://go.dev/ref/spec#Calls).
 			prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeMethodPointerValue, method.ArgDetails, ast.CompileErrorOperands{int64(method.Name), int64(strct.Name)})
 		}
-		receiver.PassBy = constants.PASSBY_REFERENCE
-		receiverTypeSig.PassBy = constants.PASSBY_REFERENCE
+		receiver.PassBy = constants.PassByReference
+		receiverTypeSig.PassBy = constants.PassByReference
 	}
 	if len(methodInputs) > 0 && !methodPointer {
 		methodCallReceiverValue(prgrm, receiver, receiverTypeSig, receiverPointer)
@@ -2401,15 +2401,15 @@ func MethodCallResolve(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolTable
 func methodCallReceiverValue(prgrm *ast.CXProgram, receiver *ast.CXArgument, receiverTypeSig *ast.CXTypeSignature, receiverPointer bool) {
 	elt := receiver.AssignmentElementGet(prgrm)
 	specs := elt.DeclarationSpecifiers
-	if receiver.PassBy == constants.PASSBY_REFERENCE && len(specs) > 0 && specs[len(specs)-1] == constants.DECL_POINTER {
-		receiver.PassBy = constants.PASSBY_VALUE
-		receiverTypeSig.PassBy = constants.PASSBY_VALUE
+	if receiver.PassBy == constants.PassByReference && len(specs) > 0 && specs[len(specs)-1] == constants.DeclarationPointer {
+		receiver.PassBy = constants.PassByValue
+		receiverTypeSig.PassBy = constants.PassByValue
 		elt.DeclarationSpecifiers = specs[:len(specs)-1]
 		return
 	}
 	if receiverPointer {
-		elt.DereferenceOperations = append(elt.DereferenceOperations, constants.DEREF_POINTER)
-		elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, constants.DECL_DEREF)
+		elt.DereferenceOperations = append(elt.DereferenceOperations, constants.DerefPointer)
+		elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, constants.DeclarationDeref)
 	}
 }
 
@@ -2418,7 +2418,7 @@ func methodCallReceiverValue(prgrm *ast.CXProgram, receiver *ast.CXArgument, rec
 func methodCallInvalidate(prgrm *ast.CXProgram, expression *ast.CXAtomicOperator) {
 	for _, resultIdx := range expression.OutputsGet(prgrm) {
 		resultTypeSig := prgrm.CXTypeSignatureFromArrayGet(resultIdx)
-		if resultTypeSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE || !strings.HasPrefix(prgrm.CXProgramNameText(resultTypeSig.Name), constants.METHOD_RESULT_PREFIX) {
+		if resultTypeSig.Type != ast.TypeCXArgumentDeprecate || !strings.HasPrefix(prgrm.CXProgramNameText(resultTypeSig.Name), constants.MethodResultPrefix) {
 			continue
 		}
 		result := prgrm.CXArgGet(ast.CXArgumentIndex(resultTypeSig.Meta))
@@ -2431,9 +2431,9 @@ func methodCallInvalidate(prgrm *ast.CXProgram, expression *ast.CXAtomicOperator
 // typeSignaturePointer reports whether typeSig is a pointer.
 func typeSignaturePointer(prgrm *ast.CXProgram, typeSig *ast.CXTypeSignature) bool {
 	switch typeSig.Type {
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		return prgrm.CXArgGet(ast.CXArgumentIndex(typeSig.Meta)).PointerTyped()
-	case ast.TYPE_POINTER_STRUCT, ast.TYPE_POINTER_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
+	case ast.TypePointerStruct, ast.TypePointerAtomic, ast.TypePointerArrayAtomic, ast.TypePointerSliceAtomic:
 		return true
 	}
 	return false
@@ -2446,7 +2446,7 @@ func methodCallResultsType(prgrm *ast.CXProgram, expression *ast.CXAtomicOperato
 	methodOutputs := prgrm.CxIrState.CxIrStateFunctionGetOrNil(expression.Operator).OutputsGet(prgrm)
 	for i, resultIdx := range expression.OutputsGet(prgrm) {
 		resultTypeSig := prgrm.CXTypeSignatureFromArrayGet(resultIdx)
-		if resultTypeSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE || !strings.HasPrefix(prgrm.CXProgramNameText(resultTypeSig.Name), constants.METHOD_RESULT_PREFIX) {
+		if resultTypeSig.Type != ast.TypeCXArgumentDeprecate || !strings.HasPrefix(prgrm.CXProgramNameText(resultTypeSig.Name), constants.MethodResultPrefix) {
 			continue
 		}
 		result := prgrm.CXArgGet(ast.CXArgumentIndex(resultTypeSig.Meta))
@@ -2460,7 +2460,7 @@ func methodCallResultsType(prgrm *ast.CXProgram, expression *ast.CXAtomicOperato
 		}
 
 		outputTypeSig := prgrm.CXTypeSignatureFromArrayGet(methodOutputs[i])
-		if outputTypeSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+		if outputTypeSig.Type != ast.TypeCXArgumentDeprecate {
 			name, pkg, details := resultTypeSig.Name, resultTypeSig.Package, resultTypeSig.ArgDetails
 			index := resultTypeSig.Index
 			*resultTypeSig = *outputTypeSig
@@ -2530,7 +2530,7 @@ func TemporaryVariableComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 	expressionOperatorInputs := expressionOperator.InputsGet(prgrm)
 	expressionOperatorOutputs := expressionOperator.OutputsGet(prgrm)
 
-	opIdentFn := ast.NativeFunctionOf(prgrm, constants.OP_IDENTITY)
+	opIdentFn := ast.NativeFunctionOf(prgrm, constants.OpIdentity)
 	opIdent := false
 	if expressionOperator != nil && expressionOperator.AtomicOPCode == opIdentFn.AtomicOPCode && len(expressionOperatorInputs) == len(opIdentFn.Inputs) && len(expressionOperatorOutputs) == len(opIdentFn.Outputs) {
 		opIdent = true
@@ -2543,13 +2543,13 @@ func TemporaryVariableComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 		// An element of a literal of pointers or mixed dimensions, tmp[i], has
 		// its type from the literal.
 		if TemporaryVariable(prgrm, outputTypeSig.Name) && !argumentIndexedElement(prgrm, outputTypeSig) {
-			if outputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if outputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				outputArgIdx := ast.CXArgumentIndex(outputTypeSig.Meta)
 
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S0930.
 				expressionInputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.InputsGet(prgrm)[0])
-				if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				if expressionInputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S0931.
 					expressionInputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
@@ -2569,21 +2569,21 @@ func TemporaryVariableComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1731.
 					prgrm.CXArgGet(ast.CXArgumentIndex(outputArgIdx)).PreviouslyDeclared = true
-				} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
+				} else if expressionInputTypeSig.Type == ast.TypeAtomic {
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1732.
 					prgrm.CXArgGet(ast.CXArgumentIndex(outputArgIdx)).Type = expressionInputTypeSig.TypeGet(prgrm)
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1733.
 					prgrm.CXArgGet(ast.CXArgumentIndex(outputArgIdx)).Size = types.Code(expressionInputTypeSig.Meta).Size()
-				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				} else if expressionInputTypeSig.Type == ast.TypePointerAtomic {
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1734.
 					prgrm.CXArgGet(ast.CXArgumentIndex(outputArgIdx)).Type = expressionInputTypeSig.TypeGet(prgrm)
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1735.
 					prgrm.CXArgGet(ast.CXArgumentIndex(outputArgIdx)).Size = types.Code(expressionInputTypeSig.Meta).Size()
-				} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC || expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC || expressionInputTypeSig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC || expressionInputTypeSig.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
+				} else if expressionInputTypeSig.Type == ast.TypeArrayAtomic || expressionInputTypeSig.Type == ast.TypeSliceAtomic || expressionInputTypeSig.Type == ast.TypePointerArrayAtomic || expressionInputTypeSig.Type == ast.TypePointerSliceAtomic {
 					// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 					// Now an arena getter, site S0932.
 					arrDetails := prgrm.CXTypeSignatureArrayFromArrayGet(expressionInputTypeSig.Meta)
@@ -2593,7 +2593,7 @@ func TemporaryVariableComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1737.
 					prgrm.CXArgGet(ast.CXArgumentIndex(outputArgIdx)).Size = types.Code(arrDetails.Meta).Size()
-				} else if expressionInputTypeSig.Type == ast.TYPE_STRUCT || expressionInputTypeSig.Type == ast.TYPE_POINTER_STRUCT {
+				} else if expressionInputTypeSig.Type == ast.TypeStruct || expressionInputTypeSig.Type == ast.TypePointerStruct {
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1738.
 					prgrm.CXArgGet(ast.CXArgumentIndex(outputArgIdx)).Type = expressionInputTypeSig.TypeGet(prgrm)
@@ -2604,20 +2604,20 @@ func TemporaryVariableComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 					panic("type is not known")
 				}
 
-			} else if outputTypeSig.Type == ast.TYPE_ATOMIC || outputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			} else if outputTypeSig.Type == ast.TypeAtomic || outputTypeSig.Type == ast.TypePointerAtomic {
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S0933.
 				expressionInputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.InputsGet(prgrm)[0])
-				if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				if expressionInputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S0934.
 					expressionInputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
 					outputTypeSig.Meta = int(expressionInputArg.Type)
-				} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
+				} else if expressionInputTypeSig.Type == ast.TypeAtomic {
 					outputTypeSig.Meta = expressionInputTypeSig.Meta
-				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				} else if expressionInputTypeSig.Type == ast.TypePointerAtomic {
 					outputTypeSig.Meta = expressionInputTypeSig.Meta
-				} else if expressionInputTypeSig.Type == ast.TYPE_SLICE_ATOMIC || expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC || expressionInputTypeSig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC || expressionInputTypeSig.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
+				} else if expressionInputTypeSig.Type == ast.TypeSliceAtomic || expressionInputTypeSig.Type == ast.TypeArrayAtomic || expressionInputTypeSig.Type == ast.TypePointerArrayAtomic || expressionInputTypeSig.Type == ast.TypePointerSliceAtomic {
 					// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 					// Now an arena getter, site S0935.
 					sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(expressionInputTypeSig.Meta)
@@ -2625,23 +2625,23 @@ func TemporaryVariableComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				} else {
 					panic("type is not known")
 				}
-			} else if outputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+			} else if outputTypeSig.Type == ast.TypeArrayAtomic {
 				// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 				// Now an arena getter, site S0936.
 				outputArrDetails := prgrm.CXTypeSignatureArrayFromArrayGet(outputTypeSig.Meta)
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S0937.
 				expressionInputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.InputsGet(prgrm)[0])
-				if expressionInputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				if expressionInputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S0938.
 					expressionInputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionInputTypeSig.Meta))
 					outputArrDetails.Meta = int(expressionInputArg.Type)
-				} else if expressionInputTypeSig.Type == ast.TYPE_ATOMIC {
+				} else if expressionInputTypeSig.Type == ast.TypeAtomic {
 					outputArrDetails.Meta = expressionInputTypeSig.Meta
-				} else if expressionInputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				} else if expressionInputTypeSig.Type == ast.TypePointerAtomic {
 					outputArrDetails.Meta = expressionInputTypeSig.Meta
-				} else if expressionInputTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+				} else if expressionInputTypeSig.Type == ast.TypeArrayAtomic {
 					// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 					// Now an arena getter, site S0939.
 					arrDetails := prgrm.CXTypeSignatureArrayFromArrayGet(expressionInputTypeSig.Meta)
@@ -2649,7 +2649,7 @@ func TemporaryVariableComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 				} else {
 					panic("type is not known")
 				}
-			} else if outputTypeSig.Type != ast.TYPE_SLICE_ATOMIC {
+			} else if outputTypeSig.Type != ast.TypeSliceAtomic {
 				// The value of a slice literal is typed already.
 				panic("type is not known")
 			}
@@ -2663,8 +2663,8 @@ func TemporaryVariableComplete(prgrm *ast.CXProgram, expr *ast.CXExpression) {
 func copyArgFieldsIndexesCheck(prgrm *ast.CXProgram, sym *ast.CXArgument, typeSig *ast.CXTypeSignature) {
 	dimensions := 0
 	switch typeSig.Type {
-	case ast.TYPE_ATOMIC:
-	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_SLICE_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
+	case ast.TypeAtomic:
+	case ast.TypeArrayAtomic, ast.TypePointerArrayAtomic, ast.TypeSliceAtomic, ast.TypePointerSliceAtomic:
 		dimensions = len(prgrm.CXTypeSignatureArrayFromArrayGet(typeSig.Meta).Lengths)
 	default:
 		return
@@ -2678,7 +2678,7 @@ func copyArgFieldsIndexesCheck(prgrm *ast.CXProgram, sym *ast.CXArgument, typeSi
 
 func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast.CXTypeSignature) {
 	var sym *ast.CXArgument
-	if symTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if symTypeSignature.Type == ast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0941.
 		sym = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(symTypeSignature.Meta))
@@ -2687,7 +2687,7 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 	}
 
 	var arg *ast.CXArgument
-	if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if argTypeSignature.Type == ast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0943.
 		arg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(argTypeSignature.Meta))
@@ -2701,7 +2701,7 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 	// TODO: check if this needs a change
 	if sym == nil && arg == nil {
-		if !(symTypeSignature.Type == ast.TYPE_SLICE_ATOMIC && argTypeSignature.Type == ast.TYPE_SLICE_ATOMIC) && !(symTypeSignature.Type == ast.TYPE_STRUCT && argTypeSignature.Type == ast.TYPE_STRUCT) && !(symTypeSignature.Type == ast.TYPE_POINTER_STRUCT && argTypeSignature.Type == ast.TYPE_POINTER_STRUCT) {
+		if !(symTypeSignature.Type == ast.TypeSliceAtomic && argTypeSignature.Type == ast.TypeSliceAtomic) && !(symTypeSignature.Type == ast.TypeStruct && argTypeSignature.Type == ast.TypeStruct) && !(symTypeSignature.Type == ast.TypePointerStruct && argTypeSignature.Type == ast.TypePointerStruct) {
 			// Only copy meta if sym and arg are not type slice atomic.
 			symTypeSignature.Meta = argTypeSignature.Meta
 		}
@@ -2712,7 +2712,7 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		symTypeSignature.Offset = argTypeSignature.Offset
 
 		return
-	} else if sym != nil && ast.CXArgumentTypePointerAtomic(sym) && argTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+	} else if sym != nil && ast.CXArgumentTypePointerAtomic(sym) && argTypeSignature.Type == ast.TypePointerAtomic {
 		symTypeSignature.Name = argTypeSignature.Name
 		symTypeSignature.Package = argTypeSignature.Package
 		symTypeSignature.Type = argTypeSignature.Type
@@ -2721,37 +2721,37 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 		return
 
-	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TypePointerAtomic {
 		sym.Name = argTypeSignature.Name
 		sym.Package = argTypeSignature.Package
 		sym.Type = types.Code(argTypeSignature.Meta)
 
 		sym.Offset = argTypeSignature.Offset
 
-		declSpec := []int{constants.DECL_BASIC, constants.DECL_POINTER}
+		declSpec := []int{constants.DeclarationBasic, constants.DeclarationPointer}
 		for _, spec := range sym.DeclarationSpecifiers {
 			// checking if we need to remove or add cxcore.DECL_POINTERs
 			// also we could be removing
 			switch spec {
-			case constants.DECL_INDEXING:
+			case constants.DeclarationIndexing:
 				prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeInvalidIndexing, sym.ArgDetails, ast.CompileErrorOperands{})
-			case constants.DECL_DEREF:
-				if declSpec[len(declSpec)-1] == constants.DECL_POINTER {
+			case constants.DeclarationDeref:
+				if declSpec[len(declSpec)-1] == constants.DeclarationPointer {
 					declSpec = declSpec[:len(declSpec)-1]
 				} else {
 					prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeInvalidIndirection, sym.ArgDetails, ast.CompileErrorOperands{})
 				}
-			case constants.DECL_POINTER:
+			case constants.DeclarationPointer:
 				// &p on a *T p is a **T.
-				if sym.PassBy == constants.PASSBY_REFERENCE {
-					declSpec = append(declSpec, constants.DECL_POINTER)
+				if sym.PassBy == constants.PassByReference {
+					declSpec = append(declSpec, constants.DeclarationPointer)
 				}
 			}
 		}
 		sym.DeclarationSpecifiers = declSpec
 
 		return
-	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 0 || len(sym.DereferenceOperations) > 0) && argTypeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
+	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 0 || len(sym.DereferenceOperations) > 0) && argTypeSignature.Type == ast.TypeArrayAtomic {
 		arrayGid := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayAlloc()
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0944.
@@ -2770,7 +2770,7 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		symTypeSignature.PassBy = sym.PassBy
 
 		return
-	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 0 || len(sym.DereferenceOperations) > 0) && argTypeSignature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
+	} else if sym != nil && arg == nil && (len(sym.DeclarationSpecifiers) > 0 || len(sym.DereferenceOperations) > 0) && argTypeSignature.Type == ast.TypePointerArrayAtomic {
 		arrayGid := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayAlloc()
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0947.
@@ -2790,13 +2790,13 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 		for _, decl := range sym.DeclarationSpecifiers {
 			// parr[i] indexes *parr, as in Go.
-			if decl == constants.DECL_DEREF || decl == constants.DECL_INDEXING {
+			if decl == constants.DeclarationDeref || decl == constants.DeclarationIndexing {
 				symTypeSignature.Deref = true
 			}
 		}
 
 		return
-	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
+	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TypeSliceAtomic {
 		arrayGid := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayAlloc()
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0950.
@@ -2816,20 +2816,20 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 		for _, decl := range sym.DeclarationSpecifiers {
 			switch decl {
-			case constants.DECL_DEREF, constants.DEREF_SLICE, constants.DEREF_ARRAY:
+			case constants.DeclarationDeref, constants.DerefSlice, constants.DerefArray:
 				symTypeSignature.Deref = true
 			}
 		}
 
 		for _, deref := range sym.DereferenceOperations {
 			switch deref {
-			case constants.DEREF_SLICE:
+			case constants.DerefSlice:
 				symTypeSignature.Deref = true
 			}
 		}
 
 		return
-	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
+	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TypePointerSliceAtomic {
 		if len(sym.Indexes) > 0 && pointerIndexedBeforeDeref(sym.DeclarationSpecifiers) {
 			prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeInvalidIndexing, sym.ArgDetails, ast.CompileErrorOperands{})
 		}
@@ -2852,20 +2852,20 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 
 		for _, decl := range sym.DeclarationSpecifiers {
 			switch decl {
-			case constants.DECL_DEREF, constants.DEREF_SLICE, constants.DEREF_ARRAY:
+			case constants.DeclarationDeref, constants.DerefSlice, constants.DerefArray:
 				symTypeSignature.Deref = true
 			}
 		}
 
 		for _, deref := range sym.DereferenceOperations {
 			switch deref {
-			case constants.DEREF_SLICE:
+			case constants.DerefSlice:
 				symTypeSignature.Deref = true
 			}
 		}
 
 		return
-	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TYPE_STRUCT || argTypeSignature.Type == ast.TYPE_POINTER_STRUCT {
+	} else if sym != nil && arg == nil && argTypeSignature.Type == ast.TypeStruct || argTypeSignature.Type == ast.TypePointerStruct {
 		structGid := prgrm.CxIrState.CXTypeSignature_StructMng.CXTypeSignature_StructAlloc()
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S0956.
@@ -2882,9 +2882,9 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 		symTypeSignature.Offset = argTypeSignature.Offset
 		symTypeSignature.PassBy = sym.PassBy
 
-		if argTypeSignature.Type == ast.TYPE_POINTER_STRUCT && len(sym.Fields) == 0 {
+		if argTypeSignature.Type == ast.TypePointerStruct && len(sym.Fields) == 0 {
 			for _, decl := range sym.DeclarationSpecifiers {
-				if decl == constants.DECL_DEREF {
+				if decl == constants.DeclarationDeref {
 					symTypeSignature.Deref = true
 				}
 			}
@@ -2896,14 +2896,14 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 			declSpec := []int{}
 			for c := 0; c < len(elt.DeclarationSpecifiers); c++ {
 				switch elt.DeclarationSpecifiers[c] {
-				case constants.DECL_INDEXING:
-					if declSpec[len(declSpec)-1] == constants.DECL_ARRAY || declSpec[len(declSpec)-1] == constants.DECL_SLICE {
+				case constants.DeclarationIndexing:
+					if declSpec[len(declSpec)-1] == constants.DeclarationArray || declSpec[len(declSpec)-1] == constants.DeclarationSlice {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeInvalidIndexing, sym.ArgDetails, ast.CompileErrorOperands{})
 					}
-				case constants.DECL_DEREF:
-					if declSpec[len(declSpec)-1] == constants.DECL_POINTER {
+				case constants.DeclarationDeref:
+					if declSpec[len(declSpec)-1] == constants.DeclarationPointer {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeInvalidIndirection, sym.ArgDetails, ast.CompileErrorOperands{})
@@ -2965,14 +2965,14 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 			declSpec := []int{}
 			for c := 0; c < len(elt.DeclarationSpecifiers); c++ {
 				switch elt.DeclarationSpecifiers[c] {
-				case constants.DECL_INDEXING:
-					if declSpec[len(declSpec)-1] == constants.DECL_ARRAY || declSpec[len(declSpec)-1] == constants.DECL_SLICE {
+				case constants.DeclarationIndexing:
+					if declSpec[len(declSpec)-1] == constants.DeclarationArray || declSpec[len(declSpec)-1] == constants.DeclarationSlice {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeInvalidIndexing, sym.ArgDetails, ast.CompileErrorOperands{})
 					}
-				case constants.DECL_DEREF:
-					if declSpec[len(declSpec)-1] == constants.DECL_POINTER {
+				case constants.DeclarationDeref:
+					if declSpec[len(declSpec)-1] == constants.DeclarationPointer {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeInvalidIndirection, sym.ArgDetails, ast.CompileErrorOperands{})
@@ -2995,36 +2995,36 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 				// checking if we need to remove or add cxcore.DECL_POINTERs
 				// also we could be removing
 				switch spec {
-				case constants.DECL_INDEXING:
+				case constants.DeclarationIndexing:
 					if pointerArrayIndexed {
 						// parr[i] indexes *parr, as in Go.
 						declSpec = declSpec[:len(declSpec)-2]
 						pointerArrayIndexed = false
-					} else if declSpec[len(declSpec)-1] == constants.DECL_ARRAY || declSpec[len(declSpec)-1] == constants.DECL_SLICE {
+					} else if declSpec[len(declSpec)-1] == constants.DeclarationArray || declSpec[len(declSpec)-1] == constants.DeclarationSlice {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeInvalidIndexing, sym.ArgDetails, ast.CompileErrorOperands{})
 					}
-				case constants.DECL_DEREF:
-					if declSpec[len(declSpec)-1] == constants.DECL_POINTER {
+				case constants.DeclarationDeref:
+					if declSpec[len(declSpec)-1] == constants.DeclarationPointer {
 						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeInvalidIndirection, sym.ArgDetails, ast.CompileErrorOperands{})
 					}
-				case constants.DECL_POINTER:
+				case constants.DeclarationPointer:
 					if use {
 						// This function is also called so it assigns offset and other fields to signature parameters
 						//
-						declSpec = append(declSpec, constants.DECL_POINTER)
+						declSpec = append(declSpec, constants.DeclarationPointer)
 					}
 				}
 			}
 
 			sym.DeclarationSpecifiers = declSpec
 		}
-	} else if sym.PassBy == constants.PASSBY_REFERENCE && len(sym.Fields) == 0 && len(sym.DeclarationSpecifiers) == 1 && sym.DeclarationSpecifiers[0] == constants.DECL_POINTER {
+	} else if sym.PassBy == constants.PassByReference && len(sym.Fields) == 0 && len(sym.DeclarationSpecifiers) == 1 && sym.DeclarationSpecifiers[0] == constants.DeclarationPointer {
 		// &T{...} takes the address of a temporary declared on its own line.
-		sym.DeclarationSpecifiers = append(append([]int{}, arg.DeclarationSpecifiers...), constants.DECL_POINTER)
+		sym.DeclarationSpecifiers = append(append([]int{}, arg.DeclarationSpecifiers...), constants.DeclarationPointer)
 	} else {
 		sym.DeclarationSpecifiers = arg.DeclarationSpecifiers
 	}
@@ -3050,34 +3050,34 @@ func ArgFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 	// below (as in the `arg.SliceTyped` check), but the process differs in the
 	// case of a slice struct field.
 	assignElement := sym.AssignmentElementGet(prgrm)
-	if (!arg.SliceTyped() || derefOpFound(sym, constants.DEREF_ARRAY)) && arg.StructType != nil && assignElement.SliceTyped() && assignElement.ArraySliceDimensions() == 0 && assignElement != sym {
+	if (!arg.SliceTyped() || derefOpFound(sym, constants.DerefArray)) && arg.StructType != nil && assignElement.SliceTyped() && assignElement.ArraySliceDimensions() == 0 && assignElement != sym {
 		for i, deref := range assignElement.DereferenceOperations {
 			// The cxgo when reading `foo[5]` in postfix.go does not know if `foo`
 			// is a slice or an array. At this point we now know it's a slice and we need
-			// to change those dereferences to cxcore.DEREF_SLICE.
-			if deref == constants.DEREF_ARRAY {
-				assignElement.DereferenceOperations[i] = constants.DEREF_SLICE
+			// to change those dereferences to cxcore.DerefSlice.
+			if deref == constants.DerefArray {
+				assignElement.DereferenceOperations[i] = constants.DerefSlice
 			}
 		}
 
-		if len(assignElement.DereferenceOperations) > 0 && assignElement.DereferenceOperations[0] == constants.DEREF_POINTER {
+		if len(assignElement.DereferenceOperations) > 0 && assignElement.DereferenceOperations[0] == constants.DerefPointer {
 			assignElement.DereferenceOperations = assignElement.DereferenceOperations[1:]
 		}
 	}
 
-	if arg.ArraySliceMixed() && (derefOpFound(sym, constants.DEREF_ARRAY) || derefOpFound(sym, constants.DEREF_SLICE)) {
+	if arg.ArraySliceMixed() && (derefOpFound(sym, constants.DerefArray) || derefOpFound(sym, constants.DerefSlice)) {
 		indexDerefsOfLengths(sym, arg.Lengths)
 	} else if arg.SliceTyped() {
-		if !derefOpFound(sym, constants.DEREF_ARRAY) {
+		if !derefOpFound(sym, constants.DerefArray) {
 			// Then we're handling the slice itself, and we need to dereference it.
-			sym.DereferenceOperations = append([]int{constants.DEREF_POINTER}, sym.DereferenceOperations...)
+			sym.DereferenceOperations = append([]int{constants.DerefPointer}, sym.DereferenceOperations...)
 		} else {
 			for i, deref := range sym.DereferenceOperations {
 				// The cxgo when reading `foo[5]` in postfix.go does not know if `foo`
 				// is a slice or an array. At this point we now know it's a slice and we need
-				// to change those dereferences to cxcore.DEREF_SLICE.
-				if deref == constants.DEREF_ARRAY {
-					sym.DereferenceOperations[i] = constants.DEREF_SLICE
+				// to change those dereferences to cxcore.DerefSlice.
+				if deref == constants.DerefArray {
+					sym.DereferenceOperations[i] = constants.DerefSlice
 				}
 			}
 		}
@@ -3107,7 +3107,7 @@ func SymbolFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *
 	if typeSignatureInvalid(prgrm, argTypeSignature) {
 		// The fields of a value of no valid type have no type either, so their
 		// uses report nothing more.
-		if symTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if symTypeSignature.Type == ast.TypeCXArgumentDeprecate {
 			for _, fieldIdx := range prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(symTypeSignature.Meta)).Fields {
 				prgrm.CXArgFromArrayGet(fieldIdx).Type = types.INVALID
 			}
@@ -3115,17 +3115,17 @@ func SymbolFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *
 		return
 	}
 	var argStructType *ast.CXStruct
-	if argTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if argTypeSignature.Type == ast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0960.
 		arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(argTypeSignature.Meta))
 		argStructType = arg.StructType
-	} else if argTypeSignature.Type == ast.TYPE_STRUCT {
+	} else if argTypeSignature.Type == ast.TypeStruct {
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S0961.
 		structDetails := prgrm.CXTypeSignatureStructFromArrayGet(argTypeSignature.Meta)
 		argStructType = structDetails.StructType
-	} else if argTypeSignature.Type == ast.TYPE_POINTER_STRUCT {
+	} else if argTypeSignature.Type == ast.TypePointerStruct {
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S0962.
 		structDetails := prgrm.CXTypeSignatureStructFromArrayGet(argTypeSignature.Meta)
@@ -3138,17 +3138,17 @@ func SymbolFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *
 	// nil for a struct signature.
 	var sym *ast.CXArgument
 	var symFields []ast.CXArgumentIndex
-	if symTypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if symTypeSignature.Type == ast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0964.
 		sym = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(symTypeSignature.Meta))
 		symFields = sym.Fields
-	} else if symTypeSignature.Type == ast.TYPE_STRUCT {
+	} else if symTypeSignature.Type == ast.TypeStruct {
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S0965.
 		symStructDetails := prgrm.CXTypeSignatureStructFromArrayGet(symTypeSignature.Meta)
 		symFields = symStructDetails.Fields
-	} else if symTypeSignature.Type == ast.TYPE_POINTER_STRUCT {
+	} else if symTypeSignature.Type == ast.TypePointerStruct {
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S0966.
 		symStructDetails := prgrm.CXTypeSignatureStructFromArrayGet(symTypeSignature.Meta)
@@ -3202,7 +3202,7 @@ func SymbolFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *
 					methodOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(methodOutputs[0])
 
 					var methodOutputArg *ast.CXArgument
-					if methodOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					if methodOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 						// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 						// Now an arena getter, site S0973.
 						methodOutputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(methodOutputTypeSig.Meta))
@@ -3236,7 +3236,7 @@ func SymbolFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *
 				// Now an arena getter, site S0975.
 				typeSignature := prgrm.CXTypeSignatureFromArrayGet(typeSignatureIdx)
 
-				if typeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				if typeSignature.Type == ast.TypeCXArgumentDeprecate {
 					fieldIdx := typeSignature.Meta
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1740.
@@ -3255,31 +3255,31 @@ func SymbolFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *
 					field.PassBy = typeSignature.PassBy
 					symbolFieldTypeSet(nameField, &field, sym)
 					break
-				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ATOMIC {
+				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TypeAtomic {
 					nameField.Type = types.Code(typeSignature.Meta)
 					nameField.StructType = nil
 					nameField.Size = typeSignature.SizeGet(prgrm, false)
 
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
-						nameField.DeclarationSpecifiers = append([]int{constants.DECL_BASIC}, nameField.DeclarationSpecifiers[1:]...)
+						nameField.DeclarationSpecifiers = append([]int{constants.DeclarationBasic}, nameField.DeclarationSpecifiers[1:]...)
 					} else {
-						nameField.DeclarationSpecifiers = []int{constants.DECL_BASIC}
+						nameField.DeclarationSpecifiers = []int{constants.DeclarationBasic}
 					}
 
 					break
-				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_POINTER_ATOMIC {
+				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TypePointerAtomic {
 					nameField.Type = types.Code(typeSignature.Meta)
 					nameField.StructType = nil
-					nameField.Size = types.POINTER_SIZE
-					specs := []int{constants.DECL_BASIC, constants.DECL_POINTER}
+					nameField.Size = types.PointerSize
+					specs := []int{constants.DeclarationBasic, constants.DeclarationPointer}
 					if len(nameField.DeclarationSpecifiers) > 0 {
 						specs = append(specs, nameField.DeclarationSpecifiers[1:]...)
 					}
 					nameField.DeclarationSpecifiers = specs
 
 					break
-				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
+				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TypeArrayAtomic {
 					// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 					// Now an arena getter, site S0976.
 					typeSignatureArray := prgrm.CXTypeSignatureArrayFromArrayGet(typeSignature.Meta)
@@ -3293,12 +3293,12 @@ func SymbolFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *
 
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
-						nameField.DeclarationSpecifiers = append([]int{constants.DECL_BASIC, constants.DECL_ARRAY}, nameField.DeclarationSpecifiers[1:]...)
+						nameField.DeclarationSpecifiers = append([]int{constants.DeclarationBasic, constants.DeclarationArray}, nameField.DeclarationSpecifiers[1:]...)
 					} else {
-						nameField.DeclarationSpecifiers = []int{constants.DECL_BASIC}
+						nameField.DeclarationSpecifiers = []int{constants.DeclarationBasic}
 					}
 					break
-				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_SLICE_ATOMIC {
+				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TypeSliceAtomic {
 					// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 					// Now an arena getter, site S0977.
 					sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(typeSignature.Meta)
@@ -3314,22 +3314,22 @@ func SymbolFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *
 					if len(nameField.DeclarationSpecifiers) > 0 {
 						nameField.DeclarationSpecifiers = append(declarationSpecifiersSlice(len(sliceDetails.Lengths)), nameField.DeclarationSpecifiers[1:]...)
 					} else {
-						nameField.DeclarationSpecifiers = []int{constants.DECL_BASIC}
+						nameField.DeclarationSpecifiers = []int{constants.DeclarationBasic}
 					}
 
 					// Each index of a multi-dimensional slice field reads the next slice.
-					if len(sliceDetails.Lengths) > 1 && derefOpFound(nameField, constants.DEREF_ARRAY) {
+					if len(sliceDetails.Lengths) > 1 && derefOpFound(nameField, constants.DerefArray) {
 						for i, deref := range nameField.DereferenceOperations {
-							if deref == constants.DEREF_ARRAY {
-								nameField.DereferenceOperations[i] = constants.DEREF_SLICE
+							if deref == constants.DerefArray {
+								nameField.DereferenceOperations[i] = constants.DerefSlice
 							}
 						}
 					} else {
-						nameField.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameField.DereferenceOperations...)
+						nameField.DereferenceOperations = append([]int{constants.DerefPointer}, nameField.DereferenceOperations...)
 					}
 
 					break
-				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_STRUCT {
+				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TypeStruct {
 					// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 					// Now an arena getter, site S0978.
 					structDetails := prgrm.CXTypeSignatureStructFromArrayGet(typeSignature.Meta)
@@ -3342,13 +3342,13 @@ func SymbolFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *
 
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
-						nameField.DeclarationSpecifiers = append([]int{constants.DECL_STRUCT}, nameField.DeclarationSpecifiers[1:]...)
+						nameField.DeclarationSpecifiers = append([]int{constants.DeclarationStruct}, nameField.DeclarationSpecifiers[1:]...)
 					} else {
-						nameField.DeclarationSpecifiers = []int{constants.DECL_STRUCT}
+						nameField.DeclarationSpecifiers = []int{constants.DeclarationStruct}
 					}
 
 					break
-				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TYPE_POINTER_STRUCT {
+				} else if nameField.Name == typeSignature.Name && typeSignature.Type == ast.TypePointerStruct {
 					// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 					// Now an arena getter, site S0979.
 					structDetails := prgrm.CXTypeSignatureStructFromArrayGet(typeSignature.Meta)
@@ -3361,9 +3361,9 @@ func SymbolFieldsCopy(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *
 
 					// TODO: this should not be needed.
 					if len(nameField.DeclarationSpecifiers) > 0 {
-						nameField.DeclarationSpecifiers = append([]int{constants.DECL_STRUCT, constants.DECL_POINTER}, nameField.DeclarationSpecifiers[1:]...)
+						nameField.DeclarationSpecifiers = append([]int{constants.DeclarationStruct, constants.DeclarationPointer}, nameField.DeclarationSpecifiers[1:]...)
 					} else {
-						nameField.DeclarationSpecifiers = []int{constants.DECL_STRUCT}
+						nameField.DeclarationSpecifiers = []int{constants.DeclarationStruct}
 					}
 
 					break
@@ -3390,7 +3390,7 @@ func GlobalSymbolGet(prgrm *ast.CXProgram, symbolTable *SymbolTable, symPkg *ast
 	}
 }
 
-// exprLine returns the file and line of the CX_LINE marker before exprs[currIndex].
+// exprLine returns the file and line of the CXOperationTypeLine marker before exprs[currIndex].
 // It falls back to the parser position, which is the end of the function once the body is parsed.
 func exprLine(prgrm *ast.CXProgram, exprs []ast.CXExpression, currIndex int) (ast.SourceFileGid, int) {
 	if cxLine, err := prgrm.PreviousCXLineGet(exprs, currIndex); err == nil && cxLine.LineNumber > 0 {
@@ -3419,7 +3419,7 @@ func releaseFunctionSymbols(prgrm *ast.CXProgram, symbolTable *SymbolTable) {
 // resolved, since IterationExpressions turns every one it owns into a jmp.
 func LoopJumpsOutsideLoopReport(prgrm *ast.CXProgram, exprs []ast.CXExpression) {
 	for i, expr := range exprs {
-		if expr.Type == ast.CX_LINE {
+		if expr.Type == ast.CXOperationTypeLine {
 			continue
 		}
 		var keyword string
@@ -3431,7 +3431,7 @@ func LoopJumpsOutsideLoopReport(prgrm *ast.CXProgram, exprs []ast.CXExpression) 
 			continue
 		}
 		file, line := CurrentFile, LineNo
-		if i > 0 && exprs[i-1].Type == ast.CX_LINE {
+		if i > 0 && exprs[i-1].Type == ast.CXOperationTypeLine {
 			if cxLine, err := prgrm.CXLineGet(exprs[i-1].Index); err == nil {
 				file, line = cxLine.FileName, cxLine.LineNumber
 			}
@@ -3443,16 +3443,16 @@ func LoopJumpsOutsideLoopReport(prgrm *ast.CXProgram, exprs []ast.CXExpression) 
 // typeSignatureUndefined reports whether the type of typeSig is not known
 // yet, as for a temporary variable before its operator is typed.
 func typeSignatureUndefined(prgrm *ast.CXProgram, typeSig *ast.CXTypeSignature) bool {
-	if typeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if typeSig.Type == ast.TypeCXArgumentDeprecate {
 		return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta)).AssignmentElementGet(prgrm).Type == types.UNDEFINED
 	}
-	return typeSig.Type == ast.TYPE_UNUSED
+	return typeSig.Type == ast.TypeUnused
 }
 
 // symbolFieldAccessPrimitiveCheck errors on a field of a symbol whose
 // declared type is not a struct, as in x.y = 3 for an i32 x.
 func symbolFieldAccessPrimitiveCheck(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast.CXTypeSignature) {
-	if symTypeSignature.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if symTypeSignature.Type != ast.TypeCXArgumentDeprecate {
 		return
 	}
 	sym := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(symTypeSignature.Meta))
@@ -3476,11 +3476,11 @@ func checkSliceBuiltinTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, curr
 	opcode := expressionOperator.AtomicOPCode
 	var elementInput int
 	switch opcode {
-	case constants.OP_APPEND:
+	case constants.OpAppend:
 		elementInput = 1
-	case constants.OP_INSERT:
+	case constants.OpInsert:
 		elementInput = 2
-	case constants.OP_RESIZE, constants.OP_REMOVE, constants.OP_COPY:
+	case constants.OpResize, constants.OpRemove, constants.OpCopy:
 		elementInput = -1
 	default:
 		return
@@ -3494,7 +3494,7 @@ func checkSliceBuiltinTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, curr
 	if !strings.HasPrefix(sliceType, "[]") {
 		return
 	}
-	literal := opcode == constants.OP_APPEND && strings.HasPrefix(prgrm.CXProgramNameText(sliceTypeSig.Name), constants.SLICE_LITERAL_PREFIX)
+	literal := opcode == constants.OpAppend && strings.HasPrefix(prgrm.CXProgramNameText(sliceTypeSig.Name), constants.SliceLiteralPrefix)
 	operandTypeCheck := func(typeSigIdx ast.CXTypeSignatureIndex, expectedType string) {
 		typeSig := prgrm.CXTypeSignatureFromArrayGet(typeSigIdx)
 		if typeSignatureUndefined(prgrm, typeSig) {
@@ -3523,7 +3523,7 @@ func checkSliceBuiltinTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, curr
 	if elementInput > 0 && elementInput < len(inputs) {
 		operandTypeCheck(inputs[elementInput], sliceType[len("[]"):])
 	}
-	if opcode == constants.OP_COPY && len(inputs) > 1 {
+	if opcode == constants.OpCopy && len(inputs) > 1 {
 		operandTypeCheck(inputs[1], sliceType)
 		return
 	}
@@ -3533,13 +3533,13 @@ func checkSliceBuiltinTypes(prgrm *ast.CXProgram, exprs []ast.CXExpression, curr
 	}
 }
 
-// declarationSpecifiersSlice is DECL_BASIC and one DECL_SLICE per dimension,
+// declarationSpecifiersSlice is DeclarationBasic and one DeclarationSlice per dimension,
 // so st.m on an m [][]i32 field is [][]i32 and st.m[0] is []i32.
 func declarationSpecifiersSlice(dimensions int) []int {
 	specs := make([]int, 1, dimensions+1)
-	specs[0] = constants.DECL_BASIC
+	specs[0] = constants.DeclarationBasic
 	for range dimensions {
-		specs = append(specs, constants.DECL_SLICE)
+		specs = append(specs, constants.DeclarationSlice)
 	}
 	return specs
 }
@@ -3548,7 +3548,7 @@ func declarationSpecifiersSlice(dimensions int) []int {
 // no 1 yet, which PostfixExpressionIncDec leaves out.
 func incDecOperandMissing(prgrm *ast.CXProgram, exprAtomicOp *ast.CXAtomicOperator) bool {
 	operator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(exprAtomicOp.Operator)
-	if operator == nil || (operator.AtomicOPCode != constants.OP_ADD && operator.AtomicOPCode != constants.OP_SUB) {
+	if operator == nil || (operator.AtomicOPCode != constants.OpAdd && operator.AtomicOPCode != constants.OpSub) {
 		return false
 	}
 	inputs, outputs := exprAtomicOp.InputsGet(prgrm), exprAtomicOp.OutputsGet(prgrm)
@@ -3565,26 +3565,26 @@ func incDecOperandAdd(prgrm *ast.CXProgram, exprAtomicOp *ast.CXAtomicOperator) 
 	typeCode := operatorOperandType(prgrm, exprAtomicOp.InputsGet(prgrm)[0])
 	switch typeCode {
 	case types.I8:
-		types.Write_i8(one[:], 0, 1)
+		types.I8Write(one[:], 0, 1)
 	case types.I16:
-		types.Write_i16(one[:], 0, 1)
+		types.I16Write(one[:], 0, 1)
 	case types.I64:
-		types.Write_i64(one[:], 0, 1)
+		types.I64Write(one[:], 0, 1)
 	case types.UI8:
-		types.Write_ui8(one[:], 0, 1)
+		types.UI8Write(one[:], 0, 1)
 	case types.UI16:
-		types.Write_ui16(one[:], 0, 1)
+		types.UI16Write(one[:], 0, 1)
 	case types.UI32:
-		types.Write_ui32(one[:], 0, 1)
+		types.UI32Write(one[:], 0, 1)
 	case types.UI64:
-		types.Write_ui64(one[:], 0, 1)
+		types.UI64Write(one[:], 0, 1)
 	case types.F32:
-		types.Write_f32(one[:], 0, 1)
+		types.F32Write(one[:], 0, 1)
 	case types.F64:
-		types.Write_f64(one[:], 0, 1)
+		types.F64Write(one[:], 0, 1)
 	default:
 		typeCode = types.I32
-		types.Write_i32(one[:], 0, 1)
+		types.I32Write(one[:], 0, 1)
 	}
 	literal := PrimaryWrite(prgrm, typeCode, one[:typeCode.Size()], false)
 	exprAtomicOp.InputAdd(prgrm, ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, literal))
@@ -3615,7 +3615,7 @@ func shortDeclarationStructValue(prgrm *ast.CXProgram, sig *ast.CXTypeSignature)
 		}
 		return field.Type, field.PointerTargetType, ast.ArgSizeGet(prgrm, field), field.StructType
 	}
-	if sig.Type == ast.TYPE_POINTER_STRUCT && !sig.Deref {
+	if sig.Type == ast.TypePointerStruct && !sig.Deref {
 		panic("type is not known")
 	}
 	return types.STRUCT, 0, details.StructType.StructSizeGet(prgrm), details.StructType
@@ -3627,7 +3627,7 @@ func shortDeclarationStructTypeSet(arg *ast.CXArgument, argType types.Code, stru
 		return
 	}
 	arg.StructType = structType
-	arg.DeclarationSpecifiers = []int{constants.DECL_STRUCT}
+	arg.DeclarationSpecifiers = []int{constants.DeclarationStruct}
 }
 
 // functionCallArguments joins the expressions of every argument and marks the
@@ -3637,7 +3637,7 @@ func functionCallArguments(arguments [][]ast.CXExpression) ([]ast.CXExpression, 
 	var argumentLast []bool
 	for _, argument := range arguments {
 		last := len(argument) - 1
-		for last > 0 && argument[last].Type == ast.CX_LINE {
+		for last > 0 && argument[last].Type == ast.CXOperationTypeLine {
 			last--
 		}
 		for i := range argument {
@@ -3653,12 +3653,12 @@ func functionCallArguments(arguments [][]ast.CXExpression) ([]ast.CXExpression, 
 // pointer stride.
 func indexedFieldBaseDeref(sym *ast.CXArgument, declared *ast.CXArgument) {
 	specs := declared.DeclarationSpecifiers
-	if pointerArrayElementPointerDeref(sym, declared) || pointerArrayIndexDeref(sym, declared) || len(sym.Indexes) == 0 || len(specs) < 2 || len(sym.DereferenceOperations) == 0 || sym.DereferenceOperations[0] != constants.DEREF_ARRAY {
+	if pointerArrayElementPointerDeref(sym, declared) || pointerArrayIndexDeref(sym, declared) || len(sym.Indexes) == 0 || len(specs) < 2 || len(sym.DereferenceOperations) == 0 || sym.DereferenceOperations[0] != constants.DerefArray {
 		return
 	}
 	outer := specs[len(specs)-1]
-	if (outer == constants.DECL_ARRAY || outer == constants.DECL_SLICE) && specs[len(specs)-2] == constants.DECL_POINTER {
-		if len(sym.DeclarationSpecifiers) > 0 && sym.DeclarationSpecifiers[0] == constants.DECL_BASIC {
+	if (outer == constants.DeclarationArray || outer == constants.DeclarationSlice) && specs[len(specs)-2] == constants.DeclarationPointer {
+		if len(sym.DeclarationSpecifiers) > 0 && sym.DeclarationSpecifiers[0] == constants.DeclarationBasic {
 			sym.DeclarationSpecifiers = append(append([]int{}, specs...), sym.DeclarationSpecifiers[1:]...)
 		}
 	}
@@ -3668,18 +3668,18 @@ func indexedFieldBaseDeref(sym *ast.CXArgument, declared *ast.CXArgument) {
 // of the *[N]T or *[N][M]T declared, as (*p)[i] and p[i][j] do.
 func pointerArrayElementStruct(sym *ast.CXArgument, declared *ast.CXArgument) bool {
 	specs := declared.DeclarationSpecifiers
-	if declared.StructType == nil || len(sym.Fields) > 0 || len(specs) < 3 || specs[0] != constants.DECL_STRUCT || specs[len(specs)-1] != constants.DECL_POINTER {
+	if declared.StructType == nil || len(sym.Fields) > 0 || len(specs) < 3 || specs[0] != constants.DeclarationStruct || specs[len(specs)-1] != constants.DeclarationPointer {
 		return false
 	}
 	dims := pointerArrayDimensions(specs[1 : len(specs)-1])
-	return dims == len(specs)-2 && len(sym.Indexes) == dims && derefOpFound(sym, constants.DEREF_POINTER)
+	return dims == len(specs)-2 && len(sym.Indexes) == dims && derefOpFound(sym, constants.DerefPointer)
 }
 
 // pointerArrayDimensions returns how many specifiers of specs are arrays, or
 // -1 when one is not.
 func pointerArrayDimensions(specs []int) int {
 	for _, spec := range specs {
-		if spec != constants.DECL_ARRAY {
+		if spec != constants.DeclarationArray {
 			return -1
 		}
 	}
@@ -3690,14 +3690,14 @@ func pointerArrayDimensions(specs []int) int {
 // indexes, as Go does, and reports whether p is so indexed.
 func pointerArrayIndexDeref(sym *ast.CXArgument, declared *ast.CXArgument) bool {
 	specs := declared.DeclarationSpecifiers
-	if len(sym.Indexes) == 0 || len(specs) < 2 || len(sym.DereferenceOperations) == 0 || sym.DereferenceOperations[0] != constants.DEREF_ARRAY {
+	if len(sym.Indexes) == 0 || len(specs) < 2 || len(sym.DereferenceOperations) == 0 || sym.DereferenceOperations[0] != constants.DerefArray {
 		return false
 	}
-	if specs[len(specs)-1] != constants.DECL_POINTER || specs[len(specs)-2] != constants.DECL_ARRAY {
+	if specs[len(specs)-1] != constants.DeclarationPointer || specs[len(specs)-2] != constants.DeclarationArray {
 		return false
 	}
-	if !derefOpFound(sym, constants.DEREF_POINTER) {
-		sym.DereferenceOperations = append([]int{constants.DEREF_POINTER}, sym.DereferenceOperations...)
+	if !derefOpFound(sym, constants.DerefPointer) {
+		sym.DereferenceOperations = append([]int{constants.DerefPointer}, sym.DereferenceOperations...)
 	}
 	return true
 }
@@ -3706,7 +3706,7 @@ func pointerArrayIndexDeref(sym *ast.CXArgument, declared *ast.CXArgument) bool 
 // *[N][M]*T read through p and then the element, with a pointer stride.
 func pointerArrayElementPointerDeref(sym *ast.CXArgument, declared *ast.CXArgument) bool {
 	specs := declared.DeclarationSpecifiers
-	if len(sym.Fields) == 0 || len(specs) < 4 || specs[1] != constants.DECL_POINTER || specs[len(specs)-1] != constants.DECL_POINTER {
+	if len(sym.Fields) == 0 || len(specs) < 4 || specs[1] != constants.DeclarationPointer || specs[len(specs)-1] != constants.DeclarationPointer {
 		return false
 	}
 	dims := pointerArrayDimensions(specs[2 : len(specs)-1])
@@ -3714,14 +3714,14 @@ func pointerArrayElementPointerDeref(sym *ast.CXArgument, declared *ast.CXArgume
 		return false
 	}
 	ops := sym.DereferenceOperations
-	if len(ops) > 0 && ops[0] == constants.DEREF_POINTER {
+	if len(ops) > 0 && ops[0] == constants.DerefPointer {
 		ops = ops[1:]
 	}
 	if len(ops) != dims || pointerArrayDimensions(pointerArrayDerefSpecs(ops)) != dims {
 		return false
 	}
-	sym.DereferenceOperations = append(append([]int{constants.DEREF_POINTER}, ops...), constants.DEREF_POINTER)
-	if len(sym.DeclarationSpecifiers) > 0 && sym.DeclarationSpecifiers[0] == constants.DECL_BASIC {
+	sym.DereferenceOperations = append(append([]int{constants.DerefPointer}, ops...), constants.DerefPointer)
+	if len(sym.DeclarationSpecifiers) > 0 && sym.DeclarationSpecifiers[0] == constants.DeclarationBasic {
 		sym.DeclarationSpecifiers = append(append([]int{}, specs...), sym.DeclarationSpecifiers[1:]...)
 	}
 	return true
@@ -3732,9 +3732,9 @@ func pointerArrayElementPointerDeref(sym *ast.CXArgument, declared *ast.CXArgume
 func pointerArrayDerefSpecs(ops []int) []int {
 	specs := make([]int, len(ops))
 	for i, op := range ops {
-		specs[i] = constants.DECL_INDEXING
-		if op == constants.DEREF_ARRAY {
-			specs[i] = constants.DECL_ARRAY
+		specs[i] = constants.DeclarationIndexing
+		if op == constants.DerefArray {
+			specs[i] = constants.DeclarationArray
 		}
 	}
 	return specs
@@ -3743,42 +3743,42 @@ func pointerArrayDerefSpecs(ops []int) []int {
 // shortDeclarationReference reports whether the value sig of a short
 // declaration is &v of a struct or atomic v, so the variable is a pointer.
 func shortDeclarationReference(prgrm *ast.CXProgram, sig *ast.CXTypeSignature, argType types.Code) bool {
-	if ast.CXTypeSignaturePassBy(prgrm, sig) != constants.PASSBY_REFERENCE || argType == types.POINTER {
+	if ast.CXTypeSignaturePassBy(prgrm, sig) != constants.PassByReference || argType == types.POINTER {
 		return false
 	}
-	if sig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if sig.Type == ast.TypeCXArgumentDeprecate {
 		arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(sig.Meta)).AssignmentElementGet(prgrm)
 		return len(arg.Lengths) == 0 && !arg.PointerTyped()
 	}
-	return sig.Type == ast.TYPE_ATOMIC || sig.Type == ast.TYPE_STRUCT
+	return sig.Type == ast.TypeAtomic || sig.Type == ast.TypeStruct
 }
 
 // shortDeclarationPointerSet makes arg, typed as the value v of x := &v, a
 // pointer to it, as DeclarationSpecifiers does for *T.
 func shortDeclarationPointerSet(arg *ast.CXArgument) {
-	base := constants.DECL_BASIC
+	base := constants.DeclarationBasic
 	if arg.StructType != nil {
-		base = constants.DECL_STRUCT
+		base = constants.DeclarationStruct
 		arg.PointerTargetType = types.STRUCT
 		arg.Type = types.POINTER
 	} else if arg.Type == types.STR {
 		arg.PointerTargetType = types.STR
 		arg.Type = types.POINTER
 	}
-	arg.DeclarationSpecifiers = []int{base, constants.DECL_POINTER}
-	arg.Size = types.POINTER_SIZE
+	arg.DeclarationSpecifiers = []int{base, constants.DeclarationPointer}
+	arg.Size = types.PointerSize
 }
 
 // assignmentTargetFormattedType is the type of the target of x = v. The
 // target takes the PassBy of &v, which says how to copy, not its type.
 func assignmentTargetFormattedType(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) string {
 	sigPassBy := sig.PassBy
-	sig.PassBy = constants.PASSBY_VALUE
+	sig.PassBy = constants.PassByValue
 	defer func() { sig.PassBy = sigPassBy }()
-	if sig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if sig.Type == ast.TypeCXArgumentDeprecate {
 		arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(sig.Meta))
 		argPassBy := arg.PassBy
-		arg.PassBy = constants.PASSBY_VALUE
+		arg.PassBy = constants.PassByValue
 		defer func() { arg.PassBy = argPassBy }()
 	}
 	return ast.FormattedTypeGet(prgrm, sig)
@@ -3798,12 +3798,12 @@ func pointerTypeOfLastField(prgrm *ast.CXProgram, arg *ast.CXArgument) bool {
 func indexDerefsOfLengths(arg *ast.CXArgument, lengths []types.Pointer) {
 	index := 0
 	for i, op := range arg.DereferenceOperations {
-		if op != constants.DEREF_ARRAY && op != constants.DEREF_SLICE {
+		if op != constants.DerefArray && op != constants.DerefSlice {
 			continue
 		}
-		arg.DereferenceOperations[i] = constants.DEREF_ARRAY
+		arg.DereferenceOperations[i] = constants.DerefArray
 		if index < len(lengths) && lengths[index] == 0 {
-			arg.DereferenceOperations[i] = constants.DEREF_SLICE
+			arg.DereferenceOperations[i] = constants.DerefSlice
 		}
 		index++
 	}
@@ -3822,13 +3822,13 @@ type shortDeclarationType struct {
 // when it is an array or a slice, as s, m[0], r[1] and p.xs are.
 // &a of such a value is a pointer to it.
 func shortDeclarationCollectionType(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) (shortDeclarationType, bool) {
-	reference := ast.CXTypeSignaturePassBy(prgrm, sig) == constants.PASSBY_REFERENCE
+	reference := ast.CXTypeSignaturePassBy(prgrm, sig) == constants.PassByReference
 	t, ok := shortDeclarationCollectionValue(prgrm, sig, reference)
 	if !ok || !reference {
 		return t, ok
 	}
-	t.specs = append(t.specs, constants.DECL_POINTER)
-	t.size = types.POINTER_SIZE
+	t.specs = append(t.specs, constants.DeclarationPointer)
+	t.size = types.PointerSize
 	if t.typ == types.STR || (t.structType != nil && t.typ != types.POINTER) {
 		t.pointerTargetType, t.typ = t.typ, types.POINTER
 	}
@@ -3839,8 +3839,8 @@ func shortDeclarationCollectionType(prgrm *ast.CXProgram, sig *ast.CXTypeSignatu
 // value read by value.
 func shortDeclarationCollectionValue(prgrm *ast.CXProgram, sig *ast.CXTypeSignature, reference bool) (shortDeclarationType, bool) {
 	switch sig.Type {
-	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_SLICE_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
-		pointer := sig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC || sig.Type == ast.TYPE_POINTER_SLICE_ATOMIC
+	case ast.TypeArrayAtomic, ast.TypeSliceAtomic, ast.TypePointerArrayAtomic, ast.TypePointerSliceAtomic:
+		pointer := sig.Type == ast.TypePointerArrayAtomic || sig.Type == ast.TypePointerSliceAtomic
 		if pointer && !sig.Deref {
 			return shortDeclarationType{}, false
 		}
@@ -3848,21 +3848,21 @@ func shortDeclarationCollectionValue(prgrm *ast.CXProgram, sig *ast.CXTypeSignat
 		if len(details.Indexes) >= len(details.Lengths) {
 			return shortDeclarationType{}, false
 		}
-		slice := sig.Type == ast.TYPE_SLICE_ATOMIC || sig.Type == ast.TYPE_POINTER_SLICE_ATOMIC
+		slice := sig.Type == ast.TypeSliceAtomic || sig.Type == ast.TypePointerSliceAtomic
 		lengths := append([]types.Pointer{}, details.Lengths[len(details.Indexes):]...)
-		specs := []int{constants.DECL_BASIC}
+		specs := []int{constants.DeclarationBasic}
 		for i := len(lengths) - 1; i >= 0; i-- {
 			if slice && lengths[i] == 0 {
-				specs = append(specs, constants.DECL_SLICE)
+				specs = append(specs, constants.DeclarationSlice)
 			} else {
-				specs = append(specs, constants.DECL_ARRAY)
+				specs = append(specs, constants.DeclarationArray)
 			}
 		}
 		typ := types.Code(details.Meta)
 		return shortDeclarationType{typ: typ, size: typ.Size(), specs: specs, lengths: lengths}, true
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		return shortDeclarationElementType(prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta)).AssignmentElementGet(prgrm), reference)
-	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
+	case ast.TypeStruct, ast.TypePointerStruct:
 		fields := prgrm.CXTypeSignatureStructFromArrayGet(sig.Meta).Fields
 		if len(fields) == 0 {
 			return shortDeclarationType{}, false
@@ -3877,21 +3877,21 @@ func shortDeclarationCollectionValue(prgrm *ast.CXProgram, sig *ast.CXTypeSignat
 // caller adds the pointer of &a.
 func shortDeclarationElementType(elt *ast.CXArgument, reference bool) (shortDeclarationType, bool) {
 	specs := elt.DeclarationSpecifiers
-	if reference && len(specs) > 0 && specs[len(specs)-1] == constants.DECL_POINTER {
+	if reference && len(specs) > 0 && specs[len(specs)-1] == constants.DeclarationPointer {
 		specs = specs[:len(specs)-1]
 	}
 	if len(specs) < 2 {
 		return shortDeclarationType{}, false
 	}
-	if outer := specs[len(specs)-1]; outer != constants.DECL_ARRAY && outer != constants.DECL_SLICE {
+	if outer := specs[len(specs)-1]; outer != constants.DeclarationArray && outer != constants.DeclarationSlice {
 		return shortDeclarationType{}, false
 	}
 	dims := 0
 	for _, spec := range specs {
 		switch spec {
-		case constants.DECL_ARRAY, constants.DECL_SLICE:
+		case constants.DeclarationArray, constants.DeclarationSlice:
 			dims++
-		case constants.DECL_INDEXING, constants.DECL_DEREF:
+		case constants.DeclarationIndexing, constants.DeclarationDeref:
 			return shortDeclarationType{}, false
 		}
 	}
@@ -3913,7 +3913,7 @@ func shortDeclarationElementType(elt *ast.CXArgument, reference bool) (shortDecl
 func shortDeclarationCollectionSet(prgrm *ast.CXProgram, decl, assign *ast.CXAtomicOperator, t shortDeclarationType, offset *types.Pointer) bool {
 	declSig := prgrm.CXTypeSignatureFromArrayGet(decl.OutputsGet(prgrm)[0])
 	outSig := prgrm.CXTypeSignatureFromArrayGet(assign.OutputsGet(prgrm)[0])
-	if declSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE || outSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if declSig.Type != ast.TypeCXArgumentDeprecate || outSig.Type != ast.TypeCXArgumentDeprecate {
 		return false
 	}
 	declArg := prgrm.CXArgGet(ast.CXArgumentIndex(declSig.Meta))
@@ -3931,7 +3931,7 @@ func shortDeclarationCollectionSet(prgrm *ast.CXProgram, decl, assign *ast.CXAto
 		panic(err)
 	}
 	var sym *ast.CXArgument
-	if declSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if declSig.Type == ast.TypeCXArgumentDeprecate {
 		sym = declArg
 	}
 	gcRootsDeclare(prgrm, fn, declSig, sym)
@@ -3939,7 +3939,7 @@ func shortDeclarationCollectionSet(prgrm *ast.CXProgram, decl, assign *ast.CXAto
 	outArg := prgrm.CXArgGet(ast.CXArgumentIndex(outSig.Meta))
 	outArg.DeclarationSpecifiers, outArg.Lengths, outArg.DereferenceOperations = nil, nil, nil
 	ArgFieldsCopy(prgrm, outSig, declSig)
-	if outSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if outSig.Type == ast.TypeCXArgumentDeprecate {
 		SliceDereferenceSet(prgrm, ast.CXArgumentIndex(outSig.Meta))
 	}
 	return true
@@ -3949,10 +3949,10 @@ func shortDeclarationCollectionSet(prgrm *ast.CXProgram, decl, assign *ast.CXAto
 // a value whose compile error is already recorded.
 func typeSignatureInvalid(prgrm *ast.CXProgram, typeSig *ast.CXTypeSignature) bool {
 	switch typeSig.Type {
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta))
 		return arg.Type == types.INVALID || arg.AssignmentElementGet(prgrm).Type == types.INVALID
-	case ast.TYPE_ATOMIC, ast.TYPE_POINTER_ATOMIC:
+	case ast.TypeAtomic, ast.TypePointerAtomic:
 		return types.Code(typeSig.Meta) == types.INVALID
 	}
 	return false
@@ -4003,7 +4003,7 @@ func functionInvalid(prgrm *ast.CXProgram, fn *ast.CXFunction) bool {
 // more pointers than its declaration, declared, has, as *x of an i32 x. The
 // use then has types.INVALID, so its uses report nothing more.
 func dereferenceNonPointer(prgrm *ast.CXProgram, sym *ast.CXTypeSignature, declared *ast.CXTypeSignature) bool {
-	if sym.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if sym.Type != ast.TypeCXArgumentDeprecate {
 		return false
 	}
 	use := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(sym.Meta))
@@ -4012,10 +4012,10 @@ func dereferenceNonPointer(prgrm *ast.CXProgram, sym *ast.CXTypeSignature, decla
 	}
 	var depth int
 	switch declared.Type {
-	case ast.TYPE_ATOMIC, ast.TYPE_ARRAY_ATOMIC, ast.TYPE_SLICE_ATOMIC, ast.TYPE_STRUCT:
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeAtomic, ast.TypeArrayAtomic, ast.TypeSliceAtomic, ast.TypeStruct:
+	case ast.TypeCXArgumentDeprecate:
 		specs := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(declared.Meta)).DeclarationSpecifiers
-		for i := len(specs) - 1; i >= 0 && specs[i] == constants.DECL_POINTER; i-- {
+		for i := len(specs) - 1; i >= 0 && specs[i] == constants.DeclarationPointer; i-- {
 			depth++
 		}
 	default:
@@ -4023,10 +4023,10 @@ func dereferenceNonPointer(prgrm *ast.CXProgram, sym *ast.CXTypeSignature, decla
 	}
 	for _, spec := range use.DeclarationSpecifiers {
 		switch spec {
-		case constants.DECL_BASIC:
-		case constants.DECL_POINTER:
+		case constants.DeclarationBasic:
+		case constants.DeclarationPointer:
 			depth++
-		case constants.DECL_DEREF:
+		case constants.DeclarationDeref:
 			depth--
 			if depth < 0 {
 				prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeDereferenceNonPointer, use.ArgDetails, ast.CompileErrorOperands{int64(StripNameNumber(prgrm, use.Name)), prgrm.CXProgramCompileErrorText(ast.FormattedTypeGet(prgrm, declared))})
@@ -4043,7 +4043,7 @@ func dereferenceNonPointer(prgrm *ast.CXProgram, sym *ast.CXTypeSignature, decla
 // argumentIndexedElement reports whether sig names an element, tmp[i], of
 // a literal LiteralCompound builds, which has its type from the literal.
 func argumentIndexedElement(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) bool {
-	if sig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if sig.Type != ast.TypeCXArgumentDeprecate {
 		return false
 	}
 	arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(sig.Meta))
@@ -4054,7 +4054,7 @@ func argumentIndexedElement(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) bool
 // which a use on the line of the declaration, as in func f() (r [2]i32) { r[1] = 2 }, does not.
 func copyArgFieldsDeclarationSite(prgrm *ast.CXProgram, sym *ast.CXArgument, arg *ast.CXArgument) bool {
 	for _, spec := range sym.DeclarationSpecifiers {
-		if spec == constants.DECL_INDEXING {
+		if spec == constants.DeclarationIndexing {
 			// An element, as tmp[i] of a literal on the line of tmp is.
 			return false
 		}
@@ -4091,15 +4091,15 @@ func symbolFieldsAfterNonStruct(prgrm *ast.CXProgram, field *ast.CXArgument, inF
 func shortDeclarationPointerType(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) (shortDeclarationType, bool) {
 	var value ast.CXArgument
 	switch sig.Type {
-	case ast.TYPE_POINTER_ATOMIC, ast.TYPE_POINTER_STRUCT, ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
+	case ast.TypePointerAtomic, ast.TypePointerStruct, ast.TypePointerArrayAtomic, ast.TypePointerSliceAtomic:
 		var ok bool
 		if value, ok = typeSignatureArgument(prgrm, sig); !ok {
 			return shortDeclarationType{}, false
 		}
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		arg := prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta))
 		specs := arg.DeclarationSpecifiers
-		if len(arg.Indexes) > 0 || len(arg.Fields) > 0 || len(arg.DereferenceOperations) > 0 || len(specs) < 2 || specs[len(specs)-1] != constants.DECL_POINTER {
+		if len(arg.Indexes) > 0 || len(arg.Fields) > 0 || len(arg.DereferenceOperations) > 0 || len(specs) < 2 || specs[len(specs)-1] != constants.DeclarationPointer {
 			return shortDeclarationType{}, false
 		}
 		argumentTypeCopy(&value, arg)
@@ -4108,8 +4108,8 @@ func shortDeclarationPointerType(prgrm *ast.CXProgram, sig *ast.CXTypeSignature)
 	default:
 		return shortDeclarationType{}, false
 	}
-	if ast.CXTypeSignaturePassBy(prgrm, sig) == constants.PASSBY_REFERENCE {
-		DeclarationSpecifiers(&value, nil, constants.DECL_POINTER)
+	if ast.CXTypeSignaturePassBy(prgrm, sig) == constants.PassByReference {
+		DeclarationSpecifiers(&value, nil, constants.DeclarationPointer)
 	}
 	return shortDeclarationTypeOf(&value), true
 }
@@ -4135,29 +4135,29 @@ func typeSignatureArgument(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) (ast.
 		return arg, false
 	}
 	switch sig.Type {
-	case ast.TYPE_ATOMIC, ast.TYPE_POINTER_ATOMIC:
+	case ast.TypeAtomic, ast.TypePointerAtomic:
 		arg.Type, arg.Size = types.Code(sig.Meta), types.Code(sig.Meta).Size()
-		arg.DeclarationSpecifiers = []int{constants.DECL_BASIC}
-	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
+		arg.DeclarationSpecifiers = []int{constants.DeclarationBasic}
+	case ast.TypeStruct, ast.TypePointerStruct:
 		details := prgrm.CXTypeSignatureStructFromArrayGet(sig.Meta)
 		if len(details.Fields) > 0 || details.StructType == nil {
 			return arg, false
 		}
 		arg.Type, arg.StructType, arg.Size = types.STRUCT, details.StructType, details.StructType.StructSizeGet(prgrm)
-		arg.DeclarationSpecifiers = []int{constants.DECL_STRUCT}
-	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_SLICE_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
+		arg.DeclarationSpecifiers = []int{constants.DeclarationStruct}
+	case ast.TypeArrayAtomic, ast.TypePointerArrayAtomic, ast.TypeSliceAtomic, ast.TypePointerSliceAtomic:
 		details := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
 		if len(details.Indexes) > 0 {
 			return arg, false
 		}
 		arg.Type, arg.Size = types.Code(details.Meta), types.Code(details.Meta).Size()
-		arg.DeclarationSpecifiers = []int{constants.DECL_BASIC}
-		slice := sig.Type == ast.TYPE_SLICE_ATOMIC || sig.Type == ast.TYPE_POINTER_SLICE_ATOMIC
+		arg.DeclarationSpecifiers = []int{constants.DeclarationBasic}
+		slice := sig.Type == ast.TypeSliceAtomic || sig.Type == ast.TypePointerSliceAtomic
 		for range details.Lengths {
 			if slice {
-				DeclarationSpecifiers(&arg, nil, constants.DECL_SLICE)
+				DeclarationSpecifiers(&arg, nil, constants.DeclarationSlice)
 			} else {
-				arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_ARRAY)
+				arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DeclarationArray)
 			}
 		}
 		if !slice {
@@ -4167,8 +4167,8 @@ func typeSignatureArgument(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) (ast.
 		return arg, false
 	}
 	switch sig.Type {
-	case ast.TYPE_POINTER_ATOMIC, ast.TYPE_POINTER_STRUCT, ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
-		DeclarationSpecifiers(&arg, nil, constants.DECL_POINTER)
+	case ast.TypePointerAtomic, ast.TypePointerStruct, ast.TypePointerArrayAtomic, ast.TypePointerSliceAtomic:
+		DeclarationSpecifiers(&arg, nil, constants.DeclarationPointer)
 	}
 	return arg, true
 }
@@ -4193,12 +4193,12 @@ func symbolFieldTypeSet(nameField *ast.CXArgument, field *ast.CXArgument, sym *a
 	}
 
 	if field.SliceTyped() {
-		nameField.DereferenceOperations = append([]int{constants.DEREF_POINTER}, nameField.DereferenceOperations...)
+		nameField.DereferenceOperations = append([]int{constants.DerefPointer}, nameField.DereferenceOperations...)
 	}
 	if field.ArraySliceDimensions() > 0 {
 		indexDerefsOfLengths(nameField, field.Lengths)
 	}
-	if field.SliceArrayDimensions() > 0 && derefOpFound(nameField, constants.DEREF_ARRAY) {
+	if field.SliceArrayDimensions() > 0 && derefOpFound(nameField, constants.DerefArray) {
 		nameField.DereferenceOperations = nameField.DereferenceOperations[1:]
 		indexDerefsOfLengths(nameField, field.Lengths)
 	}
@@ -4210,9 +4210,9 @@ func symbolFieldTypeSet(nameField *ast.CXArgument, field *ast.CXArgument, sym *a
 // field, is a pointer to an array or slice, or an array of arrays.
 func symbolFieldCompound(sig *ast.CXTypeSignature, field *ast.CXArgument) bool {
 	switch sig.Type {
-	case ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
+	case ast.TypePointerArrayAtomic, ast.TypePointerSliceAtomic:
 		return true
-	case ast.TYPE_ARRAY_ATOMIC:
+	case ast.TypeArrayAtomic:
 		return len(field.Lengths) > 1
 	}
 	return false
@@ -4245,7 +4245,7 @@ func SingleValueCheck(prgrm *ast.CXProgram, exprs []ast.CXExpression) {
 // true.
 func valueCheck(prgrm *ast.CXProgram, exprs []ast.CXExpression, single bool) {
 	for i := len(exprs) - 1; i >= 0; i-- {
-		if exprs[i].Type == ast.CX_LINE {
+		if exprs[i].Type == ast.CXOperationTypeLine {
 			continue
 		}
 		expression := &prgrm.CXAtomicOps[exprs[i].Index]
@@ -4283,13 +4283,13 @@ func valueCheck(prgrm *ast.CXProgram, exprs []ast.CXExpression, single bool) {
 // pointer to the pointer p, when sig is a pointer variable read by reference.
 func valueFormattedType(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) string {
 	typ := ast.FormattedTypeGet(prgrm, sig)
-	if sig.PassBy != constants.PASSBY_REFERENCE || sig.Deref {
+	if sig.PassBy != constants.PassByReference || sig.Deref {
 		return typ
 	}
 	switch sig.Type {
-	case ast.TYPE_POINTER_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
+	case ast.TypePointerAtomic, ast.TypePointerArrayAtomic, ast.TypePointerSliceAtomic:
 		return "*" + typ
-	case ast.TYPE_POINTER_STRUCT:
+	case ast.TypePointerStruct:
 		if len(prgrm.CXTypeSignatureStructFromArrayGet(sig.Meta).Fields) == 0 {
 			return "*" + typ
 		}

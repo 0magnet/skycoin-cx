@@ -191,7 +191,7 @@ func nativeArgCopy(arg *CXArgument) *CXArgument {
 // NativeFunctionInArrayAdd allocates the function a call of the native fn
 // calls, and returns its Gid.
 func (cxprogram *CXProgram) NativeFunctionInArrayAdd(fn *CXNativeFunction) CXFunctionGid {
-	if fn.AtomicOPCode == constants.OP_LIBRARY_CALL {
+	if fn.AtomicOPCode == constants.OpLibraryCall {
 		cxprogram.ProgramLibrariesUsed[fn.LibraryNumber] = true
 	} else if library := constants.OpcodeLibraryOf(fn.AtomicOPCode); library != 0 {
 		cxprogram.ProgramLibrariesUsed[library] = true
@@ -498,7 +498,7 @@ func (cxprogram *CXProgram) CXArgUnlessNamedRelease(cxArg *CXArgument, typeSigId
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S1783.
 	typeSig := cxprogram.CXTypeSignatureFromArrayGet(typeSigIdx)
-	if typeSig.Type != TYPE_CXARGUMENT_DEPRECATE || typeSig.Meta != cxArg.Index {
+	if typeSig.Type != TypeCXArgumentDeprecate || typeSig.Meta != cxArg.Index {
 		cxprogram.CXArgRelease(CXArgumentIndex(cxArg.Index))
 	}
 }
@@ -574,7 +574,7 @@ func (cxprogram *CXProgram) IndexTypeSignaturesToPointerArgsConvert(idxs []CXTyp
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0220.
 		typeSignature := cxprogram.CXTypeSignatureFromArrayGet(typeSignatureIdx)
-		if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+		if typeSignature.Type == TypeCXArgumentDeprecate {
 			idx := typeSignature.Meta
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0221.
@@ -597,7 +597,7 @@ func (cxprogram *CXProgram) PointerArgsToTypeSignaturesArrayAdd(cxArgs []*CXArgu
 		newCXTypeSignature.Name = cxArg.Name
 		newCXTypeSignature.Package = cxArg.Package
 		newCXTypeSignature.Offset = cxArg.Offset
-		newCXTypeSignature.Type = TYPE_CXARGUMENT_DEPRECATE
+		newCXTypeSignature.Type = TypeCXArgumentDeprecate
 		newCXTypeSignature.Meta = int(cxArgIdx)
 		newCXTypeSignature.ArgDetails = cxArg.ArgDetails
 		cxTypeSignaturesIdxs = append(cxTypeSignaturesIdxs, newCXTypeSignature.Index)
@@ -611,7 +611,7 @@ func (cxprogram *CXProgram) PointerArgsToTypeSignaturesArrayAdd(cxArgs []*CXArgu
 // VIOLATION STRHOT-239: E, error or assert text, built on a failure branch only, #412.
 func (cxprogram *CXProgram) OperationGet(expr *CXExpression) (*CXAtomicOperator, *CXLine, error) {
 	switch expr.Type {
-	case CX_ATOMIC_OPERATOR:
+	case CXOperationTypeAtomicOperator:
 		// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 		// Now an arena getter, site S0225.
 		cxAtomicOp, err := cxprogram.CXAtomicOpGet(expr.Index)
@@ -622,7 +622,7 @@ func (cxprogram *CXProgram) OperationGet(expr *CXExpression) (*CXAtomicOperator,
 		}
 
 		return cxAtomicOp, nil, nil
-	case CX_LINE:
+	case CXOperationTypeLine:
 		// OBJMODEL: state.CXLineMng.CXLineGet(gid), phase 5 #312.
 		// Now an arena getter, site S0231.
 		cxLine, err := cxprogram.CXLineGet(expr.Index)
@@ -635,7 +635,7 @@ func (cxprogram *CXProgram) OperationGet(expr *CXExpression) (*CXAtomicOperator,
 		// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorAlloc(), phase 4 #341.
 		// Now a heap literal, site S0235.
 		return &CXAtomicOperator{}, cxLine, nil
-		// case CX_ARGUMENT:
+		// case CXOperationTypeArgument:
 	}
 
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorAlloc(), phase 4 #341.
@@ -651,7 +651,7 @@ func (cxprogram *CXProgram) PreviousCXLineGet(exprs []CXExpression, currIndex in
 		currIndex = len(exprs) - 1
 	}
 	for i := currIndex; i >= 0; i-- {
-		if exprs[i].Type == CX_LINE {
+		if exprs[i].Type == CXOperationTypeLine {
 			_, cxLine, err := cxprogram.OperationGet(&exprs[i])
 			if err != nil {
 				// OBJMODEL: state.CXLineMng.CXLineAlloc(), phase 4 #311.
@@ -669,7 +669,7 @@ func (cxprogram *CXProgram) PreviousCXLineGet(exprs []CXExpression, currIndex in
 
 func (cxprogram *CXProgram) CXAtomicOpFromExpressionsGet(exprs []CXExpression, currIndex int) (*CXAtomicOperator, error) {
 	for i := currIndex; i < len(exprs); i++ {
-		if exprs[i].Type == CX_ATOMIC_OPERATOR {
+		if exprs[i].Type == CXOperationTypeAtomicOperator {
 			// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 			// Now an arena getter, site S0242.
 			cxAtomicOp, err := cxprogram.CXAtomicOpGet(exprs[i].Index)
@@ -689,7 +689,7 @@ func (cxprogram *CXProgram) CXAtomicOpFromExpressionsGet(exprs []CXExpression, c
 
 func (cxprogram *CXProgram) PreviousCXAtomicOpFromExpressionsGet(exprs []CXExpression, currIndex int) (*CXAtomicOperator, error) {
 	for i := currIndex; i >= 0; i-- {
-		if exprs[i].Type == CX_ATOMIC_OPERATOR {
+		if exprs[i].Type == CXOperationTypeAtomicOperator {
 			// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 			// Now an arena getter, site S0245.
 			cxAtomicOp, err := cxprogram.CXAtomicOpGet(exprs[i].Index)
@@ -795,7 +795,7 @@ func (cxprogram *CXProgram) FunctionGet(fnName stringpool.StringGid, pkgName str
 
 // CurrentCallGet returns the current CXCall
 // TODO: What does this do?
-// TODO: Only used in OP_JMP
+// TODO: Only used in OpJmp
 func (cxprogram *CXProgram) CurrentCallGet() *CXCall {
 	return &cxprogram.CallStack[cxprogram.CallCounter]
 }

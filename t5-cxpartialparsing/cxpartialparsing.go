@@ -1587,7 +1587,7 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:485
 		{
-			yyVAL.argument = actions.DeclarationSpecifiers(yyDollar[2].argument, types.Cast_sint_to_sptr(yyDollar[1].ints), constants.DECL_ARRAY)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyDollar[2].argument, types.SintToSptrCast(yyDollar[1].ints), constants.DeclarationArray)
 		}
 	case 63:
 		yyDollar = yyS[yypt-3 : yypt+1]
@@ -1601,19 +1601,19 @@ yydefault:
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1409.
 			arg.Outputs = Program.PointerArgsToCXArgsArrayAdd(yyDollar[3].arguments)
-			yyVAL.argument = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
+			yyVAL.argument = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DeclarationFunc)
 		}
 	case 64:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:504
 		{
-			yyVAL.argument = actions.DeclarationSpecifiers(yyDollar[2].argument, []types.Pointer{0}, constants.DECL_POINTER)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyDollar[2].argument, []types.Pointer{0}, constants.DeclarationPointer)
 		}
 	case 65:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:508
 		{
-			yyVAL.argument = actions.DeclarationSpecifiers(yyDollar[3].argument, []types.Pointer{0}, constants.DECL_SLICE)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyDollar[3].argument, []types.Pointer{0}, constants.DeclarationSlice)
 		}
 	case 66:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -1667,13 +1667,13 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:549
 		{
-			yyVAL.argument = actions.DeclarationSpecifiers(yyDollar[2].argument, []types.Pointer{0}, constants.DECL_POINTER)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyDollar[2].argument, []types.Pointer{0}, constants.DeclarationPointer)
 		}
 	case 75:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:553
 		{
-			yyVAL.argument = actions.DeclarationSpecifiers(yyDollar[3].argument, []types.Pointer{0}, constants.DECL_SLICE)
+			yyVAL.argument = actions.DeclarationSpecifiers(yyDollar[3].argument, []types.Pointer{0}, constants.DeclarationSlice)
 		}
 	case 76:
 		yyDollar = yyS[yypt-1 : yypt+1]

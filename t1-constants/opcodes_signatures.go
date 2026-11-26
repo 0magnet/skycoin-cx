@@ -96,10 +96,10 @@ func (signature OpcodeSignature) OpcodeSignatureOutputs() []OpcodeParameter {
 // OpcodeOperatorOf returns the number of the typed form of the untyped
 // operator for operands of type typeCode, 0 when there is none.
 func OpcodeOperatorOf(typeCode types.Code, operator int) int {
-	if typeCode >= types.COUNT || operator <= START_OF_OPERATORS || operator >= END_OF_OPERATORS {
+	if typeCode >= types.COUNT || operator <= StartOfOperators || operator >= EndOfOperators {
 		return 0
 	}
-	return int(OpcodeOperatorTable[typeCode][operator-START_OF_OPERATORS-1])
+	return int(OpcodeOperatorTable[typeCode][operator-StartOfOperators-1])
 }
 
 // OpcodeNameOf returns the name of the live opcode code, "" when none is.
@@ -180,7 +180,7 @@ func OpcodeLibraryOf(code int) int {
 }
 
 // LibraryOpcodeGroup returns the opcode group that holds the functions of
-// library, OpcodeGroupNone for a library called through OP_LIBRARY_CALL.
+// library, OpcodeGroupNone for a library called through OpLibraryCall.
 func LibraryOpcodeGroup(library int) OpcodeGroup {
 	for group, number := range opcodeGroupLibrary {
 		if number == library && number != 0 {

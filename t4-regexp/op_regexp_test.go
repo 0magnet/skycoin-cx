@@ -19,11 +19,11 @@ func newTestProgram() *ast.CXProgram {
 		CurrentPackage: -1,
 		// OBJMODEL: state.CXCallMng (manager storage) or []CXCallGid, phase 4 #366.
 		// Now a slice of objects, site S1419.
-		CallStack: make([]ast.CXCall, constants.CALLSTACK_SIZE),
-		Memory:    make([]byte, constants.STACK_SIZE+ast.MinHeapSize()),
-		Stack:     ast.StackSegmentStruct{Size: constants.STACK_SIZE},
-		Data:      ast.DataSegmentStruct{StartsAt: constants.STACK_SIZE},
-		Heap:      ast.HeapSegmentStruct{StartsAt: constants.STACK_SIZE, Size: ast.MinHeapSize(), Pointer: constants.NULL_HEAP_ADDRESS_OFFSET},
+		CallStack: make([]ast.CXCall, constants.CallStackSize),
+		Memory:    make([]byte, constants.StackSize+ast.MinHeapSize()),
+		Stack:     ast.StackSegmentStruct{Size: constants.StackSize},
+		Data:      ast.DataSegmentStruct{StartsAt: constants.StackSize},
+		Heap:      ast.HeapSegmentStruct{StartsAt: constants.StackSize, Size: ast.MinHeapSize(), Pointer: constants.NullHeapAddressOffset},
 		CxIrState: &ast.CxIrState{},
 	}
 	prgrm.CxIrState.CxIrStateInit()
@@ -57,7 +57,7 @@ func TestRegexpCallsDoNotGrowProgram(t *testing.T) {
 		OpRegexpCompile(prgrm, []ast.CXValue{strValue(prgrm, 0, "b+")}, []ast.CXValue{reg, errOut})
 		OpRegexpFind(prgrm, []ast.CXValue{reg, in}, []ast.CXValue{out})
 	}
-	if got := out.Get_str(prgrm); got != "bbb" {
+	if got := out.StrGet(prgrm); got != "bbb" {
 		t.Fatalf("Find returned %q, want %q", got, "bbb")
 	}
 	if after := prgrm.CxIrState.CXArgumentMng.CXArgumentLen(); after != before {
@@ -75,7 +75,7 @@ func TestRegexpFindAfterFailedCompile(t *testing.T) {
 	// Now a heap literal, site S1425.
 	errOut := ast.CXValue{Offset: 600, TypeSignature: &ast.CXTypeSignature{Offset: 600}}
 	OpRegexpCompile(prgrm, []ast.CXValue{strValue(prgrm, 0, "a(")}, []ast.CXValue{reg, errOut})
-	if errOut.Get_str(prgrm) == "" {
+	if errOut.StrGet(prgrm) == "" {
 		t.Fatal("Compile(\"a(\") returned no error")
 	}
 	if _, ok := regexps["a("]; ok {
@@ -83,7 +83,7 @@ func TestRegexpFindAfterFailedCompile(t *testing.T) {
 	}
 
 	defer func() {
-		if r := recover(); r != types.CX_RUNTIME_ERROR {
+		if r := recover(); r != types.CXRuntimeError {
 			t.Errorf("Find on a failed Regexp panicked with %v, want CX_RUNTIME_ERROR", r)
 		}
 	}()

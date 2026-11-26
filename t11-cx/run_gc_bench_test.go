@@ -26,9 +26,9 @@ var gcBenchPrograms = []string{
 // heap and the collector scratch for the heap cap, are not timed.
 func BenchmarkRunGC(b *testing.B) {
 	initProgram()
-	initHeap := constants.INIT_HEAP_SIZE
-	constants.INIT_HEAP_SIZE = 0
-	defer func() { constants.INIT_HEAP_SIZE = initHeap }()
+	initHeap := constants.HeapSizeInit
+	constants.HeapSizeInit = 0
+	defer func() { constants.HeapSizeInit = initHeap }()
 	for _, programPath := range gcBenchPrograms {
 		source, err := os.ReadFile(filepath.Join("..", "tests", programPath))
 		if err != nil {

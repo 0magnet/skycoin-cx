@@ -46,7 +46,7 @@ func (op *CXAtomicOperator) InputAdd(prgrm *CXProgram, typeSignatureIdx CXTypeSi
 	}
 
 	// Add Package if arg has no package
-	if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+	if typeSignature.Type == TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0092.
 		arg := prgrm.CXArgFromArrayGet(CXArgumentIndex(typeSignature.Meta))
@@ -55,7 +55,7 @@ func (op *CXAtomicOperator) InputAdd(prgrm *CXProgram, typeSignatureIdx CXTypeSi
 		}
 	}
 
-	op.Inputs.AddField_CXAtomicOps(prgrm, typeSignatureIdx)
+	op.Inputs.FieldCXAtomicOpsAdd(prgrm, typeSignatureIdx)
 
 	return op
 }
@@ -91,7 +91,7 @@ func (op *CXAtomicOperator) OutputAdd(prgrm *CXProgram, typeSignatureIdx CXTypeS
 	}
 
 	// Add Package if arg has no package
-	if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+	if typeSignature.Type == TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0095.
 		arg := prgrm.CXArgFromArrayGet(CXArgumentIndex(typeSignature.Meta))
@@ -100,7 +100,7 @@ func (op *CXAtomicOperator) OutputAdd(prgrm *CXProgram, typeSignatureIdx CXTypeS
 		}
 	}
 
-	op.Outputs.AddField_CXAtomicOps(prgrm, typeSignatureIdx)
+	op.Outputs.FieldCXAtomicOpsAdd(prgrm, typeSignatureIdx)
 	return op
 }
 

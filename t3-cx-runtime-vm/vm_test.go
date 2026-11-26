@@ -16,10 +16,10 @@ func vmTestImage(funcs ...ir.Func) *ir.Image {
 		wI32(data, uint32(4*i), v)
 	}
 	// A str literal points at itself, as a heap str object does.
-	str := make([]byte, types.OBJECT_HEADER_SIZE+3)
-	types.Write_ptr(str, 0, types.Pointer(80))
-	types.Write_obj_size(str, 0, types.OBJECT_HEADER_SIZE+3)
-	copy(str[types.OBJECT_HEADER_SIZE:], "msg")
+	str := make([]byte, types.ObjectHeaderSize+3)
+	types.PtrWrite(str, 0, types.Pointer(80))
+	types.ObjectSizeWrite(str, 0, types.ObjectHeaderSize+3)
+	copy(str[types.ObjectHeaderSize:], "msg")
 	data = append(data, str...)
 	names := make([]string, len(funcs))
 	return &ir.Image{
@@ -115,7 +115,7 @@ func TestRunDivideByZero(t *testing.T) {
 	if machine.MachineFrames[0].FrameFunction != 0 || machine.MachineFrames[0].FramePc != 2 {
 		t.Errorf("caller frame %+v", machine.MachineFrames[0])
 	}
-	if StopExitCodes[stop] != types.CX_RUNTIME_ERROR {
+	if StopExitCodes[stop] != types.CXRuntimeError {
 		t.Errorf("exit code %d", StopExitCodes[stop])
 	}
 }
@@ -193,7 +193,7 @@ func vmRunCollect(machine *Machine, output []byte) (Stop, []byte) {
 // TestRunAddress writes 7 to a[2] of an i32 array at frame offset 0 through
 // an index, reads it back through a pointer to a[0] plus 8 and prints it.
 func TestRunAddress(t *testing.T) {
-	const scratch = 64 + 16 + uint32(types.OBJECT_HEADER_SIZE) + 3
+	const scratch = 64 + 16 + uint32(types.ObjectHeaderSize) + 3
 	frameA := ir.InstrModeFrameA
 	main := ir.Func{FuncFrameSize: 24, FuncCode: []ir.Instr{
 		// index at frame 16 is 2
@@ -227,7 +227,7 @@ func TestRunAddress(t *testing.T) {
 // TestRunAddressStops stops on a negative index and on an address past the
 // data segment.
 func TestRunAddressStops(t *testing.T) {
-	const scratch = 64 + 16 + uint32(types.OBJECT_HEADER_SIZE) + 3
+	const scratch = 64 + 16 + uint32(types.ObjectHeaderSize) + 3
 	negative := ir.Func{FuncFrameSize: 4, FuncCode: []ir.Instr{
 		{InstrOpcode: ir.OpcodeI32Sub, InstrMode: ir.InstrModeFrameC, InstrA: vmTestZero, InstrB: vmTestOne, InstrC: 0},
 		{InstrOpcode: ir.OpcodeAddressIndexStatic, InstrMode: ir.InstrModeFrameB, InstrA: vmTestZero, InstrB: 0, InstrN: 4, InstrC: scratch},
@@ -255,10 +255,10 @@ func TestRunAddressStops(t *testing.T) {
 // vmTestStrImage is a 16 byte stack and a data segment holding a str
 // literal with text, which points at itself.
 func vmTestStrImage(text string, code []ir.Instr) *ir.Image {
-	str := make([]byte, types.OBJECT_HEADER_SIZE+types.Pointer(len(text)))
-	types.Write_ptr(str, 0, types.Pointer(16))
-	types.Write_obj_size(str, 0, types.OBJECT_HEADER_SIZE+types.Pointer(len(text)))
-	copy(str[types.OBJECT_HEADER_SIZE:], text)
+	str := make([]byte, types.ObjectHeaderSize+types.Pointer(len(text)))
+	types.PtrWrite(str, 0, types.Pointer(16))
+	types.ObjectSizeWrite(str, 0, types.ObjectHeaderSize+types.Pointer(len(text)))
+	copy(str[types.ObjectHeaderSize:], text)
 	return &ir.Image{
 		ImageFuncs:     []ir.Func{{FuncCode: code}},
 		ImageData:      str,

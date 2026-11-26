@@ -31,7 +31,7 @@ type CXArgument struct {
 
 	// DereferenceOperations is a slice of integers where each
 	// integer corresponds a `DEREF_*` constant (for example
-	// `DEREF_ARRAY`, `DEREF_POINTER`.). A dereference is a
+	// `DerefArray`, `DerefPointer`.). A dereference is a
 	// process where we consider the bytes at `Offset : Offset +
 	// TotalSize` as an address in memory, and we use that address
 	// to find the desired value (the referenced
@@ -40,7 +40,7 @@ type CXArgument struct {
 
 	// DeclarationSpecifiers is a slice of integers where each
 	// integer corresponds a `DECL_*` constant (for example
-	// `DECL_ARRAY`, `DECL_POINTER`.). Declarations are used to
+	// `DeclarationArray`, `DeclarationPointer`.). Declarations are used to
 	// create complex types such as `[5][]*Point` (an array of 5
 	// slices of pointers to struct instances of type
 	// `Point`).
@@ -54,7 +54,7 @@ type CXArgument struct {
 	Indexes []CXTypeSignatureIndex
 
 	// Fields stores what fields are being accessed from the
-	// `CXArgument` and in what order. Whenever a `DEREF_FIELD` in
+	// `CXArgument` and in what order. Whenever a `DerefField` in
 	// `DereferenceOperations` is found, we consume a field from
 	// `Field` to determine the new offset to the desired
 	// value.
@@ -78,7 +78,7 @@ type CXArgument struct {
 	PointerTargetType types.Code
 
 	// Size determines the size of the basic type. For example, if
-	// the `CXArgument` is of type `TYPE_STRUCT` (i.e. a
+	// the `CXArgument` is of type `TypeStruct` (i.e. a
 	// user-defined type or struct) and the size of the struct
 	// representing the struct type is 10 bytes, then `Size == 10`.
 	Size types.Pointer

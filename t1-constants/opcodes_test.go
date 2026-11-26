@@ -195,7 +195,7 @@ func TestOpcodeRenameTableConsistent(t *testing.T) {
 func TestParseOpsBoundTheConversions(t *testing.T) {
 	first, _ := OpcodeLifecycleLiveByName("i8.str")
 	last, _ := OpcodeLifecycleLiveByName("f64.f32")
-	if START_PARSE_OPS != first.Number-1 || END_PARSE_OPS != last.Number+1 {
-		t.Errorf("START_PARSE_OPS %d and END_PARSE_OPS %d do not bound i8.str %d to f64.f32 %d", START_PARSE_OPS, END_PARSE_OPS, first.Number, last.Number)
+	if StartParseOps != first.Number-1 || EndParseOps != last.Number+1 {
+		t.Errorf("START_PARSE_OPS %d and END_PARSE_OPS %d do not bound i8.str %d to f64.f32 %d", StartParseOps, EndParseOps, first.Number, last.Number)
 	}
 }

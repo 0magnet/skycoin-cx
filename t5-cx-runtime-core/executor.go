@@ -65,8 +65,8 @@ func executorFailureDescribe(prgrm *ast.CXProgram, failure lower.Failure) string
 }
 
 // ExecutorVmRun runs image on vm as execute.RunCompiled and runProgram run
-// prgrm, writing to os.Stdout. It returns the exit code: CX_SUCCESS,
-// CX_ASSERT after a failed test, or the code of a runtime error, which it
+// prgrm, writing to os.Stdout. It returns the exit code: CXSuccess,
+// CXAssert after a failed test, or the code of a runtime error, which it
 // prints like printer.RuntimeErrorPrint.
 func ExecutorVmRun(prgrm *ast.CXProgram, image *ir.Image) int32 {
 	return ExecutorVmRunMachine(prgrm, vm.MachineNew(image, ExecutorOutputSize))
@@ -79,18 +79,18 @@ func ExecutorVmRunMachine(prgrm *ast.CXProgram, machine *vm.Machine) int32 {
 	machine.Reset()
 	framePointer := uint32(0)
 	if image.ImageEntryInit != ir.ImageFuncNone {
-		if code := executorVmRunEntry(prgrm, machine, image.ImageEntryInit, 0); code != types.CX_SUCCESS {
+		if code := executorVmRunEntry(prgrm, machine, image.ImageEntryInit, 0); code != types.CXSuccess {
 			return code
 		}
 		framePointer = image.ImageFuncs[image.ImageEntryInit].FuncFrameSize
 	}
-	if code := executorVmRunEntry(prgrm, machine, image.ImageEntryMain, framePointer); code != types.CX_SUCCESS {
+	if code := executorVmRunEntry(prgrm, machine, image.ImageEntryMain, framePointer); code != types.CXSuccess {
 		return code
 	}
 	if machine.MachineTestFailures > 0 {
-		return types.CX_ASSERT
+		return types.CXAssert
 	}
-	return types.CX_SUCCESS
+	return types.CXSuccess
 }
 
 // executorVmRunEntry runs one entry function, serving the resumable stops.
@@ -100,7 +100,7 @@ func executorVmRunEntry(prgrm *ast.CXProgram, machine *vm.Machine, entry uint32,
 		executorOutputFlush(machine)
 		switch {
 		case stop == vm.StopReturn:
-			return types.CX_SUCCESS
+			return types.CXSuccess
 		case stop == vm.StopTestFailed:
 			printer.VmTestFailurePrint(machine)
 		case !vm.Resumable(stop):
@@ -123,11 +123,11 @@ func executorOutputFlush(machine *vm.Machine) {
 }
 
 // ExecutorMemoryLimitsClamp keeps the heap and stack sizes below
-// constants.ESCAPE_OFFSET_FLAG, after the flags of cx have set them.
+// constants.EscapeOffsetFlag, after the flags of cx have set them.
 func ExecutorMemoryLimitsClamp() {
-	constants.MAX_HEAP_SIZE = min(constants.MAX_HEAP_SIZE, constants.ESCAPE_OFFSET_FLAG/2)
-	constants.INIT_HEAP_SIZE = min(constants.INIT_HEAP_SIZE, constants.MAX_HEAP_SIZE)
-	constants.STACK_SIZE = min(constants.STACK_SIZE, constants.ESCAPE_OFFSET_FLAG/4)
+	constants.MaxHeapSize = min(constants.MaxHeapSize, constants.EscapeOffsetFlag/2)
+	constants.HeapSizeInit = min(constants.HeapSizeInit, constants.MaxHeapSize)
+	constants.StackSize = min(constants.StackSize, constants.EscapeOffsetFlag/4)
 }
 
 // ExecutorRun runs the compiled or deserialized prgrm with executor, one of
@@ -137,12 +137,12 @@ func ExecutorRun(prgrm *ast.CXProgram, executor string, cxArgs []string) int32 {
 	LibrariesEnabledResolve(prgrm)
 	if code := OperationRefused(prgrm); code != 0 {
 		fmt.Println(OperationRefusalLine(prgrm, code))
-		return types.CX_RUNTIME_LIBRARY_DISABLED
+		return types.CXRuntimeLibraryDisabled
 	}
 	if LibrariesActive(prgrm)[constants.LibraryNumberNet] {
 		if err := executorNetRunStart(); err != nil {
 			fmt.Fprintf(os.Stderr, "library %s: %s\n", constants.LibraryNameOf(constants.LibraryNumberNet), err)
-			return types.CX_INTERNAL_ERROR
+			return types.CXInternalError
 		}
 	}
 	prgrm.CxIrState.CxIrStateManagerGrowBoundary()
@@ -155,7 +155,7 @@ func ExecutorRun(prgrm *ast.CXProgram, executor string, cxArgs []string) int32 {
 			return ExecutorVmRun(prgrm, &image)
 		case executor == ExecutorVm:
 			fmt.Fprintf(os.Stderr, "cannot run on vm: %s\n", outside)
-			return types.CX_RUNTIME_NOT_IMPLEMENTED
+			return types.CXRuntimeNotImplemented
 		}
 	}
 
@@ -167,7 +167,7 @@ func ExecutorRun(prgrm *ast.CXProgram, executor string, cxArgs []string) int32 {
 		return int32(printer.RuntimeErrorPrint(prgrm))
 	}
 	if opcodes.AssertFailed() {
-		return types.CX_ASSERT
+		return types.CXAssert
 	}
-	return types.CX_SUCCESS
+	return types.CXSuccess
 }

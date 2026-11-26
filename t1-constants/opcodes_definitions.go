@@ -6,7 +6,7 @@ package constants
 // handler and signature, in number order. t2-cx-core-opcodegen reads it and
 // writes the signature tables of opcodes_signatures_gen.go and the opcode
 // switch, so the opcode set is fixed when cx is compiled (decision D21).
-// OP_LIBRARY_CALL has no row, the loop runs it and no program names it.
+// OpLibraryCall has no row, the loop runs it and no program names it.
 //
 // GoFunction is the Go function the switch calls, package.Function, with the
 // package one of opcodes (t4-opcodes), printer (t4-cx-runtime-printer),

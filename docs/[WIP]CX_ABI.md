@@ -15,7 +15,7 @@ A CXTypeSignature is a representation of a type. It contains the name, offset, t
     type CXTypeSignature struct {
         NameStringID int
         Offset       int
-        Type         CXTypeSignature_TYPE
+        Type         CXTypeSignatureType
         Meta         CXTypeSignature_META
     }
 

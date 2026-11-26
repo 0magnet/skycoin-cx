@@ -6,7 +6,7 @@ import (
 )
 
 // functionReferenceInputsResolve replaces each argument passed where a native
-// takes a function reference (ast.ConstCxArg_FUNC) with an i64 literal holding
+// takes a function reference (ast.ConstCXArgFunc) with an i64 literal holding
 // the CXFunctionGid of the function it names, so the opcode reads the
 // function without a name lookup at run time (#432). An argument that is not
 // a function name is a compile error.
@@ -31,7 +31,7 @@ func functionReferenceInputsResolve(prgrm *ast.CXProgram, expression *ast.CXAtom
 			continue
 		}
 		var literal [8]byte
-		types.Write_i64(literal[:], 0, int64(function))
+		types.I64Write(literal[:], 0, int64(function))
 		received[i] = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, PrimaryWrite(prgrm, types.I64, literal[:], false))
 	}
 }
@@ -40,7 +40,7 @@ func functionReferenceInputsResolve(prgrm *ast.CXProgram, expression *ast.CXAtom
 // reference.
 func functionReferenceParameter(prgrm *ast.CXProgram, typeSigIdx ast.CXTypeSignatureIndex) bool {
 	typeSig := prgrm.CXTypeSignatureFromArrayGet(typeSigIdx)
-	if typeSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if typeSig.Type != ast.TypeCXArgumentDeprecate {
 		return false
 	}
 	return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta)).Type == types.FUNC
@@ -49,7 +49,7 @@ func functionReferenceParameter(prgrm *ast.CXProgram, typeSigIdx ast.CXTypeSigna
 // functionReferenceUnresolved reports a name that is neither a variable nor a
 // function, which lookupSymbol has reported already.
 func functionReferenceUnresolved(prgrm *ast.CXProgram, typeSig *ast.CXTypeSignature) bool {
-	if typeSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if typeSig.Type != ast.TypeCXArgumentDeprecate {
 		return false
 	}
 	return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta)).Type == types.IDENTIFIER
@@ -58,7 +58,7 @@ func functionReferenceUnresolved(prgrm *ast.CXProgram, typeSig *ast.CXTypeSignat
 // functionReferenceTarget returns the function an argument names, the
 // argument lookupSymbol typed as a function when it found no variable.
 func functionReferenceTarget(prgrm *ast.CXProgram, typeSig *ast.CXTypeSignature) (ast.CXFunctionGid, bool) {
-	if typeSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if typeSig.Type != ast.TypeCXArgumentDeprecate {
 		return ast.CXFunctionGidNil, false
 	}
 	arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta))

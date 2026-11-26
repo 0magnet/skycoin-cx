@@ -21,7 +21,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 - t8-cxparsingcompletor/parsingcompletor.y is input
 */
         
-	// var actions.AST = ProgramMake(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+	// var actions.AST = ProgramMake(CallStackSize, StackSize, HeapSizeInit)
 	
 	func Parse (lexer *Lexer) int {
 		yyErrorVerbose = true
@@ -527,7 +527,7 @@ declaration_specifiers:
                 element_specifiers
         |       indexing_literal array_element
                 {
-			$$ = actions.DeclarationSpecifiers($2, types.Cast_sint_to_sptr($1), constants.DECL_ARRAY)
+			$$ = actions.DeclarationSpecifiers($2, types.SintToSptrCast($1), constants.DeclarationArray)
                 }
                 ;
 
@@ -543,15 +543,15 @@ element_specifiers:
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1481.
 			arg.Outputs =  actions.AST.PointerArgsToCXArgsArrayAdd($3)
-			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
+			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DeclarationFunc)
 		}
         |       MUL_OP declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($2, []types.Pointer{0}, constants.DECL_POINTER)
+			$$ = actions.DeclarationSpecifiers($2, []types.Pointer{0}, constants.DeclarationPointer)
                 }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DECL_SLICE)
+			$$ = actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DeclarationSlice)
                 }
         |       type_specifier
                 {
@@ -592,11 +592,11 @@ array_element:
                 }
         |       MUL_OP declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($2, []types.Pointer{0}, constants.DECL_POINTER)
+			$$ = actions.DeclarationSpecifiers($2, []types.Pointer{0}, constants.DeclarationPointer)
                 }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DECL_SLICE)
+			$$ = actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DeclarationSlice)
                 }
                 ;
 
@@ -703,44 +703,44 @@ indexing_slice_literal:
 array_literal_expression:
                 indexing_literal IDENTIFIER LBRACE literal_element_list list_end
                 {
-			lengths := types.Cast_sint_to_sptr($1)
+			lengths := types.SintToSptrCast($1)
 			elements := actions.LiteralElementsFlatten(actions.AST, actions.LiteralType{Lengths: lengths, StructName: $2, Line: $<line>1, Column: $<column>1}, $4)
 			$$ = actions.ArrayLiteralStructExpression(actions.AST, lengths, $2, $<line>1, $<column>1, elements)
                 }
         |       indexing_literal IDENTIFIER LBRACE RBRACE
                 {
-			$$ = actions.ArrayLiteralStructExpression(actions.AST, types.Cast_sint_to_sptr($1), $2, $<line>1, $<column>1, nil)
+			$$ = actions.ArrayLiteralStructExpression(actions.AST, types.SintToSptrCast($1), $2, $<line>1, $<column>1, nil)
                 }
         |       indexing_literal type_specifier LBRACE literal_element_list list_end
                 {
-			lengths := types.Cast_sint_to_sptr($1)
+			lengths := types.SintToSptrCast($1)
 			elements := actions.LiteralElementsFlatten(actions.AST, actions.LiteralType{Lengths: lengths, TypeCode: types.Code($2)}, $4)
 			$$ = actions.ArrayLiteralExpression(actions.AST, lengths, types.Code($2), $<line>1, $<column>1, elements)
                 }
         |       indexing_literal type_specifier LBRACE RBRACE
                 {
-			$$ = actions.ArrayLiteralExpression(actions.AST, types.Cast_sint_to_sptr($1), types.Code($2), $<line>1, $<column>1, nil)
+			$$ = actions.ArrayLiteralExpression(actions.AST, types.SintToSptrCast($1), types.Code($2), $<line>1, $<column>1, nil)
                 }
                 ;
 
 slice_literal_expression:
                 indexing_slice_literal IDENTIFIER LBRACE literal_element_list list_end
                 {
-			typ := actions.LiteralType{Lengths: types.Cast_sint_to_sptr($1), Slice: true, StructName: $2, Line: $<line>1, Column: $<column>1}
+			typ := actions.LiteralType{Lengths: types.SintToSptrCast($1), Slice: true, StructName: $2, Line: $<line>1, Column: $<column>1}
 			$$ = actions.LiteralSlice(actions.AST, typ, actions.LiteralElementsFlatten(actions.AST, typ, $4))
                 }
         |       indexing_slice_literal IDENTIFIER LBRACE RBRACE
                 {
-			$$ = actions.LiteralSlice(actions.AST, actions.LiteralType{Lengths: types.Cast_sint_to_sptr($1), Slice: true, StructName: $2, Line: $<line>1, Column: $<column>1}, nil)
+			$$ = actions.LiteralSlice(actions.AST, actions.LiteralType{Lengths: types.SintToSptrCast($1), Slice: true, StructName: $2, Line: $<line>1, Column: $<column>1}, nil)
                 }
         |       indexing_slice_literal type_specifier LBRACE literal_element_list list_end
                 {
-			typ := actions.LiteralType{Lengths: types.Cast_sint_to_sptr($1), Slice: true, TypeCode: types.Code($2)}
+			typ := actions.LiteralType{Lengths: types.SintToSptrCast($1), Slice: true, TypeCode: types.Code($2)}
 			$$ = actions.LiteralSlice(actions.AST, typ, actions.LiteralElementsFlatten(actions.AST, typ, $4))
                 }
         |       indexing_slice_literal type_specifier LBRACE RBRACE
                 {
-			$$ = actions.LiteralSlice(actions.AST, actions.LiteralType{Lengths: types.Cast_sint_to_sptr($1), Slice: true, TypeCode: types.Code($2)}, nil)
+			$$ = actions.LiteralSlice(actions.AST, actions.LiteralType{Lengths: types.SintToSptrCast($1), Slice: true, TypeCode: types.Code($2)}, nil)
                 }
                 ;
 
@@ -749,19 +749,19 @@ slice_literal_expression:
 compound_literal_type:
                 indexing_literal MUL_OP declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers(actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DECL_POINTER), types.Cast_sint_to_sptr($1), constants.DECL_ARRAY)
+			$$ = actions.DeclarationSpecifiers(actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DeclarationPointer), types.SintToSptrCast($1), constants.DeclarationArray)
                 }
         |       indexing_literal LBRACK RBRACK declaration_specifiers
                 {
-			$$ = actions.DeclarationSpecifiers(actions.DeclarationSpecifiers($4, []types.Pointer{0}, constants.DECL_SLICE), types.Cast_sint_to_sptr($1), constants.DECL_ARRAY)
+			$$ = actions.DeclarationSpecifiers(actions.DeclarationSpecifiers($4, []types.Pointer{0}, constants.DeclarationSlice), types.SintToSptrCast($1), constants.DeclarationArray)
                 }
         |       indexing_slice_literal MUL_OP declaration_specifiers
                 {
-			$$ = actions.LiteralTypeSlices(actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DECL_POINTER), len($1))
+			$$ = actions.LiteralTypeSlices(actions.DeclarationSpecifiers($3, []types.Pointer{0}, constants.DeclarationPointer), len($1))
                 }
         |       indexing_slice_literal indexing_literal array_element
                 {
-			$$ = actions.LiteralTypeSlices(actions.DeclarationSpecifiers($3, types.Cast_sint_to_sptr($2), constants.DECL_ARRAY), len($1))
+			$$ = actions.LiteralTypeSlices(actions.DeclarationSpecifiers($3, types.SintToSptrCast($2), constants.DeclarationArray), len($1))
                 }
                 ;
 
@@ -818,7 +818,7 @@ primary_expression:
         |       STRING_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.STR, types.Make_obj([]byte($1)), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.STR, types.ObjectMake([]byte($1)), false)
 			actions.TokenPositionPop(position)
                 }
         |       BOOLEAN_LITERAL
@@ -1002,31 +1002,31 @@ multiplicative_expression:
                 unary_expression
         |       multiplicative_expression MUL_OP unary_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_MUL)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpMul)
                 }
         |       multiplicative_expression DIV_OP unary_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_DIV)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpDiv)
                 }
         |       multiplicative_expression MOD_OP unary_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_MOD)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpMod)
                 }
         |       multiplicative_expression LEFT_OP unary_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITSHL)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBitshl)
                 }
         |       multiplicative_expression RIGHT_OP unary_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITSHR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBitshr)
                 }
         |       multiplicative_expression REF_OP unary_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITAND)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBitand)
                 }
         |       multiplicative_expression BITCLEAR_OP unary_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITCLEAR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBitclear)
                 }
                 ;
 
@@ -1034,19 +1034,19 @@ additive_expression:
                 multiplicative_expression
         |       additive_expression ADD_OP multiplicative_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_ADD)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpAdd)
                 }
 	|       additive_expression SUB_OP multiplicative_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_SUB)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpSub)
                 }
         |       additive_expression BITOR_OP multiplicative_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITOR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBitor)
                 }
         |       additive_expression BITXOR_OP multiplicative_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITXOR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBitxor)
                 }
                 ;
 
@@ -1054,27 +1054,27 @@ relational_expression:
                 additive_expression
         |       relational_expression EQ_OP additive_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_EQUAL)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpEqual)
                 }
         |       relational_expression NE_OP additive_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_UNEQUAL)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpUnequal)
                 }
         |       relational_expression LT_OP additive_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_LT)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpLt)
                 }
         |       relational_expression GT_OP additive_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_GT)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpGt)
                 }
         |       relational_expression LTEQ_OP additive_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_LTEQ)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpLteq)
                 }
         |       relational_expression GTEQ_OP additive_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_GTEQ)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpGteq)
                 }
                 ;
 
@@ -1082,7 +1082,7 @@ logical_and_expression:
                 relational_expression
 	|       logical_and_expression AND_OP relational_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BOOL_AND)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBoolAnd)
                 }
                 ;
 
@@ -1090,7 +1090,7 @@ logical_or_expression:
                 logical_and_expression
 	|       logical_or_expression OR_OP logical_and_expression
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BOOL_OR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBoolOr)
                 }
                 ;
 
@@ -1158,31 +1158,31 @@ multiplicative_nc:
                 unary_nc
         |       multiplicative_nc MUL_OP unary_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_MUL)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpMul)
                 }
         |       multiplicative_nc DIV_OP unary_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_DIV)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpDiv)
                 }
         |       multiplicative_nc MOD_OP unary_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_MOD)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpMod)
                 }
         |       multiplicative_nc LEFT_OP unary_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITSHL)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBitshl)
                 }
         |       multiplicative_nc RIGHT_OP unary_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITSHR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBitshr)
                 }
         |       multiplicative_nc REF_OP unary_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITAND)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBitand)
                 }
         |       multiplicative_nc BITCLEAR_OP unary_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITCLEAR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBitclear)
                 }
                 ;
 
@@ -1190,19 +1190,19 @@ additive_nc:
                 multiplicative_nc
         |       additive_nc ADD_OP multiplicative_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_ADD)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpAdd)
                 }
 	|       additive_nc SUB_OP multiplicative_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_SUB)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpSub)
                 }
         |       additive_nc BITOR_OP multiplicative_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITOR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBitor)
                 }
         |       additive_nc BITXOR_OP multiplicative_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BITXOR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBitxor)
                 }
                 ;
 
@@ -1210,27 +1210,27 @@ relational_nc:
                 additive_nc
         |       relational_nc EQ_OP additive_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_EQUAL)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpEqual)
                 }
         |       relational_nc NE_OP additive_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_UNEQUAL)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpUnequal)
                 }
         |       relational_nc LT_OP additive_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_LT)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpLt)
                 }
         |       relational_nc GT_OP additive_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_GT)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpGt)
                 }
         |       relational_nc LTEQ_OP additive_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_LTEQ)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpLteq)
                 }
         |       relational_nc GTEQ_OP additive_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_GTEQ)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpGteq)
                 }
                 ;
 
@@ -1238,7 +1238,7 @@ logical_and_nc:
                 relational_nc
 	|       logical_and_nc AND_OP relational_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BOOL_AND)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBoolAnd)
                 }
                 ;
 
@@ -1246,7 +1246,7 @@ logical_or_nc:
                 logical_and_nc
 	|       logical_or_nc OR_OP logical_and_nc
                 {
-			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OP_BOOL_OR)
+			$$ = actions.OperatorExpression(actions.AST,$1, $3, constants.OpBoolOr)
                 }
                 ;
 
@@ -1491,7 +1491,7 @@ expression_statement:
 selection_statement:
                 IF conditional_nc compound_statement elseif_list else_statement
                 {
-			$$ = actions.SelectionStatementCreate(actions.AST,$2, $3, $4, $5, actions.SEL_ELSEIFELSE)
+			$$ = actions.SelectionStatementCreate(actions.AST,$2, $3, $4, $5, actions.SelectionElseIfElse)
                 }
         |       IF conditional_nc compound_statement else_statement
                 {
@@ -1499,7 +1499,7 @@ selection_statement:
                 }
         |       IF conditional_nc compound_statement elseif_list
                 {
-			$$ = actions.SelectionStatementCreate(actions.AST,$2, $3, $4, nil, actions.SEL_ELSEIF)
+			$$ = actions.SelectionStatementCreate(actions.AST,$2, $3, $4, nil, actions.SelectionElseIf)
                 }
         |       IF conditional_nc compound_statement
                 {
@@ -1659,7 +1659,7 @@ jump_statement: GOTO IDENTIFIER
                         exprCXLine := actions.CXLineExpressionCurrentMake(actions.AST)
                         // OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
                         // Now a constructor call, site S1503.
-                        expr := ast.AtomicOperatorExpressionMake(actions.AST,ast.NativeFunctionOf(actions.AST, constants.OP_GOTO))
+                        expr := ast.AtomicOperatorExpressionMake(actions.AST,ast.NativeFunctionOf(actions.AST, constants.OpGoto))
                         expressionIdx :=expr.Index
                         actions.AST.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
                         actions.AST.CXAtomicOps[expressionIdx].Label = actions.AST.CXProgramNameIntern($2)

@@ -264,7 +264,7 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 		expr := &fn.Expressions[line]
 
 		switch expr.Type {
-		case ast.CX_LINE:
+		case ast.CXOperationTypeLine:
 			cxLine, err := s.statePrgrm.CXLineGet(expr.Index)
 			assert.InvariantTrue(err == nil, "lower: CX_LINE index out of range")
 			lines = append(lines, ir.Line{
@@ -273,7 +273,7 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 				LineNumber: uint32(cxLine.LineNumber),
 			})
 			continue
-		case ast.CX_ATOMIC_OPERATOR:
+		case ast.CXOperationTypeAtomicOperator:
 		default:
 			failure.FailureReason = ReasonExpressionType
 			return failure, true
@@ -342,10 +342,10 @@ func (s *state) declaration(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator) (
 	signature := s.statePrgrm.CXTypeSignatureFromArrayGet(outputs[0])
 	var offset types.Pointer
 	switch signature.Type {
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		offset = s.statePrgrm.CXArgGet(ast.CXArgumentIndex(signature.Meta)).Offset
-	case ast.TYPE_ATOMIC, ast.TYPE_POINTER_ATOMIC, ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC,
-		ast.TYPE_SLICE_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC, ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
+	case ast.TypeAtomic, ast.TypePointerAtomic, ast.TypeArrayAtomic, ast.TypePointerArrayAtomic,
+		ast.TypeSliceAtomic, ast.TypePointerSliceAtomic, ast.TypeStruct, ast.TypePointerStruct:
 		offset = signature.Offset
 	default:
 		return code, ReasonDeclarationType
@@ -375,13 +375,13 @@ func (s *state) builtIn(code []ir.Instr, line int, cxAtomicOp *ast.CXAtomicOpera
 	noFixup := jumpFixup{}
 
 	switch opcode {
-	case constants.OP_NOP:
+	case constants.OpNop:
 		return code, noFixup, false, ReasonNone, 0
-	case constants.OP_GOTO, constants.OP_BREAK, constants.OP_CONTINUE:
+	case constants.OpGoto, constants.OpBreak, constants.OpContinue:
 		pc := uint32(len(code))
 		code = append(code, ir.Instr{InstrOpcode: ir.OpcodeJump})
 		return code, jumpFixup{jumpFixupPc: pc, jumpFixupTrue: line + cxAtomicOp.ThenLines + 1}, true, ReasonNone, 0
-	case constants.OP_JMP, constants.OP_ABS_JMP:
+	case constants.OpJmp, constants.OpAbsJmp:
 		if len(inputs) != 1 {
 			return code, noFixup, false, ReasonOperandCount, 0
 		}
@@ -398,15 +398,15 @@ func (s *state) builtIn(code []ir.Instr, line int, cxAtomicOp *ast.CXAtomicOpera
 			jumpFixupFalse:       line + cxAtomicOp.ElseLines + 1,
 			jumpFixupConditional: true,
 		}
-		if opcode == constants.OP_ABS_JMP {
+		if opcode == constants.OpAbsJmp {
 			fixup.jumpFixupTrue = cxAtomicOp.ThenLines + 1
 			fixup.jumpFixupFalse = cxAtomicOp.ElseLines + 1
 		}
 		return append(code, in), fixup, true, ReasonNone, 0
-	case constants.OP_IDENTITY:
+	case constants.OpIdentity:
 		code, reason := s.identity(code, inputs, outputs)
 		return code, noFixup, false, reason, 0
-	case constants.OP_TEST:
+	case constants.OpTest:
 		code, reason := s.test(code, inputs)
 		return code, noFixup, false, reason, 0
 	case s.statePrintLine:
@@ -423,7 +423,7 @@ func (s *state) builtIn(code []ir.Instr, line int, cxAtomicOp *ast.CXAtomicOpera
 	case s.statePrintf:
 		code, reason := s.printf(code, inputs, outputs)
 		return code, noFixup, false, reason, 0
-	case constants.OP_LIBRARY_CALL:
+	case constants.OpLibraryCall:
 		// os.Run of the process library, the one function still called
 		// through LibraryCall, takes and returns a str and never lowers.
 		return code, noFixup, false, ReasonLibraryFunctionOutsideSubset, 0
@@ -478,20 +478,20 @@ func (s *state) identity(code []ir.Instr, inputs []ast.CXTypeSignatureIndex, out
 	output := prgrm.CXTypeSignatureFromArrayGet(outputs[0])
 	var address bool
 	switch output.Type {
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		element := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(output.Meta)).AssignmentElementGet(prgrm)
 		address = ast.CXArgumentTakesAddress(prgrm, element, input)
 		if ast.CXArgumentStringSlicePointer(element) {
-			address = ast.CXTypeSignaturePassBy(prgrm, input) == constants.PASSBY_REFERENCE
+			address = ast.CXTypeSignaturePassBy(prgrm, input) == constants.PassByReference
 		}
-	case ast.TYPE_ATOMIC, ast.TYPE_SLICE_ATOMIC:
-		address = output.PassBy == constants.PASSBY_REFERENCE
-	case ast.TYPE_POINTER_ATOMIC:
+	case ast.TypeAtomic, ast.TypeSliceAtomic:
+		address = output.PassBy == constants.PassByReference
+	case ast.TypePointerAtomic:
 		address = !ast.CXTypeSignaturePointerValue(prgrm, input)
-	case ast.TYPE_ARRAY_ATOMIC:
-	case ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
-		address = input.PassBy == constants.PASSBY_REFERENCE
-	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
+	case ast.TypeArrayAtomic:
+	case ast.TypePointerArrayAtomic, ast.TypePointerSliceAtomic:
+		address = input.PassBy == constants.PassByReference
+	case ast.TypeStruct, ast.TypePointerStruct:
 		address = ast.CXTypeSignatureStructTakesAddress(prgrm, output, input)
 	default:
 		return code, ReasonOperandNotScalar
@@ -529,7 +529,7 @@ func (s *state) identity(code []ir.Instr, inputs []ast.CXTypeSignatureIndex, out
 }
 
 // machinePointerSize is the size of a pointer in memory.
-const machinePointerSize = uint32(types.POINTER_SIZE)
+const machinePointerSize = uint32(types.PointerSize)
 
 // addressOf returns an instruction that writes the address of p as a
 // pointer, its output operand still to set.
@@ -555,16 +555,16 @@ func (s *state) test(code []ir.Instr, inputs []ast.CXTypeSignatureIndex) ([]ir.I
 	prgrm := s.statePrgrm
 	first := prgrm.CXTypeSignatureFromArrayGet(inputs[0])
 	switch first.Type {
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		if prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(first.Meta)).StringTyped() {
 			return code, ReasonOperandString
 		}
-	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
+	case ast.TypeStruct, ast.TypePointerStruct:
 		fields := prgrm.CXTypeSignatureStructFromArrayGet(first.Meta).Fields
 		if len(fields) > 0 && prgrm.CXArgFromArrayGet(fields[len(fields)-1]).StringTyped() {
 			return code, ReasonOperandString
 		}
-	case ast.TYPE_ATOMIC, ast.TYPE_POINTER_ATOMIC, ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_SLICE_ATOMIC:
+	case ast.TypeAtomic, ast.TypePointerAtomic, ast.TypeArrayAtomic, ast.TypePointerArrayAtomic, ast.TypeSliceAtomic:
 	default:
 		return code, ReasonOperandNotScalar
 	}
@@ -609,9 +609,9 @@ func (s *state) call(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator, callee *
 			return code, ReasonCalleeLayout
 		}
 		signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
-		byReference := signature.PassBy == constants.PASSBY_REFERENCE
-		if signature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			byReference = byReference || prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta)).PassBy == constants.PASSBY_REFERENCE
+		byReference := signature.PassBy == constants.PassByReference
+		if signature.Type == ast.TypeCXArgumentDeprecate {
+			byReference = byReference || prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta)).PassBy == constants.PassByReference
 		}
 		var source place
 		if code, source, reason = s.placeOf(code, signatureIndex); reason != ReasonNone {
@@ -825,17 +825,17 @@ func (s *state) placeOfSignature(code []ir.Instr, signatureIndex ast.CXTypeSigna
 	}
 	var reason ReasonCode
 	switch signature.Type {
-	case ast.TYPE_ATOMIC:
+	case ast.TypeAtomic:
 		p := s.placeBase(signature.Offset, size)
 		return code, p, ReasonNone
-	case ast.TYPE_POINTER_ATOMIC:
+	case ast.TypePointerAtomic:
 		if signature.Deref {
 			return code, place{}, ReasonOperandIndexed
 		}
 		return code, s.placeBase(signature.Offset, size), ReasonNone
-	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC:
+	case ast.TypeArrayAtomic, ast.TypePointerArrayAtomic:
 		p := s.placeBase(signature.Offset, size)
-		if signature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
+		if signature.Type == ast.TypePointerArrayAtomic {
 			if !signature.Deref {
 				return code, p, ReasonNone
 			}
@@ -855,19 +855,19 @@ func (s *state) placeOfSignature(code []ir.Instr, signatureIndex ast.CXTypeSigna
 			}
 		}
 		return code, p, ReasonNone
-	case ast.TYPE_SLICE_ATOMIC:
+	case ast.TypeSliceAtomic:
 		if len(prgrm.CXTypeSignatureArrayFromArrayGet(signature.Meta).Indexes) > 0 {
 			return code, place{}, ReasonOperandHeap
 		}
 		return code, s.placeBase(signature.Offset, size), ReasonNone
-	case ast.TYPE_POINTER_SLICE_ATOMIC:
+	case ast.TypePointerSliceAtomic:
 		if signature.Deref {
 			return code, place{}, ReasonOperandHeap
 		}
 		return code, s.placeBase(signature.Offset, size), ReasonNone
-	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
+	case ast.TypeStruct, ast.TypePointerStruct:
 		p := s.placeBase(signature.Offset, size)
-		if signature.Type == ast.TYPE_POINTER_STRUCT && signature.Deref {
+		if signature.Type == ast.TypePointerStruct && signature.Deref {
 			if code, reason = s.placeDeref(code, &p); reason != ReasonNone {
 				return code, p, reason
 			}
@@ -880,7 +880,7 @@ func (s *state) placeOfSignature(code []ir.Instr, signatureIndex ast.CXTypeSigna
 			}
 		}
 		return code, p, ReasonNone
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		arg := prgrm.CXArgGet(ast.CXArgumentIndex(signature.Meta))
 		p := s.placeBase(arg.Offset, size)
 		if code, reason = s.placeDereferences(code, &p, arg); reason != ReasonNone {
@@ -922,13 +922,13 @@ func (s *state) placeDereferences(code []ir.Instr, p *place, arg *ast.CXArgument
 	derefPointer := false
 	var reason ReasonCode
 	for _, operation := range arg.DereferenceOperations {
-		if len(arg.Indexes) == 0 && operation != constants.DEREF_POINTER {
+		if len(arg.Indexes) == 0 && operation != constants.DerefPointer {
 			continue
 		}
 		switch operation {
-		case constants.DEREF_SLICE:
+		case constants.DerefSlice:
 			return code, ReasonOperandHeap
-		case constants.DEREF_ARRAY:
+		case constants.DerefArray:
 			if indexCount >= len(arg.Indexes) || indexCount >= len(arg.Lengths) {
 				return code, ReasonOperandIndexed
 			}
@@ -938,7 +938,7 @@ func (s *state) placeDereferences(code []ir.Instr, p *place, arg *ast.CXArgument
 				lengths = arg.Lengths[indexCount+1 : direct]
 			} else if dims := arg.ArraySliceDimensions(); dims > indexCount {
 				// The elements of [N][]T are slice headers.
-				elementSize, lengths = types.POINTER_SIZE, arg.Lengths[indexCount+1:dims]
+				elementSize, lengths = types.PointerSize, arg.Lengths[indexCount+1:dims]
 			}
 			stride := pointerToUint32(types.TotalLength(lengths) * elementSize)
 			derefPointer = false
@@ -946,7 +946,7 @@ func (s *state) placeDereferences(code []ir.Instr, p *place, arg *ast.CXArgument
 				return code, reason
 			}
 			indexCount++
-		case constants.DEREF_POINTER:
+		case constants.DerefPointer:
 			if code, reason = s.placeDeref(code, p); reason != ReasonNone {
 				return code, reason
 			}
@@ -1054,9 +1054,9 @@ func pointerToUint32(pointer types.Pointer) uint32 {
 func libraryBufferInput(prgrm *ast.CXProgram, signatureIndex ast.CXTypeSignatureIndex) bool {
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	switch signature.Type {
-	case ast.TYPE_ATOMIC:
+	case ast.TypeAtomic:
 		return types.Code(signature.Meta) == types.UNDEFINED
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta)).Type == types.UNDEFINED
 	}
 	return false
@@ -1068,7 +1068,7 @@ func libraryBufferInput(prgrm *ast.CXProgram, signatureIndex ast.CXTypeSignature
 func (s *state) libraryBuffer(code []ir.Instr, signatureIndex ast.CXTypeSignatureIndex, offset uint32) ([]ir.Instr, ReasonCode) {
 	prgrm := s.statePrgrm
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
-	if signature.Type != ast.TYPE_ARRAY_ATOMIC || signature.TypeGet(prgrm) != types.UI8 {
+	if signature.Type != ast.TypeArrayAtomic || signature.TypeGet(prgrm) != types.UI8 {
 		return code, ReasonOperandNotScalar
 	}
 	code, p, reason := s.placeOf(code, signatureIndex)
@@ -1190,7 +1190,7 @@ func (s *state) libraryCall(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator, c
 			}
 			continue
 		}
-		if ast.CXTypeSignaturePassBy(prgrm, prgrm.CXTypeSignatureFromArrayGet(signatureIndex)) == constants.PASSBY_REFERENCE {
+		if ast.CXTypeSignaturePassBy(prgrm, prgrm.CXTypeSignatureFromArrayGet(signatureIndex)) == constants.PassByReference {
 			return code, ReasonOperandByReference
 		}
 		var value operand

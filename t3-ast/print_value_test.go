@@ -15,9 +15,9 @@ func TestPrintValueInvalidAddress(t *testing.T) {
 	memory := prgrm.Memory
 
 	// A str with an object of "ab" at 64, and slices at 128.
-	types.ObjectPayloadWrite(memory, 64, types.OBJECT_HEADER_SIZE+2, []byte("ab"))
+	types.ObjectPayloadWrite(memory, 64, types.ObjectHeaderSize+2, []byte("ab"))
 	sliceObject := types.Pointer(128)
-	types.Write_ptr(memory, sliceObject+types.OBJECT_HEADER_SIZE+types.POINTER_SIZE, 1<<20)
+	types.PtrWrite(memory, sliceObject+types.ObjectHeaderSize+types.PointerSize, 1<<20)
 
 	cases := []struct {
 		name  string
@@ -33,21 +33,21 @@ func TestPrintValueInvalidAddress(t *testing.T) {
 		{"i64 past memory", 0, func(dst []byte) []byte { return appendAtomic(dst, memory, types.I64, memorySize-4) }, printValueInvalid},
 		{"pointer past memory", 0, func(dst []byte) []byte { return appendPointerAt(dst, memory, memorySize) }, printValueInvalid},
 		{"slice past memory", 100000000, func(dst []byte) []byte {
-			return appendValueAt(dst, prgrm, 0, types.I32, types.I32_SIZE, nil, []types.Pointer{0}, false)
+			return appendValueAt(dst, prgrm, 0, types.I32, types.I32Size, nil, []types.Pointer{0}, false)
 		}, printValueInvalid},
 		{"slice too long", sliceObject, func(dst []byte) []byte {
-			return appendValueAt(dst, prgrm, 0, types.I32, types.I32_SIZE, nil, []types.Pointer{0}, false)
+			return appendValueAt(dst, prgrm, 0, types.I32, types.I32Size, nil, []types.Pointer{0}, false)
 		}, printValueInvalid},
 		{"array of str", 100000000, func(dst []byte) []byte {
-			return appendValueAt(dst, prgrm, 0, types.STR, types.STR_SIZE, nil, []types.Pointer{2}, false)
+			return appendValueAt(dst, prgrm, 0, types.STR, types.StrSize, nil, []types.Pointer{2}, false)
 		}, "[" + printValueInvalid + ", ]"},
 		{"array past memory", 0, func(dst []byte) []byte {
-			return appendValueAt(dst, prgrm, memorySize-8, types.I32, types.I32_SIZE, nil, []types.Pointer{4}, false)
+			return appendValueAt(dst, prgrm, memorySize-8, types.I32, types.I32Size, nil, []types.Pointer{4}, false)
 		}, printValueInvalid},
 	}
 	dst := make([]byte, 0, 256)
 	for _, tc := range cases {
-		types.Write_ptr(memory, 0, tc.value)
+		types.PtrWrite(memory, 0, tc.value)
 		if got := string(tc.print(dst[:0])); got != tc.want {
 			t.Errorf("%s: printed %q, want %q", tc.name, got, tc.want)
 		}

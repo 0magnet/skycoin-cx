@@ -20,14 +20,14 @@ func ParserActionAssignmentExpression(left []ast.CXExpression, operator string, 
 	}
 	if right != nil {
 		for i := 0; i < len(right); i++ {
-			if right[i].Type != ast.CX_LINE {
+			if right[i].Type != ast.CXOperationTypeLine {
 				if right[i].TypeArrayLiteral() {
 					if operator != "=" && operator != ":=" {
 						panic("")
 					}
 					if operator == ":=" {
 						for _, from := range right {
-							if from.Type == ast.CX_LINE {
+							if from.Type == ast.CXOperationTypeLine {
 								continue
 							}
 
@@ -54,7 +54,7 @@ func ParserActionAssignmentExpression(left []ast.CXExpression, operator string, 
 					}
 					if operator == ":=" {
 						for _, from := range right {
-							if from.Type == ast.CX_LINE {
+							if from.Type == ast.CXOperationTypeLine {
 								continue
 							}
 
@@ -116,8 +116,8 @@ func ParserActionExpressionStatement(exprs []ast.CXExpression) []ast.CXExpressio
 			actions.AST.CXProgramCompileErrorAdd(ast.CompileErrorCodeInvalidExpression, actions.CurrentFile, actions.LineNo, ast.CompileErrorOperands{})
 		}
 		result = nil
-	} else if len(exprs) > 0 && exprs[0].Type != ast.CX_LINE {
-		// test() and assert report the CX_LINE before them (skycoin-cx#254)
+	} else if len(exprs) > 0 && exprs[0].Type != ast.CXOperationTypeLine {
+		// test() and assert report the CXOperationTypeLine before them (skycoin-cx#254)
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Also state.CXExpressionMng (manager storage) or []CXExpressionGid, phase 4 #346. Site S1500 S1501.
 		result = append([]ast.CXExpression{*actions.CXLineExpressionCurrentMake(actions.AST)}, exprs...)
@@ -130,7 +130,7 @@ func ParserActionExpressionStatement(exprs []ast.CXExpression) []ast.CXExpressio
 // ParserActionLoopCondition keeps a literal or variable loop condition as
 // it is, which IterationExpressions reads in place (skycoin-cx#21).
 func ParserActionLoopCondition(exprs []ast.CXExpression) []ast.CXExpression {
-	if len(exprs) > 0 && exprs[len(exprs)-1].Type != ast.CX_LINE && !exprs[len(exprs)-1].TypeMethodCall() {
+	if len(exprs) > 0 && exprs[len(exprs)-1].Type != ast.CXOperationTypeLine && !exprs[len(exprs)-1].TypeMethodCall() {
 		cxAtomicOp, err := actions.AST.CXAtomicOpFromExpressionsGet(exprs, len(exprs)-1)
 		if err != nil {
 			panic(err)
@@ -149,7 +149,7 @@ func ParserActionLabeledStatement(label string, exprs []ast.CXExpression) []ast.
 	first := -1
 	labeled := false
 	for i, expr := range exprs {
-		if expr.Type == ast.CX_LINE {
+		if expr.Type == ast.CXOperationTypeLine {
 			continue
 		}
 		if first < 0 {

@@ -79,7 +79,7 @@ func (s *state) printfFormat(signatureIndex ast.CXTypeSignatureIndex) ([]byte, R
 	prgrm := s.statePrgrm
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	name := signature.Name
-	if signature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if signature.Type == ast.TypeCXArgumentDeprecate {
 		name = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta)).Name
 	}
 	code, p, reason := s.placeOf(nil, signatureIndex)
@@ -89,15 +89,15 @@ func (s *state) printfFormat(signatureIndex ast.CXTypeSignatureIndex) ([]byte, R
 	if _, reason := s.placeStatic(place{placeOffset: p.placeOffset, placeSize: machinePointerSize}); reason != ReasonNone {
 		return nil, ReasonPrintfFormat
 	}
-	object := uint64(types.Read_ptr(prgrm.Memory, types.Pointer(p.placeOffset)))
-	if object < uint64(s.stateDataStart) || object+uint64(types.OBJECT_HEADER_SIZE) > uint64(s.stateDataEnd) {
+	object := uint64(types.PtrRead(prgrm.Memory, types.Pointer(p.placeOffset)))
+	if object < uint64(s.stateDataStart) || object+uint64(types.ObjectHeaderSize) > uint64(s.stateDataEnd) {
 		return nil, ReasonPrintfFormat
 	}
-	objectSize := uint64(types.Read_obj_size(prgrm.Memory, types.Pointer(object)))
-	if objectSize < uint64(types.OBJECT_HEADER_SIZE) || object+objectSize > uint64(s.stateDataEnd) {
+	objectSize := uint64(types.ObjectSizeRead(prgrm.Memory, types.Pointer(object)))
+	if objectSize < uint64(types.ObjectHeaderSize) || object+objectSize > uint64(s.stateDataEnd) {
 		return nil, ReasonPrintfFormat
 	}
-	return prgrm.Memory[object+uint64(types.OBJECT_HEADER_SIZE) : object+objectSize], ReasonNone
+	return prgrm.Memory[object+uint64(types.ObjectHeaderSize) : object+objectSize], ReasonNone
 }
 
 // printfSteps walks format as buildString does and returns the pieces to
@@ -219,7 +219,7 @@ func (s *state) printfVerb(verb byte, signatureIndex ast.CXTypeSignatureIndex) (
 // printfType is the CXValue.Type builtInOperatorRun gives an input.
 func (s *state) printfType(signatureIndex ast.CXTypeSignatureIndex) types.Code {
 	signature := s.statePrgrm.CXTypeSignatureFromArrayGet(signatureIndex)
-	if signature.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if signature.Type != ast.TypeCXArgumentDeprecate {
 		return signature.TypeGet(s.statePrgrm)
 	}
 	arg := s.statePrgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta))
@@ -237,26 +237,26 @@ func (s *state) printfPrintableType(signatureIndex ast.CXTypeSignatureIndex) (ty
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	var typ types.Code
 	switch signature.Type {
-	case ast.TYPE_ATOMIC:
-		if signature.PassBy == constants.PASSBY_REFERENCE {
+	case ast.TypeAtomic:
+		if signature.PassBy == constants.PassByReference {
 			return 0, ReasonPrintfFormat
 		}
 		typ = types.Code(signature.Meta)
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		element := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta)).AssignmentElementGet(prgrm)
 		var reason ReasonCode
 		if typ, reason = printfElementType(element); reason != ReasonNone {
 			return 0, reason
 		}
-	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC:
+	case ast.TypeArrayAtomic, ast.TypePointerArrayAtomic:
 		details := prgrm.CXTypeSignatureArrayFromArrayGet(signature.Meta)
-		if signature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC && !signature.Deref || len(details.Indexes) != len(details.Lengths) {
+		if signature.Type == ast.TypePointerArrayAtomic && !signature.Deref || len(details.Indexes) != len(details.Lengths) {
 			return 0, ReasonPrintfFormat
 		}
 		typ = types.Code(details.Meta)
-	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
+	case ast.TypeStruct, ast.TypePointerStruct:
 		fields := prgrm.CXTypeSignatureStructFromArrayGet(signature.Meta).Fields
-		if signature.Type == ast.TYPE_POINTER_STRUCT && !signature.Deref || len(fields) == 0 {
+		if signature.Type == ast.TypePointerStruct && !signature.Deref || len(fields) == 0 {
 			return 0, ReasonPrintfFormat
 		}
 		var reason ReasonCode
@@ -280,7 +280,7 @@ func printfElementType(element *ast.CXArgument) (types.Code, ReasonCode) {
 	typ := element.Type
 	if element.PointerTyped() {
 		for _, operation := range element.DereferenceOperations {
-			if operation == constants.DEREF_POINTER {
+			if operation == constants.DerefPointer {
 				typ = element.PointerTargetType
 				break
 			}

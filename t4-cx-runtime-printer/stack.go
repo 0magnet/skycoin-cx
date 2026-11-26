@@ -51,8 +51,8 @@ func printerStackShown(sig *ast.CXTypeSignature, operator *ast.CXFunction, outpu
 		return true
 	}
 	switch sig.Type {
-	case ast.TYPE_CXARGUMENT_DEPRECATE, ast.TYPE_ATOMIC, ast.TYPE_POINTER_ATOMIC, ast.TYPE_ARRAY_ATOMIC,
-		ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_SLICE_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
+	case ast.TypeCXArgumentDeprecate, ast.TypeAtomic, ast.TypePointerAtomic, ast.TypeArrayAtomic,
+		ast.TypePointerArrayAtomic, ast.TypeSliceAtomic, ast.TypePointerSliceAtomic:
 		return true
 	}
 	return false

@@ -171,7 +171,7 @@ func generate() (*generated, error) {
 		if row.VersionDeprecated != 0 {
 			continue
 		}
-		if !defined[row.Number] && row.Number != constants.OP_LIBRARY_CALL {
+		if !defined[row.Number] && row.Number != constants.OpLibraryCall {
 			return nil, fmt.Errorf("live opcode %d %q has no definition row", row.Number, row.Name)
 		}
 		gen.nameRows[row.Number] = index + 1
@@ -244,7 +244,7 @@ func (gen *generated) operatorAdd(codes map[string]types.Code, row constants.Opc
 	typeName, operatorName, ok := strings.Cut(row.Operator, " ")
 	code, known := codes[typeName]
 	operator, found := constants.OpcodeLifecycleLiveByName(operatorName)
-	if !ok || !known || !found || operator.Number <= constants.START_OF_OPERATORS || operator.Number >= constants.END_OF_OPERATORS {
+	if !ok || !known || !found || operator.Number <= constants.StartOfOperators || operator.Number >= constants.EndOfOperators {
 		return fmt.Errorf("definition %q: operator %q is not a type and an untyped operator", row.Name, row.Operator)
 	}
 	if gen.operators[code] == nil {
@@ -307,8 +307,8 @@ func (gen *generated) signaturesFile() []byte {
 		}
 		fmt.Fprintf(&b, "\t%d: {%s, %t, %d, %d, %d},\n", number, groupNames[signature.OpcodeSignatureGroup], signature.OpcodeSignatureHandled, signature.OpcodeSignatureParameterFirst, signature.OpcodeSignatureInputCount, signature.OpcodeSignatureOutputCount)
 	}
-	b.WriteString("}\n\n// OpcodeOperatorTable is the typed form of each untyped operator by operand\n// type, indexed by the operator number less START_OF_OPERATORS plus one. Read only.\n")
-	b.WriteString("var OpcodeOperatorTable = [types.COUNT][END_OF_OPERATORS - START_OF_OPERATORS]uint16{\n")
+	b.WriteString("}\n\n// OpcodeOperatorTable is the typed form of each untyped operator by operand\n// type, indexed by the operator number less StartOfOperators plus one. Read only.\n")
+	b.WriteString("var OpcodeOperatorTable = [types.COUNT][EndOfOperators - StartOfOperators]uint16{\n")
 	for code := types.BOOL; code < types.COUNT; code++ {
 		operators := gen.operators[code]
 		if len(operators) == 0 {
@@ -321,7 +321,7 @@ func (gen *generated) signaturesFile() []byte {
 		sort.Ints(numbers)
 		fmt.Fprintf(&b, "\t%s: {\n", typeConstant(code))
 		for _, operator := range numbers {
-			fmt.Fprintf(&b, "\t\t%d - START_OF_OPERATORS - 1: %d,\n", operator, operators[operator])
+			fmt.Fprintf(&b, "\t\t%d - StartOfOperators - 1: %d,\n", operator, operators[operator])
 		}
 		b.WriteString("\t},\n")
 	}
