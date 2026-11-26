@@ -31,17 +31,17 @@
 	func Parse(code string) int {
 		yyErrorVerbose = true
 		codeBuf := bytes.NewBufferString(code)
-		return yyParse(NewLexer(codeBuf))
+		return yyParse(LexerNew(codeBuf))
 	}
 
 	func PreFunctionDeclaration (fnIdx ast.CXFunctionGid, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
                 fn:=actions.AST.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx)
 		// adding inputs, outputs
 		for _, inp := range inputs {
-			fn.AddInput(actions.AST,inp)
+			fn.InputAdd(actions.AST,inp)
 		}
 		for _, out := range outputs {
-			fn.AddOutput(actions.AST,out)
+			fn.OutputAdd(actions.AST,out)
 		}
 	}
 	
@@ -196,15 +196,15 @@ global_var_specs:
 global_var_spec:
                 var_names declaration_specifiers
                 {
-			actions.DeclareGlobals(Program, $1, $2, nil, nil, false)
+			actions.GlobalsDeclare(Program, $1, $2, nil, nil, false)
                 }
         |       var_names declaration_specifiers ASSIGN var_values
                 {
-			actions.DeclareGlobals(Program, $1, $2, nil, varValues(yylex, $4), true)
+			actions.GlobalsDeclare(Program, $1, $2, nil, varValues(yylex, $4), true)
                 }
         |       var_names ASSIGN var_values
                 {
-			actions.DeclareGlobals(Program, $1, nil, nil, varValues(yylex, $3), true)
+			actions.GlobalsDeclare(Program, $1, nil, nil, varValues(yylex, $3), true)
                 }
                 ;
 
@@ -235,7 +235,7 @@ var_values:
 struct_declaration:
                 TYPE IDENTIFIER STRUCT struct_fields
                 {
-			actions.DeclareStruct(Program,$2, $4, CurrentFile, $<line>2, $<column>2)
+			actions.StructDeclare(Program,$2, $4, CurrentFile, $<line>2, $<column>2)
                 }
                 ;
 
@@ -264,32 +264,32 @@ fields:         parameter_declaration
 package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
-			actions.DeclarePackage(Program,$2)
+			actions.PackageDeclare(Program,$2)
                 }
                 ;
 
 import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
                 {
-			actions.DeclareImportAt(Program,$2, CurrentFile, lineNo, $<column>2)
+			actions.ImportDeclareAt(Program,$2, CurrentFile, lineNo, $<column>2)
                 }
         // The imports into scope of #487: import . "p", import file . "p",
         // import (a, b) "p" and import file (a, b) "p".
         |       IMPORT PERIOD STRING_LITERAL SEMICOLON
                 {
-			actions.DeclareImportScoped(Program, $3, "", 0, 0, nil, CurrentFile, $<line>3, $<column>3)
+			actions.ImportScopedDeclare(Program, $3, "", 0, 0, nil, CurrentFile, $<line>3, $<column>3)
                 }
         |       IMPORT IDENTIFIER PERIOD STRING_LITERAL SEMICOLON
                 {
-			actions.DeclareImportScoped(Program, $4, $2, $<line>2, $<column>2, nil, CurrentFile, $<line>4, $<column>4)
+			actions.ImportScopedDeclare(Program, $4, $2, $<line>2, $<column>2, nil, CurrentFile, $<line>4, $<column>4)
                 }
         |       IMPORT LPAREN import_names RPAREN STRING_LITERAL SEMICOLON
                 {
-			actions.DeclareImportScoped(Program, $5, "", 0, 0, actions.ImportScopedNamesTake(), CurrentFile, $<line>5, $<column>5)
+			actions.ImportScopedDeclare(Program, $5, "", 0, 0, actions.ImportScopedNamesTake(), CurrentFile, $<line>5, $<column>5)
                 }
         |       IMPORT IDENTIFIER LPAREN import_names RPAREN STRING_LITERAL SEMICOLON
                 {
-			actions.DeclareImportScoped(Program, $6, $2, $<line>2, $<column>2, actions.ImportScopedNamesTake(), CurrentFile, $<line>6, $<column>6)
+			actions.ImportScopedDeclare(Program, $6, $2, $<line>2, $<column>2, actions.ImportScopedNamesTake(), CurrentFile, $<line>6, $<column>6)
                 }
                 ;
 
@@ -308,10 +308,10 @@ import_names:
 function_header:
                 FUNC IDENTIFIER
                 {
-			if pkg, err := Program.GetCurrentPackage(); err == nil {
-				_, fn := ast.MakeFunction(Program, Program.CXProgramNameIntern($2), CurrentFile, $<line>2)
+			if pkg, err := Program.CurrentPackageGet(); err == nil {
+				_, fn := ast.FunctionMake(Program, Program.CXProgramNameIntern($2), CurrentFile, $<line>2)
 				fn.FileColumn = $<column>2
-				_,fnIdx:=pkg.AddFunction(Program,fn)
+				_,fnIdx:=pkg.FunctionAdd(Program,fn)
                                 pkg.CurrentFunction=fnIdx
 
                                 $$ = fnIdx
@@ -326,12 +326,12 @@ function_header:
 			receiverName := actions.MethodReceiverName(Program, receiver[0], CurrentFile, $<line>5, $<column>5)
 			methodName := Program.CXProgramNameIntern($5)
 
-			if pkg, err := Program.GetCurrentPackage(); err == nil {
-				_, fn := ast.MakeFunction(Program, Program.CXProgramMethodNameIntern(receiverName, methodName), CurrentFile, $<line>5)
+			if pkg, err := Program.CurrentPackageGet(); err == nil {
+				_, fn := ast.FunctionMake(Program, Program.CXProgramMethodNameIntern(receiverName, methodName), CurrentFile, $<line>5)
 				fn.FileColumn = $<column>5
-				_,fnIdx:=pkg.AddMethod(Program,fn,receiverName,methodName)
+				_,fnIdx:=pkg.MethodAdd(Program,fn,receiverName,methodName)
                                 newFn:=Program.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx)
-                                newFn.AddInput(Program,receiver[0])
+                                newFn.InputAdd(Program,receiver[0])
                                 
                                 pkg.CurrentFunction=fnIdx
 
@@ -416,7 +416,7 @@ parameter_declaration:
 			details.FileName, details.FileLine, details.FileColumn = CurrentFile, $<line>1, $<column>1
 			$2.Name = $1.Name
 			$2.Package = $1.Package
-			Program.ReleaseCXArgBuilder($1)
+			Program.CXArgBuilderRelease($1)
                         
 			$$ = $2
                 }
@@ -428,9 +428,9 @@ declarator:     direct_declarator
 direct_declarator:
                 IDENTIFIER
                 {
-			if pkg, err := Program.GetCurrentPackage(); err == nil {
-				_, arg := ast.MakeArgument(Program, stringpool.StringGidNil, CurrentFile, lineNo)
-				arg.SetType(types.UNDEFINED)
+			if pkg, err := Program.CurrentPackageGet(); err == nil {
+				_, arg := ast.ArgumentMake(Program, stringpool.StringGidNil, CurrentFile, lineNo)
+				arg.TypeSet(types.UNDEFINED)
 				arg.Name = Program.CXProgramNameIntern($1)
 				arg.Package = ast.CXPackageIndex(pkg.Index)
 				$$ = arg
@@ -490,14 +490,14 @@ declaration_specifiers:
 element_specifiers:
 		FUNC types_list types_list
 		{
-			_, arg := ast.MakeArgument(Program, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
-			arg.SetType(types.FUNC)
+			_, arg := ast.ArgumentMake(Program, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
+			arg.TypeSet(types.FUNC)
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1408.
-			arg.Inputs = Program.AddPointerArgsToCXArgsArray($2)
+			arg.Inputs = Program.PointerArgsToCXArgsArrayAdd($2)
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1409.
-			arg.Outputs = Program.AddPointerArgsToCXArgsArray($3)
+			arg.Outputs = Program.PointerArgsToCXArgsArrayAdd($3)
 			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
 		}
         |       MUL_OP declaration_specifiers
@@ -902,12 +902,12 @@ local_var_spec:
                 var_names declaration_specifiers
                 {
 			varNamesRelease($1)
-			Program.ReleaseCXArgBuilder($2)
+			Program.CXArgBuilderRelease($2)
                 }
         |       var_names declaration_specifiers ASSIGN var_values
                 {
 			varNamesRelease($1)
-			Program.ReleaseCXArgBuilder($2)
+			Program.CXArgBuilderRelease($2)
                 }
         |       var_names ASSIGN var_values
                 {

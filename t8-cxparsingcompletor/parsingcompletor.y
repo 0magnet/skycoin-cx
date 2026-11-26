@@ -21,7 +21,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 - t8-cxparsingcompletor/parsingcompletor.y is input
 */
         
-	// var actions.AST = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+	// var actions.AST = ProgramMake(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 	
 	func Parse (lexer *Lexer) int {
 		yyErrorVerbose = true
@@ -257,7 +257,7 @@ external_declaration:
 debugging:      
                 DPROGRAM
                 {
-			actions.AST.PrintProgram()
+			actions.AST.ProgramPrint()
                 }
         ;
 
@@ -286,15 +286,15 @@ global_var_specs:
 global_var_spec:
                 var_names declaration_specifiers
                 {
-			actions.DeclareGlobals(actions.AST, $1, $2, nil, nil, false)
+			actions.GlobalsDeclare(actions.AST, $1, $2, nil, nil, false)
                 }
         |       var_names declaration_specifiers ASSIGN assignment_value_list
                 {
-			actions.DeclareGlobals(actions.AST, $1, $2, $4, nil, true)
+			actions.GlobalsDeclare(actions.AST, $1, $2, $4, nil, true)
                 }
         |       var_names ASSIGN assignment_value_list
                 {
-			actions.DeclareGlobals(actions.AST, $1, nil, $3, nil, true)
+			actions.GlobalsDeclare(actions.AST, $1, nil, $3, nil, true)
                 }
                 ;
 
@@ -312,7 +312,7 @@ var_names:
 struct_declaration:
                 TYPE IDENTIFIER STRUCT struct_fields
                 {
-		        actions.DeclareStruct(actions.AST,$2, $4, actions.CurrentFile, $<line>2, $<column>2)
+		        actions.StructDeclare(actions.AST,$2, $4, actions.CurrentFile, $<line>2, $<column>2)
                 }
                 ;
 
@@ -342,14 +342,14 @@ fields:         parameter_declaration
 package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
-			actions.DeclarePackage(actions.AST,$2)
+			actions.PackageDeclare(actions.AST,$2)
                 }
                 ;
 
 import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
                 {
-			// DeclareImport($2)
+			// ImportDeclare($2)
                 }
         // The imports into scope of #487, which pass one declares.
         |       IMPORT PERIOD STRING_LITERAL SEMICOLON
@@ -453,7 +453,7 @@ parameter_declaration:
 			nameDetails := actions.AST.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet($1.ArgDetails)
 			typeDetails := actions.AST.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet($2.ArgDetails)
 			typeDetails.FileName, typeDetails.FileLine, typeDetails.FileColumn = nameDetails.FileName, nameDetails.FileLine, nameDetails.FileColumn
-			actions.AST.ReleaseCXArgBuilder($1)
+			actions.AST.CXArgBuilderRelease($1)
 
 			$$ = $2
                 }
@@ -465,9 +465,9 @@ declarator:     direct_declarator
 direct_declarator:
                 IDENTIFIER
                 {
-			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-				_, arg := ast.MakeArgument(actions.AST, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
-				arg.SetType(types.UNDEFINED)
+			if pkg, err := actions.AST.CurrentPackageGet(); err == nil {
+				_, arg := ast.ArgumentMake(actions.AST, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
+				arg.TypeSet(types.UNDEFINED)
 				arg.Name = actions.AST.CXProgramNameIntern($1)
 				actions.AST.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet(arg.ArgDetails).FileColumn = $<column>1
 				arg.Package = ast.CXPackageIndex(pkg.Index)
@@ -534,15 +534,15 @@ declaration_specifiers:
 element_specifiers:
                 FUNC types_list types_list
 		{
-			_, arg := ast.MakeArgument(actions.AST, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
-			arg.SetType(types.FUNC)
+			_, arg := ast.ArgumentMake(actions.AST, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
+			arg.TypeSet(types.FUNC)
                        
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1480.
-			arg.Inputs =  actions.AST.AddPointerArgsToCXArgsArray($2)
+			arg.Inputs =  actions.AST.PointerArgsToCXArgsArrayAdd($2)
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1481.
-			arg.Outputs =  actions.AST.AddPointerArgsToCXArgsArray($3)
+			arg.Outputs =  actions.AST.PointerArgsToCXArgsArrayAdd($3)
 			$$ = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
 		}
         |       MUL_OP declaration_specifiers
@@ -818,74 +818,74 @@ primary_expression:
         |       STRING_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			$$ = actions.WritePrimaryExprs(actions.AST,types.STR, types.Make_obj([]byte($1)), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.STR, types.Make_obj([]byte($1)), false)
 			actions.TokenPositionPop(position)
                 }
         |       BOOLEAN_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			exprs := actions.WritePrimaryExprs(actions.AST,types.BOOL, encoder.Serialize($1), false)
+			exprs := actions.PrimaryExpressionsWrite(actions.AST,types.BOOL, encoder.Serialize($1), false)
 			actions.TokenPositionPop(position)
 			$$ = exprs
                 }
         |       BYTE_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			$$ = actions.WritePrimaryExprs(actions.AST,types.I8, encoder.Serialize($1), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.I8, encoder.Serialize($1), false)
 			actions.TokenPositionPop(position)
                 }
         |       SHORT_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			$$ = actions.WritePrimaryExprs(actions.AST,types.I16, encoder.Serialize($1), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.I16, encoder.Serialize($1), false)
 			actions.TokenPositionPop(position)
                 }
         |       INT_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			$$ = actions.WritePrimaryExprs(actions.AST,types.I32, encoder.Serialize($1), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.I32, encoder.Serialize($1), false)
 			actions.TokenPositionPop(position)
                 }
         |       LONG_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			$$ = actions.WritePrimaryExprs(actions.AST,types.I64, encoder.Serialize($1), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.I64, encoder.Serialize($1), false)
 			actions.TokenPositionPop(position)
                 }
         |       UNSIGNED_BYTE_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			$$ = actions.WritePrimaryExprs(actions.AST,types.UI8, encoder.Serialize($1), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.UI8, encoder.Serialize($1), false)
 			actions.TokenPositionPop(position)
                 }
         |       UNSIGNED_SHORT_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			$$ = actions.WritePrimaryExprs(actions.AST,types.UI16, encoder.Serialize($1), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.UI16, encoder.Serialize($1), false)
 			actions.TokenPositionPop(position)
                 }
         |       UNSIGNED_INT_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			$$ = actions.WritePrimaryExprs(actions.AST,types.UI32, encoder.Serialize($1), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.UI32, encoder.Serialize($1), false)
 			actions.TokenPositionPop(position)
                 }
         |       UNSIGNED_LONG_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			$$ = actions.WritePrimaryExprs(actions.AST,types.UI64, encoder.Serialize($1), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.UI64, encoder.Serialize($1), false)
 			actions.TokenPositionPop(position)
                 }
         |       FLOAT_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			$$ = actions.WritePrimaryExprs(actions.AST,types.F32, encoder.Serialize($1), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.F32, encoder.Serialize($1), false)
 			actions.TokenPositionPop(position)
                 }
         |       DOUBLE_LITERAL
                 {
 			position := actions.TokenPositionPush($<line>1, $<column>1)
-			$$ = actions.WritePrimaryExprs(actions.AST,types.F64, encoder.Serialize($1), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST,types.F64, encoder.Serialize($1), false)
 			actions.TokenPositionPop(position)
                 }
         |       LPAREN expression RPAREN
@@ -1491,7 +1491,7 @@ expression_statement:
 selection_statement:
                 IF conditional_nc compound_statement elseif_list else_statement
                 {
-			$$ = actions.CreateSelectionStatement(actions.AST,$2, $3, $4, $5, actions.SEL_ELSEIFELSE)
+			$$ = actions.SelectionStatementCreate(actions.AST,$2, $3, $4, $5, actions.SEL_ELSEIFELSE)
                 }
         |       IF conditional_nc compound_statement else_statement
                 {
@@ -1499,7 +1499,7 @@ selection_statement:
                 }
         |       IF conditional_nc compound_statement elseif_list
                 {
-			$$ = actions.CreateSelectionStatement(actions.AST,$2, $3, $4, nil, actions.SEL_ELSEIF)
+			$$ = actions.SelectionStatementCreate(actions.AST,$2, $3, $4, nil, actions.SEL_ELSEIF)
                 }
         |       IF conditional_nc compound_statement
                 {
@@ -1624,7 +1624,7 @@ for_clause_statement:
 for_condition_statement:
                 SEMICOLON
                 {
-			$$ = actions.WritePrimaryExprs(actions.AST, types.BOOL, encoder.Serialize(true), false)
+			$$ = actions.PrimaryExpressionsWrite(actions.AST, types.BOOL, encoder.Serialize(true), false)
                 }
 	|       for_clause_assignment SEMICOLON
                 {
@@ -1649,17 +1649,17 @@ return_expression:
 
 jump_statement: GOTO IDENTIFIER
                 {
-			pkg, err := actions.AST.GetCurrentPackage()
+			pkg, err := actions.AST.CurrentPackageGet()
                         if err!=nil{
                                 panic(err)
                         }
                         
                         // OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
                         // Now a constructor call, site S1502.
-                        exprCXLine := actions.MakeCXLineExpressionCurrent(actions.AST)
+                        exprCXLine := actions.CXLineExpressionCurrentMake(actions.AST)
                         // OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
                         // Now a constructor call, site S1503.
-                        expr := ast.MakeAtomicOperatorExpression(actions.AST,ast.NativeFunctionOf(actions.AST, constants.OP_GOTO))
+                        expr := ast.AtomicOperatorExpressionMake(actions.AST,ast.NativeFunctionOf(actions.AST, constants.OP_GOTO))
                         expressionIdx :=expr.Index
                         actions.AST.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
                         actions.AST.CXAtomicOps[expressionIdx].Label = actions.AST.CXProgramNameIntern($2)
@@ -1678,13 +1678,13 @@ jump_statement: GOTO IDENTIFIER
 		}
 	|       RETURN
                 {
-			$$ = actions.AddJmpToReturnExpressions(actions.AST,actions.ReturnExpressions{})
+			$$ = actions.ReturnExpressionsJmpAdd(actions.AST,actions.ReturnExpressions{})
                 }
 	|       RETURN return_expression
                 {
 			returnExpressions := $2
 			returnExpressions.Line, returnExpressions.Column = $<line>1, $<column>1
-			$$ = actions.AddJmpToReturnExpressions(actions.AST, returnExpressions)
+			$$ = actions.ReturnExpressionsJmpAdd(actions.AST, returnExpressions)
                 }
                 ;
 %%
