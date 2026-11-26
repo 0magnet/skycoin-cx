@@ -106,7 +106,7 @@ func IterationExpressions(prgrm *ast.CXProgram,
 			// Now an arena getter, site S0615.
 			lastCondExpressionOperatorOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(lastCondExpressionOperatorOutputTypeSig.Meta))
 			lastCondExpressionOperatorOutputType = lastCondExpressionOperatorOutputArg.Type
-			_, predicate := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
+			_, predicate := ast.MakeArgument(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
 			predicate.SetType(lastCondExpressionOperatorOutputType)
 			predicate.Package = ast.CXPackageIndex(pkg.Index)
 			predicate.PreviouslyDeclared = true
@@ -114,13 +114,13 @@ func IterationExpressions(prgrm *ast.CXProgram,
 			typeSigIdx = ast.AllocCXTypeSignatureOfCXArgBuilder(prgrm, predicate)
 		} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 			_, newTypeSig := prgrm.AllocCXTypeSignatureCopy(lastCondExpressionOperatorOutputTypeSig)
-			newTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
+			newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
 			newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 			newTypeSig.Offset = types.Pointer(0)
 			typeSigIdx = newTypeSig.Index
 		} else if lastCondExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 			_, newTypeSig := prgrm.AllocCXTypeSignatureCopy(lastCondExpressionOperatorOutputTypeSig)
-			newTypeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
+			newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
 			newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 			newTypeSig.Offset = types.Pointer(0)
 			typeSigIdx = newTypeSig.Index
@@ -278,7 +278,7 @@ func SelectionExpressions(prgrm *ast.CXProgram, conditionExprs []ast.CXExpressio
 		predicateTypeSigIdx = prgrm.CXAtomicOps[lastCondExpressionIdx].GetOutputs(prgrm)[0]
 	} else {
 		// then it's an expression
-		_, predicate := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
+		_, predicate := ast.MakeArgument(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		lastCondExpressionOperatorOutputs := lastCondExpressionOperator.GetOutputs(prgrm)
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0633.
@@ -436,9 +436,9 @@ func resolveTypeForUnd(prgrm *ast.CXProgram, expr *ast.CXExpression) types.Code 
 	return -1
 }
 
-// IsTempVar ...
+// TemporaryVariable ...
 // TODO: Delete this function; only called by next function
-func IsTempVar(prgrm *ast.CXProgram, nameGid stringpool.StringGid) bool {
+func TemporaryVariable(prgrm *ast.CXProgram, nameGid stringpool.StringGid) bool {
 	name := prgrm.CXProgramNameText(nameGid)
 	if len(name) >= len(constants.LOCAL_PREFIX) && name[:len(constants.LOCAL_PREFIX)] == constants.LOCAL_PREFIX {
 		return true
@@ -505,7 +505,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSigIdx)
 
 		// The placeholder of f()[i] has no operator and is dropped like a variable.
-		if lastLeftExpressionOperator != nil && IsTempVar(prgrm, lastLeftExpressionOutputTypeSig.Name) {
+		if lastLeftExpressionOperator != nil && TemporaryVariable(prgrm, lastLeftExpressionOutputTypeSig.Name) {
 			out = append(out, leftExprs...)
 		} else {
 			out = append(out, leftExprs[:len(leftExprs)-1]...)
@@ -543,7 +543,7 @@ func OperatorExpression(prgrm *ast.CXProgram, leftExprs []ast.CXExpression, righ
 		// then it's a function call or an array access
 		prgrm.CXAtomicOps[expressionIdx].AddInput(prgrm, typeSigIdx)
 
-		if lastRightExpressionOperator != nil && IsTempVar(prgrm, lastRightExpressionOutputTypeSig.Name) {
+		if lastRightExpressionOperator != nil && TemporaryVariable(prgrm, lastRightExpressionOutputTypeSig.Name) {
 			out = append(out, rightExprs...)
 		} else {
 			out = append(out, rightExprs[:len(rightExprs)-1]...)
@@ -576,7 +576,7 @@ func operandResultOutputAdd(prgrm *ast.CXProgram, pkg *ast.CXPackage, exprs []as
 		// Now an arena getter, site S0649.
 		resultArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(resultTypeSig.Meta))
 
-		_, out := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
+		_, out := ast.MakeArgument(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
 		out.SetType(resolveTypeForUnd(prgrm, &exprs[len(exprs)-1]))
 		out.Size = resultArg.Size
 		out.Type = resultArg.Type
@@ -593,7 +593,7 @@ func operandResultOutputAdd(prgrm *ast.CXProgram, pkg *ast.CXPackage, exprs []as
 		argDetails.FileColumn = prgrm.CXProgramCompileErrorColumn(argDetails.FileName, argDetails.FileLine)
 		_, typeSig := prgrm.AllocCXTypeSignature()
 		typeSig.ArgDetails = argDetailsGid
-		typeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
+		typeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
 		typeSig.Package = resultTypeSig.Package
 		typeSig.Type = ast.TYPE_ATOMIC
 		typeSig.Meta = resultTypeSig.Meta
@@ -608,7 +608,7 @@ func operandResultOutputAdd(prgrm *ast.CXProgram, pkg *ast.CXPackage, exprs []as
 		argDetails.FileColumn = prgrm.CXProgramCompileErrorColumn(argDetails.FileName, argDetails.FileLine)
 		_, typeSig := prgrm.AllocCXTypeSignature()
 		typeSig.ArgDetails = argDetailsGid
-		typeSig.Name = generateTempVarName(prgrm, constants.LOCAL_PREFIX)
+		typeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
 		typeSig.Package = resultTypeSig.Package
 		typeSig.Type = ast.TYPE_POINTER_ATOMIC
 		typeSig.Meta = resultTypeSig.Meta
@@ -634,7 +634,7 @@ func operandIndexed(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) bool {
 	return false
 }
 
-// shortCircuitLinesPending marks the skip of a short-circuit jmp until ProcessShortCircuitJumps sets it.
+// shortCircuitLinesPending marks the skip of a short-circuit jmp until ShortCircuitJumpsResolve sets it.
 const shortCircuitLinesPending = -1 << 30
 
 // shortCircuitExpressions puts a jmp on the left operand before the right operand's expressions.
@@ -709,11 +709,11 @@ func shortCircuitOperandExpression(prgrm *ast.CXProgram, exprIdx int) *ast.CXFun
 	operandOp.AddInput(prgrm, operandOp.GetOutputs(prgrm)[0])
 	operandOp.Outputs = nil
 
-	_, temp := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
-	temp.SetType(types.BOOL)
-	temp.PreviouslyDeclared = true
-	temp.Package = ast.CXPackageIndex(pkg.Index)
-	operandOp.AddOutput(prgrm, ast.AllocCXTypeSignatureOfCXArgBuilder(prgrm, temp))
+	_, temporary := ast.MakeArgument(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
+	temporary.SetType(types.BOOL)
+	temporary.PreviouslyDeclared = true
+	temporary.Package = ast.CXPackageIndex(pkg.Index)
+	operandOp.AddOutput(prgrm, ast.AllocCXTypeSignatureOfCXArgBuilder(prgrm, temporary))
 
 	operandOp.ThenLines = shortCircuitLinesPending
 	operandOp.ElseLines = shortCircuitLinesPending
@@ -744,9 +744,9 @@ func ShortCircuitJumpCheck(prgrm *ast.CXProgram, exprs []ast.CXExpression, currI
 	return boolOperator != nil && boolOperator.AtomicOPCode == boolOpcode && len(boolOp.GetInputs(prgrm)) > 0 && shortCircuitOperandSame(prgrm, jmpOp.GetInputs(prgrm)[0], boolOp.GetInputs(prgrm)[0])
 }
 
-// ProcessShortCircuitJumps points each short-circuit jmp at its bool op, once the function's expressions are final.
+// ShortCircuitJumpsResolve points each short-circuit jmp at its bool op, once the function's expressions are final.
 // A jmp whose bool op is not found skips nothing, so both operands run.
-func ProcessShortCircuitJumps(prgrm *ast.CXProgram, exprs []ast.CXExpression) {
+func ShortCircuitJumpsResolve(prgrm *ast.CXProgram, exprs []ast.CXExpression) {
 	for i := range exprs {
 		if exprs[i].Type != ast.CX_ATOMIC_OPERATOR {
 			continue
@@ -1172,7 +1172,7 @@ func AddJmpToReturnExpressions(prgrm *ast.CXProgram, exprs ReturnExpressions) []
 	}
 
 	// simulating a label so it gets executed without evaluating a predicate
-	expression.Label = generateTempVarName(prgrm, constants.LABEL_PREFIX)
+	expression.Label = temporaryVariableNameGenerate(prgrm, constants.LABEL_PREFIX)
 	expression.ThenLines = types.MAX_INT32
 	expression.Package = ast.CXPackageIndex(pkg.Index)
 
@@ -1267,7 +1267,7 @@ func unaryOperatorOnValue(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExp
 // invalidPlaceholderTypeSig returns a temporary of types.INVALID, the value
 // of an expression whose compile error is recorded.
 func invalidPlaceholderTypeSig(prgrm *ast.CXProgram, pkgIdx ast.CXPackageIndex) ast.CXTypeSignatureIndex {
-	_, placeholder := ast.MakeArgument(prgrm, generateTempVarName(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
+	_, placeholder := ast.MakeArgument(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
 	placeholder.SetType(types.INVALID)
 	placeholder.Package = pkgIdx
 	placeholder.PreviouslyDeclared = true

@@ -66,18 +66,18 @@ func DeclareImportAt(prgrm *ast.CXProgram, impName string, currentFile ast.Sourc
 	// Checking if it's a package in the CX workspace by trying to find a
 	// slash (/) in the impName.
 	// We start backwards and we stop if we find a slash.
-	hasSlash := false
+	slashFound := false
 	c := len(impName) - 1
 	for ; c >= 0; c-- {
 		if impName[c] == '/' {
-			hasSlash = true
+			slashFound = true
 			break
 		}
 	}
 	ident := ""
 	// If the `impName` has a slash, then we need to strip
 	// everything behind the slash and the slash itself.
-	if hasSlash {
+	if slashFound {
 		ident = impName[c+1:]
 	} else {
 		ident = impName

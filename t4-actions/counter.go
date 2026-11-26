@@ -12,9 +12,9 @@ var (
 	TemporaryVariableCounter int
 )
 
-// generateTempVarName interns the name prefix_N of the next temporary
+// temporaryVariableNameGenerate interns the name prefix_N of the next temporary
 // variable in the string pool of prgrm.
-func generateTempVarName(prgrm *ast.CXProgram, prefix string) stringpool.StringGid {
+func temporaryVariableNameGenerate(prgrm *ast.CXProgram, prefix string) stringpool.StringGid {
 	var buf [64]byte
 	name := append(buf[:0], prefix...)
 	name = append(name, '_')

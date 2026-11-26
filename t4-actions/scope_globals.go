@@ -18,7 +18,7 @@ type ScopeGlobalName struct {
 // scopeGlobalDeclaration is a global a function declared, the name as
 // written with its position, and whether the body used it.
 type scopeGlobalDeclaration struct {
-	key  SymbolsDataKey
+	key  SymbolTableKey
 	name ScopeGlobalName
 	used bool
 }
@@ -42,7 +42,7 @@ type scopeGlobalsState struct {
 	// function, see #487.
 	maskingWarning bool
 	declarations   []scopeGlobalDeclaration
-	reported       map[SymbolsDataKey]bool
+	reported       map[SymbolTableKey]bool
 }
 
 var scopeGlobals scopeGlobalsState
@@ -98,7 +98,7 @@ func ScopeGlobalsDeclare(prgrm *ast.CXProgram, names []ScopeGlobalName, braceDep
 			}
 			continue
 		}
-		key := SymbolsDataKey{SymbolsDataKeyPackage: target.Name, SymbolsDataKeyName: name.Name}
+		key := SymbolTableKey{SymbolTableKeyPackage: target.Name, SymbolTableKeyName: name.Name}
 		if scopeGlobalsDeclared(key) != nil {
 			prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeGlobalDeclarationRepeated, CurrentFile, name.Line, name.Column, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(scopeGlobalNameText(prgrm, name))})
 			continue
@@ -109,7 +109,7 @@ func ScopeGlobalsDeclare(prgrm *ast.CXProgram, names []ScopeGlobalName, braceDep
 
 // scopeGlobalsDeclared returns the declaration of the global key in the
 // function being parsed, nil when it has none.
-func scopeGlobalsDeclared(key SymbolsDataKey) *scopeGlobalDeclaration {
+func scopeGlobalsDeclared(key SymbolTableKey) *scopeGlobalDeclaration {
 	for index := range scopeGlobals.declarations {
 		if scopeGlobals.declarations[index].key == key {
 			return &scopeGlobals.declarations[index]
@@ -130,7 +130,7 @@ func scopeGlobalsUse(prgrm *ast.CXProgram, symPkg *ast.CXPackage, ident stringpo
 	if !scopeGlobals.checking {
 		return
 	}
-	key := SymbolsDataKey{SymbolsDataKeyPackage: symPkg.Name, SymbolsDataKeyName: ident}
+	key := SymbolTableKey{SymbolTableKeyPackage: symPkg.Name, SymbolTableKeyName: ident}
 	if declaration := scopeGlobalsDeclared(key); declaration != nil {
 		declaration.used = true
 		return
@@ -139,7 +139,7 @@ func scopeGlobalsUse(prgrm *ast.CXProgram, symPkg *ast.CXPackage, ident stringpo
 		return
 	}
 	if scopeGlobals.reported == nil {
-		scopeGlobals.reported = make(map[SymbolsDataKey]bool)
+		scopeGlobals.reported = make(map[SymbolTableKey]bool)
 	}
 	scopeGlobals.reported[key] = true
 	text := prgrm.CXProgramNameText(ident)
@@ -168,7 +168,7 @@ func scopeGlobalsEnd(prgrm *ast.CXProgram) {
 
 // scopeShadowCheck reports a local, parameter or result named like a global,
 // import, function or type of pkg, or a variable of an outer scope (#486).
-func scopeShadowCheck(prgrm *ast.CXProgram, symbolsData *SymbolsData, pkg *ast.CXPackage, typeSig *ast.CXTypeSignature) {
+func scopeShadowCheck(prgrm *ast.CXProgram, symbolTable *SymbolTable, pkg *ast.CXPackage, typeSig *ast.CXTypeSignature) {
 	if !scopeGlobals.checking {
 		return
 	}
@@ -196,10 +196,10 @@ func scopeShadowCheck(prgrm *ast.CXProgram, symbolsData *SymbolsData, pkg *ast.C
 		prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeShadowType, typeSig.ArgDetails, operands(strct.FileName, strct.FileLine, strct.FileColumn))
 		return
 	}
-	key := SymbolsDataKey{SymbolsDataKeyPackage: pkg.Name, SymbolsDataKeyName: name}
-	for scope := len(symbolsData.symbolsIndex) - 2; scope >= 0; scope-- {
-		if symIdx, found := symbolsData.symbolsIndex[scope][key]; found {
-			outer := prgrm.GetCXTypeSignatureFromArray(symbolsData.symbols[symIdx])
+	key := SymbolTableKey{SymbolTableKeyPackage: pkg.Name, SymbolTableKeyName: name}
+	for scope := len(symbolTable.symbolsIndex) - 2; scope >= 0; scope-- {
+		if symIdx, found := symbolTable.symbolsIndex[scope][key]; found {
+			outer := prgrm.GetCXTypeSignatureFromArray(symbolTable.symbols[symIdx])
 			file, line, column := ast.CXArgumentDebugPosition(prgrm, outer.ArgDetails)
 			prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeShadowVariable, typeSig.ArgDetails, operands(file, line, column))
 			return

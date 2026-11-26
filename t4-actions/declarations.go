@@ -71,7 +71,7 @@ func DeclarationSpecifiersBasic(prgrm *ast.CXProgram, typeCode types.Code) *ast.
 // struct or package are at currentFile, lineNo and column, where the type
 // name starts, or at the token the parser is at for a column of 0.
 func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName string,
-	isExternal bool, currentFile ast.SourceFileGid, lineNo int, column int) *ast.CXArgument {
+	external bool, currentFile ast.SourceFileGid, lineNo int, column int) *ast.CXArgument {
 	pkg, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -82,7 +82,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 
 	identGid := prgrm.CXProgramNameIntern(ident)
 	var strct *ast.CXStruct
-	if isExternal {
+	if external {
 		// custom type in an imported package
 		imp, err := pkg.GetImport(prgrm, prgrm.CXProgramNameIntern(pkgName))
 		if err != nil {
