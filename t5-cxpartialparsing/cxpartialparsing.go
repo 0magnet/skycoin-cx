@@ -44,10 +44,10 @@ func PreFunctionDeclaration(fnIdx ast.CXFunctionGid, inputs []*ast.CXArgument, o
 	fn := actions.AST.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx)
 	// adding inputs, outputs
 	for _, inp := range inputs {
-		fn.AddInput(actions.AST, inp)
+		fn.InputAdd(actions.AST, inp)
 	}
 	for _, out := range outputs {
-		fn.AddOutput(actions.AST, out)
+		fn.OutputAdd(actions.AST, out)
 	}
 }
 
@@ -1404,10 +1404,10 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:310
 		{
-			if pkg, err := Program.GetCurrentPackage(); err == nil {
-				_, fn := ast.MakeFunction(Program, Program.CXProgramNameIntern(yyDollar[2].tok), CurrentFile, yyDollar[2].line)
+			if pkg, err := Program.CurrentPackageGet(); err == nil {
+				_, fn := ast.FunctionMake(Program, Program.CXProgramNameIntern(yyDollar[2].tok), CurrentFile, yyDollar[2].line)
 				fn.FileColumn = yyDollar[2].column
-				_, fnIdx := pkg.AddFunction(Program, fn)
+				_, fnIdx := pkg.FunctionAdd(Program, fn)
 				pkg.CurrentFunction = fnIdx
 
 				yyVAL.functionIndex = fnIdx
@@ -1424,12 +1424,12 @@ yydefault:
 			receiverName := actions.MethodReceiverName(Program, receiver[0], CurrentFile, yyDollar[5].line, yyDollar[5].column)
 			methodName := Program.CXProgramNameIntern(yyDollar[5].tok)
 
-			if pkg, err := Program.GetCurrentPackage(); err == nil {
-				_, fn := ast.MakeFunction(Program, Program.CXProgramMethodNameIntern(receiverName, methodName), CurrentFile, yyDollar[5].line)
+			if pkg, err := Program.CurrentPackageGet(); err == nil {
+				_, fn := ast.FunctionMake(Program, Program.CXProgramMethodNameIntern(receiverName, methodName), CurrentFile, yyDollar[5].line)
 				fn.FileColumn = yyDollar[5].column
-				_, fnIdx := pkg.AddMethod(Program, fn, receiverName, methodName)
+				_, fnIdx := pkg.MethodAdd(Program, fn, receiverName, methodName)
 				newFn := Program.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx)
-				newFn.AddInput(Program, receiver[0])
+				newFn.InputAdd(Program, receiver[0])
 
 				pkg.CurrentFunction = fnIdx
 
@@ -1515,7 +1515,7 @@ yydefault:
 			details.FileName, details.FileLine, details.FileColumn = CurrentFile, yyDollar[1].line, yyDollar[1].column
 			yyDollar[2].argument.Name = yyDollar[1].argument.Name
 			yyDollar[2].argument.Package = yyDollar[1].argument.Package
-			Program.ReleaseCXArgBuilder(yyDollar[1].argument)
+			Program.CXArgBuilderRelease(yyDollar[1].argument)
 
 			yyVAL.argument = yyDollar[2].argument
 		}
@@ -1523,9 +1523,9 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:430
 		{
-			if pkg, err := Program.GetCurrentPackage(); err == nil {
-				_, arg := ast.MakeArgument(Program, stringpool.StringGidNil, CurrentFile, lineNo)
-				arg.SetType(types.UNDEFINED)
+			if pkg, err := Program.CurrentPackageGet(); err == nil {
+				_, arg := ast.ArgumentMake(Program, stringpool.StringGidNil, CurrentFile, lineNo)
+				arg.TypeSet(types.UNDEFINED)
 				arg.Name = Program.CXProgramNameIntern(yyDollar[1].tok)
 				arg.Package = ast.CXPackageIndex(pkg.Index)
 				yyVAL.argument = arg
@@ -1593,14 +1593,14 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:492
 		{
-			_, arg := ast.MakeArgument(Program, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
-			arg.SetType(types.FUNC)
+			_, arg := ast.ArgumentMake(Program, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
+			arg.TypeSet(types.FUNC)
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1408.
-			arg.Inputs = Program.AddPointerArgsToCXArgsArray(yyDollar[2].arguments)
+			arg.Inputs = Program.PointerArgsToCXArgsArrayAdd(yyDollar[2].arguments)
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1409.
-			arg.Outputs = Program.AddPointerArgsToCXArgsArray(yyDollar[3].arguments)
+			arg.Outputs = Program.PointerArgsToCXArgsArrayAdd(yyDollar[3].arguments)
 			yyVAL.argument = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
 		}
 	case 64:
@@ -1782,14 +1782,14 @@ yydefault:
 //line t5-cxpartialparsing/cxpartialparsing.y:903
 		{
 			varNamesRelease(yyDollar[1].arguments)
-			Program.ReleaseCXArgBuilder(yyDollar[2].argument)
+			Program.CXArgBuilderRelease(yyDollar[2].argument)
 		}
 	case 253:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:908
 		{
 			varNamesRelease(yyDollar[1].arguments)
-			Program.ReleaseCXArgBuilder(yyDollar[2].argument)
+			Program.CXArgBuilderRelease(yyDollar[2].argument)
 		}
 	case 254:
 		yyDollar = yyS[yypt-3 : yypt+1]

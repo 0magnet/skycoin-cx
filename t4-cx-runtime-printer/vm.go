@@ -29,7 +29,7 @@ func PrinterVmStopMessage(stop vm.Stop) string {
 }
 
 // printerVmStopLine returns the file and line of the instruction machine
-// stopped at, "" and 0 when it has none, as GetPreviousCXLine gives them.
+// stopped at, "" and 0 when it has none, as PreviousCXLineGet gives them.
 func printerVmStopLine(machine *vm.Machine) (string, int) {
 	image := machine.MachineImage
 	line, found := ir.LineAt(image, machine.MachineFunction, machine.MachinePc)

@@ -68,7 +68,7 @@ func CXArgumentGCDeclaration(arg *CXArgument) ([]int, types.Code, *CXStruct, []t
 // SignatureGCDeclaration returns the declared type of the value sig names.
 func SignatureGCDeclaration(prgrm *CXProgram, sig *CXTypeSignature) ([]int, types.Code, *CXStruct, []types.Pointer) {
 	array := func(specs []int) ([]int, types.Code, []types.Pointer) {
-		details := prgrm.GetCXTypeSignatureArrayFromArray(sig.Meta)
+		details := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
 		for range details.Lengths {
 			specs = append(specs, constants.DECL_ARRAY)
 		}
@@ -76,7 +76,7 @@ func SignatureGCDeclaration(prgrm *CXProgram, sig *CXTypeSignature) ([]int, type
 	}
 	switch sig.Type {
 	case TYPE_CXARGUMENT_DEPRECATE:
-		return CXArgumentGCDeclaration(prgrm.GetCXArg(CXArgumentIndex(sig.Meta)))
+		return CXArgumentGCDeclaration(prgrm.CXArgGet(CXArgumentIndex(sig.Meta)))
 	case TYPE_ATOMIC:
 		return []int{constants.DECL_BASIC}, types.Code(sig.Meta), nil, nil
 	case TYPE_POINTER_ATOMIC:
@@ -88,16 +88,16 @@ func SignatureGCDeclaration(prgrm *CXProgram, sig *CXTypeSignature) ([]int, type
 		specs, typ, lengths := array([]int{constants.DECL_BASIC})
 		return append(specs, constants.DECL_POINTER), typ, nil, lengths
 	case TYPE_SLICE_ATOMIC, TYPE_POINTER_SLICE_ATOMIC:
-		details := prgrm.GetCXTypeSignatureArrayFromArray(sig.Meta)
+		details := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
 		specs := []int{constants.DECL_BASIC, constants.DECL_SLICE}
 		if sig.Type == TYPE_POINTER_SLICE_ATOMIC {
 			specs = append(specs, constants.DECL_POINTER)
 		}
 		return specs, types.Code(details.Meta), nil, details.Lengths
 	case TYPE_STRUCT:
-		return []int{constants.DECL_STRUCT}, types.STRUCT, sig.GetStructType(prgrm), nil
+		return []int{constants.DECL_STRUCT}, types.STRUCT, sig.StructTypeGet(prgrm), nil
 	case TYPE_POINTER_STRUCT:
-		return []int{constants.DECL_STRUCT, constants.DECL_POINTER}, types.STRUCT, sig.GetStructType(prgrm), nil
+		return []int{constants.DECL_STRUCT, constants.DECL_POINTER}, types.STRUCT, sig.StructTypeGet(prgrm), nil
 	}
 	return nil, types.UNDEFINED, nil, nil
 }
@@ -153,7 +153,7 @@ func (cache *GCTypeCache) gcBaseType(prgrm *CXProgram, typ types.Code, strct *CX
 	t := &gc.GCType{GCTypeKind: gc.GCKindStruct}
 	cache.GCTypeCacheStructs[strct] = t
 	for fieldIndex, fieldIdx := range strct.Fields {
-		specs, typ, fieldStruct, lengths := SignatureGCDeclaration(prgrm, prgrm.GetCXTypeSignatureFromArray(fieldIdx))
+		specs, typ, fieldStruct, lengths := SignatureGCDeclaration(prgrm, prgrm.CXTypeSignatureFromArrayGet(fieldIdx))
 		if field := GCTypeOf(prgrm, specs, typ, fieldStruct, lengths); field != nil {
 			t.GCTypeFields = append(t.GCTypeFields, gc.GCTypeField{GCTypeFieldOffset: StructFieldOffset(prgrm, strct, fieldIndex), GCTypeFieldType: field})
 		}
@@ -191,7 +191,7 @@ func gcValueSize(prgrm *CXProgram, specs []int, typ types.Code, strct *CXStruct,
 		return lengths[0] * gcValueSize(prgrm, specs[:len(specs)-1], typ, strct, lengths[1:])
 	}
 	if strct != nil {
-		return strct.GetStructSize(prgrm)
+		return strct.StructSizeGet(prgrm)
 	}
 	return typ.Size()
 }
@@ -221,7 +221,7 @@ func gcFrameRoots(prgrm *CXProgram, fn *CXFunction) []gc.GCRoot {
 			add(ptr.Offset, 0, GCTypeOf(prgrm, specs, typ, strct, lengths))
 		case len(ptr.Fields) == 1:
 			// A pointer field of a struct local, as s.p.
-			fld := prgrm.GetCXArgFromArray(ptr.Fields[0])
+			fld := prgrm.CXArgFromArrayGet(ptr.Fields[0])
 			if fld.PointerTyped() {
 				specs, typ, strct, lengths := CXArgumentGCDeclaration(fld)
 				add(ptr.Offset, fld.Offset, GCTypeOf(prgrm, specs, typ, strct, lengths))
@@ -238,7 +238,7 @@ func gcGlobalRoots(prgrm *CXProgram) []gc.GCRoot {
 	cache := gcTypeCache(prgrm)
 	var count int
 	for _, pkgIdx := range prgrm.Packages {
-		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		pkg, err := prgrm.PackageFromArrayGet(pkgIdx)
 		if err != nil {
 			panic(err)
 		}
@@ -249,15 +249,15 @@ func gcGlobalRoots(prgrm *CXProgram) []gc.GCRoot {
 	}
 	roots := []gc.GCRoot{}
 	for _, pkgIdx := range prgrm.Packages {
-		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		pkg, err := prgrm.PackageFromArrayGet(pkgIdx)
 		if err != nil {
 			panic(err)
 		}
 		for _, glblFldIdx := range pkg.Globals.Fields {
-			sig := prgrm.GetCXTypeSignatureFromArray(glblFldIdx)
+			sig := prgrm.CXTypeSignatureFromArrayGet(glblFldIdx)
 			offset := sig.Offset
 			if sig.Type == TYPE_CXARGUMENT_DEPRECATE {
-				offset = prgrm.GetCXArg(CXArgumentIndex(sig.Meta)).Offset
+				offset = prgrm.CXArgGet(CXArgumentIndex(sig.Meta)).Offset
 			}
 			specs, typ, strct, lengths := SignatureGCDeclaration(prgrm, sig)
 			if t := GCTypeOf(prgrm, specs, typ, strct, lengths); t != nil {

@@ -102,7 +102,7 @@ func globalsDeferredInfer(prgrm *ast.CXProgram, sources []string, fileNames []st
 
 // globalDeferredKeyOf is the key of the global of deferred.
 func globalDeferredKeyOf(prgrm *ast.CXProgram, deferred *ast.GlobalDeferred) globalDeferredKey {
-	declarator := prgrm.GetCXArg(deferred.GlobalDeferredDeclarator)
+	declarator := prgrm.CXArgGet(deferred.GlobalDeferredDeclarator)
 	return globalDeferredKey{deferred.GlobalDeferredPackage, declarator.Name}
 }
 
@@ -140,9 +140,9 @@ func sourceOffset(source string, line int, column int) int {
 func globalsCycleReport(prgrm *ast.CXProgram, deferred []ast.GlobalDeferred, cycle []int) {
 	names := make([]string, len(cycle))
 	for i, index := range cycle {
-		names[i] = prgrm.CXProgramNameText(prgrm.GetCXArg(deferred[index].GlobalDeferredDeclarator).Name)
+		names[i] = prgrm.CXProgramNameText(prgrm.CXArgGet(deferred[index].GlobalDeferredDeclarator).Name)
 	}
-	first := prgrm.GetCXArg(deferred[cycle[0]].GlobalDeferredDeclarator)
+	first := prgrm.CXArgGet(deferred[cycle[0]].GlobalDeferredDeclarator)
 	file, line, column := ast.CXArgumentDebugPosition(prgrm, first.ArgDetails)
 	prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeInitializationCycle, file, line, column, ast.CompileErrorOperands{int64(first.Name), prgrm.CXProgramCompileErrorText(globalsCycleText(names))})
 }
@@ -167,11 +167,11 @@ func globalsCycleText(names []string) string {
 // value text, or with types.INVALID after an error. Its uses then report
 // nothing more.
 func globalDeferredDeclare(prgrm *ast.CXProgram, deferred *ast.GlobalDeferred, text string, failed bool) {
-	pkg, err := prgrm.GetPackageFromArray(deferred.GlobalDeferredPackage)
+	pkg, err := prgrm.PackageFromArrayGet(deferred.GlobalDeferredPackage)
 	if err != nil {
 		panic(err)
 	}
-	declarator := prgrm.GetCXArg(deferred.GlobalDeferredDeclarator)
+	declarator := prgrm.CXArgGet(deferred.GlobalDeferredDeclarator)
 	var spec *ast.CXArgument
 	if !failed {
 		var reported bool
@@ -195,7 +195,7 @@ func globalDeferredDeclare(prgrm *ast.CXProgram, deferred *ast.GlobalDeferred, t
 // is invalid, whose error is recorded.
 func globalsInvalidNamed(prgrm *ast.CXProgram, pkg *ast.CXPackage, text string) bool {
 	for _, name := range cxparsingcompletor.Identifiers(text) {
-		glbl, err := pkg.GetGlobal(prgrm, prgrm.CXProgramNameIntern(name))
+		glbl, err := pkg.GlobalGet(prgrm, prgrm.CXProgramNameIntern(name))
 		if err != nil {
 			continue
 		}
@@ -234,8 +234,8 @@ func globalDeferredType(prgrm *ast.CXProgram, pkg *ast.CXPackage, deferred *ast.
 
 	actions.CurrentFile = deferred.GlobalDeferredFile
 	prgrm.CurrentPackage = ast.CXPackageIndex(pkg.Index)
-	_, fn := ast.MakeFunction(prgrm, functionName, deferred.GlobalDeferredFile, 0)
-	_, fnIdx := pkg.AddFunction(prgrm, fn)
+	_, fn := ast.FunctionMake(prgrm, functionName, deferred.GlobalDeferredFile, 0)
+	_, fnIdx := pkg.FunctionAdd(prgrm, fn)
 	actions.ScopeGlobalsInitializer = true
 	Passtwo(bytes.NewBufferString(globalDeferredSource(prgrm, pkg, deferred, text, functionName, valueName)))
 	actions.ScopeGlobalsInitializer = false
@@ -316,8 +316,8 @@ func globalValueSpec(prgrm *ast.CXProgram, fn *ast.CXFunction, valueName stringp
 			continue
 		}
 		op := &prgrm.CXAtomicOps[expr.Index]
-		for _, output := range op.GetOutputs(prgrm) {
-			sig := prgrm.GetCXTypeSignatureFromArray(output)
+		for _, output := range op.OutputsGet(prgrm) {
+			sig := prgrm.CXTypeSignatureFromArrayGet(output)
 			if text := prgrm.CXProgramNameText(sig.Name); text == name || strings.HasSuffix(text, ":"+name) {
 				return globalSpecOfSignature(prgrm, sig)
 			}
@@ -337,7 +337,7 @@ func globalSpecOfSignature(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) *ast.
 	case ast.TYPE_POINTER_ATOMIC:
 		return globalSpecPointer(globalSpecBasic(prgrm, types.Code(sig.Meta)), !sig.Deref)
 	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC:
-		array := prgrm.GetCXTypeSignatureArrayFromArray(sig.Meta)
+		array := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
 		spec := globalSpecBasic(prgrm, types.Code(array.Meta))
 		if spec == nil || len(array.Lengths) <= len(array.Indexes) {
 			return nil
@@ -348,7 +348,7 @@ func globalSpecOfSignature(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) *ast.
 		}
 		return globalSpecPointer(spec, reference)
 	case ast.TYPE_SLICE_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
-		array := prgrm.GetCXTypeSignatureArrayFromArray(sig.Meta)
+		array := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
 		spec := globalSpecBasic(prgrm, types.Code(array.Meta))
 		if spec == nil || len(array.Lengths) <= len(array.Indexes) {
 			return nil
@@ -361,7 +361,7 @@ func globalSpecOfSignature(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) *ast.
 		}
 		return globalSpecPointer(spec, reference)
 	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
-		details := prgrm.GetCXTypeSignatureStructFromArray(sig.Meta)
+		details := prgrm.CXTypeSignatureStructFromArrayGet(sig.Meta)
 		if len(details.Fields) > 0 || details.StructType == nil {
 			return nil
 		}
@@ -370,7 +370,7 @@ func globalSpecOfSignature(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) *ast.
 		}
 		return globalSpecPointer(globalSpecStruct(prgrm, details.StructType), reference)
 	case ast.TYPE_CXARGUMENT_DEPRECATE:
-		return globalSpecOfArgument(prgrm, prgrm.GetCXArg(ast.CXArgumentIndex(sig.Meta)))
+		return globalSpecOfArgument(prgrm, prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta)))
 	}
 	return nil
 }
@@ -432,10 +432,10 @@ func globalSpecStruct(prgrm *ast.CXProgram, strct *ast.CXStruct) *ast.CXArgument
 	if strct == nil {
 		return nil
 	}
-	_, arg := ast.MakeArgument(prgrm, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
+	_, arg := ast.ArgumentMake(prgrm, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
 	arg.Type = types.STRUCT
 	arg.StructType = strct
-	arg.Size = strct.GetStructSize(prgrm)
+	arg.Size = strct.StructSizeGet(prgrm)
 	arg.Package = prgrm.CurrentPackage
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 	return arg
@@ -461,7 +461,7 @@ func globalDeferredErrorsKeep(prgrm *ast.CXProgram, deferred *ast.GlobalDeferred
 			// The count of var a, b = f() is reported once, at a.
 			countMismatch = true
 			if deferred.GlobalDeferredResult == 0 {
-				record.CompileErrorRecordFile, record.CompileErrorRecordLine, record.CompileErrorRecordColumn = ast.CXArgumentDebugPosition(prgrm, prgrm.GetCXArg(deferred.GlobalDeferredDeclarator).ArgDetails)
+				record.CompileErrorRecordFile, record.CompileErrorRecordLine, record.CompileErrorRecordColumn = ast.CXArgumentDebugPosition(prgrm, prgrm.CXArgGet(deferred.GlobalDeferredDeclarator).ArgDetails)
 				kept = append(kept, record)
 			}
 			continue
@@ -526,7 +526,7 @@ func globalsInitializersRunOrder(prgrm *ast.CXProgram, run []ast.GlobalInitializ
 			byName[other] = i
 		}
 	}
-	pkg, err := prgrm.GetPackageFromArray(run[0].GlobalInitializerPackage)
+	pkg, err := prgrm.PackageFromArrayGet(run[0].GlobalInitializerPackage)
 	if err != nil {
 		panic(err)
 	}
@@ -613,7 +613,7 @@ func globalsInitializersCycleReport(prgrm *ast.CXProgram, pkg *ast.CXPackage, ru
 	var chain []string
 	for k, index := range path {
 		name := run[index].GlobalInitializerName
-		glbl, err := pkg.GetGlobal(prgrm, name)
+		glbl, err := pkg.GlobalGet(prgrm, name)
 		if err == nil && glbl.Type == ast.TYPE_ATOMIC && types.Code(glbl.Meta) == types.INVALID {
 			return path
 		}
@@ -629,7 +629,7 @@ func globalsInitializersCycleReport(prgrm *ast.CXProgram, pkg *ast.CXPackage, ru
 		text = prgrm.CXProgramNameText(run[path[0]].GlobalInitializerName) + " refers to itself"
 	}
 	name := run[path[0]].GlobalInitializerName
-	glbl, err := pkg.GetGlobal(prgrm, name)
+	glbl, err := pkg.GlobalGet(prgrm, name)
 	if err != nil {
 		panic(err)
 	}
@@ -641,7 +641,7 @@ func globalsInitializersCycleReport(prgrm *ast.CXProgram, pkg *ast.CXPackage, ru
 // globalsArgDetails is the debug record of the global glbl.
 func globalsArgDetails(prgrm *ast.CXProgram, glbl *ast.CXTypeSignature) ast.CXArgumentDebugGid {
 	if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		return prgrm.GetCXArg(ast.CXArgumentIndex(glbl.Meta)).ArgDetails
+		return prgrm.CXArgGet(ast.CXArgumentIndex(glbl.Meta)).ArgDetails
 	}
 	return glbl.ArgDetails
 }
@@ -656,9 +656,9 @@ func globalsInitializerReferences(prgrm *ast.CXProgram, pkg *ast.CXPackage, expr
 			continue
 		}
 		op := &prgrm.CXAtomicOps[expr.Index]
-		for _, input := range op.GetInputs(prgrm) {
-			globalsSignatureNames(prgrm, prgrm.GetCXTypeSignatureFromArray(input), func(name stringpool.StringGid, _ types.Pointer) {
-				if _, err := pkg.GetGlobal(prgrm, name); err == nil {
+		for _, input := range op.InputsGet(prgrm) {
+			globalsSignatureNames(prgrm, prgrm.CXTypeSignatureFromArrayGet(input), func(name stringpool.StringGid, _ types.Pointer) {
+				if _, err := pkg.GlobalGet(prgrm, name); err == nil {
 					references = append(references, globalsInitializerReference{globalsInitializerReferenceName: name})
 				}
 			})
@@ -675,38 +675,38 @@ func globalsInitializerReferences(prgrm *ast.CXProgram, pkg *ast.CXPackage, expr
 // initializer that is not compiled yet, calls on a global, as g.m() or
 // g.f.m() do, or CXFunctionGidNil when its receiver is not a global.
 func globalsMethodCalled(prgrm *ast.CXProgram, pkg *ast.CXPackage, op *ast.CXAtomicOperator) ast.CXFunctionGid {
-	inputs := op.GetInputs(prgrm)
+	inputs := op.InputsGet(prgrm)
 	if len(inputs) == 0 {
 		return ast.CXFunctionGidNil
 	}
-	sig := prgrm.GetCXTypeSignatureFromArray(inputs[0])
+	sig := prgrm.CXTypeSignatureFromArrayGet(inputs[0])
 	if sig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
 		return ast.CXFunctionGidNil
 	}
-	receiver := prgrm.GetCXArg(ast.CXArgumentIndex(sig.Meta))
-	glbl, err := pkg.GetGlobal(prgrm, receiver.Name)
+	receiver := prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta))
+	glbl, err := pkg.GlobalGet(prgrm, receiver.Name)
 	if err != nil || len(receiver.Fields) == 0 {
 		return ast.CXFunctionGidNil
 	}
-	strct := glbl.GetStructType(prgrm)
+	strct := glbl.StructTypeGet(prgrm)
 	for _, fieldIdx := range receiver.Fields[:len(receiver.Fields)-1] {
 		if strct == nil {
 			return ast.CXFunctionGidNil
 		}
-		field, err := strct.GetField(prgrm, prgrm.GetCXArg(fieldIdx).Name)
+		field, err := strct.FieldGet(prgrm, prgrm.CXArgGet(fieldIdx).Name)
 		if err != nil {
 			return ast.CXFunctionGidNil
 		}
-		strct = field.GetStructType(prgrm)
+		strct = field.StructTypeGet(prgrm)
 	}
 	if strct == nil {
 		return ast.CXFunctionGidNil
 	}
-	strctPkg, err := prgrm.GetPackageFromArray(strct.Package)
+	strctPkg, err := prgrm.PackageFromArrayGet(strct.Package)
 	if err != nil {
 		return ast.CXFunctionGidNil
 	}
-	method, err := strctPkg.GetMethod(prgrm, strct.Name, prgrm.GetCXArg(receiver.Fields[len(receiver.Fields)-1]).Name)
+	method, err := strctPkg.MethodGet(prgrm, strct.Name, prgrm.CXArgGet(receiver.Fields[len(receiver.Fields)-1]).Name)
 	if err != nil {
 		return ast.CXFunctionGidNil
 	}
@@ -726,7 +726,7 @@ func globalsFunctionReferences(prgrm *ast.CXProgram, fnIdx ast.CXFunctionGid, fu
 	}
 	// A recursive call meets nil here.
 	functions[fnIdx] = nil
-	pkg, err := prgrm.GetPackageFromArray(fn.Package)
+	pkg, err := prgrm.PackageFromArrayGet(fn.Package)
 	if err != nil {
 		return nil
 	}
@@ -738,13 +738,13 @@ func globalsFunctionReferences(prgrm *ast.CXProgram, fnIdx ast.CXFunctionGid, fu
 			continue
 		}
 		op := &prgrm.CXAtomicOps[expr.Index]
-		for _, sigs := range [][]ast.CXTypeSignatureIndex{op.GetInputs(prgrm), op.GetOutputs(prgrm)} {
+		for _, sigs := range [][]ast.CXTypeSignatureIndex{op.InputsGet(prgrm), op.OutputsGet(prgrm)} {
 			for _, sigIdx := range sigs {
-				globalsSignatureNames(prgrm, prgrm.GetCXTypeSignatureFromArray(sigIdx), func(name stringpool.StringGid, offset types.Pointer) {
+				globalsSignatureNames(prgrm, prgrm.CXTypeSignatureFromArrayGet(sigIdx), func(name stringpool.StringGid, offset types.Pointer) {
 					if seen[name] {
 						return
 					}
-					if glbl, err := pkg.GetGlobal(prgrm, name); err == nil && globalsOffset(prgrm, glbl) == offset {
+					if glbl, err := pkg.GlobalGet(prgrm, name); err == nil && globalsOffset(prgrm, glbl) == offset {
 						seen[name] = true
 						direct = append(direct, globalsInitializerReference{globalsInitializerReferenceName: name})
 					}
@@ -769,17 +769,17 @@ func globalsSignatureNames(prgrm *ast.CXProgram, sig *ast.CXTypeSignature, use f
 		use(sig.Name, sig.Offset)
 		return
 	}
-	arg := prgrm.GetCXArg(ast.CXArgumentIndex(sig.Meta))
+	arg := prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta))
 	use(arg.Name, arg.Offset)
 	for _, index := range arg.Indexes {
-		globalsSignatureNames(prgrm, prgrm.GetCXTypeSignatureFromArray(index), use)
+		globalsSignatureNames(prgrm, prgrm.CXTypeSignatureFromArrayGet(index), use)
 	}
 }
 
 // globalsOffset is the offset of the global glbl.
 func globalsOffset(prgrm *ast.CXProgram, glbl *ast.CXTypeSignature) types.Pointer {
 	if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		return prgrm.GetCXArg(ast.CXArgumentIndex(glbl.Meta)).Offset
+		return prgrm.CXArgGet(ast.CXArgumentIndex(glbl.Meta)).Offset
 	}
 	return glbl.Offset
 }
@@ -804,10 +804,10 @@ func globalsMethodResultsDeclare(prgrm *ast.CXProgram, fn *ast.CXFunction) {
 		if !expr.TypeMethodCall() {
 			continue
 		}
-		for _, output := range prgrm.CXAtomicOps[expr.Index].GetOutputs(prgrm) {
-			name := prgrm.GetCXTypeSignatureFromArray(output).Name
+		for _, output := range prgrm.CXAtomicOps[expr.Index].OutputsGet(prgrm) {
+			name := prgrm.CXTypeSignatureFromArrayGet(output).Name
 			if strings.HasPrefix(prgrm.CXProgramNameText(name), constants.METHOD_RESULT_PREFIX) && !fn.LocalVariableDeclared(name) {
-				if err := fn.AddLocalVariableName(name); err != nil {
+				if err := fn.LocalVariableNameAdd(name); err != nil {
 					panic(err)
 				}
 			}

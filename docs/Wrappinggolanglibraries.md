@@ -37,8 +37,8 @@ outside the standard library is a system library instead, see
 
 4. **Write `RegisterPackage(prgrm *ast.CXProgram)`** when the package has
    types or structs. In [t4-regexp/init.go](../t4-regexp/init.go) it calls
-   `ast.MakePackage(prgrm.CXProgramNameIntern("regexp"))`, then
-   `prgrm.AddPackage` and `AddStruct` for the `Regexp` struct. Call it from
+   `ast.PackageMake(prgrm.CXProgramNameIntern("regexp"))`, then
+   `prgrm.PackageAdd` and `StructAdd` for the `Regexp` struct. Call it from
    `RegisterPackages` in [t7-init/init.go](../t7-init/init.go), next to
    `regexp.RegisterPackage(prgrm)`. There is no `func init`.
 

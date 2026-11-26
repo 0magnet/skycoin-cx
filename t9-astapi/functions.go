@@ -33,9 +33,9 @@ func AddEmptyFunctionToPackage(cxprogram *cxast.CXProgram, packageName, function
 		return err
 	}
 
-	_, fn := cxast.MakeFunction(cxprogram, cxprogram.CXProgramNameIntern(functionName), cxast.SourceFileGidNil, -1)
+	_, fn := cxast.FunctionMake(cxprogram, cxprogram.CXProgramNameIntern(functionName), cxast.SourceFileGidNil, -1)
 
-	pkg.AddFunction(cxprogram, fn)
+	pkg.FunctionAdd(cxprogram, fn)
 
 	return nil
 }
@@ -68,7 +68,7 @@ func RemoveFunctionFromPackage(cxprogram *cxast.CXProgram, packageName, function
 		return err
 	}
 	if functionNameGid, found := cxprogram.CXProgramNameFind(functionName); found {
-		pkg.RemoveFunction(cxprogram, functionNameGid)
+		pkg.FunctionRemove(cxprogram, functionNameGid)
 	}
 
 	return nil
@@ -115,10 +115,10 @@ func AddNativeInputToFunction(cxprogram *cxast.CXProgram, packageName, functionN
 		return err
 	}
 
-	_, arg := cxast.MakeField(cxprogram, cxprogram.CXProgramNameIntern(inputName), inputType, cxast.SourceFileGidNil, -1)
-	arg.SetType(types.Code(inputType))
+	_, arg := cxast.FieldMake(cxprogram, cxprogram.CXProgramNameIntern(inputName), inputType, cxast.SourceFileGidNil, -1)
+	arg.TypeSet(types.Code(inputType))
 	arg.Package = cxast.CXPackageIndex(pkg.Index)
-	fn.AddInput(cxprogram, arg)
+	fn.InputAdd(cxprogram, arg)
 
 	return nil
 }
@@ -194,10 +194,10 @@ func AddNativeOutputToFunction(cxprogram *cxast.CXProgram, packageName, function
 	if err != nil {
 		return err
 	}
-	_, arg := cxast.MakeField(cxprogram, cxprogram.CXProgramNameIntern(outputName), outputType, cxast.SourceFileGidNil, -1)
-	arg.SetType(types.Code(outputType))
+	_, arg := cxast.FieldMake(cxprogram, cxprogram.CXProgramNameIntern(outputName), outputType, cxast.SourceFileGidNil, -1)
+	arg.TypeSet(types.Code(outputType))
 	arg.Package = cxast.CXPackageIndex(pkg.Index)
-	fn.AddOutput(cxprogram, arg)
+	fn.OutputAdd(cxprogram, arg)
 
 	return nil
 }

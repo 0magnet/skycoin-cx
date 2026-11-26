@@ -77,14 +77,14 @@ func heapFreeRatioKeep(prgrm *CXProgram) {
 	if free < constants.MIN_HEAP_FREE_RATIO {
 		// GCREACH: grows the heap after a collection,
 		// see docs/GarbageCollector.md.
-		ResizeMemory(prgrm, types.Cast_f32_to_ptr(float32(used)/(1.0-constants.MIN_HEAP_FREE_RATIO)), true)
+		MemoryResize(prgrm, types.Cast_f32_to_ptr(float32(used)/(1.0-constants.MIN_HEAP_FREE_RATIO)), true)
 	}
 	if free > constants.MAX_HEAP_FREE_RATIO {
 		size := types.Cast_f32_to_ptr(float32(used) / (1.0 - constants.MAX_HEAP_FREE_RATIO))
 		if size > constants.INIT_HEAP_SIZE {
 			// GCREACH: shrinks the heap after a collection,
 			// see docs/GarbageCollector.md.
-			ResizeMemory(prgrm, size, false)
+			MemoryResize(prgrm, size, false)
 		}
 	}
 }

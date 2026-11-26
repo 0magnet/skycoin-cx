@@ -17,20 +17,20 @@ func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDe
 	for _, strct := range structs {
 
 		pkgNameGid := actions.AST.CXProgramNameIntern(strct.PackageID)
-		pkg, err := actions.AST.GetPackage(pkgNameGid)
+		pkg, err := actions.AST.PackageGet(pkgNameGid)
 
 		// If package is not found
 		if err != nil {
 
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1522.
-			newPkg := ast.MakePackage(pkgNameGid)
+			newPkg := ast.PackageMake(pkgNameGid)
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1523.
-			pkgIdx := actions.AST.AddPackage(newPkg)
+			pkgIdx := actions.AST.PackageAdd(newPkg)
 			// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 			// Now an arena getter, site S1524.
-			newPkg, err = actions.AST.GetPackageFromArray(pkgIdx)
+			newPkg, err = actions.AST.PackageFromArrayGet(pkgIdx)
 
 			if err != nil {
 				return err
@@ -45,10 +45,10 @@ func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDe
 
 		// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 		// Now a constructor call, site S1525.
-		structCX := ast.MakeStruct(actions.AST.CXProgramNameIntern(strct.StructName))
+		structCX := ast.StructMake(actions.AST.CXProgramNameIntern(strct.StructName))
 		structCX.Package = ast.CXPackageIndex(pkg.Index)
 
-		pkg = pkg.AddStruct(actions.AST, structCX)
+		pkg = pkg.StructAdd(actions.AST, structCX)
 
 		src, err := GetSourceBytes(files, strct.FileID)
 		if err != nil {

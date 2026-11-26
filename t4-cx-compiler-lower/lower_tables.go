@@ -20,7 +20,7 @@ import (
 // the frame of the current function.
 func (s *state) localAdd(signatureIndex ast.CXTypeSignatureIndex, offset uint32, size uint32) {
 	prgrm := s.statePrgrm
-	signature := prgrm.GetCXTypeSignatureFromArray(signatureIndex)
+	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	name := signature.Name
 	code := types.UNDEFINED
 	typeName := ""
@@ -29,14 +29,14 @@ func (s *state) localAdd(signatureIndex ast.CXTypeSignatureIndex, offset uint32,
 		code = types.Code(signature.Meta)
 		typeName = code.Name()
 	case ast.TYPE_CXARGUMENT_DEPRECATE:
-		arg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(signature.Meta))
+		arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta))
 		name = arg.Name
 		typeName = localArgumentTypeName(prgrm, arg)
 		if arg.StructType == nil && len(arg.Lengths) == 0 {
 			code = arg.Type
 		}
 	default:
-		typeName = signature.GetTypeString(prgrm)
+		typeName = signature.TypeStringGet(prgrm)
 		if signature.Type == ast.TYPE_POINTER_ATOMIC || signature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC ||
 			signature.Type == ast.TYPE_POINTER_SLICE_ATOMIC || signature.Type == ast.TYPE_POINTER_STRUCT {
 			typeName = "*" + typeName
@@ -134,10 +134,10 @@ func (s *state) readOnlyAdd(signatureIndex ast.CXTypeSignatureIndex, p place) {
 		return
 	}
 	prgrm := s.statePrgrm
-	signature := prgrm.GetCXTypeSignatureFromArray(signatureIndex)
+	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	name := signature.Name
 	if signature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		arg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(signature.Meta))
+		arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta))
 		if len(arg.Indexes) > 0 || len(arg.Fields) > 0 || len(arg.DereferenceOperations) > 0 {
 			return
 		}

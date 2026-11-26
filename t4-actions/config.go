@@ -20,5 +20,5 @@ var LineStr string
 // MakeCXLineExpressionCurrent makes the CX_LINE marker of the line the parser
 // is at, interning its text.
 func MakeCXLineExpressionCurrent(prgrm *ast.CXProgram) *ast.CXExpression {
-	return ast.MakeCXLineExpression(prgrm, CurrentFile, LineNo, prgrm.CXProgramNameIntern(LineStr))
+	return ast.CXLineExpressionMake(prgrm, CurrentFile, LineNo, prgrm.CXProgramNameIntern(LineStr))
 }

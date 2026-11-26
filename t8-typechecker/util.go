@@ -27,15 +27,15 @@ func ParseParameterDeclaration(prgrm *ast.CXProgram, parameterString []byte, pkg
 	}
 
 	// Set the declarator or the name of the param
-	_, declarator := ast.MakeArgument(prgrm, stringpool.StringGidNil, fileName, lineno)
-	declarator.SetType(types.UNDEFINED)
+	_, declarator := ast.ArgumentMake(prgrm, stringpool.StringGidNil, fileName, lineno)
+	declarator.TypeSet(types.UNDEFINED)
 	declarator.Package = ast.CXPackageIndex(pkg.Index)
 	declarator.Name = prgrm.CxIrState.StringPool.StringPoolIntern(parameterDeclarationTokens[1])
 
 	//Set the decalaration type
 	parameterDeclaration, err := ParseDeclarationSpecifier(prgrm, parameterDeclarationTokens[2], fileName, lineno, parameterDeclaration)
 	if err != nil {
-		prgrm.ReleaseCXArgBuilder(declarator)
+		prgrm.CXArgBuilderRelease(declarator)
 		return nil, err
 	}
 
@@ -44,7 +44,7 @@ func ParseParameterDeclaration(prgrm *ast.CXProgram, parameterString []byte, pkg
 	details.FileName, details.FileLine = fileName, lineno
 	parameterDeclaration.Name = declarator.Name
 	parameterDeclaration.Package = declarator.Package
-	prgrm.ReleaseCXArgBuilder(declarator)
+	prgrm.CXArgBuilderRelease(declarator)
 
 	return parameterDeclaration, nil
 }

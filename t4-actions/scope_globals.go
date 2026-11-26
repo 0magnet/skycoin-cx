@@ -72,14 +72,14 @@ func ScopeGlobalsDeclare(prgrm *ast.CXProgram, names []ScopeGlobalName, braceDep
 		prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeGlobalDeclarationPlacement, CurrentFile, line, column, ast.CompileErrorOperands{})
 		return
 	}
-	pkg, err := prgrm.GetCurrentPackage()
+	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		panic(err)
 	}
 	for _, name := range names {
 		target := pkg
 		if name.Package != stringpool.StringGidNil {
-			imported, err := pkg.GetImport(prgrm, name.Package)
+			imported, err := pkg.ImportGet(prgrm, name.Package)
 			if err != nil {
 				prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeGlobalDeclarationPackageMissing, CurrentFile, name.Line, name.Column, ast.CompileErrorOperands{int64(name.Package), prgrm.CXProgramCompileErrorText(scopeGlobalNameText(prgrm, name))})
 				continue
@@ -92,7 +92,7 @@ func ScopeGlobalsDeclare(prgrm *ast.CXProgram, names []ScopeGlobalName, braceDep
 				target = source
 			}
 		}
-		if _, err := target.GetGlobal(prgrm, name.Name); err != nil {
+		if _, err := target.GlobalGet(prgrm, name.Name); err != nil {
 			if !prgrm.CXProgramImportFailed(target.Name) {
 				prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeGlobalDeclarationMissing, CurrentFile, name.Line, name.Column, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(scopeGlobalNameText(prgrm, name)), int64(target.Name)})
 			}
@@ -143,7 +143,7 @@ func scopeGlobalsUse(prgrm *ast.CXProgram, symPkg *ast.CXPackage, ident stringpo
 	}
 	scopeGlobals.reported[key] = true
 	text := prgrm.CXProgramNameText(ident)
-	if pkg, err := prgrm.GetCurrentPackage(); err == nil && pkg.Name != symPkg.Name {
+	if pkg, err := prgrm.CurrentPackageGet(); err == nil && pkg.Name != symPkg.Name {
 		text = prgrm.CXProgramNameText(symPkg.Name) + "." + text
 	}
 	fn := prgrm.CxIrState.CXFunctionMng.CXFunctionGet(scopeGlobals.function)
@@ -176,7 +176,7 @@ func scopeShadowCheck(prgrm *ast.CXProgram, symbolTable *SymbolTable, pkg *ast.C
 	operands := func(file ast.SourceFileGid, line int, column int) ast.CompileErrorOperands {
 		return ast.CompileErrorOperands{int64(name), int64(file), int64(line), int64(column)}
 	}
-	if glbl, err := pkg.GetGlobal(prgrm, name); err == nil {
+	if glbl, err := pkg.GlobalGet(prgrm, name); err == nil {
 		file, line, column := ast.CXArgumentDebugPosition(prgrm, glbl.ArgDetails)
 		prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeShadowGlobal, typeSig.ArgDetails, operands(file, line, column))
 		return
@@ -192,14 +192,14 @@ func scopeShadowCheck(prgrm *ast.CXProgram, symbolTable *SymbolTable, pkg *ast.C
 		return
 	}
 	if strctIdx, found := pkg.Structs[name]; found {
-		strct := prgrm.GetStructFromArray(strctIdx)
+		strct := prgrm.StructFromArrayGet(strctIdx)
 		prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeShadowType, typeSig.ArgDetails, operands(strct.FileName, strct.FileLine, strct.FileColumn))
 		return
 	}
 	key := SymbolTableKey{SymbolTableKeyPackage: pkg.Name, SymbolTableKeyName: name}
 	for scope := len(symbolTable.symbolsIndex) - 2; scope >= 0; scope-- {
 		if symIdx, found := symbolTable.symbolsIndex[scope][key]; found {
-			outer := prgrm.GetCXTypeSignatureFromArray(symbolTable.symbols[symIdx])
+			outer := prgrm.CXTypeSignatureFromArrayGet(symbolTable.symbols[symIdx])
 			file, line, column := ast.CXArgumentDebugPosition(prgrm, outer.ArgDetails)
 			prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeShadowVariable, typeSig.ArgDetails, operands(file, line, column))
 			return

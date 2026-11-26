@@ -18,7 +18,7 @@ func FindPackage(cxprogram *cxast.CXProgram, packageName string) (*cxast.CXPacka
 	}
 	// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 	// Now an arena getter, site S1615.
-	return cxprogram.GetPackage(packageNameGid)
+	return cxprogram.PackageGet(packageNameGid)
 }
 
 // FindFunction returns the function named functionName in any package.
@@ -30,7 +30,7 @@ func FindFunction(cxprogram *cxast.CXProgram, functionName string) (*cxast.CXFun
 	for _, pkgIdx := range cxprogram.Packages {
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S1616.
-		pkg, err := cxprogram.GetPackageFromArray(pkgIdx)
+		pkg, err := cxprogram.PackageFromArrayGet(pkgIdx)
 		if err != nil {
 			panic(err)
 		}

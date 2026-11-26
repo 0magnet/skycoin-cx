@@ -35,7 +35,7 @@ func FrameAddress(prgrm *CXProgram, fp types.Pointer, offset types.Pointer) type
 	return frameAddress(prgrm, fp, offset)
 }
 
-// finalOffsetEscapedPointer is GetFinalOffset of an escaped *T variable.
+// finalOffsetEscapedPointer is FinalOffsetGet of an escaped *T variable.
 func finalOffsetEscapedPointer(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignature) types.Pointer {
 	finalOffset := frameAddress(prgrm, fp, argTypeSig.Offset)
 	if !argTypeSig.Deref {
@@ -54,7 +54,7 @@ func finalOffsetEscapedPointer(prgrm *CXProgram, fp types.Pointer, argTypeSig *C
 // the GC pressure, see docs/GarbageCollector.md.
 func EscapedAllocate(prgrm *CXProgram, fp types.Pointer, offset types.Pointer, size types.Pointer) {
 	objectSize := types.OBJECT_HEADER_SIZE + size
-	object := AllocateSeq(prgrm, objectSize)
+	object := SequenceAllocate(prgrm, objectSize)
 	header := types.Get_obj_header(prgrm.Memory, object)
 	for c := range header {
 		header[c] = 0
@@ -80,7 +80,7 @@ func PointerOfAddress(prgrm *CXProgram, address types.Pointer) types.Pointer {
 // its frame slot would have had.
 func escapedSize(prgrm *CXProgram, sig *CXTypeSignature) types.Pointer {
 	if sig.Type == TYPE_CXARGUMENT_DEPRECATE {
-		return GetArgSize(prgrm, prgrm.GetCXArg(CXArgumentIndex(sig.Meta)))
+		return ArgSizeGet(prgrm, prgrm.CXArgGet(CXArgumentIndex(sig.Meta)))
 	}
-	return sig.GetSize(prgrm, true)
+	return sig.SizeGet(prgrm, true)
 }

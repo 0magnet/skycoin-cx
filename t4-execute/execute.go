@@ -98,15 +98,15 @@ func feedOSArgs(cxprogram *ast.CXProgram, args []string) error {
 	}
 	if osPkg, err := cxprogram.SelectPackage(cxprogram.CxIrState.CxIrStateNameOs); err == nil {
 		argsOffset := types.Pointer(0)
-		if osGlbl, err := osPkg.GetGlobal(cxprogram, cxprogram.CxIrState.CxIrStateNameOsArgs); err == nil {
+		if osGlbl, err := osPkg.GlobalGet(cxprogram, cxprogram.CxIrState.CxIrStateNameOsArgs); err == nil {
 			for _, arg := range args {
-				argOffset := ast.AllocateStr(cxprogram, arg)
+				argOffset := ast.StrAllocate(cxprogram, arg)
 
 				var argOffsetBytes [types.POINTER_SIZE]byte
 				types.Write_ptr(argOffsetBytes[:], 0, argOffset)
-				argsOffset = ast.WriteToSlice(cxprogram, argsOffset, argOffsetBytes[:])
+				argsOffset = ast.SliceWrite(cxprogram, argsOffset, argOffsetBytes[:])
 			}
-			types.Write_ptr(cxprogram.Memory, ast.GetFinalOffset(cxprogram, 0, nil, osGlbl), argsOffset)
+			types.Write_ptr(cxprogram.Memory, ast.FinalOffsetGet(cxprogram, 0, nil, osGlbl), argsOffset)
 		}
 	}
 	return nil

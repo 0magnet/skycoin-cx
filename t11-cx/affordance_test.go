@@ -71,7 +71,7 @@ func TestAffordanceLiteralParse(t *testing.T) {
 			}
 			prgrm := actions.AST
 			value := ast.AffordanceValueRead(prgrm.Memory, prgrm.Data.StartsAt+prgrm.Data.Size-types.AFF_SIZE)
-			pkg, err := prgrm.GetPackage(prgrm.CxIrState.CxIrStateNameMain)
+			pkg, err := prgrm.PackageGet(prgrm.CxIrState.CxIrStateNameMain)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -85,7 +85,7 @@ func TestAffordanceLiteralParse(t *testing.T) {
 				got.item = prgrm.CXProgramNameText(prgrm.CXStructs[value.AffordanceValueTarget].Name)
 			}
 			if value.AffordanceValueVariable >= 0 {
-				got.variable = prgrm.CXProgramNameText(actions.StripNameNumber(prgrm, prgrm.GetCXTypeSignatureFromArray(value.AffordanceValueVariable).Name))
+				got.variable = prgrm.CXProgramNameText(actions.StripNameNumber(prgrm, prgrm.CXTypeSignatureFromArrayGet(value.AffordanceValueVariable).Name))
 			}
 			if got != test.want {
 				t.Fatalf("value %+v, want %+v", got, test.want)
@@ -156,7 +156,7 @@ func TestAffordanceSerializeDeclarations(t *testing.T) {
 			}
 			prgrm := actions.AST
 			value := ast.AffordanceValueRead(prgrm.Memory, prgrm.Data.StartsAt+prgrm.Data.Size-types.AFF_SIZE)
-			b, ok := ast.SerializeAffordance(prgrm, value)
+			b, ok := ast.AffordanceSerialize(prgrm, value)
 			if !ok {
 				t.Fatal("SerializeAffordance failed")
 			}
@@ -168,7 +168,7 @@ func TestAffordanceSerializeDeclarations(t *testing.T) {
 			}
 			value.AffordanceValueTarget = 1 << 20
 			if test.kind != ast.AffordanceKindPackage {
-				if _, ok := ast.SerializeAffordance(prgrm, value); ok {
+				if _, ok := ast.AffordanceSerialize(prgrm, value); ok {
 					t.Fatal("SerializeAffordance took an index outside the program")
 				}
 			}

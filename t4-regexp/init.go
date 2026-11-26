@@ -12,19 +12,19 @@ import (
 func RegisterPackage(prgrm *ast.CXProgram) {
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now a constructor call, site S1410.
-	regexpPkg := ast.MakePackage(prgrm.CXProgramNameIntern("regexp"))
+	regexpPkg := ast.PackageMake(prgrm.CXProgramNameIntern("regexp"))
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now an arena insert, site S1411.
-	pkgIdx := prgrm.AddPackage(regexpPkg)
+	pkgIdx := prgrm.PackageAdd(regexpPkg)
 	// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 	// Now an arena getter, site S1412.
-	regexpPkg, _ = prgrm.GetPackageFromArray(pkgIdx)
+	regexpPkg, _ = prgrm.PackageFromArrayGet(pkgIdx)
 
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a constructor call, site S1413.
-	regexpStrct := ast.MakeStruct(prgrm.CXProgramNameIntern("Regexp"))
-	_, regexpArg := ast.MakeArgument(prgrm, prgrm.CXProgramNameIntern("exp"), ast.SourceFileGidNil, 0)
-	regexpArg.SetType(types.STR).SetPackage(regexpPkg)
-	regexpStrct.AddField(prgrm, regexpArg)
-	regexpPkg.AddStruct(prgrm, regexpStrct)
+	regexpStrct := ast.StructMake(prgrm.CXProgramNameIntern("Regexp"))
+	_, regexpArg := ast.ArgumentMake(prgrm, prgrm.CXProgramNameIntern("exp"), ast.SourceFileGidNil, 0)
+	regexpArg.TypeSet(types.STR).PackageSet(regexpPkg)
+	regexpStrct.FieldAdd(prgrm, regexpArg)
+	regexpPkg.StructAdd(prgrm, regexpStrct)
 }

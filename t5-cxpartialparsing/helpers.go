@@ -327,7 +327,7 @@ func varValues(yylex yyLexer, indexes []int) []actions.GlobalValue {
 // does not declare.
 func varNamesRelease(names []*ast.CXArgument) {
 	for _, name := range names {
-		Program.ReleaseCXArgBuilder(name)
+		Program.CXArgBuilderRelease(name)
 	}
 }
 

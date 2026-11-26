@@ -31,7 +31,7 @@ func regexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 
 	// The CX Regexp only holds the expression. The same expression in two
 	// parts of a program shares one compiled instance.
-	ast.AllocateStrAt(prgrm, expOffset(outputs[0]), exp)
+	ast.StrAllocateAt(prgrm, expOffset(outputs[0]), exp)
 
 	r, err := regexp.Compile(exp)
 	if err != nil {

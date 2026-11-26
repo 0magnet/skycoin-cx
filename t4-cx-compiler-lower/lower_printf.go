@@ -77,10 +77,10 @@ func (s *state) printf(code []ir.Instr, inputs []ast.CXTypeSignatureIndex, outpu
 // printfFormat returns the bytes of a str literal in the data segment.
 func (s *state) printfFormat(signatureIndex ast.CXTypeSignatureIndex) ([]byte, ReasonCode) {
 	prgrm := s.statePrgrm
-	signature := prgrm.GetCXTypeSignatureFromArray(signatureIndex)
+	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	name := signature.Name
 	if signature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-		name = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(signature.Meta)).Name
+		name = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta)).Name
 	}
 	code, p, reason := s.placeOf(nil, signatureIndex)
 	if reason != ReasonNone || name != stringpool.StringGidNil || len(code) > 0 || p.placeFrame {
@@ -149,8 +149,8 @@ func (s *state) printfSteps(format []byte, inputs []ast.CXTypeSignatureIndex) ([
 		text([]byte("%!(EXTRA "))
 		extra := inputs[specifiers+1:]
 		for c, signatureIndex := range extra {
-			signature := s.statePrgrm.GetCXTypeSignatureFromArray(signatureIndex)
-			text([]byte(signature.GetValueTypeName(s.statePrgrm) + "="))
+			signature := s.statePrgrm.CXTypeSignatureFromArrayGet(signatureIndex)
+			text([]byte(signature.ValueTypeNameGet(s.statePrgrm) + "="))
 			step, _, reason := s.printfVerb('v', signatureIndex)
 			if reason != ReasonNone {
 				return nil, reason
@@ -218,23 +218,23 @@ func (s *state) printfVerb(verb byte, signatureIndex ast.CXTypeSignatureIndex) (
 
 // printfType is the CXValue.Type builtInOperatorRun gives an input.
 func (s *state) printfType(signatureIndex ast.CXTypeSignatureIndex) types.Code {
-	signature := s.statePrgrm.GetCXTypeSignatureFromArray(signatureIndex)
+	signature := s.statePrgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	if signature.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
-		return signature.GetType(s.statePrgrm)
+		return signature.TypeGet(s.statePrgrm)
 	}
-	arg := s.statePrgrm.GetCXArgFromArray(ast.CXArgumentIndex(signature.Meta))
+	arg := s.statePrgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta))
 	if arg.Type == types.POINTER {
 		return arg.PointerTargetType
 	}
 	return arg.Type
 }
 
-// printfPrintableType returns the type AppendPrintableValue prints with
+// printfPrintableType returns the type PrintableValueAppend prints with
 // appendAtomic, the only case of %v the machine prints. Whole arrays and
 // structs, pointers and addresses stay outside.
 func (s *state) printfPrintableType(signatureIndex ast.CXTypeSignatureIndex) (types.Code, ReasonCode) {
 	prgrm := s.statePrgrm
-	signature := prgrm.GetCXTypeSignatureFromArray(signatureIndex)
+	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
 	var typ types.Code
 	switch signature.Type {
 	case ast.TYPE_ATOMIC:
@@ -243,24 +243,24 @@ func (s *state) printfPrintableType(signatureIndex ast.CXTypeSignatureIndex) (ty
 		}
 		typ = types.Code(signature.Meta)
 	case ast.TYPE_CXARGUMENT_DEPRECATE:
-		element := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(signature.Meta)).GetAssignmentElement(prgrm)
+		element := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta)).AssignmentElementGet(prgrm)
 		var reason ReasonCode
 		if typ, reason = printfElementType(element); reason != ReasonNone {
 			return 0, reason
 		}
 	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC:
-		details := prgrm.GetCXTypeSignatureArrayFromArray(signature.Meta)
+		details := prgrm.CXTypeSignatureArrayFromArrayGet(signature.Meta)
 		if signature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC && !signature.Deref || len(details.Indexes) != len(details.Lengths) {
 			return 0, ReasonPrintfFormat
 		}
 		typ = types.Code(details.Meta)
 	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
-		fields := prgrm.GetCXTypeSignatureStructFromArray(signature.Meta).Fields
+		fields := prgrm.CXTypeSignatureStructFromArrayGet(signature.Meta).Fields
 		if signature.Type == ast.TYPE_POINTER_STRUCT && !signature.Deref || len(fields) == 0 {
 			return 0, ReasonPrintfFormat
 		}
 		var reason ReasonCode
-		if typ, reason = printfElementType(prgrm.GetCXArgFromArray(fields[len(fields)-1])); reason != ReasonNone {
+		if typ, reason = printfElementType(prgrm.CXArgFromArrayGet(fields[len(fields)-1])); reason != ReasonNone {
 			return 0, reason
 		}
 	default:

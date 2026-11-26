@@ -36,7 +36,7 @@ func packageFunctions(prgrm *cxast.CXProgram) map[string][]string {
 	for name, pkgIdx := range prgrm.Packages {
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S0052.
-		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		pkg, err := prgrm.PackageFromArrayGet(pkgIdx)
 		if err != nil {
 			continue
 		}
@@ -52,12 +52,12 @@ func packageFunctions(prgrm *cxast.CXProgram) map[string][]string {
 
 func TestSerializeIsDeterministic(t *testing.T) {
 	prgrm := sampleProgramWithPackages(t)
-	first, err := cxast.SerializeCXProgram(prgrm, false, nil)
+	first, err := cxast.CXProgramSerialize(prgrm, false, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for i := 0; i < 10; i++ {
-		again, err := cxast.SerializeCXProgram(prgrm, false, nil)
+		again, err := cxast.CXProgramSerialize(prgrm, false, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -77,7 +77,7 @@ func TestSerializeKeepsFunctionsInTheirPackage(t *testing.T) {
 	prgrm := sampleProgramWithPackages(t)
 	want := packageFunctions(prgrm)
 	for i := 0; i < 10; i++ {
-		b, err := cxast.SerializeCXProgram(prgrm, false, nil)
+		b, err := cxast.CXProgramSerialize(prgrm, false, nil)
 		if err != nil {
 			t.Fatal(err)
 		}

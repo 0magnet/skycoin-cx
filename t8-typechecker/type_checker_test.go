@@ -143,15 +143,15 @@ func TestTypeChecker_ParseDeclarationSpecifier(t *testing.T) {
 
 				// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 				// Now a constructor call, site S1530.
-				pkg := ast.MakePackage(actions.AST.CXProgramNameIntern(tc.pkgName))
+				pkg := ast.PackageMake(actions.AST.CXProgramNameIntern(tc.pkgName))
 				// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 				// Now an arena insert, site S1531.
-				pkgIdx := actions.AST.AddPackage(pkg)
+				pkgIdx := actions.AST.PackageAdd(pkg)
 				// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 				// Now a constructor call, site S1532.
-				strct := ast.MakeStruct(actions.AST.CXProgramNameIntern(tc.strctName))
+				strct := ast.StructMake(actions.AST.CXProgramNameIntern(tc.strctName))
 				strct.Package = ast.CXPackageIndex(pkgIdx)
-				pkg = pkg.AddStruct(actions.AST, strct)
+				pkg = pkg.StructAdd(actions.AST, strct)
 
 			}
 
@@ -161,8 +161,8 @@ func TestTypeChecker_ParseDeclarationSpecifier(t *testing.T) {
 
 			var gotDeclarationSpecifier *ast.CXArgument
 			gotDeclarationSpecifier, gotErr := type_checker.ParseDeclarationSpecifier(actions.AST, []byte(tc.testString), actions.AST.CXProgramSourceFileIntern(tc.fileName), tc.lineno, gotDeclarationSpecifier)
-			gotTypeSignature := ast.GetCXTypeSignatureRepresentationOfCXArg(actions.AST, gotDeclarationSpecifier)
-			gotDeclarationSpecifierFormattedString := ast.GetFormattedType(actions.AST, gotTypeSignature)
+			gotTypeSignature := ast.CXTypeSignatureRepresentationOfCXArgGet(actions.AST, gotDeclarationSpecifier)
+			gotDeclarationSpecifierFormattedString := ast.FormattedTypeGet(actions.AST, gotTypeSignature)
 
 			if gotDeclarationSpecifierFormattedString != tc.wantDeclarationSpecifierFormattedString {
 				t.Errorf("want %s, got %s", tc.wantDeclarationSpecifierFormattedString, gotDeclarationSpecifierFormattedString)
@@ -270,17 +270,17 @@ func TestTypeChecker_ParseParameterDeclaration(t *testing.T) {
 			var pkg *ast.CXPackage
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1535.
-			pkg = ast.MakePackage(actions.AST.CXProgramNameIntern(tc.pkgName))
+			pkg = ast.PackageMake(actions.AST.CXProgramNameIntern(tc.pkgName))
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1536.
-			pkgIdx := actions.AST.AddPackage(pkg)
+			pkgIdx := actions.AST.PackageAdd(pkg)
 
 			if tc.strctName != "" {
 				// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 				// Now a constructor call, site S1537.
-				strct := ast.MakeStruct(actions.AST.CXProgramNameIntern(tc.strctName))
+				strct := ast.StructMake(actions.AST.CXProgramNameIntern(tc.strctName))
 				strct.Package = ast.CXPackageIndex(pkgIdx)
-				pkg = pkg.AddStruct(actions.AST, strct)
+				pkg = pkg.StructAdd(actions.AST, strct)
 			}
 
 			if tc.pkgName != "" {
@@ -289,9 +289,9 @@ func TestTypeChecker_ParseParameterDeclaration(t *testing.T) {
 
 			var gotParameterDeclaration *ast.CXArgument
 			gotParameterDeclaration, gotErr := type_checker.ParseParameterDeclaration(actions.AST, []byte(tc.testString), pkg, actions.AST.CXProgramSourceFileIntern(tc.fileName), tc.lineno)
-			gotParameterDeclarationFormattedName := ast.GetFormattedName(actions.AST, gotParameterDeclaration, false, pkg)
-			gotTypeSignature := ast.GetCXTypeSignatureRepresentationOfCXArg(actions.AST, gotParameterDeclaration)
-			gotParameterDeclarationFormattedType := ast.GetFormattedType(actions.AST, gotTypeSignature)
+			gotParameterDeclarationFormattedName := ast.FormattedNameGet(actions.AST, gotParameterDeclaration, false, pkg)
+			gotTypeSignature := ast.CXTypeSignatureRepresentationOfCXArgGet(actions.AST, gotParameterDeclaration)
+			gotParameterDeclarationFormattedType := ast.FormattedTypeGet(actions.AST, gotTypeSignature)
 			gotParameterDeclarationFormattedString := gotParameterDeclarationFormattedName + " " + gotParameterDeclarationFormattedType
 
 			if gotParameterDeclarationFormattedString != tc.wantParameterDeclarationFormattedString {
@@ -369,7 +369,7 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 				for _, pkgIdx := range program.Packages {
 					// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 					// Now an arena getter, site S1540.
-					pkg, err := program.GetPackageFromArray(pkgIdx)
+					pkg, err := program.PackageFromArrayGet(pkgIdx)
 					if err != nil {
 						panic(err)
 					}
@@ -381,7 +381,7 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 					for _, impIdx := range pkg.Imports {
 						// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 						// Now an arena getter, site S1541.
-						impPkg, err := program.GetPackageFromArray(impIdx)
+						impPkg, err := program.PackageFromArrayGet(impIdx)
 						if err != nil {
 							panic(err)
 						}
@@ -566,7 +566,7 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 			// Index is the global's position in its package, since the
 			// native packages register type signatures before main.
 			for _, wantGlobal := range tc.globalTypeSignatures {
-				pkg, err := program.GetPackage(program.CXProgramNameIntern(wantGlobal.Package))
+				pkg, err := program.PackageGet(program.CXProgramNameIntern(wantGlobal.Package))
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -576,10 +576,10 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 				for i, globalIdx := range pkg.Globals.Fields {
 					// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 					// Now an arena getter, site S1544.
-					gotGlobal := program.GetCXTypeSignatureFromArray(globalIdx)
+					gotGlobal := program.CXTypeSignatureFromArrayGet(globalIdx)
 					if program.CXProgramNameText(gotGlobal.Name) == wantGlobal.Name {
 						gotIndex = i
-						gotGlobalType = ast.GetFormattedType(actions.AST, gotGlobal)
+						gotGlobalType = ast.FormattedTypeGet(actions.AST, gotGlobal)
 						break
 					}
 				}
@@ -733,7 +733,7 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 
 					// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 					// Now an arena getter, site S1548.
-					pkg, err := program.GetPackageFromArray(pkgIdx)
+					pkg, err := program.PackageFromArrayGet(pkgIdx)
 					gotPkgName := pkg.Name
 
 					if err != nil {
@@ -762,13 +762,13 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 
 									// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 									// Now an arena getter, site S1549.
-									gotField := program.GetCXTypeSignatureFromArray(gotFieldIdx)
+									gotField := program.CXTypeSignatureFromArrayGet(gotFieldIdx)
 									var gotFieldType string
 									var gotFieldIndex int
 
 									if program.CXProgramNameText(gotField.Name) == wantField.Name {
 
-										gotFieldType = ast.GetFormattedType(actions.AST, gotField)
+										gotFieldType = ast.FormattedTypeGet(actions.AST, gotField)
 
 										ast3 += fmt.Sprintf("want field %d. %s %s, got %d. %s %s\n", wantField.Index, wantField.Name, wantField.Type, gotFieldIndex, program.CXProgramNameText(gotField.Name), gotFieldType)
 
@@ -919,7 +919,7 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 
 					// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 					// Now an arena getter, site S1552.
-					pkg, err := program.GetPackageFromArray(pkgIdx)
+					pkg, err := program.PackageFromArrayGet(pkgIdx)
 
 					if err != nil {
 						t.Log(err)
@@ -932,8 +932,8 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 						var inps bytes.Buffer
 						var outs bytes.Buffer
 
-						getFormattedParam(program, gotFunc.GetInputs(program), pkg, &inps)
-						getFormattedParam(program, gotFunc.GetOutputs(program), pkg, &outs)
+						getFormattedParam(program, gotFunc.InputsGet(program), pkg, &inps)
+						getFormattedParam(program, gotFunc.OutputsGet(program), pkg, &outs)
 
 						gotFuncInputs = inps.String()
 						gotFuncOutputs = outs.String()
@@ -1237,7 +1237,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 			program := actions.AST
 
 			for _, wantPkg := range tc.wantProgram {
-				gotPkg, err := program.GetPackage(program.CXProgramNameIntern(wantPkg.Name))
+				gotPkg, err := program.PackageGet(program.CXProgramNameIntern(wantPkg.Name))
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -1254,12 +1254,12 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					for _, globalIdx := range gotPkg.Globals.Fields {
 						// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 						// Now an arena getter, site S1554.
-						gotGlobal := program.GetCXTypeSignatureFromArray(globalIdx)
+						gotGlobal := program.CXTypeSignatureFromArrayGet(globalIdx)
 						gotGlobalName = program.CXProgramNameText(gotGlobal.Name)
 
 						if gotGlobalName == wantGlobal.Name {
 
-							gotGlobalType = ast.GetFormattedType(program, gotGlobal)
+							gotGlobalType = ast.FormattedTypeGet(program, gotGlobal)
 
 							if gotGlobalType == wantGlobal.Type {
 								match = true
@@ -1294,10 +1294,10 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 
 									// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 									// Now an arena getter, site S1556.
-									gotField := program.GetCXTypeSignatureFromArray(gotFieldIdx)
+									gotField := program.CXTypeSignatureFromArrayGet(gotFieldIdx)
 									var gotFieldType string
 
-									gotFieldType = ast.GetFormattedType(program, gotField)
+									gotFieldType = ast.FormattedTypeGet(program, gotField)
 
 									if program.CXProgramNameText(gotField.Name) == wantField.Name {
 
@@ -1346,8 +1346,8 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 						var inps bytes.Buffer
 						var outs bytes.Buffer
 
-						getFormattedParam(program, gotFunc.GetInputs(program), gotPkg, &inps)
-						getFormattedParam(program, gotFunc.GetOutputs(program), gotPkg, &outs)
+						getFormattedParam(program, gotFunc.InputsGet(program), gotPkg, &inps)
+						getFormattedParam(program, gotFunc.OutputsGet(program), gotPkg, &outs)
 
 						gotFuncInputs = inps.String()
 						gotFuncOutputs = outs.String()
@@ -1377,7 +1377,7 @@ func getFormattedParam(prgrm *ast.CXProgram, paramTypeSigIdxs []ast.CXTypeSignat
 	for i, paramTypeSigIdx := range paramTypeSigIdxs {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S1558.
-		paramTypeSig := prgrm.GetCXTypeSignatureFromArray(paramTypeSigIdx)
+		paramTypeSig := prgrm.CXTypeSignatureFromArrayGet(paramTypeSigIdx)
 
 		// Checking if this argument comes from an imported package.
 		externalPkg := false
@@ -1388,9 +1388,9 @@ func getFormattedParam(prgrm *ast.CXProgram, paramTypeSigIdxs []ast.CXTypeSignat
 		if paramTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1559.
-			param := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(paramTypeSig.Meta))
+			param := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(paramTypeSig.Meta))
 
-			buf.WriteString(fmt.Sprintf("%s %s", ast.GetFormattedName(prgrm, param, externalPkg, pkg), ast.GetFormattedType(prgrm, paramTypeSig)))
+			buf.WriteString(fmt.Sprintf("%s %s", ast.FormattedNameGet(prgrm, param, externalPkg, pkg), ast.FormattedTypeGet(prgrm, paramTypeSig)))
 		} else {
 			name := prgrm.CXProgramNameText(paramTypeSig.Name)
 
@@ -1404,7 +1404,7 @@ func getFormattedParam(prgrm *ast.CXProgram, paramTypeSigIdxs []ast.CXTypeSignat
 				name = fmt.Sprintf("%s.%s", prgrm.CXProgramNameText(pkg.Name), name)
 			}
 
-			buf.WriteString(fmt.Sprintf("%s %s", name, ast.GetFormattedType(prgrm, paramTypeSig)))
+			buf.WriteString(fmt.Sprintf("%s %s", name, ast.FormattedTypeGet(prgrm, paramTypeSig)))
 		}
 
 		if i != len(paramTypeSigIdxs)-1 {

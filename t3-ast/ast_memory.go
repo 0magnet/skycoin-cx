@@ -127,10 +127,10 @@ func ProgramMemoryRelease(prgrm *CXProgram) {
 	prgrm.Heap.Collector = gc.GCState{}
 }
 
-// ResizeMemory sets the heap of prgrm to newMemSize bytes, at most its cap.
+// MemoryResize sets the heap of prgrm to newMemSize bytes, at most its cap.
 // The heap grows into the capacity of prgrm.Memory, which zeroes the new
 // bytes, and shrinks by reslicing.
-func ResizeMemory(prgrm *CXProgram, newMemSize types.Pointer, expand bool) {
+func MemoryResize(prgrm *CXProgram, newMemSize types.Pointer, expand bool) {
 	heapCap := HeapCap(prgrm)
 	if newMemSize > heapCap {
 		newMemSize = heapCap
@@ -157,13 +157,13 @@ func ResizeMemory(prgrm *CXProgram, newMemSize types.Pointer, expand bool) {
 	prgrm.Heap.Size = newMemSize
 }
 
-// AllocateSeq allocates size bytes on the heap and returns their address.
+// SequenceAllocate allocates size bytes on the heap and returns their address.
 // It never collects. When the heap is full it grows it, up to the heap
 // cap, and past that panics with RuntimeOutOfMemory. The bytes count toward
 // Heap.Pressure, which the next GarbageCollectorCheck reads.
 // GCREACH: grows the heap and adds to the GC pressure,
 // see docs/GarbageCollector.md.
-func AllocateSeq(prgrm *CXProgram, size types.Pointer) types.Pointer {
+func SequenceAllocate(prgrm *CXProgram, size types.Pointer) types.Pointer {
 	address := prgrm.Heap.Pointer
 	free := address + size
 	if free > prgrm.Heap.Size {
@@ -173,7 +173,7 @@ func AllocateSeq(prgrm *CXProgram, size types.Pointer) types.Pointer {
 		// Growing to leave MIN_HEAP_FREE_RATIO free keeps the next
 		// allocations from growing it again before the next collection.
 		grown := max(free, types.Cast_f32_to_ptr(float32(free)/(1.0-constants.MIN_HEAP_FREE_RATIO)))
-		ResizeMemory(prgrm, grown, true)
+		MemoryResize(prgrm, grown, true)
 	}
 	prgrm.Heap.Pointer = free
 	prgrm.Heap.Pressure += size
@@ -186,36 +186,36 @@ func HeapOutOfMemory(prgrm *CXProgram, request uint64) {
 	panic(RuntimeOutOfMemory{RuntimeOutOfMemoryRequest: request, RuntimeOutOfMemoryTaken: prgrm.Heap.Pointer, RuntimeOutOfMemoryCap: HeapCap(prgrm)})
 }
 
-// AllocateStr returns a new str object holding data. It writes the object
+// StrAllocate returns a new str object holding data. It writes the object
 // after the allocation, which may give prgrm a new Memory.
-// GCREACH: allocates through AllocateSeq, which adds to the GC pressure,
+// GCREACH: allocates through SequenceAllocate, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
 // VIOLATION STRHOT-281: B, only the boundary opcodes use Go strings, #412.
-func AllocateStr(prgrm *CXProgram, text string) types.Pointer {
+func StrAllocate(prgrm *CXProgram, text string) types.Pointer {
 	size := types.OBJECT_HEADER_SIZE + types.Cast_int_to_ptr(len(text))
-	object := AllocateSeq(prgrm, size)
+	object := SequenceAllocate(prgrm, size)
 	types.Write_obj_size(prgrm.Memory, object, size)
 	copy(prgrm.Memory[object+types.OBJECT_HEADER_SIZE:object+size], text)
 	return object
 }
 
-// AllocateStrAt writes a new str object holding data and stores its address
+// StrAllocateAt writes a new str object holding data and stores its address
 // at address. Nothing collects inside it, so address stays valid.
-// GCREACH: allocates through AllocateSeq, which adds to the GC pressure,
+// GCREACH: allocates through SequenceAllocate, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
 // VIOLATION STRHOT-282: B, only the boundary opcodes use Go strings, #412.
-func AllocateStrAt(prgrm *CXProgram, address types.Pointer, text string) {
-	types.Write_ptr(prgrm.Memory, address, AllocateStr(prgrm, text))
+func StrAllocateAt(prgrm *CXProgram, address types.Pointer, text string) {
+	types.Write_ptr(prgrm.Memory, address, StrAllocate(prgrm, text))
 }
 
-// AllocateStrBytesAt writes a new str object holding first followed by second
+// StrBytesAllocateAt writes a new str object holding first followed by second
 // and stores its address at address. Both may be views into prgrm.Memory,
 // which keeps its array while the heap grows.
-// GCREACH: allocates through AllocateSeq, which adds to the GC pressure,
+// GCREACH: allocates through SequenceAllocate, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
-func AllocateStrBytesAt(prgrm *CXProgram, address types.Pointer, first []byte, second []byte) {
+func StrBytesAllocateAt(prgrm *CXProgram, address types.Pointer, first []byte, second []byte) {
 	size := types.OBJECT_HEADER_SIZE + types.Cast_int_to_ptr(len(first)+len(second))
-	object := AllocateSeq(prgrm, size)
+	object := SequenceAllocate(prgrm, size)
 	types.Write_obj_size(prgrm.Memory, object, size)
 	payload := prgrm.Memory[object+types.OBJECT_HEADER_SIZE : object+size]
 	copy(payload[copy(payload, first):], second)

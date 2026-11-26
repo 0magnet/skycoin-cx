@@ -46,8 +46,8 @@ func CXTypeSignatureStructTakesAddress(prgrm *CXProgram, out *CXTypeSignature, i
 	}
 	// A field such as b.p is the pointer when it is last.
 	pointer := out.Type == TYPE_POINTER_STRUCT && !out.Deref
-	if fields := prgrm.GetCXTypeSignatureStructFromArray(out.Meta).Fields; len(fields) > 0 {
-		pointer = cxArgumentPointerField(prgrm.GetCXArgFromArray(fields[len(fields)-1]))
+	if fields := prgrm.CXTypeSignatureStructFromArrayGet(out.Meta).Fields; len(fields) > 0 {
+		pointer = cxArgumentPointerField(prgrm.CXArgFromArrayGet(fields[len(fields)-1]))
 	}
 	return pointer && !CXTypeSignaturePointerValue(prgrm, input)
 }
@@ -62,8 +62,8 @@ func CXTypeSignaturePointerValue(prgrm *CXProgram, sig *CXTypeSignature) bool {
 	case TYPE_STRUCT, TYPE_POINTER_STRUCT:
 		// A field access such as b.p is decided by its last field. Deref of
 		// rb.p reads rb, not the field.
-		if fields := prgrm.GetCXTypeSignatureStructFromArray(sig.Meta).Fields; len(fields) > 0 {
-			return cxArgumentPointerField(prgrm.GetCXArgFromArray(fields[len(fields)-1]).GetAssignmentElement(prgrm))
+		if fields := prgrm.CXTypeSignatureStructFromArrayGet(sig.Meta).Fields; len(fields) > 0 {
+			return cxArgumentPointerField(prgrm.CXArgFromArrayGet(fields[len(fields)-1]).AssignmentElementGet(prgrm))
 		}
 		return sig.Type == TYPE_POINTER_STRUCT && !sig.Deref
 	}
@@ -74,7 +74,7 @@ func CXTypeSignaturePointerValue(prgrm *CXProgram, sig *CXTypeSignature) bool {
 	case TYPE_POINTER_ATOMIC, TYPE_POINTER_ARRAY_ATOMIC, TYPE_POINTER_SLICE_ATOMIC:
 		return true
 	case TYPE_CXARGUMENT_DEPRECATE:
-		elt := prgrm.GetCXArgFromArray(CXArgumentIndex(sig.Meta)).GetAssignmentElement(prgrm)
+		elt := prgrm.CXArgFromArrayGet(CXArgumentIndex(sig.Meta)).AssignmentElementGet(prgrm)
 		if elt.PointerTyped() {
 			return true
 		}
@@ -129,24 +129,24 @@ Note: Low priority for deprecation
 // ----------------------------------------------------------------
 //                             `CXArgument` Getters
 
-// GetAssignmentElement ...
-func (arg *CXArgument) GetAssignmentElement(prgrm *CXProgram) *CXArgument {
+// AssignmentElementGet ...
+func (arg *CXArgument) AssignmentElementGet(prgrm *CXProgram) *CXArgument {
 	if len(arg.Fields) > 0 {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0068.
-		return prgrm.GetCXArgFromArray(arg.Fields[len(arg.Fields)-1]).GetAssignmentElement(prgrm)
+		return prgrm.CXArgFromArrayGet(arg.Fields[len(arg.Fields)-1]).AssignmentElementGet(prgrm)
 	}
 	return arg
 
 }
 
-// GetType ...
-func (arg *CXArgument) GetType(prgrm *CXProgram) types.Code {
+// TypeGet ...
+func (arg *CXArgument) TypeGet(prgrm *CXProgram) types.Code {
 	fieldCount := len(arg.Fields)
 	if fieldCount > 0 {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0069.
-		return prgrm.GetCXArgFromArray(arg.Fields[fieldCount-1]).GetType(prgrm)
+		return prgrm.CXArgFromArrayGet(arg.Fields[fieldCount-1]).TypeGet(prgrm)
 	}
 
 	if arg.Type == types.POINTER {
@@ -155,7 +155,7 @@ func (arg *CXArgument) GetType(prgrm *CXProgram) types.Code {
 	return arg.Type
 }
 
-func (arg *CXArgument) GetSize() types.Pointer {
+func (arg *CXArgument) SizeGet() types.Pointer {
 	if arg.Type != types.I8 {
 		return arg.Type.Size()
 	}
@@ -166,14 +166,14 @@ func (arg *CXArgument) GetSize() types.Pointer {
 // ----------------------------------------------------------------
 //                     `CXArgument` Member handling
 
-// SetPackage sets CX package `pkg` of CX argument `arg`.
-func (arg *CXArgument) SetPackage(pkg *CXPackage) *CXArgument {
+// PackageSet sets CX package `pkg` of CX argument `arg`.
+func (arg *CXArgument) PackageSet(pkg *CXPackage) *CXArgument {
 	arg.Package = CXPackageIndex(pkg.Index)
 	return arg
 }
 
-// SetType ...
-func (arg *CXArgument) SetType(typeCode types.Code) *CXArgument {
+// TypeSet ...
+func (arg *CXArgument) TypeSet(typeCode types.Code) *CXArgument {
 	arg.Type = typeCode
 	size := typeCode.Size()
 	arg.Size = size
@@ -181,10 +181,10 @@ func (arg *CXArgument) SetType(typeCode types.Code) *CXArgument {
 	return arg
 }
 
-// MakePointer takes an already defined `CXArgument` and turns it into a pointer.
+// PointerMake takes an already defined `CXArgument` and turns it into a pointer.
 // Only used once, deprecate
 // TODO: only used by HTTP, create a better module system
-func MakePointer(arg *CXArgument) *CXArgument {
+func PointerMake(arg *CXArgument) *CXArgument {
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_POINTER)
 	arg.PointerTargetType = arg.Type
 	arg.Type = types.POINTER
@@ -193,18 +193,18 @@ func MakePointer(arg *CXArgument) *CXArgument {
 	return arg
 }
 
-// MakeStructParameter helper for creating a struct parameter. It creates a
+// StructParameterMake helper for creating a struct parameter. It creates a
 // `CXArgument` named `argName`, that represents a structure instane of
 // `strctName`, from package `pkgName`.
 // OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 // Now a constructor, site S0072.
-func MakeStructParameter(prgrm *CXProgram, pkgName, strctName, argName string) *CXArgument {
-	pkg, err := prgrm.GetPackage(prgrm.CXProgramNameIntern(pkgName))
+func StructParameterMake(prgrm *CXProgram, pkgName, strctName, argName string) *CXArgument {
+	pkg, err := prgrm.PackageGet(prgrm.CXProgramNameIntern(pkgName))
 	if err != nil {
 		panic(err)
 	}
 
-	strct, err := pkg.GetStruct(prgrm, prgrm.CXProgramNameIntern(strctName))
+	strct, err := pkg.StructGet(prgrm, prgrm.CXProgramNameIntern(strctName))
 	if err != nil {
 		panic(err)
 	}
@@ -212,9 +212,9 @@ func MakeStructParameter(prgrm *CXProgram, pkgName, strctName, argName string) *
 	// Natives are shared by every program, so this argument belongs to none.
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S0073.
-	arg := nativeArgument(prgrm.CXProgramNameIntern(argName)).SetType(types.STRUCT)
+	arg := nativeArgument(prgrm.CXProgramNameIntern(argName)).TypeSet(types.STRUCT)
 	// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
-	arg.Size = strct.GetStructSize(prgrm)
+	arg.Size = strct.StructSizeGet(prgrm)
 	arg.StructType = strct
 
 	return arg
@@ -254,7 +254,7 @@ func Param(typeCode types.Code) *CXArgument {
 	// Natives are shared by every program, so this argument belongs to none.
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S0077.
-	arg := nativeArgument(stringpool.StringGidNil).SetType(typeCode)
+	arg := nativeArgument(stringpool.StringGidNil).TypeSet(typeCode)
 	// arg.IsLocalDeclaration = true
 	return arg
 }
@@ -273,29 +273,29 @@ func nativeArgument(name stringpool.StringGid) *CXArgument {
 	}
 }
 
-// MakeArgument allocates an argument named name in the CXArgumentMng of
+// ArgumentMake allocates an argument named name in the CXArgumentMng of
 // prgrm, with a debug record for fileName and fileLine, and returns its Gid
 // and the pointer to fill it through.
-func MakeArgument(prgrm *CXProgram, name stringpool.StringGid, fileName SourceFileGid, fileLine int) (CXArgumentGid, *CXArgument) {
+func ArgumentMake(prgrm *CXProgram, name stringpool.StringGid, fileName SourceFileGid, fileLine int) (CXArgumentGid, *CXArgument) {
 	argDetailsGid := argumentDebugAlloc(prgrm, fileName, fileLine)
-	gid, arg := prgrm.AllocCXArgument()
+	gid, arg := prgrm.CXArgumentAlloc()
 	arg.Name = name
 	arg.Package = -1
 	arg.ArgDetails = argDetailsGid
 	return gid, arg
 }
 
-// MakeField allocates an argument of type typeCode like MakeArgument.
-func MakeField(prgrm *CXProgram, name stringpool.StringGid, typeCode types.Code, fileName SourceFileGid, fileLine int) (CXArgumentGid, *CXArgument) {
-	gid, arg := MakeArgument(prgrm, name, fileName, fileLine)
+// FieldMake allocates an argument of type typeCode like ArgumentMake.
+func FieldMake(prgrm *CXProgram, name stringpool.StringGid, typeCode types.Code, fileName SourceFileGid, fileLine int) (CXArgumentGid, *CXArgument) {
+	gid, arg := ArgumentMake(prgrm, name, fileName, fileLine)
 	arg.Type = typeCode
 	return gid, arg
 }
 
-// MakeGlobal allocates a global of type typeCode like MakeArgument and gives
+// GlobalMake allocates a global of type typeCode like ArgumentMake and gives
 // it the next offset in the heap segment.
-func MakeGlobal(prgrm *CXProgram, name stringpool.StringGid, typeCode types.Code, fileName SourceFileGid, fileLine int) (CXArgumentGid, *CXArgument) {
-	gid, global := MakeField(prgrm, name, typeCode, fileName, fileLine)
+func GlobalMake(prgrm *CXProgram, name stringpool.StringGid, typeCode types.Code, fileName SourceFileGid, fileLine int) (CXArgumentGid, *CXArgument) {
+	gid, global := FieldMake(prgrm, name, typeCode, fileName, fileLine)
 	global.Size = typeCode.Size()
 	global.Offset = globals.HeapOffset
 	globals.HeapOffset += global.Size

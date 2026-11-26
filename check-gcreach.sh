@@ -33,9 +33,9 @@ function reach(line) {
 		return FILENAME ~ /^(t4-execute|t5-cx-runtime-core|t4-cx-compiler-lower|t4-opcodes)\//
 	if (line ~ /"github\.com\/skycoin\/skycoin-cx\/t2-cx-runtime-gc"/)
 		return 0
-	if (line ~ /^func (\([^)]*\) )?(GarbageCollectorCheck|GarbageCollectorTrigger|AllocateSeq|AllocateStr|AllocateStrAt|AllocateStrBytesAt|EscapedAllocate|SliceResizeEx|ResizeMemory|gcFrameRoots|gcGlobalRoots)\(/)
+	if (line ~ /^func (\([^)]*\) )?(GarbageCollectorCheck|GarbageCollectorTrigger|SequenceAllocate|StrAllocate|StrAllocateAt|StrBytesAllocateAt|EscapedAllocate|SliceResizeEx|MemoryResize|gcFrameRoots|gcGlobalRoots)\(/)
 		return 0
-	if (line ~ /(^|[^A-Za-z0-9_])(GarbageCollectorCheck|GarbageCollectorTrigger|GarbageCollectorCollect|AllocateSeq|AllocateStr|AllocateStrAt|AllocateStrBytesAt|EscapedAllocate|SliceResizeEx|ResizeMemory|gcFrameRoots|gcGlobalRoots)\(/)
+	if (line ~ /(^|[^A-Za-z0-9_])(GarbageCollectorCheck|GarbageCollectorTrigger|GarbageCollectorCollect|SequenceAllocate|StrAllocate|StrAllocateAt|StrBytesAllocateAt|EscapedAllocate|SliceResizeEx|MemoryResize|gcFrameRoots|gcGlobalRoots)\(/)
 		return 1
 	if (line ~ /(^|[^A-Za-z0-9_])(ListOfSlots|ListOfPointers)([^A-Za-z0-9_]|$)/)
 		return 1

@@ -12,13 +12,13 @@ type CXStructIndex int
 // ----------------------------------------------------------------
 //                             `CXStruct` Getters
 
-// GetField returns the signature of the field name of strct. Its
-// GetStructType and GetOffset give what a caller needs of the field.
-func (strct *CXStruct) GetField(prgrm *CXProgram, name stringpool.StringGid) (*CXTypeSignature, error) {
+// FieldGet returns the signature of the field name of strct. Its
+// StructTypeGet and OffsetGet give what a caller needs of the field.
+func (strct *CXStruct) FieldGet(prgrm *CXProgram, name stringpool.StringGid) (*CXTypeSignature, error) {
 	for _, typeSignatureIdx := range strct.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0254.
-		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+		typeSignature := prgrm.CXTypeSignatureFromArrayGet(typeSignatureIdx)
 		if typeSignature.Name == name {
 			return typeSignature, nil
 		}
@@ -30,10 +30,10 @@ func (strct *CXStruct) GetField(prgrm *CXProgram, name stringpool.StringGid) (*C
 // ----------------------------------------------------------------
 //                     `CXStruct` Member handling
 
-// MakeStruct ...
+// StructMake ...
 // OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 // Now a constructor, site S0261.
-func MakeStruct(name stringpool.StringGid) *CXStruct {
+func StructMake(name stringpool.StringGid) *CXStruct {
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now a heap literal, site S0262.
 	return &CXStruct{
@@ -41,23 +41,23 @@ func MakeStruct(name stringpool.StringGid) *CXStruct {
 	}
 }
 
-// AddField adds the field cxArgument to strct. It takes a managed cxArgument,
+// FieldAdd adds the field cxArgument to strct. It takes a managed cxArgument,
 // which it releases when the signature does not name it.
-func (strct *CXStruct) AddField(prgrm *CXProgram, cxArgument *CXArgument) *CXStruct {
+func (strct *CXStruct) FieldAdd(prgrm *CXProgram, cxArgument *CXArgument) *CXStruct {
 	// Check if field already exist
 	for _, typeSignatureIdx := range strct.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0263.
-		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+		typeSignature := prgrm.CXTypeSignatureFromArrayGet(typeSignatureIdx)
 		if typeSignature.Name == cxArgument.Name {
 			prgrm.CXProgramCompileErrorAddDebug(CompileErrorCodeStructFieldDuplicate, cxArgument.ArgDetails, CompileErrorOperands{int64(cxArgument.Name)})
-			prgrm.ReleaseCXArgBuilder(cxArgument)
+			prgrm.CXArgBuilderRelease(cxArgument)
 			return strct
 		}
 	}
 
-	typeSignatureIdx := AllocCXTypeSignatureOfCXArgForStructs(prgrm, cxArgument)
-	prgrm.ReleaseCXArgUnlessNamed(cxArgument, typeSignatureIdx)
+	typeSignatureIdx := CXTypeSignatureOfCXArgForStructsAlloc(prgrm, cxArgument)
+	prgrm.CXArgUnlessNamedRelease(cxArgument, typeSignatureIdx)
 	strct.Fields = append(strct.Fields, typeSignatureIdx)
 
 	// TODO: Found out the effect and completely remove this.
@@ -71,31 +71,31 @@ func (strct *CXStruct) AddField(prgrm *CXProgram, cxArgument *CXArgument) *CXStr
 	// 	if lastTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE && currentTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 	// 		lastFldIdx := lastTypeSignature.Meta
 	// 		currFldIdx := currentTypeSignature.Meta
-	// 		prgrm.GetCXArg(CXArgumentIndex(currFldIdx)).Offset = prgrm.GetCXArg(CXArgumentIndex(lastFldIdx)).Offset + prgrm.GetCXArg(CXArgumentIndex(lastFldIdx)).TotalSize
+	// 		prgrm.CXArgGet(CXArgumentIndex(currFldIdx)).Offset = prgrm.CXArgGet(CXArgumentIndex(lastFldIdx)).Offset + prgrm.CXArgGet(CXArgumentIndex(lastFldIdx)).TotalSize
 	// 	} else if lastTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE && currentTypeSignature.Type != TYPE_CXARGUMENT_DEPRECATE {
 	// 		lastFldIdx := lastTypeSignature.Meta
-	// 		currentTypeSignature.Offset = prgrm.GetCXArg(CXArgumentIndex(lastFldIdx)).Offset + prgrm.GetCXArg(CXArgumentIndex(lastFldIdx)).TotalSize
+	// 		currentTypeSignature.Offset = prgrm.CXArgGet(CXArgumentIndex(lastFldIdx)).Offset + prgrm.CXArgGet(CXArgumentIndex(lastFldIdx)).TotalSize
 	// 	} else if lastTypeSignature.Type != TYPE_CXARGUMENT_DEPRECATE && currentTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
 	// 		currFldIdx := currentTypeSignature.Meta
-	// 		prgrm.GetCXArg(CXArgumentIndex(currFldIdx)).Offset = lastTypeSignature.Offset + lastTypeSignature.GetSize(prgrm, false)
+	// 		prgrm.CXArgGet(CXArgumentIndex(currFldIdx)).Offset = lastTypeSignature.Offset + lastTypeSignature.SizeGet(prgrm, false)
 	// 	} else if lastTypeSignature.Type != TYPE_CXARGUMENT_DEPRECATE && currentTypeSignature.Type != TYPE_CXARGUMENT_DEPRECATE {
-	// 		currentTypeSignature.Offset = lastTypeSignature.Offset + lastTypeSignature.GetSize(prgrm, false)
+	// 		currentTypeSignature.Offset = lastTypeSignature.Offset + lastTypeSignature.SizeGet(prgrm, false)
 	// 	}
 	// }
 
 	return strct
 }
 
-// AddField ...
+// FieldAdd ...
 func (strct *CXStruct) AddField_TypeSignature(prgrm *CXProgram, fieldIdx CXTypeSignatureIndex) *CXStruct {
 	// Check if field already exist
 	for _, typeSignatureIdx := range strct.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0265.
-		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+		typeSignature := prgrm.CXTypeSignatureFromArrayGet(typeSignatureIdx)
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0266.
-		field := prgrm.GetCXTypeSignatureFromArray(fieldIdx)
+		field := prgrm.CXTypeSignatureFromArrayGet(fieldIdx)
 		if typeSignature.Name == field.Name {
 			prgrm.CXProgramCompileErrorAddDebug(CompileErrorCodeStructFieldDuplicate, field.ArgDetails, CompileErrorOperands{int64(field.Name)})
 			return strct
@@ -116,21 +116,21 @@ func (strct *CXStruct) AddField_CXAtomicOps(prgrm *CXProgram, fieldIdx CXTypeSig
 func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx CXArgumentIndex) *CXStruct {
 	// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 	// Now an arena getter, site S0267.
-	cxArgument := prgrm.GetCXArgFromArray(cxArgIdx)
+	cxArgument := prgrm.CXArgFromArrayGet(cxArgIdx)
 
 	// Check if field already exist
 	for _, typeSignatureIdx := range strct.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0268.
-		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+		typeSignature := prgrm.CXTypeSignatureFromArrayGet(typeSignatureIdx)
 		if typeSignature.Name == cxArgument.Name {
 			prgrm.CXProgramCompileErrorAddDebug(CompileErrorCodeStructFieldDuplicate, cxArgument.ArgDetails, CompileErrorOperands{int64(cxArgument.Name)})
 			return strct
 		}
 	}
 
-	newCXTypeSignatureIdx := AllocCXTypeSignatureOfCXArg(prgrm, cxArgument)
-	prgrm.ReleaseCXArgUnlessNamed(cxArgument, newCXTypeSignatureIdx)
+	newCXTypeSignatureIdx := CXTypeSignatureOfCXArgAlloc(prgrm, cxArgument)
+	prgrm.CXArgUnlessNamedRelease(cxArgument, newCXTypeSignatureIdx)
 	strct.Fields = append(strct.Fields, newCXTypeSignatureIdx)
 
 	return strct
@@ -141,7 +141,7 @@ func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx C
 // 	if len(strct.Fields) > 0 {
 // 		lenFlds := len(strct.Fields)
 // 		for i, fldIdx := range strct.Fields {
-// 			if prgrm.GetCXArg(CXArgumentIndex(fldIdx)).Name == fldName {
+// 			if prgrm.CXArgGet(CXArgumentIndex(fldIdx)).Name == fldName {
 // 				if i == lenFlds-1 {
 // 					strct.Fields = strct.Fields[:len(strct.Fields)-1]
 // 				} else {
@@ -153,13 +153,13 @@ func (strct *CXStruct) AddField_Globals_CXAtomicOps(prgrm *CXProgram, cxArgIdx C
 // 	}
 // }
 
-func (strct *CXStruct) GetStructSize(prgrm *CXProgram) types.Pointer {
+func (strct *CXStruct) StructSizeGet(prgrm *CXProgram) types.Pointer {
 	var structSize types.Pointer
 	for _, typeSignatureIdx := range strct.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0270.
-		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
-		structSize += typeSignature.GetSize(prgrm, false)
+		typeSignature := prgrm.CXTypeSignatureFromArrayGet(typeSignatureIdx)
+		structSize += typeSignature.SizeGet(prgrm, false)
 	}
 
 	return structSize
@@ -170,7 +170,7 @@ func (strct *CXStruct) GetStructSize(prgrm *CXProgram) types.Pointer {
 func StructFieldOffset(prgrm *CXProgram, strct *CXStruct, index int) types.Pointer {
 	var offset types.Pointer
 	for _, fieldIdx := range strct.Fields[:index] {
-		offset += prgrm.GetCXTypeSignatureFromArray(fieldIdx).Offset
+		offset += prgrm.CXTypeSignatureFromArrayGet(fieldIdx).Offset
 	}
 	return offset
 }

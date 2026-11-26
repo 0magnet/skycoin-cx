@@ -51,7 +51,7 @@ func (cxe CXExpression) TypeArrayLiteral() bool {
 func (cxe CXExpression) BreakOperator(prgrm *CXProgram) bool {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S0120.
-	expression, err := prgrm.GetCXAtomicOp(cxe.Index)
+	expression, err := prgrm.CXAtomicOpGet(cxe.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -64,7 +64,7 @@ func (cxe CXExpression) BreakOperator(prgrm *CXProgram) bool {
 func (cxe CXExpression) ContinueOperator(prgrm *CXProgram) bool {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S0122.
-	expression, err := prgrm.GetCXAtomicOp(cxe.Index)
+	expression, err := prgrm.CXAtomicOpGet(cxe.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -77,7 +77,7 @@ func (cxe CXExpression) ContinueOperator(prgrm *CXProgram) bool {
 func (cxe CXExpression) UndTyped(prgrm *CXProgram) bool {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S0124.
-	expression, err := prgrm.GetCXAtomicOp(cxe.Index)
+	expression, err := prgrm.CXAtomicOpGet(cxe.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -90,10 +90,10 @@ func (cxe CXExpression) UndTyped(prgrm *CXProgram) bool {
 // ----------------------------------------------------------------
 //                             `CXExpression` Getters
 
-func (cxe CXExpression) GetLabel(prgrm *CXProgram) stringpool.StringGid {
+func (cxe CXExpression) LabelGet(prgrm *CXProgram) stringpool.StringGid {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S0126.
-	expression, err := prgrm.GetCXAtomicOp(cxe.Index)
+	expression, err := prgrm.CXAtomicOpGet(cxe.Index)
 	if err != nil {
 		panic(err)
 	}

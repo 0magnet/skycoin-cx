@@ -46,7 +46,7 @@ const METHOD_RESULT_PREFIX = "*mrs"
 // until every value is computed.
 const MULTIPLE_VALUE_PREFIX = "*mva"
 
-// Used in `PrintProgram` to represent literals (`CXArgument`s with no name).
+// Used in `ProgramPrint` to represent literals (`CXArgument`s with no name).
 const LITERAL_PLACEHOLDER = "*lit"
 const ID_FN = "identity"
 const INIT_FN = "initDef"

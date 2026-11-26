@@ -32,12 +32,12 @@ import (
 func AddNativeExpressionToFunction(cxprogram *cxast.CXProgram, functionName string, expressionType int) error {
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1591.
-	expCXLine := cxast.MakeCXLineExpression(cxprogram, cxast.SourceFileGidNil, -1, stringpool.StringGidNil)
+	expCXLine := cxast.CXLineExpressionMake(cxprogram, cxast.SourceFileGidNil, -1, stringpool.StringGidNil)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1592.
-	exp := cxast.MakeAtomicOperatorExpression(cxprogram, cxast.NativeFunctionOf(cxprogram, expressionType))
+	exp := cxast.AtomicOperatorExpressionMake(cxprogram, cxast.NativeFunctionOf(cxprogram, expressionType))
 
-	cxAtomicOp, _, err := cxprogram.GetOperation(exp)
+	cxAtomicOp, _, err := cxprogram.OperationGet(exp)
 	if err != nil {
 		panic(err)
 	}
@@ -50,8 +50,8 @@ func AddNativeExpressionToFunction(cxprogram *cxast.CXProgram, functionName stri
 		return err
 	}
 
-	fn.AddExpression(cxprogram, expCXLine)
-	fn.AddExpression(cxprogram, exp)
+	fn.ExpressionAdd(cxprogram, expCXLine)
+	fn.ExpressionAdd(cxprogram, exp)
 	return nil
 }
 
@@ -86,7 +86,7 @@ func RemoveExpressionFromFunction(cxprogram *cxast.CXProgram, functionName strin
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionRelease(gid), phase 4 #346.
 	// Now a release, site S1594.
-	fn.RemoveExpression(expressionLineNumber)
+	fn.ExpressionRemove(expressionLineNumber)
 	return nil
 }
 
@@ -122,12 +122,12 @@ func RemoveExpressionFromFunction(cxprogram *cxast.CXProgram, functionName strin
 func AddNativeExpressionToFunctionByLineNumber(cxprogram *cxast.CXProgram, functionName string, expressionType, lineNumber int) error {
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1595.
-	expCXLine := cxast.MakeCXLineExpression(cxprogram, cxast.SourceFileGidNil, -1, stringpool.StringGidNil)
+	expCXLine := cxast.CXLineExpressionMake(cxprogram, cxast.SourceFileGidNil, -1, stringpool.StringGidNil)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1596.
-	exp := cxast.MakeAtomicOperatorExpression(cxprogram, cxast.NativeFunctionOf(cxprogram, expressionType))
+	exp := cxast.AtomicOperatorExpressionMake(cxprogram, cxast.NativeFunctionOf(cxprogram, expressionType))
 
-	cxAtomicOp, _, err := cxprogram.GetOperation(exp)
+	cxAtomicOp, _, err := cxprogram.OperationGet(exp)
 	if err != nil {
 		panic(err)
 	}
@@ -139,7 +139,7 @@ func AddNativeExpressionToFunctionByLineNumber(cxprogram *cxast.CXProgram, funct
 		return err
 	}
 
-	fn.AddExpressionByLineNumber(cxprogram, expCXLine, lineNumber)
-	fn.AddExpressionByLineNumber(cxprogram, exp, lineNumber+1)
+	fn.ExpressionByLineNumberAdd(cxprogram, expCXLine, lineNumber)
+	fn.ExpressionByLineNumberAdd(cxprogram, exp, lineNumber+1)
 	return nil
 }

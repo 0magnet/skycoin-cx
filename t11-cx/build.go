@@ -128,7 +128,7 @@ func buildProgramImage() ([]byte, error) {
 			actions.AST.ProgramOperationsEnabled.OpcodeSetLibraryRemove(library)
 		}
 	}
-	return ast.SerializeCXProgram(actions.AST, true, nil)
+	return ast.CXProgramSerialize(actions.AST, true, nil)
 }
 
 // buildOptionsParse splits args into the flags of cx build and the rest. It

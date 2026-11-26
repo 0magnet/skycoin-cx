@@ -13,10 +13,10 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now a constructor call, site S1427.
-	netPkg := ast.MakePackage(prgrm.CXProgramNameIntern("net"))
+	netPkg := ast.PackageMake(prgrm.CXProgramNameIntern("net"))
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now an arena insert, site S1428.
-	prgrm.AddPackage(netPkg)
+	prgrm.PackageAdd(netPkg)
 }
 
 // The constant codes of the net.Trigger* and net.Error* constants.

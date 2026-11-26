@@ -28,12 +28,12 @@ func Callback(cxprogram *ast.CXProgram, gid ast.CXFunctionGid, inputs [][]byte) 
 		cxprogram.Memory[newFP+c] = 0
 	}
 
-	newCallOperatorInputs := fn.GetInputs(cxprogram)
+	newCallOperatorInputs := fn.InputsGet(cxprogram)
 	for i, inp := range inputs {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S1247.
-		newCallOperatorInputTypeSig := cxprogram.GetCXTypeSignatureFromArray(newCallOperatorInputs[i])
-		types.WriteSlice_byte(cxprogram.Memory, ast.GetFinalOffset(cxprogram, newFP, nil, newCallOperatorInputTypeSig), inp)
+		newCallOperatorInputTypeSig := cxprogram.CXTypeSignatureFromArrayGet(newCallOperatorInputs[i])
+		types.WriteSlice_byte(cxprogram.Memory, ast.FinalOffsetGet(cxprogram, newFP, nil, newCallOperatorInputTypeSig), inp)
 	}
 
 	var maxOps = 0

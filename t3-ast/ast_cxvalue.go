@@ -156,7 +156,7 @@ func (value *CXValue) GetSlice_f64(prgrm *CXProgram) []float64 {
 func (value *CXValue) GetSlice_bytes(prgrm *CXProgram) []byte {
 	eltSize := value.Size
 	if value.TypeSignature != nil {
-		eltSize = GetDerefSizeSlice(prgrm, value.TypeSignature)
+		eltSize = DerefSizeSliceGet(prgrm, value.TypeSignature)
 	}
 	return SliceElementsGet(prgrm, types.Read_ptr(prgrm.Memory, value.Offset), eltSize)
 }
@@ -217,7 +217,7 @@ func (value *CXValue) Set_bytes(prgrm *CXProgram, newValue []byte) {
 // see docs/GarbageCollector.md.
 // VIOLATION STRHOT-030: B, only the boundary opcodes use Go strings, #412.
 func (value *CXValue) Set_str(prgrm *CXProgram, newValue string) {
-	AllocateStrAt(prgrm, value.Offset, newValue)
+	StrAllocateAt(prgrm, value.Offset, newValue)
 }
 
 // Set_str_bytes writes a new str holding data, which may be a view into
@@ -225,7 +225,7 @@ func (value *CXValue) Set_str(prgrm *CXProgram, newValue string) {
 // GCREACH: allocates a str object, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
 func (value *CXValue) Set_str_bytes(prgrm *CXProgram, newValue []byte) {
-	AllocateStrBytesAt(prgrm, value.Offset, newValue, nil)
+	StrBytesAllocateAt(prgrm, value.Offset, newValue, nil)
 }
 
 // Set_str_concat writes a new str holding first followed by second, either of
@@ -233,5 +233,5 @@ func (value *CXValue) Set_str_bytes(prgrm *CXProgram, newValue []byte) {
 // GCREACH: allocates a str object, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
 func (value *CXValue) Set_str_concat(prgrm *CXProgram, first []byte, second []byte) {
-	AllocateStrBytesAt(prgrm, value.Offset, first, second)
+	StrBytesAllocateAt(prgrm, value.Offset, first, second)
 }

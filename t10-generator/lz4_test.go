@@ -28,7 +28,7 @@ func newProgramCodec(t *testing.T) *lz4codec.Codec {
 	return c
 }
 
-// testdata/program.lz4 is SerializeCXProgram output from before the codec
+// testdata/program.lz4 is CXProgramSerialize output from before the codec
 // existed. Serialization has changed since, so the check is that
 // the codec maps those bytes to the same plain bytes and back to the same
 // compressed bytes.
@@ -61,7 +61,7 @@ func TestCompression_LZ4ProgramGolden(t *testing.T) {
 func TestSerializeDebugInfoCompressed(t *testing.T) {
 	c := newProgramCodec(t)
 	prgrm := generateSampleProgramFromCXEvolves(t, false)
-	b, err := cxast.SerializeCXProgram(prgrm, false, c)
+	b, err := cxast.CXProgramSerialize(prgrm, false, c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +92,7 @@ func TestSerializeDebugInfoCompressed(t *testing.T) {
 func TestDeserializeCompressed(t *testing.T) {
 	c := newProgramCodec(t)
 	prgrm := generateSampleProgramFromCXEvolves(t, false)
-	b, err := cxast.SerializeCXProgram(prgrm, false, c)
+	b, err := cxast.CXProgramSerialize(prgrm, false, c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +106,7 @@ func TestDeserializeCompressed(t *testing.T) {
 		t.Fatalf("got %d packages, want %d", len(got.Packages), len(prgrm.Packages))
 	}
 
-	short, err := cxast.SerializeCXProgram(prgrm, false, nil)
+	short, err := cxast.CXProgramSerialize(prgrm, false, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +134,7 @@ func TestSerializeCodecMisuse(t *testing.T) {
 		"before Init": {&lz4codec.Codec{}, lz4codec.ErrNotInitialized},
 		"after Close": {closed, lz4codec.ErrClosed},
 	} {
-		if _, err := cxast.SerializeCXProgram(prgrm, false, tc.c); !errors.Is(err, tc.want) {
+		if _, err := cxast.CXProgramSerialize(prgrm, false, tc.c); !errors.Is(err, tc.want) {
 			t.Errorf("%s: SerializeCXProgram: got %v, want %v", name, err, tc.want)
 		}
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
@@ -149,7 +149,7 @@ func TestSerializeCodecMisuse(t *testing.T) {
 // numbers, so deserializing it must fail. See #183.
 func TestDeserializeRejectsOtherVersion(t *testing.T) {
 	prgrm := generateSampleProgramFromCXEvolves(t, false)
-	b, err := cxast.SerializeCXProgram(prgrm, false, nil)
+	b, err := cxast.CXProgramSerialize(prgrm, false, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,7 +164,7 @@ func TestDeserializeRejectsOtherVersion(t *testing.T) {
 	}
 
 	prgrm.Version = 1
-	if b, err = cxast.SerializeCXProgram(prgrm, false, nil); err != nil {
+	if b, err = cxast.CXProgramSerialize(prgrm, false, nil); err != nil {
 		t.Fatal(err)
 	}
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
