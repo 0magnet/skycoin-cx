@@ -9,7 +9,6 @@ import (
 	"sort"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-assert"
-	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	// GCREACH: t3-ast owns the heap and the GC roots. core builds the program and
@@ -137,12 +136,7 @@ func CoreLibrariesMissing(prgrm *ast.CXProgram, opcodesLinked [constants.Library
 // The loader refuses such a program before it runs, so the run loop never
 // checks a library or an operation (decision D119).
 func CoreOperationRefused(prgrm *ast.CXProgram) int {
-	for _, code := range CoreOpcodesUsed(prgrm) {
-		if constants.OpcodeLibraryOf(code) != 0 && !prgrm.ProgramOperationsEnabled.OpcodeSetContains(code) {
-			return code
-		}
-	}
-	return 0
+	return prgrm.CXProgramOperationRefused()
 }
 
 // CoreOperationRefusalLine is the line a program refused for opcode code
@@ -150,13 +144,7 @@ func CoreOperationRefused(prgrm *ast.CXProgram) int {
 // position. It names the library when the run enables nothing of it, and
 // the operation otherwise.
 func CoreOperationRefusalLine(prgrm *ast.CXProgram, code int) string {
-	library := constants.OpcodeLibraryOf(code)
-	message := ast.RuntimeLibraryDisabledMessage(library)
-	if prgrm.ProgramOperationsEnabled.OpcodeSetLibraryAny(library) {
-		name := constants.LibraryOperationName(code)
-		message = "operation " + name + " is not enabled, enable it with --enable=" + name
-	}
-	return "error: " + ast.ErrorString(types.CX_RUNTIME_LIBRARY_DISABLED) + ", " + message
+	return prgrm.CXProgramOperationRefusalLine(code)
 }
 
 // CoreLibraryNames returns the names of the libraries libraries marks, in

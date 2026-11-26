@@ -323,16 +323,19 @@ func TestRunVmLibraryCallAllocs(t *testing.T) {
 		compileRunProgram(t, runBenchProgram{name: "library", source: runLibraryCallSource})
 		actions.AST.ProgramLibrariesEnabled[constants.LibraryNumberFile] = enabled
 		actions.AST.ProgramLibrariesEnabled[constants.LibraryNumberNet] = enabled
-		image, _, outside := core.ExecutorLower(actions.AST)
-		if outside != "" {
-			t.Fatalf("does not lower: %s", outside)
-		}
 		core.CoreLibrariesEnabledResolve(actions.AST)
 		if refused := core.CoreOperationRefused(actions.AST) != 0; refused == enabled {
 			t.Fatalf("enabled %v: refused %v", enabled, refused)
 		}
+		image, _, outside := core.ExecutorLower(actions.AST)
 		if !enabled {
+			if !strings.Contains(outside, "operation not enabled") {
+				t.Fatalf("not enabled: lower gives %q, want the refusal", outside)
+			}
 			continue
+		}
+		if outside != "" {
+			t.Fatalf("does not lower: %s", outside)
 		}
 		machine := vm.MachineNew(&image, core.ExecutorOutputSize)
 		want := vm.StopReturn
