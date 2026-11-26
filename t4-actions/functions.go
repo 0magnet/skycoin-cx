@@ -2943,7 +2943,7 @@ func CopyArgFields(prgrm *ast.CXProgram, symTypeSignature, argTypeSignature *ast
 	}
 
 	// This is for test-pointers when IsTypeAtomic includes types.IDENTIFIER
-	// else if sym == nil && arg != nil && symTypeSignature.PassBy != 0 && arg.Type.IsPrimitive() {
+	// else if sym == nil && arg != nil && symTypeSignature.PassBy != 0 && arg.Type.Primitive() {
 	// 	symTypeSignature.Meta = int(arg.Type)
 	// 	symTypeSignature.Offset = arg.Offset
 

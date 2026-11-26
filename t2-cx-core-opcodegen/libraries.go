@@ -51,9 +51,9 @@ func librariesGenerate() (*librariesGenerated, error) {
 		} else {
 			previous = order
 		}
-		pkg, function, ok := strings.Cut(row.Handler, ".")
+		pkg, function, ok := strings.Cut(row.GoFunction, ".")
 		if !ok || pkg != packages[row.LibraryNumber] || function == "" || function[0] < 'A' || function[0] > 'Z' {
-			return nil, fmt.Errorf("library definition %q: handler %q is not an exported function of package %s", row.Name, row.Handler, packages[row.LibraryNumber])
+			return nil, fmt.Errorf("library definition %q: handler %q is not an exported function of package %s", row.Name, row.GoFunction, packages[row.LibraryNumber])
 		}
 		signature := constants.LibraryFunctionSignature{
 			LibraryFunctionSignatureDefined:        true,
@@ -162,8 +162,8 @@ func (gen *librariesGenerated) dispatchFiles() map[string][]byte {
 		fmt.Fprintf(&b, "func %s%s {\n\tswitch function {\n", dispatch.function, libraryDispatchParameters)
 		for _, row := range constants.LibraryFunctionDefinitionTable {
 			if row.LibraryNumber == dispatch.library {
-				_, handler, _ := strings.Cut(row.Handler, ".")
-				fmt.Fprintf(&b, "\tcase %d:\n\t\t%s(prgrm, inputs, outputs)\n", row.Number, handler)
+				_, goFunction, _ := strings.Cut(row.GoFunction, ".")
+				fmt.Fprintf(&b, "\tcase %d:\n\t\t%s(prgrm, inputs, outputs)\n", row.Number, goFunction)
 			}
 		}
 		b.WriteString("\tdefault:\n\t\treturn false\n\t}\n\treturn true\n}\n")

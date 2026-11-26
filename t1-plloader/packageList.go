@@ -23,8 +23,8 @@ func (pl PackageList) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary reads pl from what MarshalBinary wrote.
-func (pl *PackageList) UnmarshalBinary(data []byte) error {
-	sections, err := textFormDecode(data)
+func (pl *PackageList) UnmarshalBinary(encoded []byte) error {
+	sections, err := textFormDecode(encoded)
 	if err != nil {
 		return err
 	}

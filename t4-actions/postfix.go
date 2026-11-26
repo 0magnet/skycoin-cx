@@ -654,7 +654,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		// the external property will be propagated to the following arguments
 		// this way we avoid considering these arguments as module names
 
-		if cxpackages.IsDefaultPackage(prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)) {
+		if cxpackages.PackageDefault(prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)) {
 			if constantName, ok := prgrm.CXProgramNativeFind(&ConstNames, leftExprOutputTypeSig.Name, stringpool.StringGidNil, identGid); ok {
 				constant := Constants[constantName.NativeNameEntryCode]
 				valArg := WritePrimary(prgrm, constant.Type, constant.Value, false)
@@ -804,7 +804,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 	} else {
 		// then left is not a package name
-		if cxpackages.IsDefaultPackage(prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)) {
+		if cxpackages.PackageDefault(prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)) {
 			prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeBuiltinPackageNotImported, leftExprOutputTypeSig.ArgDetails, ast.CompileErrorOperands{int64(leftExprOutputTypeSig.Name), int64(leftExprOutputTypeSig.Name)})
 			return postfixFieldInvalidate(prgrm, prevExprs, lastExpressionIdx, prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)+"."+ident)
 		}
@@ -868,7 +868,7 @@ func renamedOpcodeRecord(prgrm *ast.CXProgram, file ast.SourceFileGid, line int,
 	}
 	operands := ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(name), prgrm.CXProgramCompileErrorText(rename.NewName), rename.Version}
 	oldPkg, _, _ := strings.Cut(name, ".")
-	if pkg, _, cut := strings.Cut(rename.NewName, "."); cut && pkg != oldPkg && cxpackages.IsDefaultPackage(pkg) {
+	if pkg, _, cut := strings.Cut(rename.NewName, "."); cut && pkg != oldPkg && cxpackages.PackageDefault(pkg) {
 		operands[3] = prgrm.CXProgramCompileErrorText(pkg)
 		prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeOpcodeRenamedImport, file, line, operands)
 		return true

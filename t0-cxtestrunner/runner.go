@@ -66,7 +66,7 @@ func (t *TestRunner) runEx(args string, input string, exitCode int, desc string,
 	}
 
 	// A test runs only when every set it belongs to is enabled.
-	if !HasAll(t.cfg.TestsMask, filter) {
+	if !BitsAllSet(t.cfg.TestsMask, filter) {
 		if Has(t.cfg.LogMask, LogSkip) {
 			fmt.Printf("#--- | SKIPPED | na | '%s' | na | na | %s\\n", args, desc)
 		}

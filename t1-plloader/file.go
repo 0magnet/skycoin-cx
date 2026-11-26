@@ -30,8 +30,8 @@ func (f File) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary reads f from what MarshalBinary wrote.
-func (f *File) UnmarshalBinary(data []byte) error {
-	sections, err := textFormDecode(data)
+func (f *File) UnmarshalBinary(encoded []byte) error {
+	sections, err := textFormDecode(encoded)
 	if err != nil {
 		return err
 	}

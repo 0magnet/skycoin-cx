@@ -15,7 +15,7 @@ func TestPrintValueInvalidAddress(t *testing.T) {
 	memory := prgrm.Memory
 
 	// A str with an object of "ab" at 64, and slices at 128.
-	types.Write_obj_data(memory, 64, types.OBJECT_HEADER_SIZE+2, []byte("ab"))
+	types.ObjectPayloadWrite(memory, 64, types.OBJECT_HEADER_SIZE+2, []byte("ab"))
 	sliceObject := types.Pointer(128)
 	types.Write_ptr(memory, sliceObject+types.OBJECT_HEADER_SIZE+types.POINTER_SIZE, 1<<20)
 

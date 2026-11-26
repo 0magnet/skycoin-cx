@@ -108,18 +108,18 @@ func (t Code) NameBytes() []byte {
 }
 
 func (t Code) Size() Pointer {
-	//	panicIf(!definitions[t].size.IsValid(), CX_RUNTIME_INVALID_ARGUMENT)
+	//	panicIf(!definitions[t].size.Valid(), CX_RUNTIME_INVALID_ARGUMENT)
 	return definitions[t].size
 }
 
-func (t Code) IsPrimitive() bool {
-	return definitions[t].isPrimitive
+func (t Code) Primitive() bool {
+	return definitions[t].primitive
 }
 
 type Type struct {
-	name        string
-	size        Pointer
-	isPrimitive bool
+	name      string
+	size      Pointer
+	primitive bool
 }
 
 var definitions []Type = []Type{
@@ -158,12 +158,12 @@ func panicIf(condition bool, error int) {
 	}
 }
 
-func (pointer Pointer) IsValid() bool {
+func (pointer Pointer) Valid() bool {
 	return pointer != InvalidPointer
 }
 
 func (pointer *Pointer) Add(value Pointer) bool {
-	if pointer.IsValid() && value.IsValid() {
+	if pointer.Valid() && value.Valid() {
 		*pointer += value
 		return true
 	}

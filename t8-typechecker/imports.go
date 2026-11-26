@@ -12,7 +12,7 @@ func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
 	// Make and add import packages to AST
 	for _, imprt := range imports {
 		// DeclareImport adds the built-in packages under their own name.
-		if packages.IsBuiltinImport(imprt.ImportName) {
+		if packages.ImportBuiltin(imprt.ImportName) {
 			continue
 		}
 

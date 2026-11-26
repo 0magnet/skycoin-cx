@@ -2,10 +2,10 @@ package types
 
 //"fmt"
 
-func Write_str_data(memory []byte, offset Pointer, value string) {
+func StrPayloadWrite(memory []byte, offset Pointer, value string) {
 	bytes := []byte(value)
 	size := Compute_obj_size(bytes)
-	Write_obj_data(memory, offset, size, bytes)
+	ObjectPayloadWrite(memory, offset, size, bytes)
 }
 
 // VIOLATION STRHOT-011: B, only the boundary opcodes use Go strings, #412.
@@ -23,7 +23,7 @@ func Read_str_bytes(memory []byte, offset Pointer) []byte {
 
 func Read_str_size(memory []byte, offset Pointer) Pointer {
 	heapOffset := Read_ptr(memory, offset)
-	if heapOffset > 0 && heapOffset.IsValid() {
+	if heapOffset > 0 && heapOffset.Valid() {
 		return Read_obj_size(memory, heapOffset) - OBJECT_HEADER_SIZE
 	}
 	return 0

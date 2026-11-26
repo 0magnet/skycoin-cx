@@ -386,9 +386,9 @@ func NetReadyNext() (handle int32, trigger NetTrigger, messageID int32, detail i
 	return entry.EntryHandle, entry.EntryTrigger, messageID, entry.EntryDetail
 }
 
-// netDataEntry returns the data entry messageID of the batch when it belongs
+// netPayloadEntry returns the data entry messageID of the batch when it belongs
 // to the open socket handle.
-func netDataEntry(handle int32, messageID int32) *NetEntry {
+func netPayloadEntry(handle int32, messageID int32) *NetEntry {
 	s := &netState
 	if messageID < 0 || int(messageID) >= s.netBatchCount {
 		return nil
@@ -405,7 +405,7 @@ func netDataEntry(handle int32, messageID int32) *NetEntry {
 // an entry that is not a data entry of the open socket handle, and for an
 // offset at or past the end of the payload.
 func NetRead(handle int32, messageID int32, destination []byte, offset int32) int32 {
-	entry := netDataEntry(handle, messageID)
+	entry := netPayloadEntry(handle, messageID)
 	if entry == nil || offset < 0 || offset >= entry.entryLength {
 		return 0
 	}
@@ -425,7 +425,7 @@ func NetRead(handle int32, messageID int32, destination []byte, offset int32) in
 // NetUDPReadFrom is NetRead for a UDP socket, and also returns the peer the
 // datagram came from.
 func NetUDPReadFrom(handle int32, messageID int32, destination []byte, offset int32) (int32, int32) {
-	entry := netDataEntry(handle, messageID)
+	entry := netPayloadEntry(handle, messageID)
 	if entry == nil {
 		return 0, 0
 	}

@@ -172,7 +172,7 @@ func IsAllArgsBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 		}
 
 		// TODO: Check why STR is considered as basic type.
-		if !inpType.IsPrimitive() && inpType != types.STR {
+		if !inpType.Primitive() && inpType != types.STR {
 			return false
 		}
 	}

@@ -26,7 +26,7 @@ outside the standard library is a system library instead, see
    with the number, name, handler, inputs and outputs, for example
    `{203, "regexp.Compile", "regexp.OpRegexpCompile", "str", "r:regexp.Regexp str", ""}`.
    A new handler package also needs its group in `constants.OpcodeGroup`, an
-   entry in `handlerPackages` of t2-cx-core-opcodegen and, for a build tag,
+   entry in `goFunctionPackages` of t2-cx-core-opcodegen and, for a build tag,
    a pair of `opcodes_linked_*.go` files and a `dispatchGroups` entry. Run
    `make generate-opcodes`, which writes the signature tables and adds the
    handlers to the opcode switch (decision D21). There is no registration.

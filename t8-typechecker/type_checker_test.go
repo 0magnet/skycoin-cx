@@ -374,7 +374,7 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 						panic(err)
 					}
 
-					if cxpackages.IsDefaultPackage(actions.AST.CXProgramNameText(pkg.Name)) {
+					if cxpackages.PackageDefault(actions.AST.CXProgramNameText(pkg.Name)) {
 						continue
 					}
 
@@ -740,7 +740,7 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 						t.Log(err)
 					}
 
-					if cxpackages.IsDefaultPackage(actions.AST.CXProgramNameText(pkg.Name)) {
+					if cxpackages.PackageDefault(actions.AST.CXProgramNameText(pkg.Name)) {
 						continue
 					}
 
@@ -1242,7 +1242,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				if cxpackages.IsDefaultPackage(actions.AST.CXProgramNameText(gotPkg.Name)) {
+				if cxpackages.PackageDefault(actions.AST.CXProgramNameText(gotPkg.Name)) {
 					continue
 				}
 

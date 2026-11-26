@@ -19,13 +19,13 @@ var inlineImports = map[string]string{
 // types.Read_ and types.Write_ function of the same name.
 var inlineReadTypes = map[string]bool{"bool": true, "i32": true, "ui32": true, "f32": true, "f64": true}
 
-// handlerInline reports whether the function part of a Handler is a call the
+// goFunctionInline reports whether the function part of a GoFunction is a call the
 // switch makes inline rather than the name of a handler.
-func handlerInline(function string) bool {
+func goFunctionInline(function string) bool {
 	return strings.Contains(function, "(")
 }
 
-// inlineCase returns the body of the case of row, whose Handler is an inline
+// inlineCase returns the body of the case of row, whose GoFunction is an inline
 // call: each %N becomes the read of input N at its offset, and the value of
 // the call is written to the one output when the row has one.
 func inlineCase(row constants.OpcodeDefinition, call string) (string, error) {

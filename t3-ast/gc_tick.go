@@ -53,7 +53,7 @@ func GarbageCollectorTrigger(prgrm *CXProgram) {
 	roots.GCRootTableStackSize = prgrm.Stack.Size
 	frames := roots.GCRootTableFrames[:0]
 	// After the last return CallCounter is invalid and no frame is live.
-	for c := types.Pointer(0); prgrm.CallCounter.IsValid() && c <= prgrm.CallCounter; c++ {
+	for c := types.Pointer(0); prgrm.CallCounter.Valid() && c <= prgrm.CallCounter; c++ {
 		call := &prgrm.CallStack[c]
 		// A callback a native pushes onto CallStack has no operator.
 		if call.Operator == CXFunctionGidNil {

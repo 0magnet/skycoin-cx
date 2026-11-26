@@ -84,7 +84,7 @@ func TestScanFile(t *testing.T) {
 func TestReport(t *testing.T) {
 	functions := testFunctions(t)
 	for _, fn := range functions {
-		fn.handler = true
+		fn.opcodeGoFunction = true
 	}
 	codes := map[string]codeEntry{"STRHOT-001": {class: "P"}, "STRHOT-002": {class: "O"}, "STRHOT-003": {class: "E"}}
 	var out bytes.Buffer

@@ -23,12 +23,12 @@ func RunCxAst(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall typ
 // see docs/GarbageCollector.md.
 func runLoop(cxprogram *ast.CXProgram, untilEnd bool, maxOps int, untilCall types.Pointer, inputs *[]ast.CXValue, outputs *[]ast.CXValue) error {
 	var opCount int = 0
-	gcTick := !untilCall.IsValid()
+	gcTick := !untilCall.Valid()
 	// fn is borrowed for the run, which has no grow boundary and releases no
 	// function, and is read again only when the call names another function.
 	var fn *ast.CXFunction
 	fnGid := ast.CXFunctionGidNil
-	for !cxprogram.Terminated && (untilEnd || (opCount < maxOps)) && (!untilCall.IsValid() || cxprogram.CallCounter > untilCall) {
+	for !cxprogram.Terminated && (untilEnd || (opCount < maxOps)) && (!untilCall.Valid() || cxprogram.CallCounter > untilCall) {
 		call := &cxprogram.CallStack[cxprogram.CallCounter]
 		if call.Operator != fnGid {
 			fnGid = call.Operator

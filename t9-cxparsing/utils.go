@@ -192,7 +192,7 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 				if match := preliminaryImportName.FindSubmatchIndex(line); match != nil {
 					pkgName := string(line[match[len(match)-2]:match[len(match)-1]])
 					// Checking if `pkgName` already exists and if it's not a standard library package.
-					if _, err := cxpartialparsing.Program.GetPackage(preliminaryImportIdent(cxpartialparsing.Program, pkgName)); err != nil && !cxpackages.IsBuiltinImport(pkgName) && !cxpartialparsing.Program.CXProgramImportFailed(preliminaryImportIdent(cxpartialparsing.Program, pkgName)) {
+					if _, err := cxpartialparsing.Program.GetPackage(preliminaryImportIdent(cxpartialparsing.Program, pkgName)); err != nil && !cxpackages.ImportBuiltin(pkgName) && !cxpartialparsing.Program.CXProgramImportFailed(preliminaryImportIdent(cxpartialparsing.Program, pkgName)) {
 						dir := filepath.Join(globals.SRCPATH, pkgName)
 						_, sourceCode, fileNames, err := programfiles.ParseArgsForCX([]string{dir}, false)
 						if err != nil {

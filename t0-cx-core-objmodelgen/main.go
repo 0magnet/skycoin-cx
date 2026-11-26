@@ -98,7 +98,7 @@ func objmodelgenRender(tmpl *template.Template, name string, object objmodelgenO
 	if object.TypeTag == other {
 		other = 0x02
 	}
-	data := map[string]any{
+	templateFields := map[string]any{
 		"Obj":        object.Obj,
 		"TypeTag":    fmt.Sprintf("0x%02X", object.TypeTag),
 		"OtherTag":   fmt.Sprintf("0x%02X", other),
@@ -113,7 +113,7 @@ func objmodelgenRender(tmpl *template.Template, name string, object objmodelgenO
 	}
 	var buf bytes.Buffer
 	buf.WriteString(objmodelgenHeader)
-	if err := tmpl.ExecuteTemplate(&buf, name, data); err != nil {
+	if err := tmpl.ExecuteTemplate(&buf, name, templateFields); err != nil {
 		return nil, err
 	}
 	src, err := format.Source(buf.Bytes())
@@ -202,11 +202,11 @@ func objmodelgenCheck(dir string, files map[string][]byte) ([]string, error) {
 		if _, ok := files[filepath.Join(dir, name)]; ok || !strings.HasSuffix(name, ".go") {
 			continue
 		}
-		data, err := os.ReadFile(filepath.Join(dir, name))
+		fileBytes, err := os.ReadFile(filepath.Join(dir, name))
 		if err != nil {
 			return nil, err
 		}
-		if bytes.HasPrefix(bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n")), []byte(objmodelgenHeader)) {
+		if bytes.HasPrefix(bytes.ReplaceAll(fileBytes, []byte("\r\n"), []byte("\n")), []byte(objmodelgenHeader)) {
 			problems = append(problems, filepath.Join(dir, name)+" is generated but no longer in the table")
 		}
 	}

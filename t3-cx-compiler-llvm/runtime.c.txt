@@ -1286,7 +1286,7 @@ static int32_t netUpdate(int32_t wait) {
 	return netBatchCount;
 }
 
-static netEntry *netDataEntry(int32_t handle, int32_t messageID) {
+static netEntry *netPayloadEntry(int32_t handle, int32_t messageID) {
 	if (messageID < 0 || messageID >= netBatchCount)
 		return NULL;
 	netEntry *e = &netBatch[messageID];
@@ -1296,7 +1296,7 @@ static netEntry *netDataEntry(int32_t handle, int32_t messageID) {
 }
 
 static int32_t netRead(int32_t handle, int32_t messageID, uint8_t *destination, int32_t size, int32_t offset) {
-	netEntry *e = netDataEntry(handle, messageID);
+	netEntry *e = netPayloadEntry(handle, messageID);
 	if (!e || offset < 0 || offset >= e->entryLength)
 		return 0;
 	int32_t remaining = e->entryLength - offset;
@@ -1518,7 +1518,7 @@ CX_NET_FUNCTION(udp_read_from) {
 	int32_t handle = netBlockI32(&block), messageID = netBlockI32(&block), bufferSize;
 	uint8_t *buffer = netBlockBuffer(&block, &bufferSize);
 	int32_t offset = netBlockI32(&block);
-	netEntry *e = netDataEntry(handle, messageID);
+	netEntry *e = netPayloadEntry(handle, messageID);
 	if (!e) {
 		netBlockI32Write(&block, 0);
 		netBlockI32Write(&block, 0);
