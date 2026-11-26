@@ -155,7 +155,7 @@ func readCodes(path string) (map[string]codeEntry, error) {
 // load type checks the module packages of the cx build and returns its
 // functions by full name.
 func load(tags string) (map[string]*function, error) {
-	cmd := exec.Command("go", "list", "-deps", "-export", "-json", "-tags", tags, "./t11-cx")
+	cmd := exec.Command("go", "list", "-deps", "-export", "-json", "-tags", tags, "./t11-cx-command-cx")
 	cmd.Stderr = os.Stderr
 	out, err := cmd.Output()
 	if err != nil {

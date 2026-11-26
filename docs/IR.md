@@ -28,7 +28,7 @@ numbers quoted below are the same in every build. See [Opcodes](#opcodes).
 
 ## Pipeline
 
-The `cx` command (`t11-cx/main.go`) builds the program in this order.
+The `cx` command (`t11-cx-command-cx/main.go`) builds the program in this order.
 
 1. `actions.ConstantsInit`, `cxos.ConstantsInit` and `cxfx.ConstantsInit`
    fill the constant tables.
@@ -45,7 +45,7 @@ The `cx` command (`t11-cx/main.go`) builds the program in this order.
    of a name with the sorted names of `ast.NativeNames` once and caches the
    result by Gids in `CxIrState.CxIrStateNativeNames`. Constants such as
    `cx.SUCCESS` are found the same way in `actions.ConstNames`.
-4. `compileSourceStrings` (`t11-cx/helpers.go`), which the cx command and
+4. `compileSourceStrings` (`t11-cx-command-cx/helpers.go`), which the cx command and
    the tests share, calls `cxparsing.SourceStringsParse`, which runs the
    two passes below.
 5. `cxparsing.SysInitFunctionAdd` (`t9-cx-compiler-parsing/utils.go`) adds the function
@@ -527,7 +527,7 @@ per-expression native copies.
 * A serialized program is a snapshot of the arenas and managers of a
   compiled program. `Deserialize` gives back a program that lowers and runs
   as the original does, on vm and on the old loop. The image-old and
-  image-vm forms of `TestExecutionRecords` in `t11-cx` check this for every
+  image-vm forms of `TestExecutionRecords` in `t11-cx-command-cx` check this for every
   recorded program, see [ExecutionRecords.md](ExecutionRecords.md).
 * With `includeMemory` the memory goes in too, from its first to its last
   nonzero byte. Without it `Deserialize` makes zeroed memory of the same
@@ -667,8 +667,8 @@ after one, so a program only loads in a build with its pointer size
 
 ### Built programs
 
-`cx build` (`t11-cx/build.go`) writes one executable file: the core binary
-of `t6-cx-core-run`, then the serialized program with its memory and no
+`cx build` (`t11-cx-command-cx/build.go`) writes one executable file: the core binary
+of `t6-cx-command-core`, then the serialized program with its memory and no
 compression, then a 32 byte trailer, little endian.
 
 | Offset from the trailer start | Size | Field |
@@ -691,7 +691,7 @@ not fit the file or whose checksum fails is `FileErrorCodeContentInvalid`.
 `LibraryCall` and those of `sys/regexp`, `sys/time` and `os.Exit`
 (`t4-cx-library-osopcodes`), and the system libraries the core links. A library is
 linked by the build tag `cxcorelibraryfile`, `cxcorelibrarynet`,
-`cxcorelibraryprocess` or `cxcorelibrarycipher`, whose file in `t6-cx-core-run` adds its register
+`cxcorelibraryprocess` or `cxcorelibrarycipher`, whose file in `t6-cx-command-core` adds its register
 function and its opcode switch. Every core is also built with the tag
 `cxcore`, so the vm and the run start leave the net library out of a core
 without `cxcorelibrarynet` (D119). `make build` builds a core for every set, named by
@@ -744,7 +744,7 @@ This document does not list the opcodes. The list is
   functions, adds opcodes outside the table. It names each one in
   `ast.NativeNames`, gives the compiler its native through
   `ast.NativeFunctionHost` and runs it from a wrapper of `ast.OpcodeDispatch`.
-  These opcodes run on the old loop only. `TestNativeFunctionHost` in t11-cx
+  These opcodes run on the old loop only. `TestNativeFunctionHost` in t11-cx-command-cx
   shows the three steps.
 * `LibraryCall` (795, `constants.OP_LIBRARY_CALL`) has no definition row
   and no name, so no program calls it by name, and the loop runs it. The system library functions have

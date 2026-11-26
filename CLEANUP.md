@@ -95,13 +95,13 @@ Counts are files, not rows.
 
 | Repo | Path | Files | Action | Now in | Reason |
 |---|---|---:|---|---|---|
-| cx | `cmd/cx/` | 5 | keep | `t11-cx` | The cx compiler and interpreter binary |
-| cx | `cmd/cxmobile/` | 2 | delete | `t7-cxmobile` | Android only (cxfx && android), unbuilt since 2021, cannot be tested here |
-| cx | `cmd/cxrepl/` | 1 | keep | `t10-cx-tools-repl` | REPL used by t11-cx |
+| cx | `cmd/cx/` | 5 | keep | `t11-cx-command-cx` | The cx compiler and interpreter binary |
+| cx | `cmd/cxmobile/` | 2 | delete | `t7-cx-command-mobile` | Android only (cxfx && android), unbuilt since 2021, cannot be tested here |
+| cx | `cmd/cxrepl/` | 1 | keep | `t10-cx-tools-repl` | REPL used by t11-cx-command-cx |
 | cx | `cmd/goyacc/` | 187 | delete | `go tool goyacc` | modernc goyacc copy, did not build and did not generate the parsers. golang.org/x/tools goyacc does |
 | cx | `cmd/token-fuzzer/` | 1 | keep | `t9-cx-tools-tokenfuzzer` | Lexer fuzzer, small |
 | cx | `cxparser/util/cxprof/` | 1 | merge | `t1-cxprof` | Nothing imports it, fold into t1-cx-runtime-profiling or delete |
-| cx | `cxparser/util/profiling/` | 1 | keep | `t1-cx-runtime-profiling` | Used by t11-cx and the parser |
+| cx | `cxparser/util/profiling/` | 1 | keep | `t1-cx-runtime-profiling` | Used by t11-cx-command-cx and the parser |
 
 ## Tests
 

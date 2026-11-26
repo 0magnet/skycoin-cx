@@ -148,7 +148,7 @@ func unsafeEval(code string) (out string) {
 }
 
 // Eval runs code as a CX program and returns its output. The caller must
-// first run the init in t11-cx Run: ConstantsInit, ProgramMake, PackagesRegister.
+// first run the init in t11-cx-command-cx Run: ConstantsInit, ProgramMake, PackagesRegister.
 func Eval(code string) string {
 	runtime.GOMAXPROCS(2)
 	ch := make(chan string, 1)

@@ -635,7 +635,7 @@ No object model function returns an error value.
 
 ## Compile benchmark
 
-`BenchmarkCompile` in `t11-cx/compile_bench_test.go` compiles seven programs
+`BenchmarkCompile` in `t11-cx-command-cx/compile_bench_test.go` compiles seven programs
 from `tests/` with no run. It registers the opcodes once, as `cx` does.
 Each iteration makes a fresh program with `cxinit.ProgramMake` and
 `cxinit.PackagesRegister` outside the timer, then times
@@ -645,7 +645,7 @@ B/op, allocs/op and `irobjects/op`, the number of objects in the arenas after
 the compile.
 
 ```
-go test -run '^$' -bench BenchmarkCompile -count=10 ./t11-cx
+go test -run '^$' -bench BenchmarkCompile -count=10 ./t11-cx-command-cx
 ```
 
 Every phase PR runs it, compares with the baseline using `benchstat`, and

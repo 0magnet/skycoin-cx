@@ -104,7 +104,7 @@ scratch go to a reserve that the next `EnsureMinimumHeapSize` takes, so the
 process allocates them once instead of once per load (D106). The reserve is
 not cleared. The heap clears the bytes it grows into, and a collection leaves
 the bitmaps clear, so only scratch from a collection that did not finish is
-dropped. The REPL, the t11-cx tests and the playground release each
+dropped. The REPL, the t11-cx-command-cx tests and the playground release each
 program before the next.
 
 | Scratch | Size | Use |
@@ -233,7 +233,7 @@ allocator ran the collector itself.
 - `StrAllocateAt` (t3-cx-core-ast/ast_memory.go:141) protected one such address by
   storing it in `Heap.Pinned` at line 142, and nothing else was protected.
 - t0-cx-core-valuetypes held a function variable `Allocator` (t0-cx-core-valuetypes/types.go:149), which
-  t11-cx/main.go:94 and t6-cx-core-run/main.go:27 set to `ast.SequenceAllocate`,
+  t11-cx-command-cx/main.go:94 and t6-cx-command-core/main.go:27 set to `ast.SequenceAllocate`,
   so the lowest tier reached the collector through a hook.
 - `MarkAndCompact` took the whole `*CXProgram`. It read the globals through
   `gcGlobalRoots` (t3-cx-core-ast/gc_type.go:276), walked `CallStack` and each
@@ -245,7 +245,7 @@ allocator ran the collector itself.
   (t3-cx-runtime-vm) and the IR base (t2-cx-runtime-ir) did not.
 
 ```
-t11-cx, t6-cx-core-run ----- set types.Allocator = ast.SequenceAllocate
+t11-cx-command-cx, t6-cx-command-core ----- set types.Allocator = ast.SequenceAllocate
         |
 t5-cx-runtime-core
    |            \
@@ -297,7 +297,7 @@ the collector between steps.
   and `make check-gcreach` enforces both rules.
 
 ```
-t11-cx, t6-cx-core-run
+t11-cx-command-cx, t6-cx-command-core
         |
 t5-cx-runtime-core
    |            \

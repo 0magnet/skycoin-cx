@@ -2,7 +2,7 @@
 
 Every way of running a CX program must give the result the program gives
 itself. An execution record holds that result once, as hashes of the
-program, its input and its output, and `TestExecutionRecords` in `t11-cx`
+program, its input and its output, and `TestExecutionRecords` in `t11-cx-command-cx`
 runs every recorded program in every form and checks it against its record.
 See [skycoin-cx#507](https://github.com/skycoin/skycoin-cx/issues/507).
 
@@ -10,7 +10,7 @@ See [skycoin-cx#507](https://github.com/skycoin/skycoin-cx/issues/507).
 
 | Hash | Of |
 | --- | --- |
-| program | the serialized program as `cx build` appends it to the core, from `buildProgramImage` in `t11-cx/build.go` (decision D44) |
+| program | the serialized program as `cx build` appends it to the core, from `buildProgramImage` in `t11-cx-command-cx/build.go` (decision D44) |
 | source | the `.cx` files the program names on the command line, one after the other. It is kept beside the program hash for reference and is not part of the record hash |
 | input | the decimal number of arguments and a zero byte, each argument and a zero byte, then stdin, and for a program with a net replay record a zero byte, the decimal length of the record, a zero byte and the record (decision D53) |
 | output | stdout |
@@ -93,7 +93,7 @@ the compiler and two runs on the old loop. Those two are listed by hand in
 | image-vm | the same on vm, when every function lowers |
 | built | the executable `cx build` writes, which runs vm when the program lowers and the old loop otherwise. Not for a program that passes a run time flag of cx, such as `--executor`, which a built program cannot take, or one that uses an opcode the core leaves out. `-heap-max` is stored in the built program, so programs that pass it are compared |
 | native | the executable `cx build --target=llvm` writes, see [LlvmTarget.md](LlvmTarget.md), when the program lowers, passes no run time flag and calls no system library. It needs clang and is listed as not run without one. After a runtime error it prints the error line and no call stack, so its stdout is checked against the recorded stdout up to the call stack |
-| image-core | the image `cx build --target=image` writes, run by `t4-cx-core-image`, see [Microcontrollers.md](Microcontrollers.md), when the program lowers, passes no run time flag, takes no arguments or stdin and uses no file or net library. `CX_EXECUTION_RECORDS_IMAGE_CORE` names another runner, such as a TinyGo build in an emulator, and `CX_EXECUTION_RECORDS_IMAGE_FLAGS` adds cx flags to the image build. Its stdout is checked as the native one is |
+| image-core | the image `cx build --target=image` writes, run by `t4-cx-command-image`, see [Microcontrollers.md](Microcontrollers.md), when the program lowers, passes no run time flag, takes no arguments or stdin and uses no file or net library. `CX_EXECUTION_RECORDS_IMAGE_CORE` names another runner, such as a TinyGo build in an emulator, and `CX_EXECUTION_RECORDS_IMAGE_FLAGS` adds cx flags to the image build. Its stdout is checked as the native one is |
 
 ## The harness
 

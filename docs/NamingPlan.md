@@ -72,7 +72,7 @@ pull request may refine one where the mechanical form reads badly, saying so.
 6. Underscores, rule 4: t0-types, then t1-constants, then t3-ast, then the
    rest (357).
 7. Abbreviations and single letters, rules 3 and 7 (36).
-8. Package directories, see below (46).
+8. Package directories, see below (47).
 
 Exported renames get a CHANGELOG line in their pull request.
 
@@ -144,6 +144,7 @@ imports at their next bump of skycoin-cx. skycoin-cx-forth imports none.
 | `t10-cxrepl` | `t10-cx-tools-repl` | `repl` | the REPL |
 | `t10-generator` | `t10-cx-tools-programgenerator` | `programgenerator` | the random program generator |
 | `t11-cx` | `t11-cx-command-cx` | `main` | the cx command |
+| `t4-cx-core-image` | `t4-cx-command-image` | `main` | the command that runs a vm image with no parser |
 
 ## Renames
 

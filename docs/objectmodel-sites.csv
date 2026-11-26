@@ -39,17 +39,17 @@ S0049,CXProgram,ctor-call,t10-cx-tools-programgenerator/program_generator_test.g
 S0050,CXPackage,arena-add,t10-cx-tools-programgenerator/serialize_order_test.go,21,sampleProgramWithPackages,"astapi.AddEmptyPackage(prgrm, pkg)",state.CXPackageMng.CXPackageAlloc(),4-alloc,361,CXPackage phase 2-mng
 S0052,CXPackage,get-call,t10-cx-tools-programgenerator/serialize_order_test.go,41,packageFunctions,prgrm.GetPackageFromArray(pkgIdx),state.CXPackageMng.CXPackageGet(gid),5-gid,362,CXPackage phase 4-alloc
 S0053,CXProgram,ctor-call,t10-cx-tools-programgenerator/serialize_order_test.go,88,TestSerializeKeepsFunctionsInTheirPackage,"cxast.Deserialize(b, nil)",state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0054,CXProgram,ctor-call,t11-cx/compile_bench_test.go,56,BenchmarkCompile,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0055,CXProgram,drop,t11-cx/compile_bench_test.go,56,BenchmarkCompile,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
-S0056,CXProgram,ctor-call,t11-cx/helpers.go,54,parseProgram,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0057,CXProgram,drop,t11-cx/helpers.go,54,parseProgram,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
-S0058,CXPackage,ctor-call,t11-cx/helpers.go,88,initMainPkg,ast.MakePackage(constants.MAIN_PKG),state.CXPackageMng.CXPackageAlloc(),4-alloc,361,CXPackage phase 2-mng
-S0059,CXPackage,arena-add,t11-cx/helpers.go,91,initMainPkg,prgrm.AddPackage(mod),state.CXPackageMng.CXPackageAlloc(),4-alloc,361,CXPackage phase 2-mng
-S0060,CXPackage,get-call,t11-cx/helpers.go,94,initMainPkg,prgrm.GetPackageFromArray(modIdx),state.CXPackageMng.CXPackageGet(gid),5-gid,362,CXPackage phase 4-alloc
-S0062,CXProgram,ctor-call,t11-cx/main.go,180,Run,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0063,CXProgram,drop,t11-cx/main.go,180,Run,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
-S0064,CXProgram,ctor-call,t11-cx/main_test.go,44,initProgram,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S0065,CXProgram,drop,t11-cx/main_test.go,44,initProgram,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
+S0054,CXProgram,ctor-call,t11-cx-command-cx/compile_bench_test.go,56,BenchmarkCompile,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0055,CXProgram,drop,t11-cx-command-cx/compile_bench_test.go,56,BenchmarkCompile,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
+S0056,CXProgram,ctor-call,t11-cx-command-cx/helpers.go,54,parseProgram,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0057,CXProgram,drop,t11-cx-command-cx/helpers.go,54,parseProgram,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
+S0058,CXPackage,ctor-call,t11-cx-command-cx/helpers.go,88,initMainPkg,ast.MakePackage(constants.MAIN_PKG),state.CXPackageMng.CXPackageAlloc(),4-alloc,361,CXPackage phase 2-mng
+S0059,CXPackage,arena-add,t11-cx-command-cx/helpers.go,91,initMainPkg,prgrm.AddPackage(mod),state.CXPackageMng.CXPackageAlloc(),4-alloc,361,CXPackage phase 2-mng
+S0060,CXPackage,get-call,t11-cx-command-cx/helpers.go,94,initMainPkg,prgrm.GetPackageFromArray(modIdx),state.CXPackageMng.CXPackageGet(gid),5-gid,362,CXPackage phase 4-alloc
+S0062,CXProgram,ctor-call,t11-cx-command-cx/main.go,180,Run,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0063,CXProgram,drop,t11-cx-command-cx/main.go,180,Run,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
+S0064,CXProgram,ctor-call,t11-cx-command-cx/main_test.go,44,initProgram,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S0065,CXProgram,drop,t11-cx-command-cx/main_test.go,44,initProgram,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
 S0067,CXStruct,ptr-field,t3-cx-core-ast/cxargument_def.go,99,type CXArgument,CXArgument.StructType *CXStruct,CXStructGid,5-gid,337,CXStruct phase 4-alloc
 S0068,CXArgument,get-call,t3-cx-core-ast/ast_cxargument.go,60,CXArgument.GetAssignmentElement,prgrm.GetCXArgFromArray(arg.Fields[len(arg.Fields)-1]),state.CXArgumentMng.CXArgumentGet(gid),5-gid,327,CXArgument phase 4-alloc
 S0069,CXArgument,get-call,t3-cx-core-ast/ast_cxargument.go,72,CXArgument.GetType,prgrm.GetCXArgFromArray(arg.Fields[fieldCount-1]),state.CXArgumentMng.CXArgumentGet(gid),5-gid,327,CXArgument phase 4-alloc
@@ -950,8 +950,8 @@ S1776,CXTypeSignature,get-call,t4-cx-compiler-astbuild/functions.go,1826,lookupS
 S1777,CXTypeSignature,get-call,t4-cx-compiler-astbuild/functions.go,3175,releaseFunctionSymbols,prgrm.GetCXTypeSignatureFromArray(typeSigIdx),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
 S1778,CXTypeSignature,get-call,t4-cx-compiler-astbuild/postfix.go,738,PostfixExpressionField,prgrm.GetCXTypeSignatureFromArray(typeSigIdx),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
 S1779,CXTypeSignature,get-call,t4-cx-compiler-astbuild/postfix.go,747,PostfixExpressionField,prgrm.GetCXTypeSignatureFromArray(typeSigIdx),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
-S1780,CXProgram,ctor-call,t11-cx/run_bench_test.go,112,compileRunProgram,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
-S1781,CXProgram,drop,t11-cx/run_bench_test.go,112,compileRunProgram,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
+S1780,CXProgram,ctor-call,t11-cx-command-cx/run_bench_test.go,112,compileRunProgram,cxinit.MakeProgram(),state.CXProgramMng.CXProgramAlloc(),4-alloc,371,CXProgram phase 2-mng
+S1781,CXProgram,drop,t11-cx-command-cx/run_bench_test.go,112,compileRunProgram,actions.AST = cxinit.MakeProgram(),state.CXProgramMng.CXProgramRelease(gid),4-alloc,371,CXProgram phase 2-mng
 S1782,CXArgument,get-call,t3-cx-core-ast/ast_cxprogram.go,413,CXProgram.ReleaseCXArgWithDebug,cxprogram.GetCXArg(index),state.CXArgumentMng.CXArgumentGet(gid),5-gid,327,CXArgument phase 4-alloc
 S1783,CXTypeSignature,get-call,t3-cx-core-ast/ast_cxprogram.go,437,CXProgram.ReleaseCXArgUnlessNamed,cxprogram.GetCXTypeSignatureFromArray(typeSigIdx),state.CXTypeSignatureMng.CXTypeSignatureGet(gid),5-gid,332,CXTypeSignature phase 4-alloc
 S1784,CXArgument,get-call,t3-cx-core-ast/ast_cxtype_signature.go,716,CXTypeSignature.GetStructType,prgrm.GetCXArg(CXArgumentIndex(typeSignature.Meta)),state.CXArgumentMng.CXArgumentGet(gid),5-gid,327,CXArgument phase 4-alloc

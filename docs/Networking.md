@@ -239,7 +239,7 @@ once per update (decision D51).
 `net.Write`, `net.UDPReadFrom` and `net.UDPWriteTo` make no Go allocation.
 `TestNetUpdateAllocs` in `t1-cx-library-networkbatch` requires 0 for an update with data on
 four sockets, the reads and the writes, and `TestRunNetAllocs` and
-`TestRunVmNetAllocs` in `t11-cx` require 0 for a CX program that calls them
+`TestRunVmNetAllocs` in `t11-cx-command-cx` require 0 for a CX program that calls them
 on the old loop and on vm. Opening a socket allocates its buffers, its
 goroutines and Go's `net.Conn`, VMALLOC-018, and so does `net.UDPPeerResolve`
 parsing its address. Those happen in the open, not in an update.

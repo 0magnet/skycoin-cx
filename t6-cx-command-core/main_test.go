@@ -33,7 +33,7 @@ var coreImportsAllowed = map[string]bool{
 	"t4-cx-library-osopcodes":   true,
 	"t4-cx-library-regexp":      true,
 	"t5-cx-runtime-core":        true,
-	"t6-cx-core-run":            true,
+	"t6-cx-command-core":        true,
 }
 
 // coreStandardDenied are packages of the Go standard library the core must not

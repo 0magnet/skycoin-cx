@@ -8,7 +8,7 @@ document or check script.
    check-tiers` runs [check-tiers.sh](../check-tiers.sh). See the layout
    section of the [README](../README.md#repository-layout).
 2. **Explicit Init.** No `func init()` outside package main. Setup is an
-   exported Init function that `t11-cx` main calls in order. `make
+   exported Init function that `t11-cx-command-cx` main calls in order. `make
    check-inits` runs [check-inits.sh](../check-inits.sh) against
    [init-allowlist.txt](../init-allowlist.txt), which only shrinks.
 3. **No interface embedding.** An interface lists its methods and never

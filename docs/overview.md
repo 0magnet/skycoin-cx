@@ -16,7 +16,7 @@ model and the serializer. The root of the tree is the `CXProgram` struct.
 * **t4-cx-runtime-opcodes/**, **t4-cx-runtime-interpreter/** the runtime part of CX.
 * **t5-cx-compiler-partialparsing/**, **t8-cx-compiler-fullparsing/**, **t9-cx-compiler-parsing/**
 the parser. It analyzes the source code and builds the tree above.
-* **t11-cx/** the cx binary.
+* **t11-cx-command-cx/** the cx binary.
 * **vendor/** 3rd party code needed to build CX. It is not part of the CX
 sources themselves.
 

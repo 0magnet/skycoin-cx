@@ -1,5 +1,5 @@
 // Program paths must be relative and stay inside the sandbox, see #433.
-// The symlink cases are Go tests in t0-util and t11-cx.
+// The symlink cases are Go tests in t0-util and t11-cx-command-cx.
 
 package main
 
