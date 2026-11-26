@@ -1,6 +1,8 @@
 // Command cx-core is the minimum interpreter core of cx build. It runs the
 // serialized program appended to its own file and passes its command line
-// arguments to the program as os.Args. It has no parser and loads no source.
+// arguments to the program as os.Args. A core with no program appended, as on
+// js/wasm, runs cx-core --program FILE args. It has no parser and loads no
+// source.
 package main
 
 import (
@@ -47,18 +49,9 @@ func coreRun(args []string) int32 {
 	runtime.GOMAXPROCS(2)
 	core.ExecutorMemoryLimitsClamp()
 
-	path, err := os.Executable()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "cx-core: cannot find this executable: %s\n", err)
-		return types.CX_COMPILATION_ERROR
-	}
-	program, fileError := core.CoreTrailerRead(path)
-	if fileError != nil {
-		fmt.Fprintf(os.Stderr, "cx-core: %s: %s\n", fileError.FileErrorPath, fileError.FileErrorMessage)
-		return types.CX_COMPILATION_ERROR
-	}
-	if program == nil {
-		fmt.Fprintln(os.Stderr, "cx-core: no CX program is appended to this file, make one with cx build")
+	program, args, problem := coreProgramLoad(args)
+	if problem != "" {
+		fmt.Fprintln(os.Stderr, "cx-core:", problem)
 		return types.CX_COMPILATION_ERROR
 	}
 
@@ -92,4 +85,40 @@ func coreRun(args []string) int32 {
 	printer.PrinterCompileErrorsRegister(prgrm)
 	prgrm.ProgramStdinInit(os.Stdin)
 	return core.ExecutorRun(prgrm, core.ExecutorAuto, args)
+}
+
+// coreProgramFileFlag names a program file for a core with no program
+// appended, cx-core --program FILE args, for hosts without os.Executable
+// such as js/wasm. FILE is a program made with cx build.
+const coreProgramFileFlag = "--program"
+
+// coreProgramLoad returns the serialized program and the arguments of the
+// program. The program appended to this executable comes first and gets
+// every argument. Without one, --program FILE names it. problem says why
+// there is no program.
+func coreProgramLoad(args []string) (program []byte, programArgs []string, problem string) {
+	path, err := os.Executable()
+	if err == nil {
+		appended, fileError := core.CoreTrailerRead(path)
+		if fileError == nil && appended != nil {
+			return appended, args, ""
+		}
+		if fileError != nil && (len(args) < 2 || args[0] != coreProgramFileFlag) {
+			return nil, nil, fileError.FileErrorPath + ": " + fileError.FileErrorMessage
+		}
+	}
+	if len(args) < 2 || args[0] != coreProgramFileFlag {
+		if err != nil {
+			return nil, nil, "cannot find this executable: " + err.Error() + ", name the program with " + coreProgramFileFlag + " FILE"
+		}
+		return nil, nil, "no CX program is appended to this file, make one with cx build or name one with " + coreProgramFileFlag + " FILE"
+	}
+	built, fileError := core.CoreTrailerRead(args[1])
+	if fileError != nil {
+		return nil, nil, fileError.FileErrorPath + ": " + fileError.FileErrorMessage
+	}
+	if built == nil {
+		return nil, nil, args[1] + " holds no CX program, make one with cx build"
+	}
+	return built, args[2:], ""
 }
