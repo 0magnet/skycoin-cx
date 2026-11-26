@@ -351,8 +351,8 @@ func lowerCompareChild(t *testing.T, program string) {
 
 	// The loader refuses a program that uses a library operation its run
 	// does not enable, before either loop runs (D119).
-	core.CoreLibrariesEnabledResolve(actions.AST)
-	if core.CoreOperationRefused(actions.AST) != 0 {
+	core.LibrariesEnabledResolve(actions.AST)
+	if core.OperationRefused(actions.AST) != 0 {
 		lowerCompareEmit(t, lowerCompareResult{Stage: lowerCompareStageLowered, VmCode: types.CX_RUNTIME_LIBRARY_DISABLED})
 		return
 	}

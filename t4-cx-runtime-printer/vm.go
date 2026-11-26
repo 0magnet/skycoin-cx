@@ -11,8 +11,8 @@ import (
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 )
 
-// PrinterVmStopMessage is what vm prints after the error string for stop.
-func PrinterVmStopMessage(stop vm.Stop) string {
+// VmStopMessage is what vm prints after the error string for stop.
+func VmStopMessage(stop vm.Stop) string {
 	return vm.StopMessages[stop]
 }
 
@@ -27,9 +27,9 @@ func printerVmStopLine(machine *vm.Machine) (string, int) {
 	return image.ImageFileNames[line.LineFile], int(line.LineNumber)
 }
 
-// PrinterVmTestFailurePrint prints a failed test as assert in t4-opcodes
+// VmTestFailurePrint prints a failed test as assert in t4-opcodes
 // does.
-func PrinterVmTestFailurePrint(machine *vm.Machine) {
+func VmTestFailurePrint(machine *vm.Machine) {
 	fileName, lineNumber := printerVmStopLine(machine)
 	message := machine.TestMessage()
 	if len(message) > 0 {
@@ -39,15 +39,15 @@ func PrinterVmTestFailurePrint(machine *vm.Machine) {
 	}
 }
 
-// PrinterVmErrorPrint prints the runtime error vm stopped with as the old
-// loop prints it, the call stack included. PrinterStackPrint reads the old
+// VmErrorPrint prints the runtime error vm stopped with as the old
+// loop prints it, the call stack included. StackPrint reads the old
 // program state, so the vm memory and frames are copied into prgrm first.
-func PrinterVmErrorPrint(prgrm *ast.CXProgram, machine *vm.Machine, stop vm.Stop) {
+func VmErrorPrint(prgrm *ast.CXProgram, machine *vm.Machine, stop vm.Stop) {
 	image := machine.MachineImage
 	fileName, lineNumber := printerVmStopLine(machine)
 	code := int(vm.StopExitCodes[stop])
 	message := vm.StopMessages[stop]
-	fmt.Printf("%s, %s, %v", PrinterErrorHeader(fileName, lineNumber), ast.ErrorString(code), message)
+	fmt.Printf("%s, %s, %v", ErrorHeader(fileName, lineNumber), ast.ErrorString(code), message)
 
 	copy(prgrm.Memory, machine.MachineMemory[:ir.ImageDataEnd(image)])
 	depth := machine.MachineDepth
@@ -60,7 +60,7 @@ func PrinterVmErrorPrint(prgrm *ast.CXProgram, machine *vm.Machine, stop vm.Stop
 	prgrm.CallStack[depth].FramePointer = types.Pointer(machine.MachineFramePointer)
 	prgrm.CallCounter = types.Pointer(depth)
 	prgrm.Stack.Pointer = types.Pointer(machine.MachineStackPointer)
-	PrinterStackPrint(prgrm)
+	StackPrint(prgrm)
 
 	if globals.DBG_GOLANG_STACK_TRACE {
 		debug.PrintStack()

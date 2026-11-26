@@ -14,7 +14,7 @@ import (
 func TestCoreProgramLoadFile(t *testing.T) {
 	directory := t.TempDir()
 	built := filepath.Join(directory, "built")
-	if err := os.WriteFile(built, core.CoreTrailerAppend([]byte("core"), []byte("program")), 0o644); err != nil {
+	if err := os.WriteFile(built, core.TrailerAppend([]byte("core"), []byte("program")), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	plain := filepath.Join(directory, "plain")

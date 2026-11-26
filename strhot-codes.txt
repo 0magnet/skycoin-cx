@@ -233,8 +233,8 @@ STRHOT-219 P removed t3-ast/tostring.go printSeparator not on the run path at df
 STRHOT-220 P removed t3-ast/tostring.go readAtomic appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
 STRHOT-221 P removed t3-ast/tostring.go argValueAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
 STRHOT-222 P removed t3-ast/tostring.go GetPrintableValue appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
-STRHOT-223 E open t0-cx-core-assert/assert.go AssertPreconditionTrue
-STRHOT-224 E open t0-cx-core-assert/assert.go AssertInvariantTrue
+STRHOT-223 E open t0-cx-core-assert/assert.go PreconditionTrue
+STRHOT-224 E open t0-cx-core-assert/assert.go InvariantTrue
 STRHOT-225 E open t0-cx-core-assert/assert.go assertCrash
 STRHOT-226 E removed t0-lz4codec/codec.go *Codec.Compress not on the run path at dfcc46ab
 STRHOT-227 E removed t0-lz4codec/codec.go *Codec.Decompress not on the run path at dfcc46ab
@@ -277,7 +277,7 @@ STRHOT-263 E removed t3-ast/error.go ErrorString not on the run path at dfcc46ab
 STRHOT-264 E removed t3-ast/error.go RuntimeErrorInfo not on the run path at dfcc46ab
 STRHOT-265 B open t3-ast/serialize.go Deserialize
 STRHOT-266 P removed t4-cx-runtime-printer/stack.go printerStackValueHeader folded into printerStackValueLine, which appends bytes
-STRHOT-267 P removed t4-cx-runtime-printer/stack.go PrinterStackPrint appends names viewed from the string pool and the built-in name tables, #412
+STRHOT-267 P removed t4-cx-runtime-printer/stack.go StackPrint appends names viewed from the string pool and the built-in name tables, #412
 STRHOT-268 B open t1-cx-runtime-sandbox/file_error.go fileErrorFromFileSystemError
 STRHOT-269 B open t1-cx-runtime-sandbox/path.go PathFromBytes
 STRHOT-270 B open t1-cx-runtime-sandbox/path.go FileCreate

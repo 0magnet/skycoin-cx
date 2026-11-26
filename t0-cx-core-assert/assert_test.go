@@ -22,16 +22,16 @@ func assertTestCaseRun(name string) {
 	switch name {
 	case "precondition":
 		assertTestCaseLine()
-		AssertPreconditionTrue(1 > 2, "count must be positive")
+		PreconditionTrue(1 > 2, "count must be positive")
 	case "invariant":
 		assertTestCaseLine()
-		AssertInvariantTrue(false, "stack pointer below frame")
+		InvariantTrue(false, "stack pointer below frame")
 	case "postcondition":
 		assertTestCaseLine()
-		AssertPostconditionTrue(false, "result not sorted")
+		PostconditionTrue(false, "result not sorted")
 	case "unreachable":
 		assertTestCaseLine()
-		AssertUnreachable("unknown type code 99")
+		Unreachable("unknown type code 99")
 	}
 }
 
@@ -60,8 +60,8 @@ func TestAssertCrash(t *testing.T) {
 			cmd.Stdout, cmd.Stderr = &stdout, &stderr
 			err := cmd.Run()
 			var exitErr *exec.ExitError
-			if !errors.As(err, &exitErr) || exitErr.ExitCode() != AssertExitCode {
-				t.Fatalf("exit = %v, want status %d\nstderr:\n%s", err, AssertExitCode, stderr.String())
+			if !errors.As(err, &exitErr) || exitErr.ExitCode() != ExitCode {
+				t.Fatalf("exit = %v, want status %d\nstderr:\n%s", err, ExitCode, stderr.String())
 			}
 			var line int
 			if _, err := fmt.Sscanf(stdout.String(), "line %d", &line); err != nil {
@@ -87,7 +87,7 @@ func TestAssertCrash(t *testing.T) {
 }
 
 func TestAssertTrueReturns(t *testing.T) {
-	AssertPreconditionTrue(true, "unused")
-	AssertInvariantTrue(true, "unused")
-	AssertPostconditionTrue(true, "unused")
+	PreconditionTrue(true, "unused")
+	InvariantTrue(true, "unused")
+	PostconditionTrue(true, "unused")
 }

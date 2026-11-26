@@ -39,7 +39,7 @@ func runLibraryCallLoopCompile(tb testing.TB) {
 	for _, library := range []int{constants.LibraryNumberFile, constants.LibraryNumberNet, constants.LibraryNumberCipher} {
 		actions.AST.ProgramLibrariesEnabled[library] = true
 	}
-	core.CoreLibrariesEnabledResolve(actions.AST)
+	core.LibrariesEnabledResolve(actions.AST)
 }
 
 // BenchmarkRunLibraryCall times a loop of system library calls on the old

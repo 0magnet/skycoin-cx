@@ -191,7 +191,7 @@ func Program(prgrm *ast.CXProgram) (ir.Image, []Failure) {
 
 	if packageIndex, found := prgrm.Packages[prgrm.CxIrState.CxIrStateNameMain]; found {
 		mainPackage, err := prgrm.PackageFromArrayGet(packageIndex)
-		assert.AssertInvariantTrue(err == nil, "lower: main package index out of range")
+		assert.InvariantTrue(err == nil, "lower: main package index out of range")
 		if functionIndex, found := mainPackage.Functions[prgrm.CxIrState.CxIrStateNameSysInit]; found {
 			image.ImageEntryInit = ast.CXFunctionGidSlot(functionIndex)
 		}
@@ -221,7 +221,7 @@ func Program(prgrm *ast.CXProgram) (ir.Image, []Failure) {
 // opcodeNumber returns the language number of a live opcode name.
 func opcodeNumber(name string) int {
 	row, found := constants.OpcodeLifecycleLiveByName(name)
-	assert.AssertInvariantTrue(found, "lower: opcode "+name+" is not live")
+	assert.InvariantTrue(found, "lower: opcode "+name+" is not live")
 	return row.Number
 }
 
@@ -250,7 +250,7 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 
 	lineCount := fn.LineCount
 	if lineCount < 0 || lineCount > len(fn.Expressions) {
-		assert.AssertInvariantTrue(false, "lower: LineCount outside the expressions of "+s.statePrgrm.CXProgramNameText(fn.Name))
+		assert.InvariantTrue(false, "lower: LineCount outside the expressions of "+s.statePrgrm.CXProgramNameText(fn.Name))
 	}
 	expressionPc := make([]uint32, lineCount+1)
 	var code []ir.Instr
@@ -266,7 +266,7 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 		switch expr.Type {
 		case ast.CX_LINE:
 			cxLine, err := s.statePrgrm.CXLineGet(expr.Index)
-			assert.AssertInvariantTrue(err == nil, "lower: CX_LINE index out of range")
+			assert.InvariantTrue(err == nil, "lower: CX_LINE index out of range")
 			lines = append(lines, ir.Line{
 				LinePc:     uint32(len(code)),
 				LineFile:   s.file(cxLine.FileName),
@@ -280,7 +280,7 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 		}
 
 		cxAtomicOp, err := s.statePrgrm.CXAtomicOpGet(expr.Index)
-		assert.AssertInvariantTrue(err == nil, "lower: atomic operator index out of range")
+		assert.InvariantTrue(err == nil, "lower: atomic operator index out of range")
 		operator := s.statePrgrm.CxIrState.CxIrStateFunctionGetOrNil(cxAtomicOp.Operator)
 
 		switch {
@@ -325,7 +325,7 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 // jumpTarget clamps a target expression to lineCount, where the old loop
 // returns. A negative target would index out of range in the old loop.
 func jumpTarget(target int, lineCount int) int {
-	assert.AssertInvariantTrue(target >= 0, fmt.Sprintf("lower: jump to expression %d", target))
+	assert.InvariantTrue(target >= 0, fmt.Sprintf("lower: jump to expression %d", target))
 	if target > lineCount {
 		return lineCount
 	}
@@ -1023,7 +1023,7 @@ func operandSet(in *ir.Instr, i int, lowered operand) {
 		in.InstrD = lowered.operandOffset
 		mode = ir.InstrModeFrameD
 	default:
-		assert.AssertUnreachable(fmt.Sprintf("lower: operand slot %d", i))
+		assert.Unreachable(fmt.Sprintf("lower: operand slot %d", i))
 	}
 	if lowered.operandFrame {
 		in.InstrMode |= mode
@@ -1044,7 +1044,7 @@ func (s *state) file(file ast.SourceFileGid) uint32 {
 
 // pointerToUint32 narrows an offset or size. An image addresses 4 GB.
 func pointerToUint32(pointer types.Pointer) uint32 {
-	assert.AssertInvariantTrue(uint64(pointer) <= uint64(^uint32(0)), "lower: offset does not fit in 32 bits")
+	assert.InvariantTrue(uint64(pointer) <= uint64(^uint32(0)), "lower: offset does not fit in 32 bits")
 	return uint32(pointer)
 }
 

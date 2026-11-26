@@ -26,10 +26,10 @@ type CXTypeSignature_StructMng struct {
 // VIOLATION STRHOT-260: E, the assert text of a bad Init, built only when it fails, #412.
 func (manager *CXTypeSignature_StructMng) CXTypeSignature_StructMngInit(capacity int, growable bool) {
 	if manager.CXTypeSignature_StructMngLen != 0 {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructMngInit on a manager holding %d objects", manager.CXTypeSignature_StructMngLen))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructMngInit on a manager holding %d objects", manager.CXTypeSignature_StructMngLen))
 	}
 	if capacity < 0 || uint64(capacity) > objmodel.GidCapMax {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
 	}
 	*manager = CXTypeSignature_StructMng{
 		CXTypeSignature_StructMngObjects:     make([]CXTypeSignature_Struct, capacity),
@@ -49,7 +49,7 @@ func (manager *CXTypeSignature_StructMng) CXTypeSignature_StructAlloc() CXTypeSi
 		manager.CXTypeSignature_StructMngFree = manager.CXTypeSignature_StructMngFree[:free-1]
 	} else {
 		if capacity := len(manager.CXTypeSignature_StructMngObjects); int(manager.CXTypeSignature_StructMngNext) == capacity {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
 		}
 		index = manager.CXTypeSignature_StructMngNext
 		manager.CXTypeSignature_StructMngNext++
@@ -59,7 +59,7 @@ func (manager *CXTypeSignature_StructMng) CXTypeSignature_StructAlloc() CXTypeSi
 	manager.CXTypeSignature_StructMngLive[index] = true
 	manager.CXTypeSignature_StructMngLen++
 	if manager.CXTypeSignature_StructMngLen != int(manager.CXTypeSignature_StructMngNext)-len(manager.CXTypeSignature_StructMngFree)-int(manager.CXTypeSignature_StructMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXTypeSignature_StructAlloc: Len %d is not the live slot count", manager.CXTypeSignature_StructMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXTypeSignature_StructAlloc: Len %d is not the live slot count", manager.CXTypeSignature_StructMngLen))
 	}
 	return CXTypeSignature_StructGid(objmodel.GidCompose(CXTypeSignature_StructGidTypeTag, manager.CXTypeSignature_StructMngGenerations[index], index))
 }
@@ -73,9 +73,9 @@ func (manager *CXTypeSignature_StructMng) CXTypeSignature_StructRelease(gid CXTy
 		!manager.CXTypeSignature_StructMngLive[index] || manager.CXTypeSignature_StructMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXTypeSignature_StructGidTypeTag, len(manager.CXTypeSignature_StructMngObjects))
 		if !manager.CXTypeSignature_StructMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructRelease of slot %d, which is not live, a double release", index))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructRelease of slot %d, which is not live, a double release", index))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXTypeSignature_StructMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXTypeSignature_StructMngGenerations[index]))
 	}
 	manager.CXTypeSignature_StructMngObjects[index] = CXTypeSignature_Struct{}
 	manager.CXTypeSignature_StructMngLive[index] = false
@@ -87,7 +87,7 @@ func (manager *CXTypeSignature_StructMng) CXTypeSignature_StructRelease(gid CXTy
 	}
 	manager.CXTypeSignature_StructMngLen--
 	if manager.CXTypeSignature_StructMngLen < 0 || manager.CXTypeSignature_StructMngLen != int(manager.CXTypeSignature_StructMngNext)-len(manager.CXTypeSignature_StructMngFree)-int(manager.CXTypeSignature_StructMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXTypeSignature_StructRelease: Len %d is not the live slot count", manager.CXTypeSignature_StructMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXTypeSignature_StructRelease: Len %d is not the live slot count", manager.CXTypeSignature_StructMngLen))
 	}
 }
 
@@ -100,9 +100,9 @@ func (manager *CXTypeSignature_StructMng) CXTypeSignature_StructGet(gid CXTypeSi
 		!manager.CXTypeSignature_StructMngLive[index] || manager.CXTypeSignature_StructMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXTypeSignature_StructGidTypeTag, len(manager.CXTypeSignature_StructMngObjects))
 		if !manager.CXTypeSignature_StructMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXTypeSignature_StructMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXTypeSignature_StructGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXTypeSignature_StructMngGenerations[index]))
 	}
 	return &manager.CXTypeSignature_StructMngObjects[index]
 }
@@ -149,7 +149,7 @@ func (manager *CXTypeSignature_StructMng) CXTypeSignature_StructMngGrowBoundary(
 // Cap at 0.
 func (manager *CXTypeSignature_StructMng) CXTypeSignature_StructMngTeardown() {
 	if manager.CXTypeSignature_StructMngLen != 0 {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXTypeSignature_StructMngTeardown with %d live objects, a leak", manager.CXTypeSignature_StructMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXTypeSignature_StructMngTeardown with %d live objects, a leak", manager.CXTypeSignature_StructMngLen))
 	}
 	*manager = CXTypeSignature_StructMng{}
 }

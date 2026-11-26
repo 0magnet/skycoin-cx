@@ -312,7 +312,7 @@ Len is checked against the slots in O(1) after every Alloc and Release, as
 Counting the live flags would make every Alloc O(Cap).
 
 Every check builds its message only when it fails, `if !ok {
-assert.AssertPreconditionTrue(false, fmt.Sprintf(...)) }`, because Get and
+assert.PreconditionTrue(false, fmt.Sprintf(...)) }`, because Get and
 Alloc are on the compiler's hot path once the sites use them.
 
 ### Capacity trace
@@ -508,7 +508,7 @@ map.
 are `SourceFileGid`, and `CXLine.LineStr` is a `StringGid`. The parsers
 register a file once when they start it. Diagnostics, lowering, the
 serializer and the REPL take the path as text through
-`CXProgramSourceFileText`, and `PrinterStackPrint` appends its bytes from
+`CXProgramSourceFileText`, and `StackPrint` appends its bytes from
 `CXProgramSourceFileBytes`. The serialized format writes the string pool and
 `SourceFileMng` as they are.
 
@@ -623,13 +623,13 @@ Every object model failure is a programming error, class B in
 
 | Failure | Assert |
 | --- | --- |
-| Gid is nil, negative, has another type's tag, or an index at or above Cap | `AssertPreconditionTrue` in Get and Release |
-| Gid's generation is not its slot's generation, a stale Gid | `AssertPreconditionTrue` in Get and Release |
-| Release of a slot that is not live, a double release | `AssertPreconditionTrue` in Release |
-| Alloc on a full manager, between two grow boundaries | `AssertPreconditionTrue` in Alloc |
-| Init on a manager that holds objects | `AssertPreconditionTrue` in Init |
-| Len is not 0 at teardown | `AssertInvariantTrue` in `MngTeardown` and the teardown test |
-| Len is not `Next - len(Free) - Retired`, the live slot count | `AssertInvariantTrue` in Alloc and Release |
+| Gid is nil, negative, has another type's tag, or an index at or above Cap | `PreconditionTrue` in Get and Release |
+| Gid's generation is not its slot's generation, a stale Gid | `PreconditionTrue` in Get and Release |
+| Release of a slot that is not live, a double release | `PreconditionTrue` in Release |
+| Alloc on a full manager, between two grow boundaries | `PreconditionTrue` in Alloc |
+| Init on a manager that holds objects | `PreconditionTrue` in Init |
+| Len is not 0 at teardown | `InvariantTrue` in `MngTeardown` and the teardown test |
+| Len is not `Next - len(Free) - Retired`, the live slot count | `InvariantTrue` in Alloc and Release |
 
 No object model function returns an error value.
 

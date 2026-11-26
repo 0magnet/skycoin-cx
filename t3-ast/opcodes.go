@@ -12,7 +12,7 @@ type OpcodeGoFunction func(prgrm *CXProgram, inputs []CXValue, outputs []CXValue
 type OpcodeDispatchFunction func(prgrm *CXProgram, code int, inputs []CXValue, outputs []CXValue) bool
 
 // OpcodeDispatch is the generated opcode switch the old loop calls. The
-// registration of the binary sets it once, see CoreRegister and PackagesRegister.
+// registration of the binary sets it once, see Register and PackagesRegister.
 // VIOLATION: state outside State. Owner: t3-ast; moves to CXNativeFunctionMng in phase 1.
 var OpcodeDispatch OpcodeDispatchFunction = opcodeDispatchNone
 

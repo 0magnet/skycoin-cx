@@ -13,7 +13,7 @@ import (
 	cxos "github.com/skycoin/skycoin-cx/t5-cxos" // thin: only ValidFile; could move ValidFile to t1-cx-runtime-sandbox or t3-ast, max tier 11 to 10
 )
 
-// A font is an i32 handle into CxfxState.CxfxFontTable, returned by
+// A font is an i32 handle into State.CxfxFontTable, returned by
 // gltext.LoadTrueType, see #432. A file that does not load returns -1.
 func loadTrueType(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, fixedPipeline bool) {
 	handle := int32(-1)

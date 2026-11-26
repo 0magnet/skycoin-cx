@@ -46,10 +46,10 @@ type {{.Obj}}Mng struct {
 {{- end}}
 func (manager *{{.Obj}}Mng) {{.Obj}}MngInit(capacity int, growable bool) {
 	if manager.{{.Obj}}MngLen != 0 {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("{{.Obj}}MngInit on a manager holding %d objects", manager.{{.Obj}}MngLen))
+		assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}MngInit on a manager holding %d objects", manager.{{.Obj}}MngLen))
 	}
 	if capacity < 0 || uint64(capacity) > objmodel.GidCapMax {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("{{.Obj}}MngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
+		assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}MngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
 	}
 	*manager = {{.Obj}}Mng{
 		{{.Obj}}MngObjects:     make([]{{.Obj}}, capacity),
@@ -69,7 +69,7 @@ func (manager *{{.Obj}}Mng) {{.Obj}}Alloc() {{.Obj}}Gid {
 		manager.{{.Obj}}MngFree = manager.{{.Obj}}MngFree[:free-1]
 	} else {
 		if capacity := len(manager.{{.Obj}}MngObjects); int(manager.{{.Obj}}MngNext) == capacity {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("{{.Obj}}Alloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
+			assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}Alloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
 		}
 		index = manager.{{.Obj}}MngNext
 		manager.{{.Obj}}MngNext++
@@ -79,7 +79,7 @@ func (manager *{{.Obj}}Mng) {{.Obj}}Alloc() {{.Obj}}Gid {
 	manager.{{.Obj}}MngLive[index] = true
 	manager.{{.Obj}}MngLen++
 	if manager.{{.Obj}}MngLen != int(manager.{{.Obj}}MngNext)-len(manager.{{.Obj}}MngFree)-int(manager.{{.Obj}}MngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("{{.Obj}}Alloc: Len %d is not the live slot count", manager.{{.Obj}}MngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("{{.Obj}}Alloc: Len %d is not the live slot count", manager.{{.Obj}}MngLen))
 	}
 	return {{.Obj}}Gid(objmodel.GidCompose({{.Obj}}GidTypeTag, manager.{{.Obj}}MngGenerations[index], index))
 }
@@ -93,9 +93,9 @@ func (manager *{{.Obj}}Mng) {{.Obj}}Release(gid {{.Obj}}Gid) {
 		!manager.{{.Obj}}MngLive[index] || manager.{{.Obj}}MngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), {{.Obj}}GidTypeTag, len(manager.{{.Obj}}MngObjects))
 		if !manager.{{.Obj}}MngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("{{.Obj}}Release of slot %d, which is not live, a double release", index))
+			assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}Release of slot %d, which is not live, a double release", index))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("{{.Obj}}Release of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.{{.Obj}}MngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}Release of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.{{.Obj}}MngGenerations[index]))
 	}
 	manager.{{.Obj}}MngObjects[index] = {{.Obj}}{}
 	manager.{{.Obj}}MngLive[index] = false
@@ -107,7 +107,7 @@ func (manager *{{.Obj}}Mng) {{.Obj}}Release(gid {{.Obj}}Gid) {
 	}
 	manager.{{.Obj}}MngLen--
 	if manager.{{.Obj}}MngLen < 0 || manager.{{.Obj}}MngLen != int(manager.{{.Obj}}MngNext)-len(manager.{{.Obj}}MngFree)-int(manager.{{.Obj}}MngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("{{.Obj}}Release: Len %d is not the live slot count", manager.{{.Obj}}MngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("{{.Obj}}Release: Len %d is not the live slot count", manager.{{.Obj}}MngLen))
 	}
 }
 
@@ -122,9 +122,9 @@ func (manager *{{.Obj}}Mng) {{.Obj}}Get(gid {{.Obj}}Gid) *{{.Obj}} {
 		!manager.{{.Obj}}MngLive[index] || manager.{{.Obj}}MngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), {{.Obj}}GidTypeTag, len(manager.{{.Obj}}MngObjects))
 		if !manager.{{.Obj}}MngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("{{.Obj}}Get of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
+			assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}Get of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("{{.Obj}}Get of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.{{.Obj}}MngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("{{.Obj}}Get of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.{{.Obj}}MngGenerations[index]))
 	}
 	return &manager.{{.Obj}}MngObjects[index]
 }
@@ -171,7 +171,7 @@ func (manager *{{.Obj}}Mng) {{.Obj}}MngGrowBoundary() (int, int) {
 // Cap at 0.
 func (manager *{{.Obj}}Mng) {{.Obj}}MngTeardown() {
 	if manager.{{.Obj}}MngLen != 0 {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("{{.Obj}}MngTeardown with %d live objects, a leak", manager.{{.Obj}}MngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("{{.Obj}}MngTeardown with %d live objects, a leak", manager.{{.Obj}}MngLen))
 	}
 	*manager = {{.Obj}}Mng{}
 }

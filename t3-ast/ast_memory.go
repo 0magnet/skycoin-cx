@@ -77,7 +77,7 @@ func heapMemoryReserve(prgrm *CXProgram) {
 type memoryReserve struct {
 	memoryReserveLock      sync.Mutex
 	memoryReserveMemory    []byte
-	memoryReserveCollector gc.GCState
+	memoryReserveCollector gc.State
 }
 
 var programMemoryReserve memoryReserve
@@ -90,9 +90,9 @@ func memoryReserveTake(prgrm *CXProgram, size types.Pointer) []byte {
 	reserve := &programMemoryReserve
 	reserve.memoryReserveLock.Lock()
 	defer reserve.memoryReserveLock.Unlock()
-	if prgrm.Heap.Collector.GCStateStarts == nil {
+	if prgrm.Heap.Collector.StateStarts == nil {
 		prgrm.Heap.Collector = reserve.memoryReserveCollector
-		reserve.memoryReserveCollector = gc.GCState{}
+		reserve.memoryReserveCollector = gc.State{}
 	}
 	memory := reserve.memoryReserveMemory
 	if types.Cast_int_to_ptr(cap(memory)) < size {
@@ -118,13 +118,13 @@ func ProgramMemoryRelease(prgrm *CXProgram) {
 		reserve.memoryReserveMemory = prgrm.Memory[:0]
 	}
 	collector := prgrm.Heap.Collector
-	if !collector.GCStateCollecting && len(collector.GCStateSlots) > len(reserve.memoryReserveCollector.GCStateSlots) {
-		clear(collector.GCStateTypes)
-		collector.GCStateTypes = collector.GCStateTypes[:0]
+	if !collector.StateCollecting && len(collector.StateSlots) > len(reserve.memoryReserveCollector.StateSlots) {
+		clear(collector.StateTypes)
+		collector.StateTypes = collector.StateTypes[:0]
 		reserve.memoryReserveCollector = collector
 	}
 	prgrm.Memory = nil
-	prgrm.Heap.Collector = gc.GCState{}
+	prgrm.Heap.Collector = gc.State{}
 }
 
 // MemoryResize sets the heap of prgrm to newMemSize bytes, at most its cap.

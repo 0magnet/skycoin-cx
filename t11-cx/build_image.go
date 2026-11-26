@@ -25,7 +25,7 @@ const buildImageExtension = ".cximage"
 // needs far below the 1 MB default.
 func buildImage(options buildOptions) int {
 	prgrm := actions.AST
-	core.CoreLibrariesEnabledResolve(prgrm)
+	core.LibrariesEnabledResolve(prgrm)
 	for library, enabled := range prgrm.ProgramLibrariesEnabled {
 		prgrm.ProgramLibrariesEnabled[library] = enabled && prgrm.ProgramLibrariesUsed[library]
 		if !prgrm.ProgramLibrariesUsed[library] {
@@ -34,8 +34,8 @@ func buildImage(options buildOptions) int {
 	}
 	prgrm.CxIrState.CxIrStateManagerGrowBoundary()
 	prgrm.CxIrState.StringPool.StringPoolFreeze()
-	if code := core.CoreOperationRefused(prgrm); code != 0 {
-		fmt.Fprintf(os.Stderr, "cx build: %s\n", core.CoreOperationRefusalLine(prgrm, code))
+	if code := core.OperationRefused(prgrm); code != 0 {
+		fmt.Fprintf(os.Stderr, "cx build: %s\n", core.OperationRefusalLine(prgrm, code))
 		return types.CX_RUNTIME_LIBRARY_DISABLED
 	}
 	image, _, outside := core.ExecutorLower(prgrm)

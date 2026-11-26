@@ -26,10 +26,10 @@ type CXNativeFunctionMng struct {
 // VIOLATION STRHOT-252: E, the assert text of a bad Init, built only when it fails, #412.
 func (manager *CXNativeFunctionMng) CXNativeFunctionMngInit(capacity int, growable bool) {
 	if manager.CXNativeFunctionMngLen != 0 {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXNativeFunctionMngInit on a manager holding %d objects", manager.CXNativeFunctionMngLen))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXNativeFunctionMngInit on a manager holding %d objects", manager.CXNativeFunctionMngLen))
 	}
 	if capacity < 0 || uint64(capacity) > objmodel.GidCapMax {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXNativeFunctionMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXNativeFunctionMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
 	}
 	*manager = CXNativeFunctionMng{
 		CXNativeFunctionMngObjects:     make([]CXNativeFunction, capacity),
@@ -49,7 +49,7 @@ func (manager *CXNativeFunctionMng) CXNativeFunctionAlloc() CXNativeFunctionGid 
 		manager.CXNativeFunctionMngFree = manager.CXNativeFunctionMngFree[:free-1]
 	} else {
 		if capacity := len(manager.CXNativeFunctionMngObjects); int(manager.CXNativeFunctionMngNext) == capacity {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXNativeFunctionAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXNativeFunctionAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
 		}
 		index = manager.CXNativeFunctionMngNext
 		manager.CXNativeFunctionMngNext++
@@ -59,7 +59,7 @@ func (manager *CXNativeFunctionMng) CXNativeFunctionAlloc() CXNativeFunctionGid 
 	manager.CXNativeFunctionMngLive[index] = true
 	manager.CXNativeFunctionMngLen++
 	if manager.CXNativeFunctionMngLen != int(manager.CXNativeFunctionMngNext)-len(manager.CXNativeFunctionMngFree)-int(manager.CXNativeFunctionMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXNativeFunctionAlloc: Len %d is not the live slot count", manager.CXNativeFunctionMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXNativeFunctionAlloc: Len %d is not the live slot count", manager.CXNativeFunctionMngLen))
 	}
 	return CXNativeFunctionGid(objmodel.GidCompose(CXNativeFunctionGidTypeTag, manager.CXNativeFunctionMngGenerations[index], index))
 }
@@ -73,9 +73,9 @@ func (manager *CXNativeFunctionMng) CXNativeFunctionRelease(gid CXNativeFunction
 		!manager.CXNativeFunctionMngLive[index] || manager.CXNativeFunctionMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXNativeFunctionGidTypeTag, len(manager.CXNativeFunctionMngObjects))
 		if !manager.CXNativeFunctionMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXNativeFunctionRelease of slot %d, which is not live, a double release", index))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXNativeFunctionRelease of slot %d, which is not live, a double release", index))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXNativeFunctionRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXNativeFunctionMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXNativeFunctionRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXNativeFunctionMngGenerations[index]))
 	}
 	manager.CXNativeFunctionMngObjects[index] = CXNativeFunction{}
 	manager.CXNativeFunctionMngLive[index] = false
@@ -87,7 +87,7 @@ func (manager *CXNativeFunctionMng) CXNativeFunctionRelease(gid CXNativeFunction
 	}
 	manager.CXNativeFunctionMngLen--
 	if manager.CXNativeFunctionMngLen < 0 || manager.CXNativeFunctionMngLen != int(manager.CXNativeFunctionMngNext)-len(manager.CXNativeFunctionMngFree)-int(manager.CXNativeFunctionMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXNativeFunctionRelease: Len %d is not the live slot count", manager.CXNativeFunctionMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXNativeFunctionRelease: Len %d is not the live slot count", manager.CXNativeFunctionMngLen))
 	}
 }
 
@@ -99,9 +99,9 @@ func (manager *CXNativeFunctionMng) CXNativeFunctionGet(gid CXNativeFunctionGid)
 		!manager.CXNativeFunctionMngLive[index] || manager.CXNativeFunctionMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXNativeFunctionGidTypeTag, len(manager.CXNativeFunctionMngObjects))
 		if !manager.CXNativeFunctionMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXNativeFunctionGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXNativeFunctionGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXNativeFunctionGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXNativeFunctionMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXNativeFunctionGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXNativeFunctionMngGenerations[index]))
 	}
 	return &manager.CXNativeFunctionMngObjects[index]
 }
@@ -148,7 +148,7 @@ func (manager *CXNativeFunctionMng) CXNativeFunctionMngGrowBoundary() (int, int)
 // Cap at 0.
 func (manager *CXNativeFunctionMng) CXNativeFunctionMngTeardown() {
 	if manager.CXNativeFunctionMngLen != 0 {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXNativeFunctionMngTeardown with %d live objects, a leak", manager.CXNativeFunctionMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXNativeFunctionMngTeardown with %d live objects, a leak", manager.CXNativeFunctionMngLen))
 	}
 	*manager = CXNativeFunctionMng{}
 }

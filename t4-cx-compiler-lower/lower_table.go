@@ -328,8 +328,8 @@ const opcodeTableSize = 1024
 func opcodeTableBuild(table *opcodeTable) {
 	for _, entry := range opcodeEntries {
 		row, found := constants.OpcodeLifecycleLiveByName(entry.opcodeEntryName)
-		assert.AssertInvariantTrue(found, "lower: opcode "+entry.opcodeEntryName+" is not live")
-		assert.AssertInvariantTrue(row.Number > 0 && row.Number < opcodeTableSize, "lower: opcode "+entry.opcodeEntryName+" outside the table")
+		assert.InvariantTrue(found, "lower: opcode "+entry.opcodeEntryName+" is not live")
+		assert.InvariantTrue(row.Number > 0 && row.Number < opcodeTableSize, "lower: opcode "+entry.opcodeEntryName+" outside the table")
 		table[row.Number] = entry
 	}
 }

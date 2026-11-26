@@ -331,7 +331,7 @@ func decodeHdr(file *os.File) (pixelBytes []byte, i32Width int32, i32Height int3
 
 // uploadTexture loads the program path in pathBytes from the sandbox into the
 // bound texture. With cpuCopy it keeps the pixels and returns their handle
-// into CxfxState.CxfxTexturePixelsTable, otherwise -1.
+// into State.CxfxTexturePixelsTable, otherwise -1.
 // VIOLATION STRHOT-198: B, reads the file at a program path and names it in the error text, #432.
 func uploadTexture(prgrm *ast.CXProgram, pathBytes []byte, target uint32, level uint32, cpuCopy bool) int32 {
 	path := stringpool.StringView(pathBytes)
@@ -360,11 +360,11 @@ func uploadTexture(prgrm *ast.CXProgram, pathBytes []byte, target uint32, level 
 		inputType = cxglUNSIGNED_BYTE
 		pixelBytes, width, height, pixels = decodeImg(file, cpuCopy)
 		if len(pixels) > 0 {
-			pixelsHandle = cxfxTexturePixelsAdd(CxfxTexturePixels{
-				CxfxTexturePixelsWidth:  width,
-				CxfxTexturePixelsHeight: height,
-				CxfxTexturePixelsLevel:  level,
-				CxfxTexturePixelsValues: pixels,
+			pixelsHandle = cxfxTexturePixelsAdd(TexturePixels{
+				TexturePixelsWidth:  width,
+				TexturePixelsHeight: height,
+				TexturePixelsLevel:  level,
+				TexturePixelsValues: pixels,
 			})
 		}
 	} else if ext == ".hdr" {
@@ -423,15 +423,15 @@ func OpGlNewTextureCube(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []as
 }
 
 func OpCxReleaseTexture(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	*cxfxTexturePixelsGet(inputs[0].Get_i32(prgrm)) = CxfxTexturePixels{}
+	*cxfxTexturePixelsGet(inputs[0].Get_i32(prgrm)) = TexturePixels{}
 }
 
 func OpCxTextureGetPixel(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	texture := cxfxTexturePixelsGet(inputs[0].Get_i32(prgrm))
 	x := inputs[1].Get_i32(prgrm)
 	y := inputs[2].Get_i32(prgrm)
-	offset := (y*texture.CxfxTexturePixelsWidth + x) * 4
-	pixels := texture.CxfxTexturePixelsValues
+	offset := (y*texture.TexturePixelsWidth + x) * 4
+	pixels := texture.TexturePixelsValues
 	outputs[0].Set_f32(prgrm, pixels[offset])
 	outputs[1].Set_f32(prgrm, pixels[offset+1])
 	outputs[2].Set_f32(prgrm, pixels[offset+2])
@@ -443,7 +443,7 @@ func OpGlUploadImageToTexture(prgrm *ast.CXProgram, inputs []ast.CXValue, output
 }
 
 // OpGlNewGIF decodes the gif at a program path and returns its handle into
-// CxfxState.CxfxGifTable with its frame count, loop count and size.
+// State.CxfxGifTable with its frame count, loop count and size.
 // VIOLATION STRHOT-204: B, reads the file at a program path and names it in the error text, #432.
 func OpGlNewGIF(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	path := stringpool.StringView(ast.ProgramStringBytesRead(prgrm, &inputs[0]))

@@ -41,10 +41,10 @@ const (
 // VIOLATION STRHOT-228: E, error or assert text, built on a failure branch only, #412.
 func GidCompose(typeTag TypeTag, generation uint32, index uint32) int64 {
 	if typeTag < GidTypeTagFirst || typeTag > GidTypeTagLast {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("Gid type tag %#x outside %#x to %#x", typeTag, GidTypeTagFirst, GidTypeTagLast))
+		assert.PreconditionTrue(false, fmt.Sprintf("Gid type tag %#x outside %#x to %#x", typeTag, GidTypeTagFirst, GidTypeTagLast))
 	}
 	if generation < GidGenerationFirst || generation >= GidGenerationLast {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("Gid generation %#x outside %#x to %#x", generation, GidGenerationFirst, GidGenerationLast-1))
+		assert.PreconditionTrue(false, fmt.Sprintf("Gid generation %#x outside %#x to %#x", generation, GidGenerationFirst, GidGenerationLast-1))
 	}
 	return int64(uint64(typeTag)<<GidTypeTagShift | uint64(generation)<<GidGenerationShift | uint64(index))
 }
@@ -73,14 +73,14 @@ func GidTypeTag(gid int64) TypeTag {
 //go:noinline
 func GidAssertFailure(gid int64, typeTag TypeTag, capacity int) {
 	if gid <= GidNil {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("%s Gid %#x is nil or negative", GidTypeTagNameTable[typeTag], gid))
+		assert.PreconditionTrue(false, fmt.Sprintf("%s Gid %#x is nil or negative", GidTypeTagNameTable[typeTag], gid))
 	}
 	if GidTypeTag(gid) != typeTag {
-		assert.AssertPreconditionTrue(false,
+		assert.PreconditionTrue(false,
 			fmt.Sprintf("%s Gid %#x has type tag %#x, want %#x", GidTypeTagNameTable[typeTag], gid, GidTypeTag(gid), typeTag))
 	}
 	if uint64(GidIndex(gid)) >= uint64(capacity) {
-		assert.AssertPreconditionTrue(false,
+		assert.PreconditionTrue(false,
 			fmt.Sprintf("%s Gid %#x has index %d, Cap is %d", GidTypeTagNameTable[typeTag], gid, GidIndex(gid), capacity))
 	}
 }

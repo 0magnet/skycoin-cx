@@ -29,8 +29,8 @@ func objmodelTestAssertSubprocess(t *testing.T, childTest string, caseName strin
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	var exitErr *exec.ExitError
-	if !errors.As(err, &exitErr) || exitErr.ExitCode() != assert.AssertExitCode {
-		t.Fatalf("exit = %v, want status %d\nstderr:\n%s", err, assert.AssertExitCode, stderr.String())
+	if !errors.As(err, &exitErr) || exitErr.ExitCode() != assert.ExitCode {
+		t.Fatalf("exit = %v, want status %d\nstderr:\n%s", err, assert.ExitCode, stderr.String())
 	}
 	if !strings.Contains(stderr.String(), "assert failed: ") || !strings.Contains(stderr.String(), want) {
 		t.Errorf("stderr lacks an assert with %q:\n%s", want, stderr.String())

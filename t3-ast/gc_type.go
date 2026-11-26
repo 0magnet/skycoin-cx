@@ -8,17 +8,17 @@ import (
 
 // GCTypeCache holds the GCTypes of a program, built at its first collection.
 type GCTypeCache struct {
-	// GCTypeCacheStructs is the GCType of each struct, nil for one that holds
+	// GCTypeCacheStructs is the Type of each struct, nil for one that holds
 	// no references.
-	GCTypeCacheStructs map[*CXStruct]*gc.GCType
+	GCTypeCacheStructs map[*CXStruct]*gc.Type
 	// GCTypeCacheFrames are the roots of the frame of each function.
 	GCTypeCacheFrames map[*CXFunction]*GCFrameRoots
 	// GCTypeCacheGlobals are the roots of the globals, built from
 	// GCTypeCacheGlobalCount globals.
-	GCTypeCacheGlobals     []gc.GCRoot
+	GCTypeCacheGlobals     []gc.Root
 	GCTypeCacheGlobalCount int
-	// GCTypeCacheStr is the GCType of a str.
-	GCTypeCacheStr *gc.GCType
+	// GCTypeCacheStr is the Type of a str.
+	GCTypeCacheStr *gc.Type
 	// GCTypeCacheFunctions is the number of functions whose roots
 	// GarbageCollectorPrepare built.
 	GCTypeCacheFunctions int
@@ -27,7 +27,7 @@ type GCTypeCache struct {
 // GCFrameRoots are the roots of the frame of a function, built from
 // GCFrameRootsCount entries of its ListOfSlots and ListOfPointers.
 type GCFrameRoots struct {
-	GCFrameRootsRoots []gc.GCRoot
+	GCFrameRootsRoots []gc.Root
 	GCFrameRootsCount int
 }
 
@@ -35,9 +35,9 @@ type GCFrameRoots struct {
 func gcTypeCache(prgrm *CXProgram) *GCTypeCache {
 	if prgrm.Heap.Types == nil {
 		prgrm.Heap.Types = &GCTypeCache{
-			GCTypeCacheStructs: map[*CXStruct]*gc.GCType{},
+			GCTypeCacheStructs: map[*CXStruct]*gc.Type{},
 			GCTypeCacheFrames:  map[*CXFunction]*GCFrameRoots{},
-			GCTypeCacheStr:     &gc.GCType{GCTypeKind: gc.GCKindStr},
+			GCTypeCacheStr:     &gc.Type{TypeKind: gc.KindStr},
 		}
 	}
 	return prgrm.Heap.Types
@@ -102,10 +102,10 @@ func SignatureGCDeclaration(prgrm *CXProgram, sig *CXTypeSignature) ([]int, type
 	return nil, types.UNDEFINED, nil, nil
 }
 
-// GCTypeOf returns the GCType of a value of declaration specifiers specs,
+// GCTypeOf returns the Type of a value of declaration specifiers specs,
 // innermost first, base type typ or struct strct, and the lengths of its
 // arrays and slices, outermost first. A slice may or may not have a length.
-func GCTypeOf(prgrm *CXProgram, specs []int, typ types.Code, strct *CXStruct, lengths []types.Pointer) *gc.GCType {
+func GCTypeOf(prgrm *CXProgram, specs []int, typ types.Code, strct *CXStruct, lengths []types.Pointer) *gc.Type {
 	cache := gcTypeCache(prgrm)
 	if len(specs) == 0 {
 		return cache.gcBaseType(prgrm, typ, strct)
@@ -113,14 +113,14 @@ func GCTypeOf(prgrm *CXProgram, specs []int, typ types.Code, strct *CXStruct, le
 	inner := specs[:len(specs)-1]
 	switch specs[len(specs)-1] {
 	case constants.DECL_POINTER:
-		return gcTypeAdd(prgrm, &gc.GCType{GCTypeKind: gc.GCKindPointer, GCTypeElem: GCTypeOf(prgrm, inner, typ, strct, lengths)})
+		return gcTypeAdd(prgrm, &gc.Type{TypeKind: gc.KindPointer, TypeElement: GCTypeOf(prgrm, inner, typ, strct, lengths)})
 	case constants.DECL_SLICE:
 		if len(lengths) > gcArrayCount(inner) {
 			lengths = lengths[1:]
 		}
-		slice := &gc.GCType{GCTypeKind: gc.GCKindSlice, GCTypeElem: GCTypeOf(prgrm, inner, typ, strct, lengths)}
-		if slice.GCTypeElem != nil {
-			slice.GCTypeElemSize = gcValueSize(prgrm, inner, typ, strct, lengths)
+		slice := &gc.Type{TypeKind: gc.KindSlice, TypeElement: GCTypeOf(prgrm, inner, typ, strct, lengths)}
+		if slice.TypeElement != nil {
+			slice.TypeElementSize = gcValueSize(prgrm, inner, typ, strct, lengths)
 		}
 		return gcTypeAdd(prgrm, slice)
 	case constants.DECL_ARRAY:
@@ -131,15 +131,15 @@ func GCTypeOf(prgrm *CXProgram, specs []int, typ types.Code, strct *CXStruct, le
 		if elem == nil {
 			return nil
 		}
-		return &gc.GCType{GCTypeKind: gc.GCKindArray, GCTypeElem: elem, GCTypeLength: lengths[0], GCTypeElemSize: gcValueSize(prgrm, inner, typ, strct, lengths[1:])}
+		return &gc.Type{TypeKind: gc.KindArray, TypeElement: elem, TypeLength: lengths[0], TypeElementSize: gcValueSize(prgrm, inner, typ, strct, lengths[1:])}
 	case constants.DECL_BASIC, constants.DECL_STRUCT:
 		return cache.gcBaseType(prgrm, typ, strct)
 	}
 	return nil
 }
 
-// gcBaseType returns the GCType of a struct or basic value.
-func (cache *GCTypeCache) gcBaseType(prgrm *CXProgram, typ types.Code, strct *CXStruct) *gc.GCType {
+// gcBaseType returns the Type of a struct or basic value.
+func (cache *GCTypeCache) gcBaseType(prgrm *CXProgram, typ types.Code, strct *CXStruct) *gc.Type {
 	if strct == nil {
 		if typ == types.STR {
 			return cache.GCTypeCacheStr
@@ -150,15 +150,15 @@ func (cache *GCTypeCache) gcBaseType(prgrm *CXProgram, typ types.Code, strct *CX
 		return t
 	}
 	// A pointer or slice back to strct takes t before its fields are known.
-	t := &gc.GCType{GCTypeKind: gc.GCKindStruct}
+	t := &gc.Type{TypeKind: gc.KindStruct}
 	cache.GCTypeCacheStructs[strct] = t
 	for fieldIndex, fieldIdx := range strct.Fields {
 		specs, typ, fieldStruct, lengths := SignatureGCDeclaration(prgrm, prgrm.CXTypeSignatureFromArrayGet(fieldIdx))
 		if field := GCTypeOf(prgrm, specs, typ, fieldStruct, lengths); field != nil {
-			t.GCTypeFields = append(t.GCTypeFields, gc.GCTypeField{GCTypeFieldOffset: StructFieldOffset(prgrm, strct, fieldIndex), GCTypeFieldType: field})
+			t.TypeFields = append(t.TypeFields, gc.TypeField{TypeFieldOffset: StructFieldOffset(prgrm, strct, fieldIndex), TypeFieldType: field})
 		}
 	}
-	if len(t.GCTypeFields) == 0 {
+	if len(t.TypeFields) == 0 {
 		cache.GCTypeCacheStructs[strct] = nil
 		return nil
 	}
@@ -199,16 +199,16 @@ func gcValueSize(prgrm *CXProgram, specs []int, typ types.Code, strct *CXStruct,
 // gcFrameRoots returns the roots of the frame of fn. GarbageCollectorPrepare
 // builds them before the run, so a collection builds them only for a
 // function the affordance opcodes changed, a boundary.
-func gcFrameRoots(prgrm *CXProgram, fn *CXFunction) []gc.GCRoot {
+func gcFrameRoots(prgrm *CXProgram, fn *CXFunction) []gc.Root {
 	cache := gcTypeCache(prgrm)
 	count := len(fn.ListOfSlots) + len(fn.ListOfPointers)
 	if frame := cache.GCTypeCacheFrames[fn]; frame != nil && frame.GCFrameRootsCount == count {
 		return frame.GCFrameRootsRoots
 	}
 	frame := &GCFrameRoots{GCFrameRootsCount: count}
-	add := func(offset, inner types.Pointer, t *gc.GCType) {
+	add := func(offset, inner types.Pointer, t *gc.Type) {
 		if t != nil {
-			frame.GCFrameRootsRoots = append(frame.GCFrameRootsRoots, gc.GCRoot{GCRootOffset: offset, GCRootInner: inner, GCRootType: t})
+			frame.GCFrameRootsRoots = append(frame.GCFrameRootsRoots, gc.Root{RootOffset: offset, RootInner: inner, RootType: t})
 		}
 	}
 	for _, slot := range fn.ListOfSlots {
@@ -234,7 +234,7 @@ func gcFrameRoots(prgrm *CXProgram, fn *CXFunction) []gc.GCRoot {
 
 // gcGlobalRoots returns the roots of the globals of prgrm, at their
 // addresses. GarbageCollectorPrepare builds them before the run.
-func gcGlobalRoots(prgrm *CXProgram) []gc.GCRoot {
+func gcGlobalRoots(prgrm *CXProgram) []gc.Root {
 	cache := gcTypeCache(prgrm)
 	var count int
 	for _, pkgIdx := range prgrm.Packages {
@@ -247,7 +247,7 @@ func gcGlobalRoots(prgrm *CXProgram) []gc.GCRoot {
 	if count == cache.GCTypeCacheGlobalCount && cache.GCTypeCacheGlobals != nil {
 		return cache.GCTypeCacheGlobals
 	}
-	roots := []gc.GCRoot{}
+	roots := []gc.Root{}
 	for _, pkgIdx := range prgrm.Packages {
 		pkg, err := prgrm.PackageFromArrayGet(pkgIdx)
 		if err != nil {
@@ -261,7 +261,7 @@ func gcGlobalRoots(prgrm *CXProgram) []gc.GCRoot {
 			}
 			specs, typ, strct, lengths := SignatureGCDeclaration(prgrm, sig)
 			if t := GCTypeOf(prgrm, specs, typ, strct, lengths); t != nil {
-				roots = append(roots, gc.GCRoot{GCRootOffset: offset, GCRootType: t})
+				roots = append(roots, gc.Root{RootOffset: offset, RootType: t})
 			}
 		}
 	}
@@ -271,9 +271,9 @@ func gcGlobalRoots(prgrm *CXProgram) []gc.GCRoot {
 
 // gcTypeAdd gives the pointer or slice type t its index in the collector
 // scratch when it refers to anything, and returns it.
-func gcTypeAdd(prgrm *CXProgram, t *gc.GCType) *gc.GCType {
-	if t.GCTypeElem != nil {
-		gc.GCStateTypeAdd(&prgrm.Heap.Collector, t)
+func gcTypeAdd(prgrm *CXProgram, t *gc.Type) *gc.Type {
+	if t.TypeElement != nil {
+		gc.StateTypeAdd(&prgrm.Heap.Collector, t)
 	}
 	return t
 }

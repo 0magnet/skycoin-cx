@@ -132,7 +132,7 @@ func TestRunNetAllocs(t *testing.T) {
 	for i := 0; i <= runs; i++ {
 		compileRunProgram(t, runBenchProgram{name: "net", source: runNetSource})
 		actions.AST.ProgramLibrariesEnabled[constants.LibraryNumberNet] = true
-		core.CoreLibrariesEnabledResolve(actions.AST)
+		core.LibrariesEnabledResolve(actions.AST)
 		execute.RunPrepare(actions.AST)
 		compiled = append(compiled, actions.AST)
 	}
@@ -158,7 +158,7 @@ func TestRunVmNetAllocs(t *testing.T) {
 	peers := runNetPeers(t, 4)
 	compileRunProgram(t, runBenchProgram{name: "net", source: runNetSource})
 	actions.AST.ProgramLibrariesEnabled[constants.LibraryNumberNet] = true
-	core.CoreLibrariesEnabledResolve(actions.AST)
+	core.LibrariesEnabledResolve(actions.AST)
 	image, _, outside := core.ExecutorLower(actions.AST)
 	if outside != "" {
 		t.Fatalf("does not lower: %s", outside)

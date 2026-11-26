@@ -26,10 +26,10 @@ type CXExpressionMng struct {
 // VIOLATION STRHOT-248: E, the assert text of a bad Init, built only when it fails, #412.
 func (manager *CXExpressionMng) CXExpressionMngInit(capacity int, growable bool) {
 	if manager.CXExpressionMngLen != 0 {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXExpressionMngInit on a manager holding %d objects", manager.CXExpressionMngLen))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXExpressionMngInit on a manager holding %d objects", manager.CXExpressionMngLen))
 	}
 	if capacity < 0 || uint64(capacity) > objmodel.GidCapMax {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXExpressionMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXExpressionMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
 	}
 	*manager = CXExpressionMng{
 		CXExpressionMngObjects:     make([]CXExpression, capacity),
@@ -49,7 +49,7 @@ func (manager *CXExpressionMng) CXExpressionAlloc() CXExpressionGid {
 		manager.CXExpressionMngFree = manager.CXExpressionMngFree[:free-1]
 	} else {
 		if capacity := len(manager.CXExpressionMngObjects); int(manager.CXExpressionMngNext) == capacity {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXExpressionAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXExpressionAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
 		}
 		index = manager.CXExpressionMngNext
 		manager.CXExpressionMngNext++
@@ -59,7 +59,7 @@ func (manager *CXExpressionMng) CXExpressionAlloc() CXExpressionGid {
 	manager.CXExpressionMngLive[index] = true
 	manager.CXExpressionMngLen++
 	if manager.CXExpressionMngLen != int(manager.CXExpressionMngNext)-len(manager.CXExpressionMngFree)-int(manager.CXExpressionMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXExpressionAlloc: Len %d is not the live slot count", manager.CXExpressionMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXExpressionAlloc: Len %d is not the live slot count", manager.CXExpressionMngLen))
 	}
 	return CXExpressionGid(objmodel.GidCompose(CXExpressionGidTypeTag, manager.CXExpressionMngGenerations[index], index))
 }
@@ -73,9 +73,9 @@ func (manager *CXExpressionMng) CXExpressionRelease(gid CXExpressionGid) {
 		!manager.CXExpressionMngLive[index] || manager.CXExpressionMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXExpressionGidTypeTag, len(manager.CXExpressionMngObjects))
 		if !manager.CXExpressionMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXExpressionRelease of slot %d, which is not live, a double release", index))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXExpressionRelease of slot %d, which is not live, a double release", index))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXExpressionRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXExpressionMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXExpressionRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXExpressionMngGenerations[index]))
 	}
 	manager.CXExpressionMngObjects[index] = CXExpression{}
 	manager.CXExpressionMngLive[index] = false
@@ -87,7 +87,7 @@ func (manager *CXExpressionMng) CXExpressionRelease(gid CXExpressionGid) {
 	}
 	manager.CXExpressionMngLen--
 	if manager.CXExpressionMngLen < 0 || manager.CXExpressionMngLen != int(manager.CXExpressionMngNext)-len(manager.CXExpressionMngFree)-int(manager.CXExpressionMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXExpressionRelease: Len %d is not the live slot count", manager.CXExpressionMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXExpressionRelease: Len %d is not the live slot count", manager.CXExpressionMngLen))
 	}
 }
 
@@ -99,9 +99,9 @@ func (manager *CXExpressionMng) CXExpressionGet(gid CXExpressionGid) *CXExpressi
 		!manager.CXExpressionMngLive[index] || manager.CXExpressionMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXExpressionGidTypeTag, len(manager.CXExpressionMngObjects))
 		if !manager.CXExpressionMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXExpressionGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXExpressionGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXExpressionGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXExpressionMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXExpressionGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXExpressionMngGenerations[index]))
 	}
 	return &manager.CXExpressionMngObjects[index]
 }
@@ -148,7 +148,7 @@ func (manager *CXExpressionMng) CXExpressionMngGrowBoundary() (int, int) {
 // Cap at 0.
 func (manager *CXExpressionMng) CXExpressionMngTeardown() {
 	if manager.CXExpressionMngLen != 0 {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXExpressionMngTeardown with %d live objects, a leak", manager.CXExpressionMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXExpressionMngTeardown with %d live objects, a leak", manager.CXExpressionMngLen))
 	}
 	*manager = CXExpressionMng{}
 }

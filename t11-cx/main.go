@@ -12,7 +12,7 @@ import (
 
 	constants "github.com/skycoin/skycoin-cx/t1-constants"
 	profiling "github.com/skycoin/skycoin-cx/t1-profiling"
-	repl "github.com/skycoin/skycoin-cx/t10-cxrepl"    // thin: only Repl, ReplTargetFn; only user of cxrepl, could merge it here, max tier 11 to 10
+	repl "github.com/skycoin/skycoin-cx/t10-cxrepl"    // thin: only Repl, TargetFunction; only user of cxrepl, could merge it here, max tier 11 to 10
 	globals "github.com/skycoin/skycoin-cx/t2-globals" // thin: only DBG_GOLANG_STACK_TRACE; no depth gain
 	actions "github.com/skycoin/skycoin-cx/t4-actions"
 	cxnet "github.com/skycoin/skycoin-cx/t4-cxnet"          // thin: only ConstantsInit; no depth gain

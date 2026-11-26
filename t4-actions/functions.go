@@ -394,7 +394,7 @@ func FunctionDeclaration(prgrm *ast.CXProgram, fnIdx ast.CXFunctionGid, inputs, 
 
 // symbolsScopeClose closes the scopes that expr ends.
 func symbolsScopeClose(symbolTable *SymbolTable, expr ast.CXExpression) {
-	assert.AssertInvariantTrue(len(symbolTable.symbolsIndex) > int(expr.ExpressionScopeCloseCount), "FunctionDeclaration: scope close without a matching open")
+	assert.InvariantTrue(len(symbolTable.symbolsIndex) > int(expr.ExpressionScopeCloseCount), "FunctionDeclaration: scope close without a matching open")
 	symbolTable.symbolsIndex = symbolTable.symbolsIndex[:len(symbolTable.symbolsIndex)-int(expr.ExpressionScopeCloseCount)]
 }
 
@@ -1408,7 +1408,7 @@ func RedeclaredCheck(prgrm *ast.CXProgram, symbolTable *SymbolTable, expr *ast.C
 	expressionOperator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(expression.Operator)
 
 	if expressionOperator == nil && len(expression.OutputsGet(prgrm)) > 0 && len(expression.InputsGet(prgrm)) == 0 {
-		assert.AssertInvariantTrue(len(symbolTable.symbolsIndex) > 0, "CheckRedeclared: symbol scope stack is empty")
+		assert.InvariantTrue(len(symbolTable.symbolsIndex) > 0, "CheckRedeclared: symbol scope stack is empty")
 		lastIdx := len(symbolTable.symbolsIndex) - 1
 
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
@@ -2247,7 +2247,7 @@ func SymbolsTableUpdate(prgrm *ast.CXProgram, symbolTable *SymbolTable, typeSigI
 			GlobalSymbolGet(prgrm, symbolTable, typeSigPkg, typeSig.Name, typeSig.ArgDetails)
 		}
 
-		assert.AssertInvariantTrue(len(symbolTable.symbolsIndex) > 0, "UpdateSymbolsTable: symbol scope stack is empty")
+		assert.InvariantTrue(len(symbolTable.symbolsIndex) > 0, "UpdateSymbolsTable: symbol scope stack is empty")
 		lastIdx := len(symbolTable.symbolsIndex) - 1
 		fullName := SymbolTableKey{SymbolTableKeyPackage: typeSigPkg.Name, SymbolTableKeyName: StripNameNumber(prgrm, typeSig.Name)}
 
@@ -2317,7 +2317,7 @@ func MethodCallResolve(prgrm *ast.CXProgram, expr *ast.CXExpression, symbolTable
 	}
 	expression := &prgrm.CXAtomicOps[expr.Index]
 	receiverTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.InputsGet(prgrm)[0])
-	assert.AssertInvariantTrue(receiverTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE, "ProcessMethodCall: receiver is not an argument")
+	assert.InvariantTrue(receiverTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE, "ProcessMethodCall: receiver is not an argument")
 	receiver := prgrm.CXArgGet(ast.CXArgumentIndex(receiverTypeSig.Meta))
 	receiverPkg, err := prgrm.PackageFromArrayGet(receiver.Package)
 	if err != nil {

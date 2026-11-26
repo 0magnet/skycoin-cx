@@ -26,10 +26,10 @@ type CXAtomicOperatorMng struct {
 // VIOLATION STRHOT-246: E, the assert text of a bad Init, built only when it fails, #412.
 func (manager *CXAtomicOperatorMng) CXAtomicOperatorMngInit(capacity int, growable bool) {
 	if manager.CXAtomicOperatorMngLen != 0 {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorMngInit on a manager holding %d objects", manager.CXAtomicOperatorMngLen))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorMngInit on a manager holding %d objects", manager.CXAtomicOperatorMngLen))
 	}
 	if capacity < 0 || uint64(capacity) > objmodel.GidCapMax {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
 	}
 	*manager = CXAtomicOperatorMng{
 		CXAtomicOperatorMngObjects:     make([]CXAtomicOperator, capacity),
@@ -49,7 +49,7 @@ func (manager *CXAtomicOperatorMng) CXAtomicOperatorAlloc() CXAtomicOperatorGid 
 		manager.CXAtomicOperatorMngFree = manager.CXAtomicOperatorMngFree[:free-1]
 	} else {
 		if capacity := len(manager.CXAtomicOperatorMngObjects); int(manager.CXAtomicOperatorMngNext) == capacity {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
 		}
 		index = manager.CXAtomicOperatorMngNext
 		manager.CXAtomicOperatorMngNext++
@@ -59,7 +59,7 @@ func (manager *CXAtomicOperatorMng) CXAtomicOperatorAlloc() CXAtomicOperatorGid 
 	manager.CXAtomicOperatorMngLive[index] = true
 	manager.CXAtomicOperatorMngLen++
 	if manager.CXAtomicOperatorMngLen != int(manager.CXAtomicOperatorMngNext)-len(manager.CXAtomicOperatorMngFree)-int(manager.CXAtomicOperatorMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXAtomicOperatorAlloc: Len %d is not the live slot count", manager.CXAtomicOperatorMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXAtomicOperatorAlloc: Len %d is not the live slot count", manager.CXAtomicOperatorMngLen))
 	}
 	return CXAtomicOperatorGid(objmodel.GidCompose(CXAtomicOperatorGidTypeTag, manager.CXAtomicOperatorMngGenerations[index], index))
 }
@@ -73,9 +73,9 @@ func (manager *CXAtomicOperatorMng) CXAtomicOperatorRelease(gid CXAtomicOperator
 		!manager.CXAtomicOperatorMngLive[index] || manager.CXAtomicOperatorMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXAtomicOperatorGidTypeTag, len(manager.CXAtomicOperatorMngObjects))
 		if !manager.CXAtomicOperatorMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorRelease of slot %d, which is not live, a double release", index))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorRelease of slot %d, which is not live, a double release", index))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXAtomicOperatorMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXAtomicOperatorMngGenerations[index]))
 	}
 	manager.CXAtomicOperatorMngObjects[index] = CXAtomicOperator{}
 	manager.CXAtomicOperatorMngLive[index] = false
@@ -87,7 +87,7 @@ func (manager *CXAtomicOperatorMng) CXAtomicOperatorRelease(gid CXAtomicOperator
 	}
 	manager.CXAtomicOperatorMngLen--
 	if manager.CXAtomicOperatorMngLen < 0 || manager.CXAtomicOperatorMngLen != int(manager.CXAtomicOperatorMngNext)-len(manager.CXAtomicOperatorMngFree)-int(manager.CXAtomicOperatorMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXAtomicOperatorRelease: Len %d is not the live slot count", manager.CXAtomicOperatorMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXAtomicOperatorRelease: Len %d is not the live slot count", manager.CXAtomicOperatorMngLen))
 	}
 }
 
@@ -99,9 +99,9 @@ func (manager *CXAtomicOperatorMng) CXAtomicOperatorGet(gid CXAtomicOperatorGid)
 		!manager.CXAtomicOperatorMngLive[index] || manager.CXAtomicOperatorMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXAtomicOperatorGidTypeTag, len(manager.CXAtomicOperatorMngObjects))
 		if !manager.CXAtomicOperatorMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXAtomicOperatorMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXAtomicOperatorGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXAtomicOperatorMngGenerations[index]))
 	}
 	return &manager.CXAtomicOperatorMngObjects[index]
 }
@@ -148,7 +148,7 @@ func (manager *CXAtomicOperatorMng) CXAtomicOperatorMngGrowBoundary() (int, int)
 // Cap at 0.
 func (manager *CXAtomicOperatorMng) CXAtomicOperatorMngTeardown() {
 	if manager.CXAtomicOperatorMngLen != 0 {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXAtomicOperatorMngTeardown with %d live objects, a leak", manager.CXAtomicOperatorMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXAtomicOperatorMngTeardown with %d live objects, a leak", manager.CXAtomicOperatorMngLen))
 	}
 	*manager = CXAtomicOperatorMng{}
 }

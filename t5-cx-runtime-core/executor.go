@@ -67,7 +67,7 @@ func executorFailureDescribe(prgrm *ast.CXProgram, failure lower.Failure) string
 // ExecutorVmRun runs image on vm as execute.RunCompiled and runProgram run
 // prgrm, writing to os.Stdout. It returns the exit code: CX_SUCCESS,
 // CX_ASSERT after a failed test, or the code of a runtime error, which it
-// prints like printer.PrinterRuntimeErrorPrint.
+// prints like printer.RuntimeErrorPrint.
 func ExecutorVmRun(prgrm *ast.CXProgram, image *ir.Image) int32 {
 	return ExecutorVmRunMachine(prgrm, vm.MachineNew(image, ExecutorOutputSize))
 }
@@ -102,9 +102,9 @@ func executorVmRunEntry(prgrm *ast.CXProgram, machine *vm.Machine, entry uint32,
 		case stop == vm.StopReturn:
 			return types.CX_SUCCESS
 		case stop == vm.StopTestFailed:
-			printer.PrinterVmTestFailurePrint(machine)
+			printer.VmTestFailurePrint(machine)
 		case !vm.Resumable(stop):
-			printer.PrinterVmErrorPrint(prgrm, machine, stop)
+			printer.VmErrorPrint(prgrm, machine, stop)
 			return vm.StopExitCodes[stop]
 		}
 		stop, _ = machine.Resume()
@@ -134,12 +134,12 @@ func ExecutorMemoryLimitsClamp() {
 // ExecutorAuto, ExecutorOld and ExecutorVm, and cxArgs as os.Args. It
 // returns the exit code, after printing any runtime error.
 func ExecutorRun(prgrm *ast.CXProgram, executor string, cxArgs []string) int32 {
-	CoreLibrariesEnabledResolve(prgrm)
-	if code := CoreOperationRefused(prgrm); code != 0 {
-		fmt.Println(CoreOperationRefusalLine(prgrm, code))
+	LibrariesEnabledResolve(prgrm)
+	if code := OperationRefused(prgrm); code != 0 {
+		fmt.Println(OperationRefusalLine(prgrm, code))
 		return types.CX_RUNTIME_LIBRARY_DISABLED
 	}
-	if CoreLibrariesActive(prgrm)[constants.LibraryNumberNet] {
+	if LibrariesActive(prgrm)[constants.LibraryNumberNet] {
 		if err := executorNetRunStart(); err != nil {
 			fmt.Fprintf(os.Stderr, "library %s: %s\n", constants.LibraryNameOf(constants.LibraryNumberNet), err)
 			return types.CX_INTERNAL_ERROR
@@ -164,7 +164,7 @@ func ExecutorRun(prgrm *ast.CXProgram, executor string, cxArgs []string) int32 {
 		panic(err)
 	}
 	if prgrm.RuntimeError.RuntimeErrorRecordRaised {
-		return int32(printer.PrinterRuntimeErrorPrint(prgrm))
+		return int32(printer.RuntimeErrorPrint(prgrm))
 	}
 	if opcodes.AssertFailed() {
 		return types.CX_ASSERT

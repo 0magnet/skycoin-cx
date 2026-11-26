@@ -27,13 +27,13 @@ var cipherState CipherState
 // naming a released or never created state.
 // VIOLATION STRHOT-326: E, the assert text of a bad handle, built only when it fails, #510.
 func hashStateAssertFailure(handle int32) {
-	assert.AssertPreconditionTrue(false, fmt.Sprintf("cipher hash state %d is out of range, released or never created", handle))
+	assert.PreconditionTrue(false, fmt.Sprintf("cipher hash state %d is out of range, released or never created", handle))
 }
 
 // hashStateFullAssertFailure ends the program when every state is taken.
 // VIOLATION STRHOT-327: E, the assert text of a full table, built only when it fails, #510.
 func hashStateFullAssertFailure() {
-	assert.AssertPreconditionTrue(false, fmt.Sprintf("cipher hash state table is full, it holds %d", HashStateCountMax))
+	assert.PreconditionTrue(false, fmt.Sprintf("cipher hash state table is full, it holds %d", HashStateCountMax))
 }
 
 // HashStateTakenCheck asserts that handle names a taken state.

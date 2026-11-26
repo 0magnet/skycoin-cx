@@ -68,7 +68,7 @@ func netBufferLength(buffer []byte, length int32) []byte {
 // netReplayEndAssertFailure ends a program that asks for an update the
 // replay record does not hold.
 func netReplayEndAssertFailure() {
-	assert.AssertPreconditionTrue(false, fmt.Sprintf("the net replay record has no update %d, or one of its entries names a socket the program did not open", netbatch.NetUpdateNumber()))
+	assert.PreconditionTrue(false, fmt.Sprintf("the net replay record has no update %d, or one of its entries names a socket the program did not open", netbatch.NetUpdateNumber()))
 }
 
 // netOpcodeRun runs the net opcode op on the block at offset.

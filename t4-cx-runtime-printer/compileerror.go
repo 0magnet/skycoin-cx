@@ -109,16 +109,16 @@ var printerCompileErrorFormats = [ast.CompileErrorCodeEnd - ast.CompileErrorCode
 	ast.CompileErrorCodeAffordanceInvalid - ast.CompileErrorCodeNil:               {Format: "%H invalid aff literal: %s\n"},
 }
 
-// PrinterCompileErrorsRegister makes prgrm print its compile errors through
+// CompileErrorsRegister makes prgrm print its compile errors through
 // this package when the compiler exits on one.
-func PrinterCompileErrorsRegister(prgrm *ast.CXProgram) {
-	prgrm.CompileErrorPrint = PrinterCompileErrorsPrint
+func CompileErrorsRegister(prgrm *ast.CXProgram) {
+	prgrm.CompileErrorPrint = CompileErrorsPrint
 }
 
-// PrinterCompileErrorsPrint prints the compile errors of prgrm that are not
+// CompileErrorsPrint prints the compile errors of prgrm that are not
 // printed yet, ordered by file, line and column, and a record equal to the one
 // before it once.
-func PrinterCompileErrorsPrint(prgrm *ast.CXProgram) {
+func CompileErrorsPrint(prgrm *ast.CXProgram) {
 	list := &prgrm.CxIrState.CompileErrorList
 	printerCompileErrorsSort(list.CompileErrorListRecords[list.CompileErrorListPrinted:])
 	for ; list.CompileErrorListPrinted < len(list.CompileErrorListRecords); list.CompileErrorListPrinted++ {
@@ -127,7 +127,7 @@ func PrinterCompileErrorsPrint(prgrm *ast.CXProgram) {
 			continue
 		}
 		format := printerCompileErrorFormats[record.CompileErrorRecordCode-ast.CompileErrorCodeNil]
-		text := PrinterCompileErrorAppend(nil, prgrm, record)
+		text := CompileErrorAppend(nil, prgrm, record)
 		if format.Stdout {
 			os.Stdout.Write(text)
 		} else {
@@ -136,8 +136,8 @@ func PrinterCompileErrorsPrint(prgrm *ast.CXProgram) {
 	}
 }
 
-// PrinterCompileErrorAppend appends the text of record to text.
-func PrinterCompileErrorAppend(text []byte, prgrm *ast.CXProgram, record *ast.CompileErrorRecord) []byte {
+// CompileErrorAppend appends the text of record to text.
+func CompileErrorAppend(text []byte, prgrm *ast.CXProgram, record *ast.CompileErrorRecord) []byte {
 	entry := printerCompileErrorFormats[record.CompileErrorRecordCode-ast.CompileErrorCodeNil]
 	format := entry.Format
 	operand := 0

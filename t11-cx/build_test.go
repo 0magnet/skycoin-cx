@@ -109,7 +109,7 @@ func TestBuildCoreRefuses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	built[len(built)-core.CoreTrailerSize-1] ^= 0xff
+	built[len(built)-core.TrailerSize-1] ^= 0xff
 	if err := os.WriteFile(output, built, 0o755); err != nil {
 		t.Fatal(err)
 	}

@@ -12,56 +12,56 @@ import (
 )
 
 // The trailer ends a file that cx build made: the core binary, the serialized
-// program, then CoreTrailerSize bytes. The layout is in "Built programs" in
+// program, then TrailerSize bytes. The layout is in "Built programs" in
 // docs/IR.md. All integers are little endian.
 const (
-	CoreTrailerSize          = 32
-	CoreTrailerMagic         = "CXBUNDLE"
-	CoreTrailerFormatVersion = 1
+	TrailerSize          = 32
+	TrailerMagic         = "CXBUNDLE"
+	TrailerFormatVersion = 1
 )
 
-// CoreTrailer describes the program a trailer marks.
-type CoreTrailer struct {
-	CoreTrailerOffset   uint64 // offset of the program from the start of the file
-	CoreTrailerLength   uint64 // length of the program in bytes
-	CoreTrailerChecksum uint32 // CRC-32 (IEEE) of the program
+// Trailer describes the program a trailer marks.
+type Trailer struct {
+	TrailerOffset   uint64 // offset of the program from the start of the file
+	TrailerLength   uint64 // length of the program in bytes
+	TrailerChecksum uint32 // CRC-32 (IEEE) of the program
 }
 
-// CoreTrailerAppend returns core followed by program and its trailer.
-func CoreTrailerAppend(core []byte, program []byte) []byte {
-	out := make([]byte, 0, len(core)+len(program)+CoreTrailerSize)
+// TrailerAppend returns core followed by program and its trailer.
+func TrailerAppend(core []byte, program []byte) []byte {
+	out := make([]byte, 0, len(core)+len(program)+TrailerSize)
 	out = append(out, core...)
 	out = append(out, program...)
 	out = binary.LittleEndian.AppendUint64(out, uint64(len(core)))
 	out = binary.LittleEndian.AppendUint64(out, uint64(len(program)))
 	out = binary.LittleEndian.AppendUint32(out, crc32.ChecksumIEEE(program))
-	out = binary.LittleEndian.AppendUint32(out, CoreTrailerFormatVersion)
-	return append(out, CoreTrailerMagic...)
+	out = binary.LittleEndian.AppendUint32(out, TrailerFormatVersion)
+	return append(out, TrailerMagic...)
 }
 
-// CoreTrailerDecode reads the trailer from tail, the last CoreTrailerSize
+// TrailerDecode reads the trailer from tail, the last TrailerSize
 // bytes of a file of fileSize bytes. found is false when tail is no trailer.
 // problem is not empty when it is one that does not fit the file.
-func CoreTrailerDecode(tail []byte, fileSize uint64) (trailer CoreTrailer, found bool, problem string) {
-	if len(tail) != CoreTrailerSize || !bytes.Equal(tail[24:], []byte(CoreTrailerMagic)) {
+func TrailerDecode(tail []byte, fileSize uint64) (trailer Trailer, found bool, problem string) {
+	if len(tail) != TrailerSize || !bytes.Equal(tail[24:], []byte(TrailerMagic)) {
 		return trailer, false, ""
 	}
-	trailer.CoreTrailerOffset = binary.LittleEndian.Uint64(tail[0:])
-	trailer.CoreTrailerLength = binary.LittleEndian.Uint64(tail[8:])
-	trailer.CoreTrailerChecksum = binary.LittleEndian.Uint32(tail[16:])
-	if version := binary.LittleEndian.Uint32(tail[20:]); version != CoreTrailerFormatVersion {
-		return trailer, true, fmt.Sprintf("trailer format %d, this core reads format %d", version, CoreTrailerFormatVersion)
+	trailer.TrailerOffset = binary.LittleEndian.Uint64(tail[0:])
+	trailer.TrailerLength = binary.LittleEndian.Uint64(tail[8:])
+	trailer.TrailerChecksum = binary.LittleEndian.Uint32(tail[16:])
+	if version := binary.LittleEndian.Uint32(tail[20:]); version != TrailerFormatVersion {
+		return trailer, true, fmt.Sprintf("trailer format %d, this core reads format %d", version, TrailerFormatVersion)
 	}
-	end := trailer.CoreTrailerOffset + trailer.CoreTrailerLength
-	if end < trailer.CoreTrailerOffset || end+CoreTrailerSize != fileSize {
-		return trailer, true, fmt.Sprintf("trailer gives a program of %d bytes at %d, which does not end at the trailer of a %d byte file", trailer.CoreTrailerLength, trailer.CoreTrailerOffset, fileSize)
+	end := trailer.TrailerOffset + trailer.TrailerLength
+	if end < trailer.TrailerOffset || end+TrailerSize != fileSize {
+		return trailer, true, fmt.Sprintf("trailer gives a program of %d bytes at %d, which does not end at the trailer of a %d byte file", trailer.TrailerLength, trailer.TrailerOffset, fileSize)
 	}
 	return trailer, true, ""
 }
 
-// CoreTrailerRead returns the program appended to the file at path, nil
+// TrailerRead returns the program appended to the file at path, nil
 // when the file ends in no trailer.
-func CoreTrailerRead(path string) ([]byte, *sandbox.FileError) {
+func TrailerRead(path string) ([]byte, *sandbox.FileError) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, sandbox.FileErrorWrap(sandbox.FileOperationOpen, path, err)
@@ -72,25 +72,25 @@ func CoreTrailerRead(path string) ([]byte, *sandbox.FileError) {
 		return nil, sandbox.FileErrorWrap(sandbox.FileOperationRead, path, err)
 	}
 	size := fileStat.Size()
-	if size < CoreTrailerSize {
+	if size < TrailerSize {
 		return nil, nil
 	}
-	tail := make([]byte, CoreTrailerSize)
-	if _, err := file.ReadAt(tail, size-CoreTrailerSize); err != nil {
+	tail := make([]byte, TrailerSize)
+	if _, err := file.ReadAt(tail, size-TrailerSize); err != nil {
 		return nil, sandbox.FileErrorWrap(sandbox.FileOperationRead, path, err)
 	}
-	trailer, found, problem := CoreTrailerDecode(tail, uint64(size))
+	trailer, found, problem := TrailerDecode(tail, uint64(size))
 	if !found {
 		return nil, nil
 	}
 	if problem != "" {
 		return nil, coreTrailerContentInvalid(path, problem)
 	}
-	program := make([]byte, trailer.CoreTrailerLength)
-	if _, err := file.ReadAt(program, int64(trailer.CoreTrailerOffset)); err != nil && err != io.EOF {
+	program := make([]byte, trailer.TrailerLength)
+	if _, err := file.ReadAt(program, int64(trailer.TrailerOffset)); err != nil && err != io.EOF {
 		return nil, sandbox.FileErrorWrap(sandbox.FileOperationRead, path, err)
 	}
-	if crc32.ChecksumIEEE(program) != trailer.CoreTrailerChecksum {
+	if crc32.ChecksumIEEE(program) != trailer.TrailerChecksum {
 		return nil, coreTrailerContentInvalid(path, "the appended program does not match its checksum")
 	}
 	return program, nil

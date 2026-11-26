@@ -74,7 +74,7 @@ allocates only when it fails, and is marked by its STRHOT E code instead
 | VMALLOC-008 | fixed | `rand.Seed`, a no-op since Go 1.24, removed |
 | VMALLOC-009 | fixed for the run | `EnsureMinimumHeapSize`, called by `RunPrepare`, allocates program memory for the heap cap once |
 | VMALLOC-010 | fixed (D42) | `MemoryResize` grows the heap into the memory `EnsureMinimumHeapSize` allocated once for the heap cap |
-| VMALLOC-011 | fixed (D42), one rest | the root table, type cache and scratch of the collector are built before the run. A collection grows `GCStateViews` only when more than memory/512 pointers into objects are pending at once, D97 |
+| VMALLOC-011 | fixed (D42), one rest | the root table, type cache and scratch of the collector are built before the run. A collection grows `StateViews` only when more than memory/512 pointers into objects are pending at once, D97 |
 | VMALLOC-012 | open, boundary | `ReadSlice_*`, used by the serialize and file opcodes |
 | VMALLOC-013 | not on the run path | `Make_obj` and `StrPayloadWrite` run at compile time |
 | VMALLOC-014 | failure only | the getters build an error only on a miss |

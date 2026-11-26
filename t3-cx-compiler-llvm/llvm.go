@@ -52,7 +52,7 @@ type Options struct {
 	// StopCodes is the exit code of each stop, as vm.StopExitCodes.
 	StopCodes [StopCount]int32
 	// StopLines is the first line vm prints for each stop, without the
-	// error header, as printer.PrinterVmErrorPrint writes it.
+	// error header, as printer.VmErrorPrint writes it.
 	StopLines [StopCount]string
 	// AssertCode is the exit code after a failed test.
 	AssertCode int32
@@ -1209,7 +1209,7 @@ func (e *emitter) expand(fact *OpcodeFact, a, b, r string, pc uint32) {
 	for _, line := range strings.Split(text, "\n") {
 		if check, found := strings.CutPrefix(line, "check "); found {
 			condition, stop, _ := strings.Cut(check, " ")
-			assert.AssertInvariantTrue(stop == "DivideByZero", "llvm: template stop "+stop)
+			assert.InvariantTrue(stop == "DivideByZero", "llvm: template stop "+stop)
 			e.check(condition, StopDivideByZero, pc)
 			continue
 		}
