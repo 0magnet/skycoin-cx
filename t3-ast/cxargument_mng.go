@@ -26,10 +26,10 @@ type CXArgumentMng struct {
 // VIOLATION STRHOT-244: E, the assert text of a bad Init, built only when it fails, #412.
 func (manager *CXArgumentMng) CXArgumentMngInit(capacity int, growable bool) {
 	if manager.CXArgumentMngLen != 0 {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentMngInit on a manager holding %d objects", manager.CXArgumentMngLen))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentMngInit on a manager holding %d objects", manager.CXArgumentMngLen))
 	}
 	if capacity < 0 || uint64(capacity) > objmodel.GidCapMax {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
 	}
 	*manager = CXArgumentMng{
 		CXArgumentMngObjects:     make([]CXArgument, capacity),
@@ -49,7 +49,7 @@ func (manager *CXArgumentMng) CXArgumentAlloc() CXArgumentGid {
 		manager.CXArgumentMngFree = manager.CXArgumentMngFree[:free-1]
 	} else {
 		if capacity := len(manager.CXArgumentMngObjects); int(manager.CXArgumentMngNext) == capacity {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
 		}
 		index = manager.CXArgumentMngNext
 		manager.CXArgumentMngNext++
@@ -59,7 +59,7 @@ func (manager *CXArgumentMng) CXArgumentAlloc() CXArgumentGid {
 	manager.CXArgumentMngLive[index] = true
 	manager.CXArgumentMngLen++
 	if manager.CXArgumentMngLen != int(manager.CXArgumentMngNext)-len(manager.CXArgumentMngFree)-int(manager.CXArgumentMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXArgumentAlloc: Len %d is not the live slot count", manager.CXArgumentMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXArgumentAlloc: Len %d is not the live slot count", manager.CXArgumentMngLen))
 	}
 	return CXArgumentGid(objmodel.GidCompose(CXArgumentGidTypeTag, manager.CXArgumentMngGenerations[index], index))
 }
@@ -73,9 +73,9 @@ func (manager *CXArgumentMng) CXArgumentRelease(gid CXArgumentGid) {
 		!manager.CXArgumentMngLive[index] || manager.CXArgumentMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXArgumentGidTypeTag, len(manager.CXArgumentMngObjects))
 		if !manager.CXArgumentMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentRelease of slot %d, which is not live, a double release", index))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentRelease of slot %d, which is not live, a double release", index))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXArgumentMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXArgumentMngGenerations[index]))
 	}
 	manager.CXArgumentMngObjects[index] = CXArgument{}
 	manager.CXArgumentMngLive[index] = false
@@ -87,7 +87,7 @@ func (manager *CXArgumentMng) CXArgumentRelease(gid CXArgumentGid) {
 	}
 	manager.CXArgumentMngLen--
 	if manager.CXArgumentMngLen < 0 || manager.CXArgumentMngLen != int(manager.CXArgumentMngNext)-len(manager.CXArgumentMngFree)-int(manager.CXArgumentMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXArgumentRelease: Len %d is not the live slot count", manager.CXArgumentMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXArgumentRelease: Len %d is not the live slot count", manager.CXArgumentMngLen))
 	}
 }
 
@@ -100,9 +100,9 @@ func (manager *CXArgumentMng) CXArgumentGet(gid CXArgumentGid) *CXArgument {
 		!manager.CXArgumentMngLive[index] || manager.CXArgumentMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXArgumentGidTypeTag, len(manager.CXArgumentMngObjects))
 		if !manager.CXArgumentMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXArgumentMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXArgumentMngGenerations[index]))
 	}
 	return &manager.CXArgumentMngObjects[index]
 }
@@ -149,7 +149,7 @@ func (manager *CXArgumentMng) CXArgumentMngGrowBoundary() (int, int) {
 // Cap at 0.
 func (manager *CXArgumentMng) CXArgumentMngTeardown() {
 	if manager.CXArgumentMngLen != 0 {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXArgumentMngTeardown with %d live objects, a leak", manager.CXArgumentMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXArgumentMngTeardown with %d live objects, a leak", manager.CXArgumentMngLen))
 	}
 	*manager = CXArgumentMng{}
 }

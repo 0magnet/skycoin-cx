@@ -26,10 +26,10 @@ type CXLineMng struct {
 // VIOLATION STRHOT-250: E, the assert text of a bad Init, built only when it fails, #412.
 func (manager *CXLineMng) CXLineMngInit(capacity int, growable bool) {
 	if manager.CXLineMngLen != 0 {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXLineMngInit on a manager holding %d objects", manager.CXLineMngLen))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXLineMngInit on a manager holding %d objects", manager.CXLineMngLen))
 	}
 	if capacity < 0 || uint64(capacity) > objmodel.GidCapMax {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXLineMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXLineMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
 	}
 	*manager = CXLineMng{
 		CXLineMngObjects:     make([]CXLine, capacity),
@@ -49,7 +49,7 @@ func (manager *CXLineMng) CXLineAlloc() CXLineGid {
 		manager.CXLineMngFree = manager.CXLineMngFree[:free-1]
 	} else {
 		if capacity := len(manager.CXLineMngObjects); int(manager.CXLineMngNext) == capacity {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXLineAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXLineAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
 		}
 		index = manager.CXLineMngNext
 		manager.CXLineMngNext++
@@ -59,7 +59,7 @@ func (manager *CXLineMng) CXLineAlloc() CXLineGid {
 	manager.CXLineMngLive[index] = true
 	manager.CXLineMngLen++
 	if manager.CXLineMngLen != int(manager.CXLineMngNext)-len(manager.CXLineMngFree)-int(manager.CXLineMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXLineAlloc: Len %d is not the live slot count", manager.CXLineMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXLineAlloc: Len %d is not the live slot count", manager.CXLineMngLen))
 	}
 	return CXLineGid(objmodel.GidCompose(CXLineGidTypeTag, manager.CXLineMngGenerations[index], index))
 }
@@ -73,9 +73,9 @@ func (manager *CXLineMng) CXLineRelease(gid CXLineGid) {
 		!manager.CXLineMngLive[index] || manager.CXLineMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXLineGidTypeTag, len(manager.CXLineMngObjects))
 		if !manager.CXLineMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXLineRelease of slot %d, which is not live, a double release", index))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXLineRelease of slot %d, which is not live, a double release", index))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXLineRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXLineMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXLineRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXLineMngGenerations[index]))
 	}
 	manager.CXLineMngObjects[index] = CXLine{}
 	manager.CXLineMngLive[index] = false
@@ -87,7 +87,7 @@ func (manager *CXLineMng) CXLineRelease(gid CXLineGid) {
 	}
 	manager.CXLineMngLen--
 	if manager.CXLineMngLen < 0 || manager.CXLineMngLen != int(manager.CXLineMngNext)-len(manager.CXLineMngFree)-int(manager.CXLineMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXLineRelease: Len %d is not the live slot count", manager.CXLineMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXLineRelease: Len %d is not the live slot count", manager.CXLineMngLen))
 	}
 }
 
@@ -100,9 +100,9 @@ func (manager *CXLineMng) CXLineGet(gid CXLineGid) *CXLine {
 		!manager.CXLineMngLive[index] || manager.CXLineMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXLineGidTypeTag, len(manager.CXLineMngObjects))
 		if !manager.CXLineMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXLineGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXLineGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXLineGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXLineMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXLineGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXLineMngGenerations[index]))
 	}
 	return &manager.CXLineMngObjects[index]
 }
@@ -149,7 +149,7 @@ func (manager *CXLineMng) CXLineMngGrowBoundary() (int, int) {
 // Cap at 0.
 func (manager *CXLineMng) CXLineMngTeardown() {
 	if manager.CXLineMngLen != 0 {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXLineMngTeardown with %d live objects, a leak", manager.CXLineMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXLineMngTeardown with %d live objects, a leak", manager.CXLineMngLen))
 	}
 	*manager = CXLineMng{}
 }

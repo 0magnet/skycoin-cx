@@ -26,10 +26,10 @@ type CXArgumentDebugMng struct {
 // VIOLATION STRHOT-242: E, the assert text of a bad Init, built only when it fails, #412.
 func (manager *CXArgumentDebugMng) CXArgumentDebugMngInit(capacity int, growable bool) {
 	if manager.CXArgumentDebugMngLen != 0 {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentDebugMngInit on a manager holding %d objects", manager.CXArgumentDebugMngLen))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentDebugMngInit on a manager holding %d objects", manager.CXArgumentDebugMngLen))
 	}
 	if capacity < 0 || uint64(capacity) > objmodel.GidCapMax {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentDebugMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentDebugMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
 	}
 	*manager = CXArgumentDebugMng{
 		CXArgumentDebugMngObjects:     make([]CXArgumentDebug, capacity),
@@ -49,7 +49,7 @@ func (manager *CXArgumentDebugMng) CXArgumentDebugAlloc() CXArgumentDebugGid {
 		manager.CXArgumentDebugMngFree = manager.CXArgumentDebugMngFree[:free-1]
 	} else {
 		if capacity := len(manager.CXArgumentDebugMngObjects); int(manager.CXArgumentDebugMngNext) == capacity {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentDebugAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentDebugAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
 		}
 		index = manager.CXArgumentDebugMngNext
 		manager.CXArgumentDebugMngNext++
@@ -59,7 +59,7 @@ func (manager *CXArgumentDebugMng) CXArgumentDebugAlloc() CXArgumentDebugGid {
 	manager.CXArgumentDebugMngLive[index] = true
 	manager.CXArgumentDebugMngLen++
 	if manager.CXArgumentDebugMngLen != int(manager.CXArgumentDebugMngNext)-len(manager.CXArgumentDebugMngFree)-int(manager.CXArgumentDebugMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXArgumentDebugAlloc: Len %d is not the live slot count", manager.CXArgumentDebugMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXArgumentDebugAlloc: Len %d is not the live slot count", manager.CXArgumentDebugMngLen))
 	}
 	return CXArgumentDebugGid(objmodel.GidCompose(CXArgumentDebugGidTypeTag, manager.CXArgumentDebugMngGenerations[index], index))
 }
@@ -73,9 +73,9 @@ func (manager *CXArgumentDebugMng) CXArgumentDebugRelease(gid CXArgumentDebugGid
 		!manager.CXArgumentDebugMngLive[index] || manager.CXArgumentDebugMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXArgumentDebugGidTypeTag, len(manager.CXArgumentDebugMngObjects))
 		if !manager.CXArgumentDebugMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentDebugRelease of slot %d, which is not live, a double release", index))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentDebugRelease of slot %d, which is not live, a double release", index))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentDebugRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXArgumentDebugMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentDebugRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXArgumentDebugMngGenerations[index]))
 	}
 	manager.CXArgumentDebugMngObjects[index] = CXArgumentDebug{}
 	manager.CXArgumentDebugMngLive[index] = false
@@ -87,7 +87,7 @@ func (manager *CXArgumentDebugMng) CXArgumentDebugRelease(gid CXArgumentDebugGid
 	}
 	manager.CXArgumentDebugMngLen--
 	if manager.CXArgumentDebugMngLen < 0 || manager.CXArgumentDebugMngLen != int(manager.CXArgumentDebugMngNext)-len(manager.CXArgumentDebugMngFree)-int(manager.CXArgumentDebugMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXArgumentDebugRelease: Len %d is not the live slot count", manager.CXArgumentDebugMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXArgumentDebugRelease: Len %d is not the live slot count", manager.CXArgumentDebugMngLen))
 	}
 }
 
@@ -100,9 +100,9 @@ func (manager *CXArgumentDebugMng) CXArgumentDebugGet(gid CXArgumentDebugGid) *C
 		!manager.CXArgumentDebugMngLive[index] || manager.CXArgumentDebugMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXArgumentDebugGidTypeTag, len(manager.CXArgumentDebugMngObjects))
 		if !manager.CXArgumentDebugMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentDebugGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentDebugGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXArgumentDebugGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXArgumentDebugMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXArgumentDebugGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXArgumentDebugMngGenerations[index]))
 	}
 	return &manager.CXArgumentDebugMngObjects[index]
 }
@@ -149,7 +149,7 @@ func (manager *CXArgumentDebugMng) CXArgumentDebugMngGrowBoundary() (int, int) {
 // Cap at 0.
 func (manager *CXArgumentDebugMng) CXArgumentDebugMngTeardown() {
 	if manager.CXArgumentDebugMngLen != 0 {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXArgumentDebugMngTeardown with %d live objects, a leak", manager.CXArgumentDebugMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXArgumentDebugMngTeardown with %d live objects, a leak", manager.CXArgumentDebugMngLen))
 	}
 	*manager = CXArgumentDebugMng{}
 }

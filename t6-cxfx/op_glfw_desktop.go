@@ -9,7 +9,7 @@ import (
 	ast "github.com/skycoin/skycoin-cx/t3-ast"
 )
 
-// A window is an i32 handle into CxfxState.CxfxWindowTable, returned by
+// A window is an i32 handle into State.CxfxWindowTable, returned by
 // glfw.CreateWindow, see #432.
 
 func OpGlfwFullscreen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {

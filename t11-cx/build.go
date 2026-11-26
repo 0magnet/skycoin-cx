@@ -80,9 +80,9 @@ func buildRun(args []string) int {
 	}
 
 	var missing []string
-	for _, code := range core.CoreOpcodesUsed(actions.AST) {
-		if !core.CoreOpcodeLinked(code) {
-			missing = append(missing, core.CoreOpcodeName(code))
+	for _, code := range core.OpcodesUsed(actions.AST) {
+		if !core.OpcodeLinked(code) {
+			missing = append(missing, core.OpcodeName(code))
 		}
 	}
 	if len(missing) > 0 {
@@ -92,11 +92,11 @@ func buildRun(args []string) int {
 	if err != nil {
 		return buildFail(err.Error())
 	}
-	active := core.CoreLibrariesActive(actions.AST)
+	active := core.LibrariesActive(actions.AST)
 	for library, used := range actions.AST.ProgramLibrariesUsed {
 		active[library] = active[library] && used
 	}
-	libraries := core.CoreLibraryNames(active)
+	libraries := core.LibraryNames(active)
 	corePath, problem := buildCorePath(options.buildOptionsCore, libraries)
 	if problem != "" {
 		return buildFail(problem)
@@ -108,14 +108,14 @@ func buildRun(args []string) int {
 	if err != nil {
 		return buildFileFail(sandbox.FileErrorWrap(sandbox.FileOperationRead, corePath, err))
 	}
-	if len(coreBinary) >= core.CoreTrailerSize {
-		if _, found, _ := core.CoreTrailerDecode(coreBinary[len(coreBinary)-core.CoreTrailerSize:], uint64(len(coreBinary))); found {
+	if len(coreBinary) >= core.TrailerSize {
+		if _, found, _ := core.TrailerDecode(coreBinary[len(coreBinary)-core.TrailerSize:], uint64(len(coreBinary))); found {
 			return buildFail(fmt.Sprintf("%s is a built program, not a core binary", corePath))
 		}
 	}
 
 	output := options.buildOptionsOutput
-	if err := os.WriteFile(output, core.CoreTrailerAppend(coreBinary, program), 0o755); err != nil {
+	if err := os.WriteFile(output, core.TrailerAppend(coreBinary, program), 0o755); err != nil {
 		return buildFileFail(sandbox.FileErrorWrap(sandbox.FileOperationWrite, output, err))
 	}
 	// WriteFile keeps the mode of a file that exists and applies the umask.
@@ -129,7 +129,7 @@ func buildRun(args []string) int {
 // and returns the program as cx build appends it to the core. Its hash is
 // the program hash of an execution record, see docs/ExecutionRecords.md.
 func buildProgramImage() ([]byte, error) {
-	core.CoreLibrariesEnabledResolve(actions.AST)
+	core.LibrariesEnabledResolve(actions.AST)
 	for library, enabled := range actions.AST.ProgramLibrariesEnabled {
 		actions.AST.ProgramLibrariesEnabled[library] = enabled && actions.AST.ProgramLibrariesUsed[library]
 		if !actions.AST.ProgramLibrariesUsed[library] {

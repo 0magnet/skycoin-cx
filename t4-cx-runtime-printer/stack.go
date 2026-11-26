@@ -100,11 +100,11 @@ func printerStackShownBefore(cxprogram *ast.CXProgram, op *ast.CXFunction, sig *
 	return false
 }
 
-// PrinterStackPrint prints the CX call stack of cxprogram from the current
+// StackPrint prints the CX call stack of cxprogram from the current
 // call down to the entry point, with the values of its arguments. Each frame
 // is appended to the format buffer and written at once, so the debug opcode
 // allocates nothing (#407).
-func PrinterStackPrint(cxprogram *ast.CXProgram) {
+func StackPrint(cxprogram *ast.CXProgram) {
 	os.Stdout.Write(printerStackHeader)
 
 	// we're going backwards in the stack

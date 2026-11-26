@@ -41,9 +41,9 @@ type HeapSegmentStruct struct {
 	// GarbageCollectorPrepare.
 	Types *GCTypeCache
 	// Roots is the root table of the collection running, kept for reuse.
-	Roots gc.GCRootTable
+	Roots gc.RootTable
 	// Collector is the scratch memory of the collector.
-	Collector gc.GCState
+	Collector gc.State
 }
 
 // ----------------------------------------------------------------

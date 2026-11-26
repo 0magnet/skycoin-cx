@@ -30,7 +30,7 @@ func CoreOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, ou
 	case 15:
 		opcodes.OpContinue(prgrm, inputs, outputs)
 	case 16:
-		printer.PrinterOpDebugPrintStack(prgrm, inputs, outputs)
+		printer.OpDebugPrintStack(prgrm, inputs, outputs)
 	case 17:
 		opcodes.OpSerialize(prgrm, inputs, outputs)
 	case 18:

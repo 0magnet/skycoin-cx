@@ -51,10 +51,10 @@ type Event struct {
 // cxfxAppCallbackSet records the CX function the events of eventType call and
 // the window handle they pass. The compiler resolved the function, see #432.
 func cxfxAppCallbackSet(prgrm *ast.CXProgram, eventType EventType, inputs []ast.CXValue) {
-	cxfxState.CxfxAppCallbackTable[eventType] = CxfxCallback{
-		CxfxCallbackWindow:   inputs[0].Get_i32(prgrm),
-		CxfxCallbackFunction: ast.CXFunctionGid(inputs[1].Get_i64(prgrm)),
-		CxfxCallbackSet:      true,
+	cxfxState.CxfxAppCallbackTable[eventType] = Callback{
+		CallbackWindow:   inputs[0].Get_i32(prgrm),
+		CallbackFunction: ast.CXFunctionGid(inputs[1].Get_i64(prgrm)),
+		CallbackSet:      true,
 	}
 }
 
@@ -62,11 +62,11 @@ func cxfxAppCallbackSet(prgrm *ast.CXProgram, eventType EventType, inputs []ast.
 // and the count inputs after it that are already written to the scratch.
 func cxfxAppCallbackCall(prgrm *ast.CXProgram, eventType EventType, count int) {
 	callback := &cxfxState.CxfxAppCallbackTable[eventType]
-	if !callback.CxfxCallbackSet {
+	if !callback.CallbackSet {
 		return
 	}
-	cxfxCallbackInputsI32(0, callback.CxfxCallbackWindow)
-	execute.Callback(prgrm, callback.CxfxCallbackFunction, cxfxState.CxfxCallbackInputs[:count+1])
+	cxfxCallbackInputsI32(0, callback.CallbackWindow)
+	execute.Callback(prgrm, callback.CallbackFunction, cxfxState.CxfxCallbackInputs[:count+1])
 }
 
 // VIOLATION: state outside State. Owner: t6-cxfx; moves to EventMng in phase 1.

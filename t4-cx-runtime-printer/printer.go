@@ -10,14 +10,14 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
-// PrinterErrorHeader returns "error: file:line", the start of an error.
-func PrinterErrorHeader(fileName string, lineNumber int) string {
+// ErrorHeader returns "error: file:line", the start of an error.
+func ErrorHeader(fileName string, lineNumber int) string {
 	return "error: " + fileName + ":" + strconv.FormatInt(int64(lineNumber), 10)
 }
 
-// PrinterRuntimeErrorPrint prints the runtime error recorded in
+// RuntimeErrorPrint prints the runtime error recorded in
 // prgrm.RuntimeError and returns its exit code. The record must be raised.
-func PrinterRuntimeErrorPrint(prgrm *ast.CXProgram) int {
+func RuntimeErrorPrint(prgrm *ast.CXProgram) int {
 	record := &prgrm.RuntimeError
 	call := prgrm.CallStack[record.RuntimeErrorRecordCall]
 	cxLine, _ := prgrm.PreviousCXLineGet(prgrm.CxIrState.CXFunctionMng.CXFunctionGet(call.Operator).Expressions, record.RuntimeErrorRecordLine)
@@ -27,10 +27,10 @@ func PrinterRuntimeErrorPrint(prgrm *ast.CXProgram) int {
 		fmt.Printf("%s : %d, %s\n", fileName, cxLine.LineNumber, printerHeapBytes(prgrm, record.RuntimeErrorRecordAssertMessage))
 	}
 
-	fmt.Printf("%s, %s, %v", PrinterErrorHeader(fileName, cxLine.LineNumber), ast.ErrorString(record.RuntimeErrorRecordCode), record.RuntimeErrorRecordPanicValue)
+	fmt.Printf("%s, %s, %v", ErrorHeader(fileName, cxLine.LineNumber), ast.ErrorString(record.RuntimeErrorRecordCode), record.RuntimeErrorRecordPanicValue)
 
 	if record.RuntimeErrorRecordStackPrint {
-		PrinterStackPrint(prgrm)
+		StackPrint(prgrm)
 	}
 	return record.RuntimeErrorRecordCode
 }
@@ -44,6 +44,6 @@ func printerHeapBytes(prgrm *ast.CXProgram, heapOffset types.Pointer) []byte {
 	return nil
 }
 
-func PrinterOpDebugPrintStack(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	PrinterStackPrint(prgrm)
+func OpDebugPrintStack(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+	StackPrint(prgrm)
 }

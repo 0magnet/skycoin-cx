@@ -44,7 +44,7 @@ func (manager *SourceFileMng) SourceFileIntern(path stringpool.StringGid) Source
 	}
 	slot := len(manager.SourceFileMngPaths)
 	if uint64(slot) >= objmodel.GidCapMax {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("SourceFileMng full at %d files", slot))
+		assert.InvariantTrue(false, fmt.Sprintf("SourceFileMng full at %d files", slot))
 	}
 	manager.SourceFileMngPaths = append(manager.SourceFileMngPaths, path)
 	return SourceFileGid(objmodel.GidCompose(SourceFileGidTypeTag, objmodel.GidGenerationFirst, uint32(slot)))
@@ -60,7 +60,7 @@ func (manager *SourceFileMng) SourceFilePath(gid SourceFileGid) stringpool.Strin
 	slot := objmodel.GidIndex(int64(gid))
 	if objmodel.GidTypeTag(int64(gid)) != SourceFileGidTypeTag || objmodel.GidGeneration(int64(gid)) != objmodel.GidGenerationFirst || uint64(slot) >= uint64(len(manager.SourceFileMngPaths)) {
 		objmodel.GidAssertFailure(int64(gid), SourceFileGidTypeTag, len(manager.SourceFileMngPaths))
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("SourceFile Gid %#x has generation %#x, want %#x", int64(gid), objmodel.GidGeneration(int64(gid)), objmodel.GidGenerationFirst))
+		assert.PreconditionTrue(false, fmt.Sprintf("SourceFile Gid %#x has generation %#x, want %#x", int64(gid), objmodel.GidGeneration(int64(gid)), objmodel.GidGenerationFirst))
 	}
 	return manager.SourceFileMngPaths[slot]
 }

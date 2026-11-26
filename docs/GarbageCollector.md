@@ -24,25 +24,25 @@ slides the objects down. It imports t0-types and t1-constants only.
 
 ```go
 func GarbageCollectorCollect(memory []byte, heapStartsAt types.Pointer,
-	heapPointer types.Pointer, roots *GCRootTable, state *GCState) types.Pointer
+	heapPointer types.Pointer, roots *RootTable, state *State) types.Pointer
 ```
 
 - `memory` and the heap bounds `heapStartsAt` to `heapStartsAt+heapPointer`.
-- `roots`, a `GCRootTable`: the global roots, each a `GCRoot` with an address
-  and a `GCType`, the live frames, each a `GCRootFrame` with its frame
+- `roots`, a `RootTable`: the global roots, each a `Root` with an address
+  and a `Type`, the live frames, each a `RootFrame` with its frame
   pointer and the roots of its function, and the stack size.
-- `state`, the collector's scratch memory. `GCStatePrepare` allocates it
+- `state`, the collector's scratch memory. `StatePrepare` allocates it
   once for the heap cap, and a collection allocates nothing, see "The heap
   cap" below.
 
-It returns the new heap pointer. A `GCType` says where a value holds
-pointers, slices and strs. A nil `*GCType` holds none, so values without
+It returns the new heap pointer. A `Type` says where a value holds
+pointers, slices and strs. A nil `*Type` holds none, so values without
 references cost nothing to walk.
 
 The collector sees no CX IR, no `CXProgram`, no call stack and no opcode.
 t3-ast builds the root table: `gcGlobalRoots` and `gcFrameRoots` in
 t3-ast/gc_type.go turn the globals and each function's `ListOfSlots` and
-`ListOfPointers` into `GCRoot`s, cached in `Heap.Types`.
+`ListOfPointers` into `Root`s, cached in `Heap.Types`.
 `GarbageCollectorPrepare` builds them for the globals and every function
 before the run. `make
 check-gcreach` fails when any package but t3-ast imports t2-cx-runtime-gc.
@@ -95,8 +95,8 @@ before the run:
   `MemoryResize` grows the heap by reslicing into it and zeroing the new
   bytes, and shrinks it by reslicing.
 - the root table: the roots of the globals and of every function, and
-  `GCRootTableFrames` for a full call stack.
-- the scratch, `GCState`, by `GCStatePrepare`.
+  `RootTableFrames` for a full call stack.
+- the scratch, `State`, by `StatePrepare`.
 
 An embedding program that loads programs one after another calls
 `ast.ProgramMemoryRelease` on a program it is done with. Its memory and
@@ -109,10 +109,10 @@ program before the next.
 
 | Scratch | Size | Use |
 | --- | --- | --- |
-| `GCStateStarts` | a bit per byte of the heap cap, cap/8 bytes | where each object starts, for the object a pointer points into. It replaces the sorted list of object addresses |
-| `GCStateSlots` and `GCStateSlotWords` | a bit per byte of memory, and a bit per word of that | the references the mark read. Its set bits are the references to update, in address order, so the sort of the old list is gone |
-| `GCStateWork` | cap/1024 entries, at least 256 | objects to walk. The type to walk an object with is in its forwarding address field until the mark ends, which replaces the map of followed pointers |
-| `GCStateViews` | memory/512 entries, at least 256 | pointers into an object, as `&s[1]`, and pointers to an object already queued with another type |
+| `StateStarts` | a bit per byte of the heap cap, cap/8 bytes | where each object starts, for the object a pointer points into. It replaces the sorted list of object addresses |
+| `StateSlots` and `StateSlotWords` | a bit per byte of memory, and a bit per word of that | the references the mark read. Its set bits are the references to update, in address order, so the sort of the old list is gone |
+| `StateWork` | cap/1024 entries, at least 256 | objects to walk. The type to walk an object with is in its forwarding address field until the mark ends, which replaces the map of followed pointers |
+| `StateViews` | memory/512 entries, at least 256 | pointers into an object, as `&s[1]`, and pointers to an object already queued with another type |
 
 For the default cap of 64M the scratch is about 19 MB of Go memory. Pages
 the collection does not touch are not committed on Linux, macOS and Windows.
@@ -120,9 +120,9 @@ the collection does not touch are not committed on Linux, macOS and Windows.
 The mark follows a reference only the first time it reads its slot. CX gives
 a memory location one type, so the first read queued everything the
 reference leads to, and the slot bitmap ends the walk of a cycle. An object
-that does not fit a full `GCStateWork` is left marked pending, and the mark
+that does not fit a full `StateWork` is left marked pending, and the mark
 scans the heap for pending objects once the queues are empty, so a deep list
-needs no more scratch. More pointers into objects than `GCStateViews` holds
+needs no more scratch. More pointers into objects than `StateViews` holds
 at once grow it, the one Go allocation a collection can make, VMALLOC-011 and
 decision D97.
 
@@ -278,14 +278,14 @@ the collector between steps.
   does not tick, because `gcTick` at line 31 is false there.
 - `GarbageCollectorCheck` (t3-ast/gc_tick.go:13) compares `Heap.Pressure` with
   `Heap.PressureLimit`, which costs two loads and a compare.
-- `GarbageCollectorTrigger` (t3-ast/gc_tick.go:23) builds a `GCRootTable` from
+- `GarbageCollectorTrigger` (t3-ast/gc_tick.go:23) builds a `RootTable` from
   `gcGlobalRoots` (t3-ast/gc_type.go:232) and, for each live call, the call's
   `FramePointer` and `gcFrameRoots` (t3-ast/gc_type.go:197). It then calls the
   collector and resizes the heap with `heapFreeRatioKeep`
   (t3-ast/gc_tick.go:48).
 - `GarbageCollectorCollect` (t2-cx-runtime-gc/gc.go:108) receives the memory,
-  the heap bounds, the `GCRootTable` (t2-cx-runtime-gc/gc.go:68) and its own
-  `GCState` (t2-cx-runtime-gc/gc.go:82). It imports only t0-types and
+  the heap bounds, the `RootTable` (t2-cx-runtime-gc/gc.go:68) and its own
+  `State` (t2-cx-runtime-gc/gc.go:82). It imports only t0-types and
   t1-constants and sees no CX IR, no `CXProgram` and no call stack.
 - `Heap.Pinned`, the `types.Allocator` hook, `types.Write_obj`,
   `types.Write_str`, `types.AllocWrite_obj_data` and
@@ -312,7 +312,7 @@ t4-execute: runLoop step, then GarbageCollectorCheck / GarbageCollectorTrigger
    +----------+--> t3-ast: SequenceAllocate (grows, counts), gc_type.go (root
                    table), gc_tick.go (check, trigger, heap resize)
                       |
-                      v  memory, heap bounds, GCRootTable, GCState
+                      v  memory, heap bounds, RootTable, State
                  t2-cx-runtime-gc: GarbageCollectorCollect
                       |
                  t0-types, t1-constants
@@ -364,7 +364,7 @@ This part gives the cost of the change as measured on the base commit
 
 Reference counting by type would increment the count of the object a value
 of a GC type points to when it is stored and decrement the one it replaces.
-Values whose `GCType` is nil, atomic values and arrays of them, would cost
+Values whose `Type` is nil, atomic values and arrays of them, would cost
 nothing. It is not implemented, and the choice is open.
 
 | | Mark and compact tick | Reference counting by type |

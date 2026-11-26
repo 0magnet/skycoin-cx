@@ -14,7 +14,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t2-globals"            // thin: only FoundCompileErrors; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-ast"                // thin: only InREPL, ProgramMemoryRelease, SourceFileGidNil; no depth gain
-	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer" // thin: only PrinterCompileErrorsPrint, PrinterRuntimeErrorPrint; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer" // thin: only CompileErrorsPrint, RuntimeErrorPrint; no depth gain
 	"github.com/skycoin/skycoin-cx/t4-execute"            // thin: only RunCompiled; no depth gain
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"        // thin: only MakeProgram, RegisterPackages; no depth gain
 
@@ -27,13 +27,13 @@ import (
 const VERSION = "0.8.0"
 
 // VIOLATION: state outside State. Owner: t10-cxrepl; moves to ReplMng in phase 2.
-var ReplTargetFn string = ""
+var TargetFunction string = ""
 
 // VIOLATION: state outside State. Owner: t10-cxrepl; moves to ReplMng in phase 2.
-var ReplTargetStrct string = ""
+var TargetStruct string = ""
 
 // VIOLATION: state outside State. Owner: t10-cxrepl; moves to ReplMng in phase 2.
-var ReplTargetMod string = ""
+var TargetModule string = ""
 
 func unsafeEval(code string) (out string) {
 	var lexer *cxparsingcompletor.Lexer
@@ -68,7 +68,7 @@ func unsafeEval(code string) (out string) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			printer.PrinterCompileErrorsPrint(actions.AST)
+			printer.CompileErrorsPrint(actions.AST)
 			restore()
 			out = fmt.Sprintf("%v", r)
 			// lexer.Stop()
@@ -94,7 +94,7 @@ func unsafeEval(code string) (out string) {
 
 	lexer = cxparsingcompletor.LexerNew(bytes.NewBufferString(code))
 	parseErrors += cxparsingcompletor.Parse(lexer)
-	printer.PrinterCompileErrorsPrint(actions.AST)
+	printer.CompileErrorsPrint(actions.AST)
 	if parseErrors > 0 || globals.FoundCompileErrors {
 		restore()
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
@@ -110,7 +110,7 @@ func unsafeEval(code string) (out string) {
 	}
 	// SysInitFunctionAdd records initialization cycles and global type errors (#519).
 	if globals.FoundCompileErrors {
-		printer.PrinterCompileErrorsPrint(actions.AST)
+		printer.CompileErrorsPrint(actions.AST)
 		restore()
 		actions.AST = cxinit.ProgramMake()
 		cxinit.PackagesRegister(actions.AST)
@@ -122,7 +122,7 @@ func unsafeEval(code string) (out string) {
 	//err = actions.AST.RunCompiled(0, nil);
 	err = execute.RunCompiled(actions.AST, 0, nil)
 	if actions.AST.RuntimeError.RuntimeErrorRecordRaised {
-		os.Exit(printer.PrinterRuntimeErrorPrint(actions.AST))
+		os.Exit(printer.RuntimeErrorPrint(actions.AST))
 	}
 	if err != nil {
 		restore()
@@ -195,34 +195,34 @@ func Repl() {
 		printPrompt()
 
 		if inp, ok = readline(fi); ok {
-			if ReplTargetFn != "" {
-				inp = fmt.Sprintf(":func %s {\n%s\n}\n", ReplTargetFn, inp)
+			if TargetFunction != "" {
+				inp = fmt.Sprintf(":func %s {\n%s\n}\n", TargetFunction, inp)
 			}
-			if ReplTargetMod != "" {
+			if TargetModule != "" {
 				inp = fmt.Sprintf("%s", inp)
 			}
-			if ReplTargetStrct != "" {
-				inp = fmt.Sprintf(":struct %s {\n%s\n}\n", ReplTargetStrct, inp)
+			if TargetStruct != "" {
+				inp = fmt.Sprintf(":struct %s {\n%s\n}\n", TargetStruct, inp)
 			}
 
 			b := bytes.NewBufferString(inp)
 
 			cxparsingcompletor.Parse(cxparsingcompletor.LexerNew(b))
-			printer.PrinterCompileErrorsPrint(actions.AST)
+			printer.CompileErrorsPrint(actions.AST)
 			//yyParse(LexerNew(b))
 		} else {
-			if ReplTargetFn != "" {
-				ReplTargetFn = ""
+			if TargetFunction != "" {
+				TargetFunction = ""
 				continue
 			}
 
-			if ReplTargetStrct != "" {
-				ReplTargetStrct = ""
+			if TargetStruct != "" {
+				TargetStruct = ""
 				continue
 			}
 
-			if ReplTargetMod != "" {
-				ReplTargetMod = ""
+			if TargetModule != "" {
+				TargetModule = ""
 				continue
 			}
 
@@ -233,14 +233,14 @@ func Repl() {
 }
 
 func printPrompt() {
-	if ReplTargetMod != "" {
-		fmt.Println(fmt.Sprintf(":package %s ...", ReplTargetMod))
+	if TargetModule != "" {
+		fmt.Println(fmt.Sprintf(":package %s ...", TargetModule))
 		fmt.Printf("* ")
-	} else if ReplTargetFn != "" {
-		fmt.Println(fmt.Sprintf(":func %s {...", ReplTargetFn))
+	} else if TargetFunction != "" {
+		fmt.Println(fmt.Sprintf(":func %s {...", TargetFunction))
 		fmt.Printf("\t* ")
-	} else if ReplTargetStrct != "" {
-		fmt.Println(fmt.Sprintf(":struct %s {...", ReplTargetStrct))
+	} else if TargetStruct != "" {
+		fmt.Println(fmt.Sprintf(":struct %s {...", TargetStruct))
 		fmt.Printf("\t* ")
 	} else {
 		fmt.Printf("* ")

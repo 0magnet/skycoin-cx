@@ -18,17 +18,17 @@ import (
 // The sizes of the handle tables. A program that creates more than a table
 // holds fails with an assert, see #432.
 const (
-	CxfxWindowCountMax         = 16
-	CxfxFontCountMax           = 64
-	CxfxTexturePixelsCountMax  = 256
-	CxfxGifCountMax            = 64
-	CxfxCallbackI32I32CountMax = 256
-	// CxfxCallbackInputCountMax is the most inputs an event callback takes,
+	WindowCountMax         = 16
+	FontCountMax           = 64
+	TexturePixelsCountMax  = 256
+	GifCountMax            = 64
+	CallbackI32I32CountMax = 256
+	// CallbackInputCountMax is the most inputs an event callback takes,
 	// the 7 of the mouse callback.
-	CxfxCallbackInputCountMax = 7
-	// CxfxTextBufferSizeInitial is the first size of the scratch a GL name is
+	CallbackInputCountMax = 7
+	// TextBufferSizeInitial is the first size of the scratch a GL name is
 	// copied into to end it with a NUL.
-	CxfxTextBufferSizeInitial = 256
+	TextBufferSizeInitial = 256
 )
 
 // CxfxHandleKind names the table a handle indexes, for the assert text.
@@ -42,51 +42,51 @@ const (
 	CxfxHandleKindCallbackI32I32
 )
 
-// CxfxTexturePixels is the CPU copy of a texture that gl.UploadImageToTexture
+// TexturePixels is the CPU copy of a texture that gl.UploadImageToTexture
 // keeps when asked, read by gl.CxTextureGetPixel. A nil pixels is a free slot.
-type CxfxTexturePixels struct {
-	CxfxTexturePixelsWidth  int32
-	CxfxTexturePixelsHeight int32
-	CxfxTexturePixelsLevel  uint32
-	CxfxTexturePixelsValues []float32
+type TexturePixels struct {
+	TexturePixelsWidth  int32
+	TexturePixelsHeight int32
+	TexturePixelsLevel  uint32
+	TexturePixelsValues []float32
 }
 
-// CxfxShaderSourceArgument is the source pointer and length glShaderSource
+// ShaderSourceArgument is the source pointer and length glShaderSource
 // reads.
-type CxfxShaderSourceArgument struct {
+type ShaderSourceArgument struct {
 	CxfxShaderSourcePointer *uint8
 	CxfxShaderSourceLength  int32
 }
 
-// CxfxCallback is the CX function an event calls and the window it passes.
-type CxfxCallback struct {
-	CxfxCallbackWindow int32
-	// CxfxCallbackFunction is the function, resolved at compile time.
-	CxfxCallbackFunction ast.CXFunctionGid
-	CxfxCallbackSet      bool
+// Callback is the CX function an event calls and the window it passes.
+type Callback struct {
+	CallbackWindow int32
+	// CallbackFunction is the function, resolved at compile time.
+	CallbackFunction ast.CXFunctionGid
+	CallbackSet      bool
 }
 
-// CxfxState holds every resource a cxfx program creates, in fixed tables an
+// State holds every resource a cxfx program creates, in fixed tables an
 // i32 handle indexes. GLFW and GL objects belong to the process, so there is
 // one state, see #432.
-type CxfxState struct {
-	CxfxWindowTable        [CxfxWindowCountMax]*glfw.Window
-	CxfxFontTable          [CxfxFontCountMax]*gltext.Font
-	CxfxTexturePixelsTable [CxfxTexturePixelsCountMax]CxfxTexturePixels
-	CxfxGifTable           [CxfxGifCountMax]*gif.GIF
+type State struct {
+	CxfxWindowTable        [WindowCountMax]*glfw.Window
+	CxfxFontTable          [FontCountMax]*gltext.Font
+	CxfxTexturePixelsTable [TexturePixelsCountMax]TexturePixels
+	CxfxGifTable           [GifCountMax]*gif.GIF
 
 	// CxfxCallbackI32I32Table holds the functions of the i32 callbacks, resolved
 	// at compile time.
-	CxfxCallbackI32I32Table [CxfxCallbackI32I32CountMax]ast.CXFunctionGid
+	CxfxCallbackI32I32Table [CallbackI32I32CountMax]ast.CXFunctionGid
 	CxfxCallbackI32I32Count int32
 
 	// CxfxAppCallbackTable is the callback of each event type.
-	CxfxAppCallbackTable [APP_EVENT_COUNT]CxfxCallback
+	CxfxAppCallbackTable [APP_EVENT_COUNT]Callback
 
 	// CxfxCallbackInputs are views of CxfxCallbackInputBytes that a callback
 	// passes to execute.Callback, so an event allocates nothing.
-	CxfxCallbackInputBytes [CxfxCallbackInputCountMax][8]byte
-	CxfxCallbackInputs     [CxfxCallbackInputCountMax][]byte
+	CxfxCallbackInputBytes [CallbackInputCountMax][8]byte
+	CxfxCallbackInputs     [CallbackInputCountMax][]byte
 
 	// CxfxTextBuffer is the scratch a GL name is copied into with a NUL.
 	CxfxTextBuffer []byte
@@ -94,7 +94,7 @@ type CxfxState struct {
 	// CxfxShaderSource holds the arguments of glShaderSource. It is on the
 	// heap, since cgo rejects a pointer to a global that holds a pointer, and
 	// CxfxShaderSourcePinner pins program memory while GL reads the source.
-	CxfxShaderSource       *CxfxShaderSourceArgument
+	CxfxShaderSource       *ShaderSourceArgument
 	CxfxShaderSourcePinner runtime.Pinner
 
 	// CxfxGlfwInitialized is set once glfw.Init has run.
@@ -102,25 +102,25 @@ type CxfxState struct {
 }
 
 // VIOLATION: state outside State. Owner: t6-cxfx; GLFW and GL are per process, see D45.
-var cxfxState CxfxState
+var cxfxState State
 
 // cxfxHandleAssertFailure ends the program for a handle out of its table's
 // range or naming a freed or never created slot.
 // VIOLATION STRHOT-323: E, the assert text of a bad handle, built only when it fails, #432.
 func cxfxHandleAssertFailure(kind CxfxHandleKind, handle int32) {
 	var names = [...]string{"window", "font", "texture pixels", "gif", "callback"}
-	assert.AssertPreconditionTrue(false, fmt.Sprintf("cxfx %s handle %d is out of range, freed or never created", names[kind], handle))
+	assert.PreconditionTrue(false, fmt.Sprintf("cxfx %s handle %d is out of range, freed or never created", names[kind], handle))
 }
 
 // cxfxTableFullAssertFailure ends the program when a table has no free slot.
 // VIOLATION STRHOT-324: E, the assert text of a full table, built only when it fails, #432.
 func cxfxTableFullAssertFailure(kind CxfxHandleKind, count int) {
 	var names = [...]string{"window", "font", "texture pixels", "gif", "callback"}
-	assert.AssertPreconditionTrue(false, fmt.Sprintf("cxfx %s table is full, it holds %d", names[kind], count))
+	assert.PreconditionTrue(false, fmt.Sprintf("cxfx %s table is full, it holds %d", names[kind], count))
 }
 
 func cxfxWindowGet(handle int32) *glfw.Window {
-	if uint32(handle) >= CxfxWindowCountMax || cxfxState.CxfxWindowTable[handle] == nil {
+	if uint32(handle) >= WindowCountMax || cxfxState.CxfxWindowTable[handle] == nil {
 		cxfxHandleAssertFailure(CxfxHandleKindWindow, handle)
 	}
 	return cxfxState.CxfxWindowTable[handle]
@@ -133,12 +133,12 @@ func cxfxWindowAdd(window *glfw.Window) int32 {
 			return int32(handle)
 		}
 	}
-	cxfxTableFullAssertFailure(CxfxHandleKindWindow, CxfxWindowCountMax)
+	cxfxTableFullAssertFailure(CxfxHandleKindWindow, WindowCountMax)
 	return -1
 }
 
 func cxfxFontGet(handle int32) *gltext.Font {
-	if uint32(handle) >= CxfxFontCountMax || cxfxState.CxfxFontTable[handle] == nil {
+	if uint32(handle) >= FontCountMax || cxfxState.CxfxFontTable[handle] == nil {
 		cxfxHandleAssertFailure(CxfxHandleKindFont, handle)
 	}
 	return cxfxState.CxfxFontTable[handle]
@@ -151,30 +151,30 @@ func cxfxFontAdd(font *gltext.Font) int32 {
 			return int32(handle)
 		}
 	}
-	cxfxTableFullAssertFailure(CxfxHandleKindFont, CxfxFontCountMax)
+	cxfxTableFullAssertFailure(CxfxHandleKindFont, FontCountMax)
 	return -1
 }
 
-func cxfxTexturePixelsGet(handle int32) *CxfxTexturePixels {
-	if uint32(handle) >= CxfxTexturePixelsCountMax || cxfxState.CxfxTexturePixelsTable[handle].CxfxTexturePixelsValues == nil {
+func cxfxTexturePixelsGet(handle int32) *TexturePixels {
+	if uint32(handle) >= TexturePixelsCountMax || cxfxState.CxfxTexturePixelsTable[handle].TexturePixelsValues == nil {
 		cxfxHandleAssertFailure(CxfxHandleKindTexturePixels, handle)
 	}
 	return &cxfxState.CxfxTexturePixelsTable[handle]
 }
 
-func cxfxTexturePixelsAdd(pixels CxfxTexturePixels) int32 {
+func cxfxTexturePixelsAdd(pixels TexturePixels) int32 {
 	for handle := range cxfxState.CxfxTexturePixelsTable {
-		if cxfxState.CxfxTexturePixelsTable[handle].CxfxTexturePixelsValues == nil {
+		if cxfxState.CxfxTexturePixelsTable[handle].TexturePixelsValues == nil {
 			cxfxState.CxfxTexturePixelsTable[handle] = pixels
 			return int32(handle)
 		}
 	}
-	cxfxTableFullAssertFailure(CxfxHandleKindTexturePixels, CxfxTexturePixelsCountMax)
+	cxfxTableFullAssertFailure(CxfxHandleKindTexturePixels, TexturePixelsCountMax)
 	return -1
 }
 
 func cxfxGifGet(handle int32) *gif.GIF {
-	if uint32(handle) >= CxfxGifCountMax || cxfxState.CxfxGifTable[handle] == nil {
+	if uint32(handle) >= GifCountMax || cxfxState.CxfxGifTable[handle] == nil {
 		cxfxHandleAssertFailure(CxfxHandleKindGif, handle)
 	}
 	return cxfxState.CxfxGifTable[handle]
@@ -187,7 +187,7 @@ func cxfxGifAdd(animation *gif.GIF) int32 {
 			return int32(handle)
 		}
 	}
-	cxfxTableFullAssertFailure(CxfxHandleKindGif, CxfxGifCountMax)
+	cxfxTableFullAssertFailure(CxfxHandleKindGif, GifCountMax)
 	return -1
 }
 
@@ -200,8 +200,8 @@ func cxfxCallbackI32I32Get(handle int32) ast.CXFunctionGid {
 
 func cxfxCallbackI32I32Add(function ast.CXFunctionGid) int32 {
 	handle := cxfxState.CxfxCallbackI32I32Count
-	if handle >= CxfxCallbackI32I32CountMax {
-		cxfxTableFullAssertFailure(CxfxHandleKindCallbackI32I32, CxfxCallbackI32I32CountMax)
+	if handle >= CallbackI32I32CountMax {
+		cxfxTableFullAssertFailure(CxfxHandleKindCallbackI32I32, CallbackI32I32CountMax)
 	}
 	cxfxState.CxfxCallbackI32I32Table[handle] = function
 	cxfxState.CxfxCallbackI32I32Count++
@@ -214,7 +214,7 @@ func cxfxCallbackI32I32Add(function ast.CXFunctionGid) int32 {
 // docs/GarbageCollector.md.
 func cxfxTextBufferEnsure(size int) []byte {
 	if size > len(cxfxState.CxfxTextBuffer) {
-		capacity := CxfxTextBufferSizeInitial
+		capacity := TextBufferSizeInitial
 		for capacity < size {
 			capacity *= 2
 		}

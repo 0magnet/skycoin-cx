@@ -15,7 +15,7 @@ import (
 	constants "github.com/skycoin/skycoin-cx/t1-constants"
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 	ast "github.com/skycoin/skycoin-cx/t3-ast"
-	printer "github.com/skycoin/skycoin-cx/t4-cx-runtime-printer" // thin: only PrinterCompileErrorsRegister; no depth gain
+	printer "github.com/skycoin/skycoin-cx/t4-cx-runtime-printer" // thin: only CompileErrorsRegister; no depth gain
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
 
@@ -55,23 +55,23 @@ func coreRun(args []string) int32 {
 		return types.CX_COMPILATION_ERROR
 	}
 
-	core.CoreRegister(core.CoreProgramMake(), coreLibraryRegisters...)
+	core.Register(core.ProgramMake(), coreLibraryRegisters...)
 	ast.OpcodeDispatch = coreOpcodeDispatch
 	prgrm, err := ast.Deserialize(program, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "cx-core: %s\n", err)
 		return types.CX_COMPILATION_ERROR
 	}
-	if missing := core.CoreOpcodesMissing(prgrm); len(missing) > 0 {
+	if missing := core.OpcodesMissing(prgrm); len(missing) > 0 {
 		fmt.Fprintf(os.Stderr, "cx-core: the program uses opcodes this core does not include: %s\n", strings.Join(missing, ", "))
 		return types.CX_COMPILATION_ERROR
 	}
-	core.CoreLibrariesEnabledResolve(prgrm)
-	if missing := core.CoreLibrariesMissing(prgrm, coreLibraryOpcodesLinked); len(missing) > 0 {
+	core.LibrariesEnabledResolve(prgrm)
+	if missing := core.LibrariesMissing(prgrm, coreLibraryOpcodesLinked); len(missing) > 0 {
 		fmt.Fprintf(os.Stderr, "cx-core: the program enables system libraries this core does not link: %s\n", strings.Join(missing, ", "))
 		return types.CX_COMPILATION_ERROR
 	}
-	if core.CoreLibrariesActive(prgrm)[constants.LibraryNumberFile] {
+	if core.LibrariesActive(prgrm)[constants.LibraryNumberFile] {
 		// The file library resolves paths in the working directory, as cx
 		// does without --sandbox. The core has no flags to name another.
 		root, fileError := sandbox.RootOpen("")
@@ -82,7 +82,7 @@ func coreRun(args []string) int32 {
 		defer root.Close()
 		prgrm.ProgramSandboxRoot = root
 	}
-	printer.PrinterCompileErrorsRegister(prgrm)
+	printer.CompileErrorsRegister(prgrm)
 	prgrm.ProgramStdinInit(os.Stdin)
 	return core.ExecutorRun(prgrm, core.ExecutorAuto, args)
 }
@@ -99,7 +99,7 @@ const coreProgramFileFlag = "--program"
 func coreProgramLoad(args []string) (program []byte, programArgs []string, problem string) {
 	path, err := os.Executable()
 	if err == nil {
-		appended, fileError := core.CoreTrailerRead(path)
+		appended, fileError := core.TrailerRead(path)
 		if fileError == nil && appended != nil {
 			return appended, args, ""
 		}
@@ -113,7 +113,7 @@ func coreProgramLoad(args []string) (program []byte, programArgs []string, probl
 		}
 		return nil, nil, "no CX program is appended to this file, make one with cx build or name one with " + coreProgramFileFlag + " FILE"
 	}
-	built, fileError := core.CoreTrailerRead(args[1])
+	built, fileError := core.TrailerRead(args[1])
 	if fileError != nil {
 		return nil, nil, fileError.FileErrorPath + ": " + fileError.FileErrorMessage
 	}

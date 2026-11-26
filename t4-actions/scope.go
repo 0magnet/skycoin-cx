@@ -22,8 +22,8 @@ func DefineNewScope(exprs []ast.CXExpression) {
 	if first < 0 {
 		return
 	}
-	assert.AssertInvariantTrue(exprs[first].ExpressionScopeOpenCount < math.MaxUint8, "DefineNewScope: too many scopes open at one expression")
-	assert.AssertInvariantTrue(exprs[last].ExpressionScopeCloseCount < math.MaxUint8, "DefineNewScope: too many scopes close at one expression")
+	assert.InvariantTrue(exprs[first].ExpressionScopeOpenCount < math.MaxUint8, "DefineNewScope: too many scopes open at one expression")
+	assert.InvariantTrue(exprs[last].ExpressionScopeCloseCount < math.MaxUint8, "DefineNewScope: too many scopes close at one expression")
 	exprs[first].ExpressionScopeOpenCount++
 	exprs[last].ExpressionScopeCloseCount++
 }

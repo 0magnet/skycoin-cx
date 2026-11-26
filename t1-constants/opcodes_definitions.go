@@ -36,7 +36,7 @@ var OpcodeDefinitionTable = [...]OpcodeDefinition{
 	{13, "goto", "opcodes.OpGoto", "", "", ""},
 	{14, "break", "opcodes.OpBreak", "", "", ""},
 	{15, "continue", "opcodes.OpContinue", "", "", ""},
-	{16, "debug", "printer.PrinterOpDebugPrintStack", "", "", ""},
+	{16, "debug", "printer.OpDebugPrintStack", "", "", ""},
 	{17, "serialize", "opcodes.OpSerialize", "aff", "[]ui8", ""},
 	{18, "deserialize", "opcodes.OpDeserialize", "[]ui8", "", ""},
 	{39, "eq", "", "und und", "bool", ""},

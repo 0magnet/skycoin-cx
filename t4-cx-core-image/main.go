@@ -110,7 +110,7 @@ func coreImageStopLine(machine *vm.Machine) (string, string) {
 }
 
 // coreImageTestFailurePrint prints a failed test as
-// PrinterVmTestFailurePrint of t4-cx-runtime-printer does.
+// VmTestFailurePrint of t4-cx-runtime-printer does.
 func coreImageTestFailurePrint(machine *vm.Machine) {
 	fileName, lineNumber := coreImageStopLine(machine)
 	text := fileName + ": " + lineNumber + ": result was not equal to the expected value"

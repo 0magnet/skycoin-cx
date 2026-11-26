@@ -83,8 +83,8 @@ func TestGidAssert(t *testing.T) {
 			cmd.Stderr = &stderr
 			err := cmd.Run()
 			var exitErr *exec.ExitError
-			if !errors.As(err, &exitErr) || exitErr.ExitCode() != assert.AssertExitCode {
-				t.Fatalf("exit = %v, want status %d\nstderr:\n%s", err, assert.AssertExitCode, stderr.String())
+			if !errors.As(err, &exitErr) || exitErr.ExitCode() != assert.ExitCode {
+				t.Fatalf("exit = %v, want status %d\nstderr:\n%s", err, assert.ExitCode, stderr.String())
 			}
 			if !strings.Contains(stderr.String(), "assert failed: precondition") {
 				t.Errorf("stderr lacks the precondition assert:\n%s", stderr.String())

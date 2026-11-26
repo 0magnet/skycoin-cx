@@ -372,7 +372,7 @@ const (
 )
 
 // CXFunctionSlot is a local of a function that holds a pointer, slice or str,
-// with its declared type. The GC walks it as a root by its GCType.
+// with its declared type. The GC walks it as a root by its Type.
 type CXFunctionSlot struct {
 	// CXFunctionSlotOffset is the offset of the local, flagged when it escaped.
 	CXFunctionSlotOffset types.Pointer

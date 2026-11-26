@@ -673,7 +673,7 @@ func TestExecutionRecords(t *testing.T) {
 				case build.exitCode != types.CX_SUCCESS:
 					forms[executionRecordFormBuilt] = executionRecordFormOutcome{run: build, applicable: true, note: "cx build failed"}
 				default:
-					if program, fileError := core.CoreTrailerRead(output); fileError == nil {
+					if program, fileError := core.TrailerRead(output); fileError == nil {
 						outcomes[i].payload = len(program)
 					}
 					var env []string
@@ -940,7 +940,7 @@ func executionRecordsImageChild(args []string) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(executionRecordsChildFailed)
 	}
-	printer.PrinterCompileErrorsRegister(prgrm)
+	printer.CompileErrorsRegister(prgrm)
 	actions.AST = prgrm
 	runProgram(options, cxArgs, sourceCode)
 	os.Exit(types.CX_SUCCESS)

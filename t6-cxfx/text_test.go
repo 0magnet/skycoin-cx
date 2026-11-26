@@ -26,7 +26,7 @@ func TestCxfxTextNulTerminated(t *testing.T) {
 	if got := string(cxfxState.CxfxTextBuffer[:len("projection")+1]); got != "projection\x00" || name != &cxfxState.CxfxTextBuffer[0] {
 		t.Fatalf("the C string is %q", got)
 	}
-	long := make([]byte, 3*CxfxTextBufferSizeInitial)
+	long := make([]byte, 3*TextBufferSizeInitial)
 	cxfxTextNulTerminated(long)
 	if len(cxfxState.CxfxTextBuffer) < len(long)+1 || cxfxState.CxfxTextBuffer[len(long)] != 0 {
 		t.Fatal("a long name did not grow the scratch")
@@ -61,15 +61,15 @@ func TestCxfxTextViewAllocations(t *testing.T) {
 func TestCxfxHandleTables(t *testing.T) {
 	saved := cxfxState
 	defer func() { cxfxState = saved }()
-	cxfxState = CxfxState{}
+	cxfxState = State{}
 
-	first := cxfxTexturePixelsAdd(CxfxTexturePixels{CxfxTexturePixelsValues: []float32{1}})
-	second := cxfxTexturePixelsAdd(CxfxTexturePixels{CxfxTexturePixelsValues: []float32{2}})
-	if first != 0 || second != 1 || cxfxTexturePixelsGet(second).CxfxTexturePixelsValues[0] != 2 {
+	first := cxfxTexturePixelsAdd(TexturePixels{TexturePixelsValues: []float32{1}})
+	second := cxfxTexturePixelsAdd(TexturePixels{TexturePixelsValues: []float32{2}})
+	if first != 0 || second != 1 || cxfxTexturePixelsGet(second).TexturePixelsValues[0] != 2 {
 		t.Fatalf("handles %d and %d", first, second)
 	}
-	*cxfxTexturePixelsGet(first) = CxfxTexturePixels{}
-	if again := cxfxTexturePixelsAdd(CxfxTexturePixels{CxfxTexturePixelsValues: []float32{3}}); again != first {
+	*cxfxTexturePixelsGet(first) = TexturePixels{}
+	if again := cxfxTexturePixelsAdd(TexturePixels{TexturePixelsValues: []float32{3}}); again != first {
 		t.Fatalf("a freed slot was not reused, got %d", again)
 	}
 	if handle := cxfxCallbackI32I32Add(7); handle != 0 || cxfxCallbackI32I32Get(0) != 7 {

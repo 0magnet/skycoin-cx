@@ -163,7 +163,7 @@ in `CXPackages`, and three name maps, `Imports` (to `CXPackageIndex`),
 * `FileName`, `FileLine`, `FileColumn` and `LocalVariables`, used while compiling,
 * `ListOfPointers []*CXArgument` and `ListOfSlots []CXFunctionSlot`, the GC
   roots of the frame. A slot is a local with its declared type, and the GC
-  walks it by the `ast.GCType` that `ast.GCTypeOf` builds from that type
+  walks it by the `ast.Type` that `ast.GCTypeOf` builds from that type
   (`t3-ast/gc_type.go`).
 
 `CXFunctionMng` holds more than the user's functions. Every expression that
@@ -539,7 +539,7 @@ per-expression native copies.
   set in `lz4codec.Config`. `Deserialize` must be given a codec when the
   bytes were compressed.
 * `Deserialize` leaves `CompileErrorPrint` nil. The caller sets it, as
-  `printer.PrinterCompileErrorsRegister` does.
+  `printer.CompileErrorsRegister` does.
 * `Deserialize` returns an error, never panics, for bytes that are
   truncated or malformed, and for a program from another format, pointer
   size or language version.
@@ -681,13 +681,13 @@ compression, then a 32 byte trailer, little endian.
 
 The serialized form has no total length, so the trailer gives both the
 offset and the length, and the offset plus the length plus 32 must be the
-file size. `core.CoreTrailerAppend` writes it and `core.CoreTrailerRead`
+file size. `core.TrailerAppend` writes it and `core.TrailerRead`
 (`t5-cx-runtime-core/trailer.go`) reads it from `os.Executable()` when the
 core starts. A file without the magic is no built program, and the core
 prints a message and exits with `CX_COMPILATION_ERROR`. A trailer that does
 not fit the file or whose checksum fails is `FileErrorCodeContentInvalid`.
 
-`core.CoreRegister` registers the opcodes of the core, the built-in ones,
+`core.Register` registers the opcodes of the core, the built-in ones,
 `LibraryCall` and those of `sys/regexp`, `sys/time` and `os.Exit`
 (`t4-cxos-core`), and the system libraries the core links. A library is
 linked by the build tag `cxcorelibraryfile`, `cxcorelibrarynet`,
@@ -872,9 +872,9 @@ as `execute.RunCompiled` does.
 * `StopIndexNegative` is a negative index, `CX_RUNTIME_INVALID_CAST` as in
   `types.Cast_i32_to_ptr`. `StopAddressInvalid` is a computed address or str
   outside the stack and data segment, where the old loop would read the heap.
-* `StopDivideByZero` and `StopStackOverflow` end the run. `printer.PrinterVmErrorPrint` prints them as
+* `StopDivideByZero` and `StopStackOverflow` end the run. `printer.VmErrorPrint` prints them as
   the old loop does, the line from `ir.LineAt` and the call stack by copying
-  the memory and frames into the program for `PrinterStackPrint`. `vm.StopExitCodes` gives the exit code.
+  the memory and frames into the program for `StackPrint`. `vm.StopExitCodes` gives the exit code.
 * The loop has no call in it. Prints, `test`, float mod, max and min, address
   dereferences, loads and stores other than 4 bytes and every address error
   return to a slow path outside the loop, which runs the instruction and

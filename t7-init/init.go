@@ -5,7 +5,7 @@ import (
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-cipher"               // thin: only PackageRegister, CipherOpcodeDispatch; registration list and opcode switch, keep
-	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"   // thin: only PrinterCompileErrorsRegister; registration list, keep
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"   // thin: only CompileErrorsRegister; registration list, keep
 	"github.com/skycoin/skycoin-cx/t4-cxnet"                // thin: only PackageRegister, NetOpcodeDispatch; registration list and opcode switch, keep
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core" // thin: only CoreOpcodeDispatch; the opcode switch, keep
 	"github.com/skycoin/skycoin-cx/t5-cxos"                 // thin: only PackageRegister, FileOpcodeDispatch; registration list and opcode switch, keep
@@ -22,7 +22,7 @@ func PackagesRegister(prgrm *ast.CXProgram) {
 	ast.OpcodeDispatch = OpcodeDispatch
 	cipher.PackageRegister(prgrm)
 	cxos.PackageRegister(prgrm)
-	printer.PrinterCompileErrorsRegister(prgrm)
+	printer.CompileErrorsRegister(prgrm)
 	// http.PackageRegister()
 	regexp.PackageRegister(prgrm)
 	cxnet.PackageRegister(prgrm)

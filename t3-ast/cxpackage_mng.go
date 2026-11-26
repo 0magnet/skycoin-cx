@@ -26,10 +26,10 @@ type CXPackageMng struct {
 // VIOLATION STRHOT-253: E, the assert text of a bad Init, built only when it fails, #412.
 func (manager *CXPackageMng) CXPackageMngInit(capacity int, growable bool) {
 	if manager.CXPackageMngLen != 0 {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXPackageMngInit on a manager holding %d objects", manager.CXPackageMngLen))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXPackageMngInit on a manager holding %d objects", manager.CXPackageMngLen))
 	}
 	if capacity < 0 || uint64(capacity) > objmodel.GidCapMax {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXPackageMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXPackageMngInit capacity %d outside 0 to %d", capacity, objmodel.GidCapMax))
 	}
 	*manager = CXPackageMng{
 		CXPackageMngObjects:     make([]CXPackage, capacity),
@@ -49,7 +49,7 @@ func (manager *CXPackageMng) CXPackageAlloc() CXPackageGid {
 		manager.CXPackageMngFree = manager.CXPackageMngFree[:free-1]
 	} else {
 		if capacity := len(manager.CXPackageMngObjects); int(manager.CXPackageMngNext) == capacity {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXPackageAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXPackageAlloc on a full manager, Cap %d. Growth between grow boundaries is an unhandled case", capacity))
 		}
 		index = manager.CXPackageMngNext
 		manager.CXPackageMngNext++
@@ -59,7 +59,7 @@ func (manager *CXPackageMng) CXPackageAlloc() CXPackageGid {
 	manager.CXPackageMngLive[index] = true
 	manager.CXPackageMngLen++
 	if manager.CXPackageMngLen != int(manager.CXPackageMngNext)-len(manager.CXPackageMngFree)-int(manager.CXPackageMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXPackageAlloc: Len %d is not the live slot count", manager.CXPackageMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXPackageAlloc: Len %d is not the live slot count", manager.CXPackageMngLen))
 	}
 	return CXPackageGid(objmodel.GidCompose(CXPackageGidTypeTag, manager.CXPackageMngGenerations[index], index))
 }
@@ -73,9 +73,9 @@ func (manager *CXPackageMng) CXPackageRelease(gid CXPackageGid) {
 		!manager.CXPackageMngLive[index] || manager.CXPackageMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXPackageGidTypeTag, len(manager.CXPackageMngObjects))
 		if !manager.CXPackageMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXPackageRelease of slot %d, which is not live, a double release", index))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXPackageRelease of slot %d, which is not live, a double release", index))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXPackageRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXPackageMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXPackageRelease of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXPackageMngGenerations[index]))
 	}
 	manager.CXPackageMngObjects[index] = CXPackage{}
 	manager.CXPackageMngLive[index] = false
@@ -87,7 +87,7 @@ func (manager *CXPackageMng) CXPackageRelease(gid CXPackageGid) {
 	}
 	manager.CXPackageMngLen--
 	if manager.CXPackageMngLen < 0 || manager.CXPackageMngLen != int(manager.CXPackageMngNext)-len(manager.CXPackageMngFree)-int(manager.CXPackageMngRetired) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXPackageRelease: Len %d is not the live slot count", manager.CXPackageMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXPackageRelease: Len %d is not the live slot count", manager.CXPackageMngLen))
 	}
 }
 
@@ -99,9 +99,9 @@ func (manager *CXPackageMng) CXPackageGet(gid CXPackageGid) *CXPackage {
 		!manager.CXPackageMngLive[index] || manager.CXPackageMngGenerations[index] != objmodel.GidGeneration(int64(gid)) {
 		objmodel.GidAssertFailure(int64(gid), CXPackageGidTypeTag, len(manager.CXPackageMngObjects))
 		if !manager.CXPackageMngLive[index] {
-			assert.AssertPreconditionTrue(false, fmt.Sprintf("CXPackageGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
+			assert.PreconditionTrue(false, fmt.Sprintf("CXPackageGet of slot %d, which is not live, a stale Gid %#x", index, int64(gid)))
 		}
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("CXPackageGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXPackageMngGenerations[index]))
+		assert.PreconditionTrue(false, fmt.Sprintf("CXPackageGet of a stale Gid %#x, slot %d is at generation %d", int64(gid), index, manager.CXPackageMngGenerations[index]))
 	}
 	return &manager.CXPackageMngObjects[index]
 }
@@ -148,7 +148,7 @@ func (manager *CXPackageMng) CXPackageMngGrowBoundary() (int, int) {
 // Cap at 0.
 func (manager *CXPackageMng) CXPackageMngTeardown() {
 	if manager.CXPackageMngLen != 0 {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("CXPackageMngTeardown with %d live objects, a leak", manager.CXPackageMngLen))
+		assert.InvariantTrue(false, fmt.Sprintf("CXPackageMngTeardown with %d live objects, a leak", manager.CXPackageMngLen))
 	}
 	*manager = CXPackageMng{}
 }

@@ -269,15 +269,15 @@ no zero value error struct that means success.
 Package `t0-cx-core-assert` (package `assert`) holds the class B checks.
 
 ```go
-assert.AssertPreconditionTrue(condition bool, message string)
-assert.AssertInvariantTrue(condition bool, message string)
-assert.AssertPostconditionTrue(condition bool, message string)
-assert.AssertUnreachable(message string)
+assert.PreconditionTrue(condition bool, message string)
+assert.InvariantTrue(condition bool, message string)
+assert.PostconditionTrue(condition bool, message string)
+assert.Unreachable(message string)
 ```
 
 ```go
 func StackFramePop(prgrm *CXProgram) {
-	assert.AssertPreconditionTrue(prgrm.CallCounter > 0, "pop of the entry frame")
+	assert.PreconditionTrue(prgrm.CallCounter > 0, "pop of the entry frame")
 	...
 }
 ```
@@ -291,7 +291,7 @@ goroutine 1 [running]:
 ...
 ```
 
-and ends the process with `os.Exit(assert.AssertExitCode)`, which is 3, the
+and ends the process with `os.Exit(assert.ExitCode)`, which is 3, the
 same value as `CX_INTERNAL_ERROR`.
 
 The assert calls `os.Exit` rather than `panic`. A panic can be caught by any
@@ -353,7 +353,7 @@ A compile error is data too. The compiler appends a `CompileErrorRecord`, a
 building text. The column is that of the lexer token the parser is at, which
 the rules of identifiers, literals, calls and statements set to where they
 start, and `CXArgumentDebug` and `CXLine` keep it.
-`printer.PrinterCompileErrorsPrint` prints the records through a table of
+`printer.CompileErrorsPrint` prints the records through a table of
 formats indexed by the code when compilation returns, as
 `error: file:line:column`, sorted by file, line and column with an identical
 record printed once. A syntax error is a record too, and stops the parse of

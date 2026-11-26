@@ -8,17 +8,17 @@ import (
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 )
 
-// A program appended with CoreTrailerAppend reads back from the file, and a
+// A program appended with TrailerAppend reads back from the file, and a
 // file without a trailer reads as no program.
 func TestCoreTrailerRoundTrip(t *testing.T) {
 	dir := t.TempDir()
 	coreBinary := []byte("core binary bytes")
 	program := []byte("CXPROGRM serialized program")
 	built := filepath.Join(dir, "built")
-	if err := os.WriteFile(built, CoreTrailerAppend(coreBinary, program), 0o755); err != nil {
+	if err := os.WriteFile(built, TrailerAppend(coreBinary, program), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	got, fileError := CoreTrailerRead(built)
+	got, fileError := TrailerRead(built)
 	if fileError != nil || string(got) != string(program) {
 		t.Fatalf("read %q, %v, want %q", got, fileError, program)
 	}
@@ -27,7 +27,7 @@ func TestCoreTrailerRoundTrip(t *testing.T) {
 	if err := os.WriteFile(plain, append(coreBinary, coreBinary...), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if got, fileError := CoreTrailerRead(plain); got != nil || fileError != nil {
+	if got, fileError := TrailerRead(plain); got != nil || fileError != nil {
 		t.Fatalf("file without a trailer read as %q, %v", got, fileError)
 	}
 }
@@ -36,8 +36,8 @@ func TestCoreTrailerRoundTrip(t *testing.T) {
 // FileErrorCodeContentInvalid.
 func TestCoreTrailerDamaged(t *testing.T) {
 	dir := t.TempDir()
-	good := CoreTrailerAppend([]byte("core"), []byte("program"))
-	tail := len(good) - CoreTrailerSize
+	good := TrailerAppend([]byte("core"), []byte("program"))
+	tail := len(good) - TrailerSize
 	cases := map[string]func(b []byte){
 		"offset":   func(b []byte) { b[tail]++ },
 		"length":   func(b []byte) { b[tail+8]++ },
@@ -56,7 +56,7 @@ func TestCoreTrailerDamaged(t *testing.T) {
 		if err := os.WriteFile(path, b, 0o644); err != nil {
 			t.Fatal(err)
 		}
-		got, fileError := CoreTrailerRead(path)
+		got, fileError := TrailerRead(path)
 		if got != nil || fileError == nil || fileError.FileErrorCode != sandbox.FileErrorCodeContentInvalid {
 			t.Errorf("%s: read %q, %+v, want FileErrorCodeContentInvalid", name, got, fileError)
 		}

@@ -32,11 +32,11 @@ func GarbageCollectorPrepare(prgrm *CXProgram) {
 		}
 		cache.GCTypeCacheFunctions = functions
 	}
-	if cap(heap.Roots.GCRootTableFrames) < len(prgrm.CallStack) {
-		heap.Roots.GCRootTableFrames = make([]gc.GCRootFrame, 0, len(prgrm.CallStack))
+	if cap(heap.Roots.RootTableFrames) < len(prgrm.CallStack) {
+		heap.Roots.RootTableFrames = make([]gc.RootFrame, 0, len(prgrm.CallStack))
 	}
 	memorySize := types.Cast_int_to_ptr(cap(prgrm.Memory))
-	gc.GCStatePrepare(&heap.Collector, memorySize-heap.StartsAt, memorySize)
+	gc.StatePrepare(&heap.Collector, memorySize-heap.StartsAt, memorySize)
 }
 
 // GarbageCollectorTrigger collects the heap at a safe point of the old loop,
@@ -49,9 +49,9 @@ func GarbageCollectorPrepare(prgrm *CXProgram) {
 func GarbageCollectorTrigger(prgrm *CXProgram) {
 	heap := &prgrm.Heap
 	roots := &heap.Roots
-	roots.GCRootTableGlobals = gcGlobalRoots(prgrm)
-	roots.GCRootTableStackSize = prgrm.Stack.Size
-	frames := roots.GCRootTableFrames[:0]
+	roots.RootTableGlobals = gcGlobalRoots(prgrm)
+	roots.RootTableStackSize = prgrm.Stack.Size
+	frames := roots.RootTableFrames[:0]
 	// After the last return CallCounter is invalid and no frame is live.
 	for c := types.Pointer(0); prgrm.CallCounter.Valid() && c <= prgrm.CallCounter; c++ {
 		call := &prgrm.CallStack[c]
@@ -59,9 +59,9 @@ func GarbageCollectorTrigger(prgrm *CXProgram) {
 		if call.Operator == CXFunctionGidNil {
 			continue
 		}
-		frames = append(frames, gc.GCRootFrame{GCRootFramePointer: call.FramePointer, GCRootFrameRoots: gcFrameRoots(prgrm, prgrm.CxIrState.CXFunctionMng.CXFunctionGet(call.Operator))})
+		frames = append(frames, gc.RootFrame{RootFramePointer: call.FramePointer, RootFrameRoots: gcFrameRoots(prgrm, prgrm.CxIrState.CXFunctionMng.CXFunctionGet(call.Operator))})
 	}
-	roots.GCRootTableFrames = frames
+	roots.RootTableFrames = frames
 	heap.Pointer = gc.GarbageCollectorCollect(prgrm.Memory, heap.StartsAt, heap.Pointer, roots, &heap.Collector)
 	heapFreeRatioKeep(prgrm)
 	heap.Pressure = 0

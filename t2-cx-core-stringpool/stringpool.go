@@ -49,7 +49,7 @@ func (pool *StringPool) StringPoolInit(slotCap int, arenaCap int) {
 // VIOLATION STRHOT-277: B, name text for compiler code run by an opcode, #412.
 func (pool *StringPool) StringPoolIntern(bytes []byte) StringGid {
 	if pool.StringPoolFrozen {
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("StringPoolIntern of %q on a frozen pool", string(bytes)))
+		assert.PreconditionTrue(false, fmt.Sprintf("StringPoolIntern of %q on a frozen pool", string(bytes)))
 	}
 	if len(bytes) == 0 {
 		return StringGidNil
@@ -59,7 +59,7 @@ func (pool *StringPool) StringPoolIntern(bytes []byte) StringGid {
 	}
 	slot := len(pool.StringPoolOffsets)
 	if uint64(slot) >= objmodel.GidCapMax || uint64(len(pool.StringPoolArena))+uint64(len(bytes)) > uint64(^uint32(0)) {
-		assert.AssertInvariantTrue(false, fmt.Sprintf("StringPool full at %d strings and %d bytes", slot, len(pool.StringPoolArena)))
+		assert.InvariantTrue(false, fmt.Sprintf("StringPool full at %d strings and %d bytes", slot, len(pool.StringPoolArena)))
 	}
 	offset := len(pool.StringPoolArena)
 	pool.StringPoolArena = append(pool.StringPoolArena, bytes...)
@@ -109,7 +109,7 @@ func (pool *StringPool) StringPoolBytes(gid StringGid) []byte {
 	slot := objmodel.GidIndex(int64(gid))
 	if objmodel.GidTypeTag(int64(gid)) != StringGidTypeTag || objmodel.GidGeneration(int64(gid)) != objmodel.GidGenerationFirst || uint64(slot) >= uint64(len(pool.StringPoolOffsets)) {
 		objmodel.GidAssertFailure(int64(gid), StringGidTypeTag, len(pool.StringPoolOffsets))
-		assert.AssertPreconditionTrue(false, fmt.Sprintf("String Gid %#x has generation %#x, want %#x", int64(gid), objmodel.GidGeneration(int64(gid)), objmodel.GidGenerationFirst))
+		assert.PreconditionTrue(false, fmt.Sprintf("String Gid %#x has generation %#x, want %#x", int64(gid), objmodel.GidGeneration(int64(gid)), objmodel.GidGenerationFirst))
 	}
 	offset := pool.StringPoolOffsets[slot]
 	return pool.StringPoolArena[offset : offset+pool.StringPoolLengths[slot] : offset+pool.StringPoolLengths[slot]]

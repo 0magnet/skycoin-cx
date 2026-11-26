@@ -21,16 +21,16 @@ func gcTestHeap() (memory []byte, heapStartsAt types.Pointer, heapPointer types.
 	return memory, heapStartsAt, live + size - heapStartsAt, live
 }
 
-// gcTestState returns a GCState prepared for memory and its heap.
-func gcTestState(memory []byte, heapStartsAt types.Pointer) *GCState {
-	var state GCState
-	GCStatePrepare(&state, types.Cast_int_to_ptr(len(memory))-heapStartsAt, types.Cast_int_to_ptr(len(memory)))
+// gcTestState returns a State prepared for memory and its heap.
+func gcTestState(memory []byte, heapStartsAt types.Pointer) *State {
+	var state State
+	StatePrepare(&state, types.Cast_int_to_ptr(len(memory))-heapStartsAt, types.Cast_int_to_ptr(len(memory)))
 	return &state
 }
 
 func TestGarbageCollectorCollectMovesLiveObjectDown(t *testing.T) {
 	memory, heapStartsAt, heapPointer, _ := gcTestHeap()
-	roots := &GCRootTable{GCRootTableGlobals: []GCRoot{{GCRootOffset: 0, GCRootType: &GCType{GCTypeKind: GCKindStr}}}, GCRootTableStackSize: 32}
+	roots := &RootTable{RootTableGlobals: []Root{{RootOffset: 0, RootType: &Type{TypeKind: KindStr}}}, RootTableStackSize: 32}
 	pointer := GarbageCollectorCollect(memory, heapStartsAt, heapPointer, roots, gcTestState(memory, heapStartsAt))
 	moved := heapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET
 	if want := constants.NULL_HEAP_ADDRESS_OFFSET + types.OBJECT_HEADER_SIZE + 4; pointer != want {
@@ -46,7 +46,7 @@ func TestGarbageCollectorCollectMovesLiveObjectDown(t *testing.T) {
 
 func TestGarbageCollectorCollectFreesUnreachable(t *testing.T) {
 	memory, heapStartsAt, heapPointer, _ := gcTestHeap()
-	if pointer := GarbageCollectorCollect(memory, heapStartsAt, heapPointer, &GCRootTable{GCRootTableStackSize: 32}, gcTestState(memory, heapStartsAt)); pointer != constants.NULL_HEAP_ADDRESS_OFFSET {
+	if pointer := GarbageCollectorCollect(memory, heapStartsAt, heapPointer, &RootTable{RootTableStackSize: 32}, gcTestState(memory, heapStartsAt)); pointer != constants.NULL_HEAP_ADDRESS_OFFSET {
 		t.Fatalf("heap pointer %d, want %d", pointer, constants.NULL_HEAP_ADDRESS_OFFSET)
 	}
 }
@@ -56,9 +56,9 @@ func TestGarbageCollectorCollectFrameRoot(t *testing.T) {
 	memory, heapStartsAt, heapPointer, live := gcTestHeap()
 	types.Write_ptr(memory, 0, 0)
 	types.Write_ptr(memory, 16+8, live)
-	roots := &GCRootTable{
-		GCRootTableFrames:    []GCRootFrame{{GCRootFramePointer: 16, GCRootFrameRoots: []GCRoot{{GCRootOffset: 8, GCRootType: &GCType{GCTypeKind: GCKindStr}}}}},
-		GCRootTableStackSize: 32,
+	roots := &RootTable{
+		RootTableFrames:    []RootFrame{{RootFramePointer: 16, RootFrameRoots: []Root{{RootOffset: 8, RootType: &Type{TypeKind: KindStr}}}}},
+		RootTableStackSize: 32,
 	}
 	GarbageCollectorCollect(memory, heapStartsAt, heapPointer, roots, gcTestState(memory, heapStartsAt))
 	if got, want := types.Read_ptr(memory, 16+8), heapStartsAt+constants.NULL_HEAP_ADDRESS_OFFSET; got != want {
@@ -69,12 +69,12 @@ func TestGarbageCollectorCollectFrameRoot(t *testing.T) {
 // gcTestList builds a heap at 64 of count garbage strs and count list nodes,
 // each holding a pointer to the next node and a str, with a root at 0 that
 // points to the first node. It returns the root type.
-func gcTestList(state *GCState, count int) (memory []byte, heapStartsAt types.Pointer, heapPointer types.Pointer, root *GCType) {
+func gcTestList(state *State, count int) (memory []byte, heapStartsAt types.Pointer, heapPointer types.Pointer, root *Type) {
 	heapStartsAt = 64
-	node := &GCType{GCTypeKind: GCKindStruct}
-	pointer := &GCType{GCTypeKind: GCKindPointer, GCTypeElem: node}
-	GCStateTypeAdd(state, pointer)
-	node.GCTypeFields = []GCTypeField{{GCTypeFieldOffset: 0, GCTypeFieldType: pointer}, {GCTypeFieldOffset: types.POINTER_SIZE, GCTypeFieldType: &GCType{GCTypeKind: GCKindStr}}}
+	node := &Type{TypeKind: KindStruct}
+	pointer := &Type{TypeKind: KindPointer, TypeElement: node}
+	StateTypeAdd(state, pointer)
+	node.TypeFields = []TypeField{{TypeFieldOffset: 0, TypeFieldType: pointer}, {TypeFieldOffset: types.POINTER_SIZE, TypeFieldType: &Type{TypeKind: KindStr}}}
 	strSize := types.OBJECT_HEADER_SIZE + 1
 	nodeSize := types.OBJECT_HEADER_SIZE + 2*types.POINTER_SIZE
 	memory = make([]byte, heapStartsAt+constants.NULL_HEAP_ADDRESS_OFFSET+types.Cast_int_to_ptr(count)*(2*strSize+nodeSize))
@@ -116,18 +116,18 @@ func gcTestListCheck(t *testing.T, memory []byte, count int) {
 	}
 }
 
-// A list collects with no allocation, and with a GCStateWork of one entry,
+// A list collects with no allocation, and with a StateWork of one entry,
 // which leaves nodes for the scan of the heap, it keeps the same objects.
 func TestGarbageCollectorCollectList(t *testing.T) {
 	const count = 300
 	for _, work := range []int{0, 1} {
-		var state GCState
+		var state State
 		memory, heapStartsAt, heapPointer, root := gcTestList(&state, count)
-		GCStatePrepare(&state, types.Cast_int_to_ptr(len(memory))-heapStartsAt, types.Cast_int_to_ptr(len(memory)))
+		StatePrepare(&state, types.Cast_int_to_ptr(len(memory))-heapStartsAt, types.Cast_int_to_ptr(len(memory)))
 		if work != 0 {
-			state.GCStateWork = make([]types.Pointer, 0, work)
+			state.StateWork = make([]types.Pointer, 0, work)
 		}
-		roots := &GCRootTable{GCRootTableGlobals: []GCRoot{{GCRootOffset: 0, GCRootType: root}}, GCRootTableStackSize: 32}
+		roots := &RootTable{RootTableGlobals: []Root{{RootOffset: 0, RootType: root}}, RootTableStackSize: 32}
 		var pointer types.Pointer
 		allocs := testing.AllocsPerRun(1, func() {
 			pointer = GarbageCollectorCollect(memory, heapStartsAt, heapPointer, roots, &state)
@@ -148,18 +148,18 @@ func TestGarbageCollectorCollectList(t *testing.T) {
 	}
 }
 
-// Pointers into an object past the capacity of GCStateViews grow it, and
+// Pointers into an object past the capacity of StateViews grow it, and
 // the collection keeps the object and moves the pointers into it.
 func TestGarbageCollectorCollectViewsGrow(t *testing.T) {
 	memory, heapStartsAt, heapPointer, live := gcTestHeap()
-	inner := &GCType{GCTypeKind: GCKindPointer, GCTypeElem: &GCType{GCTypeKind: GCKindStr}}
-	roots := &GCRootTable{GCRootTableStackSize: 32}
+	inner := &Type{TypeKind: KindPointer, TypeElement: &Type{TypeKind: KindStr}}
+	roots := &RootTable{RootTableStackSize: 32}
 	for i := types.Pointer(0); i < 3; i++ {
 		types.Write_ptr(memory, i*8, live+1+i)
-		roots.GCRootTableGlobals = append(roots.GCRootTableGlobals, GCRoot{GCRootOffset: i * 8, GCRootType: inner})
+		roots.RootTableGlobals = append(roots.RootTableGlobals, Root{RootOffset: i * 8, RootType: inner})
 	}
 	state := gcTestState(memory, heapStartsAt)
-	state.GCStateViews = make([]GCVisit, 0, 2)
+	state.StateViews = make([]Visit, 0, 2)
 	GarbageCollectorCollect(memory, heapStartsAt, heapPointer, roots, state)
 	moved := heapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET
 	for i := types.Pointer(0); i < 3; i++ {

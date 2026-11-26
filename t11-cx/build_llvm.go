@@ -44,7 +44,7 @@ func buildLlvmOptions() llvm.Options {
 	for stop, vmStop := range buildLlvmStops {
 		code := vm.StopExitCodes[vmStop]
 		options.StopCodes[stop] = code
-		options.StopLines[stop] = ast.ErrorString(int(code)) + ", " + printer.PrinterVmStopMessage(vmStop)
+		options.StopLines[stop] = ast.ErrorString(int(code)) + ", " + printer.VmStopMessage(vmStop)
 	}
 	return options
 }
@@ -56,7 +56,7 @@ func buildLlvmOptions() llvm.Options {
 // the message vm gives.
 func buildLlvm(options buildOptions) int {
 	prgrm := actions.AST
-	core.CoreLibrariesEnabledResolve(prgrm)
+	core.LibrariesEnabledResolve(prgrm)
 	prgrm.CxIrState.CxIrStateManagerGrowBoundary()
 	prgrm.CxIrState.StringPool.StringPoolFreeze()
 	llvmOptions := buildLlvmOptions()
@@ -70,10 +70,10 @@ func buildLlvm(options buildOptions) int {
 		llvmOptions.EntryName = buildLlvmTinygoEntryName
 	}
 	image, _, outside := core.ExecutorLower(prgrm)
-	if code := core.CoreOperationRefused(prgrm); code != 0 {
+	if code := core.OperationRefused(prgrm); code != 0 {
 		// The program is refused before it runs, as cx refuses it, so its
 		// code needs no native form.
-		llvmOptions.RefusalLine, llvmOptions.RefusalCode = core.CoreOperationRefusalLine(prgrm, code), types.CX_RUNTIME_LIBRARY_DISABLED
+		llvmOptions.RefusalLine, llvmOptions.RefusalCode = core.OperationRefusalLine(prgrm, code), types.CX_RUNTIME_LIBRARY_DISABLED
 		image, outside = ir.Image{ImageEntryInit: ir.ImageFuncNone, ImageEntryMain: ir.ImageFuncNone}, ""
 	}
 	if outside != "" {

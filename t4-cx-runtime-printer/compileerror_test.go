@@ -115,7 +115,7 @@ func TestPrinterCompileErrorAppend(t *testing.T) {
 	for _, tc := range cases {
 		covered[tc.code] = true
 		record := ast.CompileErrorRecord{CompileErrorRecordCode: tc.code, CompileErrorRecordFile: file, CompileErrorRecordLine: 7, CompileErrorRecordOperands: tc.operands}
-		if got := string(PrinterCompileErrorAppend(nil, prgrm, &record)); got != tc.want {
+		if got := string(CompileErrorAppend(nil, prgrm, &record)); got != tc.want {
 			t.Errorf("code %d: got %q, want %q", tc.code, got, tc.want)
 		}
 	}
@@ -134,11 +134,11 @@ func TestPrinterCompileErrorColumn(t *testing.T) {
 	prgrm := &ast.CXProgram{CxIrState: state}
 	file := prgrm.CXProgramSourceFileIntern("a.cx")
 	record := ast.CompileErrorRecord{CompileErrorRecordCode: ast.CompileErrorCodeInvalidExpression, CompileErrorRecordFile: file, CompileErrorRecordLine: 7, CompileErrorRecordColumn: 12}
-	if got, want := string(PrinterCompileErrorAppend(nil, prgrm, &record)), "error: a.cx:7:12 invalid expression\n"; got != want {
+	if got, want := string(CompileErrorAppend(nil, prgrm, &record)), "error: a.cx:7:12 invalid expression\n"; got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}
 	record.CompileErrorRecordColumn = 0
-	if got, want := string(PrinterCompileErrorAppend(nil, prgrm, &record)), "error: a.cx:7 invalid expression\n"; got != want {
+	if got, want := string(CompileErrorAppend(nil, prgrm, &record)), "error: a.cx:7 invalid expression\n"; got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}
 }
@@ -164,7 +164,7 @@ func TestPrinterCompileErrorsOrder(t *testing.T) {
 	printerCompileErrorsSort(pending)
 	var got string
 	for i := range pending {
-		got += string(PrinterCompileErrorAppend(nil, prgrm, &pending[i]))
+		got += string(CompileErrorAppend(nil, prgrm, &pending[i]))
 	}
 	want := "error: a.cx:1:4 invalid indirection\nerror: a.cx:3:2 invalid indexing\nerror: a.cx:3:9 invalid expression\n"
 	if got != want {

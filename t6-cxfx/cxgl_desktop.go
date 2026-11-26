@@ -150,7 +150,7 @@ func cxglShaderSource(shader uint32, count int32, source []byte) {
 		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
 	}
 	if cxfxState.CxfxShaderSource == nil {
-		cxfxState.CxfxShaderSource = &CxfxShaderSourceArgument{}
+		cxfxState.CxfxShaderSource = &ShaderSourceArgument{}
 	}
 	argument := cxfxState.CxfxShaderSource
 	if len(source) == 0 {

@@ -15,7 +15,7 @@ import (
 
 	constants "github.com/skycoin/skycoin-cx/t1-constants"
 	profiling "github.com/skycoin/skycoin-cx/t1-profiling"
-	repl "github.com/skycoin/skycoin-cx/t10-cxrepl" // thin: only Repl, ReplTargetFn; only user of cxrepl, could merge it here, max tier 11 to 10
+	repl "github.com/skycoin/skycoin-cx/t10-cxrepl" // thin: only Repl, TargetFunction; only user of cxrepl, could merge it here, max tier 11 to 10
 	globals "github.com/skycoin/skycoin-cx/t2-globals"
 	ast "github.com/skycoin/skycoin-cx/t3-ast"
 	actions "github.com/skycoin/skycoin-cx/t4-actions"
@@ -48,7 +48,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 
 	profiling.ProfileStart("parse")
 	defer profiling.ProfileStop("parse")
-	defer func() { printer.PrinterCompileErrorsPrint(actions.AST) }()
+	defer func() { printer.CompileErrorsPrint(actions.AST) }()
 
 	if actions.AST == nil {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
@@ -68,7 +68,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	}
 
 	// Setting what function to start in if using the REPL.
-	repl.ReplTargetFn = constants.MAIN_FUNC
+	repl.TargetFunction = constants.MAIN_FUNC
 
 	if err := compileSourceStrings(fileNames, sources); err != nil {
 		if err != cxparsing.ErrCompilation {
@@ -100,7 +100,7 @@ func compileSourceStrings(fileNames []string, sources []string) error {
 	actions.LineNo = 0
 
 	if globals.FoundCompileErrors {
-		printer.PrinterCompileErrorsPrint(actions.AST)
+		printer.CompileErrorsPrint(actions.AST)
 		return cxparsing.ErrCompilation
 	}
 	return nil
