@@ -67,11 +67,11 @@ func CoreTrailerRead(path string) ([]byte, *sandbox.FileError) {
 		return nil, sandbox.FileErrorWrap(sandbox.FileOperationOpen, path, err)
 	}
 	defer file.Close()
-	info, err := file.Stat()
+	fileStat, err := file.Stat()
 	if err != nil {
 		return nil, sandbox.FileErrorWrap(sandbox.FileOperationRead, path, err)
 	}
-	size := info.Size()
+	size := fileStat.Size()
 	if size < CoreTrailerSize {
 		return nil, nil
 	}

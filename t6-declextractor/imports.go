@@ -51,15 +51,15 @@ func ExtractImports(source []byte, fileName string) ([]ImportDeclaration, error)
 		checkLine := bytes.Split(line, []byte(" "))
 		if bytes.Equal(checkLine[0], []byte("import")) {
 
-			var tmp ImportDeclaration
+			var importDeclaration ImportDeclaration
 
-			tmp.PackageID = pkg
-			tmp.FileID = fileName
-			tmp.LineNumber = lineno
+			importDeclaration.PackageID = pkg
+			importDeclaration.FileID = fileName
+			importDeclaration.LineNumber = lineno
 
-			tmp.ImportName = string(checkLine[1][1 : len(checkLine[1])-1])
+			importDeclaration.ImportName = string(checkLine[1][1 : len(checkLine[1])-1])
 
-			ImportDeclarationsArray = append(ImportDeclarationsArray, tmp)
+			ImportDeclarationsArray = append(ImportDeclarationsArray, importDeclaration)
 		}
 	}
 

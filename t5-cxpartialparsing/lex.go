@@ -182,7 +182,7 @@ redonext:
 	s.tok.column = s.c + 1
 
 	s.start()
-	if isLetter(s.ch) || s.ch >= utf8.RuneSelf && s.atIdentChar(true) {
+	if runeLetter(s.ch) || s.ch >= utf8.RuneSelf && s.atIdentChar(true) {
 		s.nextch()
 		s.ident()
 		return
@@ -240,7 +240,7 @@ redonext:
 			s.tok.yys = CASSIGN
 			s.tok.tok = ":="
 			break
-		} else if isLetter(s.ch) {
+		} else if runeLetter(s.ch) {
 			s.colbefore = true
 			s.ident() /* might be :ds */
 			if !s.colbefore {
@@ -254,7 +254,7 @@ redonext:
 		s.tok.yys = COLON
 	case '.':
 		s.nextch()
-		if isDecimal(s.ch) {
+		if runeDecimal(s.ch) {
 			s.number(true)
 			break
 		}
@@ -445,7 +445,7 @@ redonext:
 
 func (s *Lexer) ident() {
 	// accelerate common case (7bit ASCII)
-	for isLetter(s.ch) || isDecimal(s.ch) {
+	for runeLetter(s.ch) || runeDecimal(s.ch) {
 		s.nextch()
 	}
 
@@ -542,10 +542,10 @@ func (s *Lexer) atIdentChar(first bool) bool {
 	return true
 }
 
-func lower(ch rune) rune     { return ('a' - 'A') | ch } // returns lower-case ch iff ch is ASCII letter
-func isLetter(ch rune) bool  { return 'a' <= lower(ch) && lower(ch) <= 'z' || ch == '_' }
-func isDecimal(ch rune) bool { return '0' <= ch && ch <= '9' }
-func isHex(ch rune) bool     { return '0' <= ch && ch <= '9' || 'a' <= lower(ch) && lower(ch) <= 'f' }
+func lower(ch rune) rune       { return ('a' - 'A') | ch } // returns lower-case ch iff ch is ASCII letter
+func runeLetter(ch rune) bool  { return 'a' <= lower(ch) && lower(ch) <= 'z' || ch == '_' }
+func runeDecimal(ch rune) bool { return '0' <= ch && ch <= '9' }
+func runeHex(ch rune) bool     { return '0' <= ch && ch <= '9' || 'a' <= lower(ch) && lower(ch) <= 'f' }
 
 func (s *Lexer) number(seenPoint bool) {
 	ok := true
@@ -566,11 +566,11 @@ func (s *Lexer) number(seenPoint bool) {
 			}
 		}
 		if base == 16 {
-			for isHex(s.ch) {
+			for runeHex(s.ch) {
 				s.nextch()
 			}
 		} else {
-			for isDecimal(s.ch) {
+			for runeDecimal(s.ch) {
 				s.nextch()
 			}
 		}
@@ -589,11 +589,11 @@ func (s *Lexer) number(seenPoint bool) {
 	if seenPoint {
 		kind = FLOAT_LITERAL
 		if base == 16 {
-			for isHex(s.ch) {
+			for runeHex(s.ch) {
 				s.nextch()
 			}
 		} else {
-			for isDecimal(s.ch) {
+			for runeDecimal(s.ch) {
 				s.nextch()
 			}
 		}
@@ -617,11 +617,11 @@ func (s *Lexer) number(seenPoint bool) {
 			s.nextch()
 		}
 		if base == 16 {
-			for isHex(s.ch) {
+			for runeHex(s.ch) {
 				s.nextch()
 			}
 		} else {
-			for isDecimal(s.ch) {
+			for runeDecimal(s.ch) {
 				s.nextch()
 			}
 		}
@@ -888,7 +888,7 @@ func (s *Lexer) escape(quote rune) bool {
 			return true // complain in caller about EOF
 		}
 		d := base
-		if isDecimal(s.ch) {
+		if runeDecimal(s.ch) {
 			d = uint32(s.ch) - '0'
 		} else if 'a' <= lower(s.ch) && lower(s.ch) <= 'f' {
 			d = uint32(lower(s.ch)) - 'a' + 10

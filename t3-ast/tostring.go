@@ -429,17 +429,17 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	} else if typeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0503.
-		arrayData := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
+		arraySignature := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
 
-		arrLen := len(arrayData.Lengths) - len(arrayData.Indexes)
+		arrLen := len(arraySignature.Lengths) - len(arraySignature.Indexes)
 		if arrLen != 0 {
-			dims := arrayData.Lengths[len(arrayData.Indexes):]
+			dims := arraySignature.Lengths[len(arraySignature.Indexes):]
 			for i := len(dims) - 1; i >= 0; i-- {
 				typ = fmt.Sprintf("[%d]%s", dims[i], typ)
 			}
 		}
 
-		typ += types.Code(arrayData.Meta).Name()
+		typ += types.Code(arraySignature.Meta).Name()
 		if !typeSig.Deref {
 			typ = "*" + typ
 		}
@@ -447,32 +447,32 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	} else if typeSig.Type == TYPE_SLICE_ATOMIC {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0504.
-		arrayData := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
+		arraySignature := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
 
-		arrLen := len(arrayData.Lengths) - len(arrayData.Indexes)
+		arrLen := len(arraySignature.Lengths) - len(arraySignature.Indexes)
 		if arrLen != 0 {
-			for i := 0; i < len(arrayData.Lengths[len(arrayData.Indexes):]); i++ {
+			for i := 0; i < len(arraySignature.Lengths[len(arraySignature.Indexes):]); i++ {
 				typ = fmt.Sprintf("[]%s", typ)
 			}
 		}
 
-		typ += types.Code(arrayData.Meta).Name()
+		typ += types.Code(arraySignature.Meta).Name()
 		if typeSig.PassBy == constants.PASSBY_REFERENCE {
 			typ = "*" + typ
 		}
 	} else if typeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0505.
-		arrayData := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
+		arraySignature := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
 
-		arrLen := len(arrayData.Lengths) - len(arrayData.Indexes)
+		arrLen := len(arraySignature.Lengths) - len(arraySignature.Indexes)
 		if arrLen != 0 {
-			for i := 0; i < len(arrayData.Lengths[len(arrayData.Indexes):]); i++ {
+			for i := 0; i < len(arraySignature.Lengths[len(arraySignature.Indexes):]); i++ {
 				typ = fmt.Sprintf("[]%s", typ)
 			}
 		}
 
-		typ += types.Code(arrayData.Meta).Name()
+		typ += types.Code(arraySignature.Meta).Name()
 		if !typeSig.Deref {
 			typ = "*" + typ
 		}

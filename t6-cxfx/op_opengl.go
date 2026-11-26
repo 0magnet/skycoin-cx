@@ -81,7 +81,7 @@ func imageDecode(file *os.File) (image.Image, error) {
 	return nil, image.ErrFormat
 }
 
-func decodeImg(file *os.File, cpuCopy bool) (data []byte, width int32, height int32, pixels []float32) {
+func decodeImg(file *os.File, cpuCopy bool) (pixelBytes []byte, width int32, height int32, pixels []float32) {
 	img, err := imageDecode(file)
 	if err != nil {
 		panic(err)
@@ -93,7 +93,7 @@ func decodeImg(file *os.File, cpuCopy bool) (data []byte, width int32, height in
 	}
 
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
-	data = rgba.Pix
+	pixelBytes = rgba.Pix
 	width = int32(rgba.Rect.Size().X)
 	height = int32(rgba.Rect.Size().Y)
 	if cpuCopy {
@@ -245,8 +245,8 @@ func hdrDecimal(field []byte) (int, bool) {
 }
 
 // VIOLATION STRHOT-197: E, prints why an HDR file does not decode, on a failure branch only, #432.
-func decodeHdr(file *os.File) (data []byte, i32Width int32, i32Height int32) {
-	data = nil
+func decodeHdr(file *os.File) (pixelBytes []byte, i32Width int32, i32Height int32) {
+	pixelBytes = nil
 	i32Width = 0
 	i32Height = 0
 
@@ -254,8 +254,8 @@ func decodeHdr(file *os.File) (data []byte, i32Width int32, i32Height int32) {
 	scanner := bufio.NewScanner(file)
 
 	var pos int64
-	scanLines := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		advance, token, err = bufio.ScanLines(data, atEOF)
+	scanLines := func(buffer []byte, atEOF bool) (advance int, token []byte, err error) {
+		advance, token, err = bufio.ScanLines(buffer, atEOF)
 		pos += int64(advance)
 		return
 	}
@@ -304,7 +304,7 @@ func decodeHdr(file *os.File) (data []byte, i32Width int32, i32Height int32) {
 
 	//var colors []float32 = make([]float32, width*height*3)
 	var line []byte = make([]byte, width*4)
-	data = make([]byte, width*height*3*4)
+	pixelBytes = make([]byte, width*height*3*4)
 
 	for y := types.Pointer(0); y < height; y++ {
 		if unpack(file, width, line) == false {
@@ -321,9 +321,9 @@ func decodeHdr(file *os.File) (data []byte, i32Width int32, i32Height int32) {
 			g := float32(exponent * float64(line[loffset+1]) / 256.0)
 			b := float32(exponent * float64(line[loffset+2]) / 256.0)
 
-			types.Write_f32(data, xoffset, r)
-			types.Write_f32(data, xoffset+4, g)
-			types.Write_f32(data, xoffset+8, b)
+			types.Write_f32(pixelBytes, xoffset, r)
+			types.Write_f32(pixelBytes, xoffset+4, g)
+			types.Write_f32(pixelBytes, xoffset+8, b)
 		}
 	}
 	return
@@ -347,7 +347,7 @@ func uploadTexture(prgrm *ast.CXProgram, pathBytes []byte, target uint32, level 
 
 	pixelsHandle := int32(-1)
 	ext := filepath.Ext(path)
-	var data []byte
+	var pixelBytes []byte
 	var internalFormat int32
 	var inputFormat uint32
 	var inputType uint32
@@ -358,24 +358,24 @@ func uploadTexture(prgrm *ast.CXProgram, pathBytes []byte, target uint32, level 
 		internalFormat = cxglRGBA8
 		inputFormat = cxglRGBA
 		inputType = cxglUNSIGNED_BYTE
-		data, width, height, pixels = decodeImg(file, cpuCopy)
+		pixelBytes, width, height, pixels = decodeImg(file, cpuCopy)
 		if len(pixels) > 0 {
 			pixelsHandle = cxfxTexturePixelsAdd(CxfxTexturePixels{
 				CxfxTexturePixelsWidth:  width,
 				CxfxTexturePixelsHeight: height,
 				CxfxTexturePixelsLevel:  level,
-				CxfxTexturePixelsData:   pixels,
+				CxfxTexturePixelsValues: pixels,
 			})
 		}
 	} else if ext == ".hdr" {
 		internalFormat = cxglRGB16F
 		inputFormat = cxglRGB
 		inputType = cxglFLOAT
-		data, width, height = decodeHdr(file)
+		pixelBytes, width, height = decodeHdr(file)
 	}
 
-	if len(data) > 0 {
-		cxglTexImage2D(target, int32(level), internalFormat, width, height, 0, inputFormat, inputType, data)
+	if len(pixelBytes) > 0 {
+		cxglTexImage2D(target, int32(level), internalFormat, width, height, 0, inputFormat, inputType, pixelBytes)
 	}
 	return pixelsHandle
 }
@@ -431,7 +431,7 @@ func OpCxTextureGetPixel(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []a
 	x := inputs[1].Get_i32(prgrm)
 	y := inputs[2].Get_i32(prgrm)
 	offset := (y*texture.CxfxTexturePixelsWidth + x) * 4
-	pixels := texture.CxfxTexturePixelsData
+	pixels := texture.CxfxTexturePixelsValues
 	outputs[0].Set_f32(prgrm, pixels[offset])
 	outputs[1].Set_f32(prgrm, pixels[offset+1])
 	outputs[2].Set_f32(prgrm, pixels[offset+2])

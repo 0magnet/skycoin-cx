@@ -108,28 +108,28 @@ type pendingCall struct {
 }
 
 type emitter struct {
-	image    *ir.Image
-	options  Options
-	out      bytes.Buffer
-	body     bytes.Buffer
-	cold     bytes.Buffer
-	decls    map[string]string
-	strs     map[string]string
-	stats    Stats
-	dataEnd  uint32
-	function uint32
-	fn       *ir.Func
-	tmp      int
-	frame    []region
-	scratch  []region
-	call     pendingCall
-	result   string
-	resultOf uint32
+	image      *ir.Image
+	options    Options
+	out        bytes.Buffer
+	body       bytes.Buffer
+	cold       bytes.Buffer
+	decls      map[string]string
+	strs       map[string]string
+	stats      Stats
+	dataEnd    uint32
+	function   uint32
+	fn         *ir.Func
+	localCount int
+	frame      []region
+	scratch    []region
+	call       pendingCall
+	result     string
+	resultOf   uint32
 	// resultBlock says that the last call was a library opcode, whose outputs
 	// lie in the block at sp.
 	resultBlock bool
 	readOnly    []bool
-	debug       *debugInfo
+	debug       *debugMetadata
 }
 
 // Emit returns the LLVM IR module of image, or an error for an instruction
@@ -146,7 +146,7 @@ func Emit(image *ir.Image, options Options) ([]byte, Stats, error) {
 	}
 	e.readOnlyMark()
 	if options.Debug {
-		e.debug = debugInfoNew()
+		e.debug = debugMetadataNew()
 	}
 	for id := range image.ImageFuncs {
 		fn := &image.ImageFuncs[id]
@@ -182,8 +182,8 @@ func (e *emitter) header() {
 	size := e.dataEnd + image.ImageScratchSize
 	fmt.Fprintf(&e.out, "@cx_mem = internal global [%d x i8] zeroinitializer, align 16\n", size)
 	for i, run := range e.dataRuns() {
-		data := image.ImageData[run[0]:run[1]]
-		fmt.Fprintf(&e.out, "@cx_init.%d = private unnamed_addr constant [%d x i8] %s\n", i, len(data), llvmBytes(data))
+		segmentBytes := image.ImageData[run[0]:run[1]]
+		fmt.Fprintf(&e.out, "@cx_init.%d = private unnamed_addr constant [%d x i8] %s\n", i, len(segmentBytes), llvmBytes(segmentBytes))
 	}
 	fmt.Fprintf(&e.out, "@cx_text = internal constant [%d x i8] %s\n", len(image.ImageText), llvmBytes(image.ImageText))
 	keys := make([]string, 0, len(e.strs))
@@ -192,8 +192,8 @@ func (e *emitter) header() {
 	}
 	sort.Strings(keys)
 	for _, text := range keys {
-		data := append([]byte(text), 0)
-		fmt.Fprintf(&e.out, "%s = private unnamed_addr constant [%d x i8] %s\n", e.strs[text], len(data), llvmBytes(data))
+		textBytes := append([]byte(text), 0)
+		fmt.Fprintf(&e.out, "%s = private unnamed_addr constant [%d x i8] %s\n", e.strs[text], len(textBytes), llvmBytes(textBytes))
 	}
 	e.out.WriteString("\n")
 }
@@ -228,10 +228,10 @@ func (e *emitter) entry() {
 	e.out.Write(e.body.Bytes())
 }
 
-func llvmBytes(data []byte) string {
+func llvmBytes(raw []byte) string {
 	var b strings.Builder
 	b.WriteString("c\"")
-	for _, c := range data {
+	for _, c := range raw {
 		if c >= 0x20 && c < 0x7f && c != '"' && c != '\\' {
 			b.WriteByte(c)
 		} else {
@@ -317,14 +317,14 @@ func (e *emitter) retType(fn *ir.Func) string {
 	return "{ " + strings.Join(parts, ", ") + " }"
 }
 
-func (e *emitter) newTmp() string {
-	e.tmp++
-	return "%t" + strconv.Itoa(e.tmp)
+func (e *emitter) localNew() string {
+	e.localCount++
+	return "%t" + strconv.Itoa(e.localCount)
 }
 
 func (e *emitter) newLabel(prefix string) string {
-	e.tmp++
-	return prefix + strconv.Itoa(e.tmp)
+	e.localCount++
+	return prefix + strconv.Itoa(e.localCount)
 }
 
 func (e *emitter) line(format string, args ...any) {
@@ -503,7 +503,7 @@ func (e *emitter) ptrAt(offset uint32, inFrame bool, size uint32) (string, error
 	if inFrame {
 		regions = e.frame
 	} else if offset < e.dataEnd {
-		t := e.newTmp()
+		t := e.localNew()
 		e.line("%s = getelementptr inbounds i8, ptr @cx_mem, i64 %d", t, offset)
 		return t, nil
 	}
@@ -513,14 +513,14 @@ func (e *emitter) ptrAt(offset uint32, inFrame bool, size uint32) (string, error
 	}
 	r := &regions[i]
 	if r.regionShadow {
-		t := e.newTmp()
+		t := e.localNew()
 		e.line("%s = getelementptr inbounds i8, ptr %%fpp, i64 %d", t, offset)
 		return t, nil
 	}
 	if offset == r.regionStart {
 		return r.regionName, nil
 	}
-	t := e.newTmp()
+	t := e.localNew()
 	e.line("%s = getelementptr inbounds i8, ptr %s, i64 %d", t, r.regionName, offset-r.regionStart)
 	return t, nil
 }
@@ -534,7 +534,7 @@ func (e *emitter) load(in *ir.Instr, which int, typ string, size uint32) (string
 	if err != nil {
 		return "", err
 	}
-	t := e.newTmp()
+	t := e.localNew()
 	e.line("%s = load %s, ptr %s, align 1", t, typ, p)
 	return t, nil
 }
@@ -555,7 +555,7 @@ func (e *emitter) vmAddress(in *ir.Instr, which int) string {
 	if !inFrame {
 		return strconv.FormatUint(uint64(offset), 10)
 	}
-	t := e.newTmp()
+	t := e.localNew()
 	e.line("%s = add i32 %%fp, %d", t, offset)
 	return t
 }
@@ -586,7 +586,7 @@ func (e *emitter) check(cond string, stop Stop, pc uint32) {
 }
 
 func (e *emitter) emitFunction(id uint32, fn *ir.Func) error {
-	e.function, e.fn, e.tmp = id, fn, 0
+	e.function, e.fn, e.localCount = id, fn, 0
 	e.cold.Reset()
 	e.call = pendingCall{}
 	if err := e.analyze(fn); err != nil {
@@ -605,7 +605,7 @@ func (e *emitter) emitFunction(id uint32, fn *ir.Func) error {
 	e.declare("llvm.memcpy", "declare void @llvm.memcpy.p0.p0.i64(ptr, ptr, i64, i1)")
 	for _, r := range e.frame {
 		if r.regionShadow {
-			t := e.newTmp()
+			t := e.localNew()
 			e.line("%s = getelementptr inbounds i8, ptr %%fpp, i64 %d", t, r.regionStart)
 			e.line("call void @llvm.memset.p0.i64(ptr %s, i8 0, i64 %d, i1 false)", t, r.regionEnd-r.regionStart)
 			continue
@@ -669,7 +669,7 @@ func (e *emitter) emitFunction(id uint32, fn *ir.Func) error {
 func (e *emitter) copyBytes(dst, src string, size uint32) {
 	switch size {
 	case 1, 2, 4, 8:
-		t := e.newTmp()
+		t := e.localNew()
 		typ := valueType(size)
 		e.line("%s = load %s, ptr %s, align 1", t, typ, src)
 		e.line("store %s %s, ptr %s, align 1", typ, t, dst)
@@ -681,14 +681,14 @@ func (e *emitter) copyBytes(dst, src string, size uint32) {
 // memAt returns a pointer into cx_mem at the vm address addr, an i32 value,
 // plus offset, after checking that size bytes fit below the data end.
 func (e *emitter) memAt(addr string, offset uint32, size uint32, pc uint32) string {
-	a64 := e.newTmp()
+	a64 := e.localNew()
 	e.line("%s = zext i32 %s to i64", a64, addr)
-	sum := e.newTmp()
+	sum := e.localNew()
 	e.line("%s = add i64 %s, %d", sum, a64, offset)
-	bad := e.newTmp()
+	bad := e.localNew()
 	e.line("%s = icmp ugt i64 %s, %d", bad, sum, int64(e.dataEnd)-int64(size))
 	e.check(bad, StopAddressInvalid, pc)
-	p := e.newTmp()
+	p := e.localNew()
 	e.line("%s = getelementptr inbounds i8, ptr @cx_mem, i64 %s", p, sum)
 	return p
 }
@@ -698,7 +698,7 @@ func (e *emitter) pointerTo32(v string) string {
 	if pointerSize == 4 {
 		return v
 	}
-	t := e.newTmp()
+	t := e.localNew()
 	e.line("%s = trunc %s %s to i32", t, valueType(pointerSize), v)
 	return t
 }
@@ -719,7 +719,7 @@ func (e *emitter) instr(pc uint32, in *ir.Instr) error {
 		if err != nil {
 			return err
 		}
-		c := e.newTmp()
+		c := e.localNew()
 		e.line("%s = icmp ne i8 %s, 0", c, v)
 		e.line("br i1 %s, label %%pc%d, label %%pc%d", c, in.InstrM, in.InstrN)
 		return nil
@@ -792,9 +792,9 @@ func (e *emitter) instrReturn() error {
 		if err != nil {
 			return err
 		}
-		v := e.newTmp()
+		v := e.localNew()
 		e.line("%s = load %s, ptr %s, align 1", v, valueType(slot.SlotSize), p)
-		next := e.newTmp()
+		next := e.localNew()
 		e.line("%s = insertvalue %s %s, %s %s, %d", next, rt, aggregate, valueType(slot.SlotSize), v, i)
 		aggregate = next
 	}
@@ -807,12 +807,12 @@ func (e *emitter) instrCallFrame(pc uint32, in *ir.Instr) error {
 		return fmt.Errorf("nested call")
 	}
 	e.call = pendingCall{pendingCallActive: true, pendingCallFrame: in.InstrN, pendingCallArgs: map[uint32]string{}, pendingCallSizes: map[uint32]uint32{}}
-	d := e.newTmp()
+	d := e.localNew()
 	e.line("%s = icmp uge i32 %%depth, %d", d, ir.ImageCallDepthMax-1)
 	e.check(d, StopStackOverflow, pc)
-	end := e.newTmp()
+	end := e.localNew()
 	e.line("%s = add i64 %%fp64, %d", end, uint64(e.fn.FuncFrameSize)+uint64(in.InstrN))
-	s := e.newTmp()
+	s := e.localNew()
 	e.line("%s = icmp ugt i64 %s, %d", s, end, e.image.ImageStackSize)
 	e.check(s, StopStackOverflow, pc)
 	return nil
@@ -826,7 +826,7 @@ func (e *emitter) instrCall(in *ir.Instr) error {
 	if callee.FuncFrameSize != e.call.pendingCallFrame {
 		return fmt.Errorf("call frame %d, callee frame %d", e.call.pendingCallFrame, callee.FuncFrameSize)
 	}
-	d := e.newTmp()
+	d := e.localNew()
 	e.line("%s = add i32 %%depth, 1", d)
 	args := []string{"i32 %sp", "i32 " + d}
 	used := 0
@@ -850,7 +850,7 @@ func (e *emitter) instrCall(in *ir.Instr) error {
 		e.line("call void %s(%s)", e.funcName(in.InstrM), strings.Join(args, ", "))
 		e.result = ""
 	} else {
-		e.result = e.newTmp()
+		e.result = e.localNew()
 		e.line("%s = call %s %s(%s)", e.result, rt, e.funcName(in.InstrM), strings.Join(args, ", "))
 	}
 	e.resultOf = in.InstrM
@@ -871,7 +871,7 @@ func (e *emitter) instrCallResult(in *ir.Instr) error {
 		if slot.SlotSize != in.InstrN {
 			return fmt.Errorf("result size %d of a slot of %d", in.InstrN, slot.SlotSize)
 		}
-		v := e.newTmp()
+		v := e.localNew()
 		e.line("%s = extractvalue %s %s, %d", v, e.retType(callee), e.result, i)
 		return e.store(in, 2, valueType(slot.SlotSize), slot.SlotSize, v)
 	}
@@ -890,19 +890,19 @@ func (e *emitter) instrAddress(pc uint32, in *ir.Instr) error {
 			if err != nil {
 				return err
 			}
-			base = e.newTmp()
+			base = e.localNew()
 			e.line("%s = add i32 %s, %d", base, slot, in.InstrM)
 		}
 		index, err := e.load(in, 1, "i32", 4)
 		if err != nil {
 			return err
 		}
-		negative := e.newTmp()
+		negative := e.localNew()
 		e.line("%s = icmp slt i32 %s, 0", negative, index)
 		e.check(negative, StopIndexNegative, pc)
-		product := e.newTmp()
+		product := e.localNew()
 		e.line("%s = mul i32 %s, %d", product, index, in.InstrN)
-		sum := e.newTmp()
+		sum := e.localNew()
 		e.line("%s = add i32 %s, %s", sum, base, product)
 		return e.store(in, 2, "i32", 4, sum)
 	case ir.OpcodeAddressDerefStatic, ir.OpcodeAddressDeref:
@@ -919,9 +919,9 @@ func (e *emitter) instrAddress(pc uint32, in *ir.Instr) error {
 			}
 			p = e.memAt(slot, in.InstrM, pointerSize, pc)
 		}
-		v := e.newTmp()
+		v := e.localNew()
 		e.line("%s = load %s, ptr %s, align 1", v, valueType(pointerSize), p)
-		bad := e.newTmp()
+		bad := e.localNew()
 		e.line("%s = icmp uge %s %s, %d", bad, valueType(pointerSize), v, e.dataEnd)
 		e.check(bad, StopAddressInvalid, pc)
 		return e.store(in, 2, "i32", 4, e.pointerTo32(v))
@@ -958,11 +958,11 @@ func (e *emitter) instrAddress(pc uint32, in *ir.Instr) error {
 		if err != nil {
 			return err
 		}
-		v = e.newTmp()
+		v = e.localNew()
 		e.line("%s = add i32 %s, %d", v, slot, in.InstrM)
 	}
 	if pointerSize != 4 {
-		t := e.newTmp()
+		t := e.localNew()
 		e.line("%s = zext i32 %s to %s", t, v, valueType(pointerSize))
 		v = t
 	}
@@ -975,7 +975,7 @@ func (e *emitter) instrRuntime(pc uint32, in *ir.Instr) error {
 	switch in.InstrOpcode {
 	case ir.OpcodePrintText:
 		e.declare("cx_rt_print_text", "declare void @cx_rt_print_text(ptr, i32) nounwind")
-		p := e.newTmp()
+		p := e.localNew()
 		e.line("%s = getelementptr inbounds i8, ptr @cx_text, i64 %d", p, in.InstrN)
 		e.line("call void @cx_rt_print_text(ptr %s, i32 %d)", p, in.InstrM)
 		return nil
@@ -985,9 +985,9 @@ func (e *emitter) instrRuntime(pc uint32, in *ir.Instr) error {
 			return err
 		}
 		e.declare("cx_rt_print_str", "declare i32 @cx_rt_print_str(ptr, i32, i32, i32, i32) nounwind")
-		ok := e.newTmp()
+		ok := e.localNew()
 		e.line("%s = call i32 @cx_rt_print_str(ptr @cx_mem, i32 %d, i32 %d, i32 %s, i32 %d)", ok, e.dataEnd, pointerSize, e.pointerTo32(v), in.InstrN)
-		bad := e.newTmp()
+		bad := e.localNew()
 		e.line("%s = icmp eq i32 %s, 0", bad, ok)
 		e.check(bad, StopAddressInvalid, pc)
 		return nil
@@ -1045,7 +1045,7 @@ func (e *emitter) instrScalar(pc uint32, in *ir.Instr, fact *OpcodeFact) error {
 	}
 	if fact.OpcodeFactTemplate != "" && !e.options.FallbackOnly {
 		e.stats.StatsInline[in.InstrOpcode]++
-		r := e.newTmp()
+		r := e.localNew()
 		e.expand(fact, a, b, r, pc)
 		return e.store(in, 2, typeLlvm(fact.OpcodeFactResult), typeSize(fact.OpcodeFactResult), r)
 	}
@@ -1074,7 +1074,7 @@ func (e *emitter) instrScalar(pc uint32, in *ir.Instr, fact *OpcodeFact) error {
 		attributes = "nounwind"
 	}
 	e.declare(name, fmt.Sprintf("declare %s @%s(%s) %s", result, name, strings.Join(params, ", "), attributes))
-	r := e.newTmp()
+	r := e.localNew()
 	e.line("%s = call %s @%s(%s)", r, result, name, strings.Join(args, ", "))
 	return e.store(in, 2, resultType, typeSize(fact.OpcodeFactResult), r)
 }
@@ -1103,10 +1103,10 @@ func OpcodeName(op ir.Opcode) string {
 // dataRuns returns the runs of the data segment that are not zero, as
 // [start, end) offsets into ImageData, joining runs less than 64 bytes apart.
 func (e *emitter) dataRuns() [][2]int {
-	data := e.image.ImageData
+	segment := e.image.ImageData
 	var runs [][2]int
-	for i := 0; i < len(data); i++ {
-		if data[i] == 0 {
+	for i := 0; i < len(segment); i++ {
+		if segment[i] == 0 {
 			continue
 		}
 		if n := len(runs); n > 0 && i-runs[n-1][1] < 64 {
@@ -1146,11 +1146,11 @@ func (e *emitter) constant(offset uint32, inFrame bool, typ string, size uint32)
 	}
 	switch typ {
 	case "float":
-		t := e.newTmp()
+		t := e.localNew()
 		e.line("%s = bitcast i32 %d to float", t, int32(uint32(v)))
 		return t, true
 	case "double":
-		t := e.newTmp()
+		t := e.localNew()
 		e.line("%s = bitcast i64 %d to double", t, int64(v))
 		return t, true
 	}
@@ -1195,7 +1195,7 @@ func (e *emitter) expand(fact *OpcodeFact, a, b, r string, pc uint32) {
 	for i := 1; i <= 9; i++ {
 		key := "{t" + strconv.Itoa(i) + "}"
 		if strings.Contains(fact.OpcodeFactTemplate, key) {
-			pairs = append(pairs, key, e.newTmp())
+			pairs = append(pairs, key, e.localNew())
 		}
 	}
 	text := strings.NewReplacer(pairs...).Replace(fact.OpcodeFactTemplate)

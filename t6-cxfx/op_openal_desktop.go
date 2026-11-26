@@ -115,9 +115,9 @@ func OpAlGenBuffers(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 func OpAlBufferData(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	buffer := al.Buffer(inputs[0].Get_i32(prgrm))
 	format := inputs[1].Get_i32(prgrm)
-	data := toBytes(inputs[2].GetSlice_ui8(prgrm))
+	samples := toBytes(inputs[2].GetSlice_ui8(prgrm))
 	frequency := inputs[3].Get_i32(prgrm)
-	buffer.BufferData(uint32(format), data, frequency)
+	buffer.BufferData(uint32(format), samples, frequency)
 }
 
 func OpAlGenSources(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
