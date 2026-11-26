@@ -81,3 +81,18 @@ func TestNameFindingPackageLevel(test *testing.T) {
 		}
 	}
 }
+
+func TestNameCheckDirectoryFinding(test *testing.T) {
+	cases := []struct{ directory, packageName, want string }{
+		{"t3-cx-runtime-vm", "vm", ""},
+		{"t11-cx-command-cx", "main", ""},
+		{"t3-ast", "ast", "directory not t<N>-cx-<layer>-<subject>"},
+		{"t2-cx-core-stringpool", "pool", "package clause is not the directory subject stringpool"},
+		{"t4-cx-misc-thing", "thing", "directory not t<N>-cx-<layer>-<subject>"},
+	}
+	for _, c := range cases {
+		if got := NameCheckDirectoryFinding(c.directory, c.packageName); got != c.want {
+			test.Errorf("NameCheckDirectoryFinding(%q, %q) = %q, want %q", c.directory, c.packageName, got, c.want)
+		}
+	}
+}
