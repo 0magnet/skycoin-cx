@@ -1,6 +1,8 @@
 package execute
 
 import (
+	"errors"
+
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
 	// GCREACH: t3-ast owns the heap and the GC roots. The old loop runs opcodes that
@@ -123,6 +125,9 @@ func RunPrepare(cxprogram *ast.CXProgram) {
 // RunCompiled runs cxprogram from *init and main, or goes on with the call
 // in progress, for at most maxOps steps when maxOps is not 0.
 func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
+	if code := cxprogram.CXProgramOperationRefused(); code != 0 {
+		return errors.New(cxprogram.CXProgramOperationRefusalLine(code))
+	}
 	RunPrepare(cxprogram)
 
 	var untilEnd bool

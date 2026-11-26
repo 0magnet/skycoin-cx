@@ -67,6 +67,9 @@ const (
 	// ReasonLibraryFunctionOutsideSubset is a call through LibraryCall, os.Run
 	// of the process library, which does not run on vm.
 	ReasonLibraryFunctionOutsideSubset
+	// ReasonOperationRefused is a program that uses a library opcode its run
+	// does not enable, FailureOpcode names it. Nothing is lowered (D119).
+	ReasonOperationRefused
 	// ReasonCount is one past the last reason.
 	ReasonCount
 )
@@ -89,6 +92,7 @@ var ReasonNames = [ReasonCount]string{
 	ReasonPrintfFormat:                 "printf format",
 	ReasonOperandOutsideFrame:          "operand outside frame",
 	ReasonLibraryFunctionOutsideSubset: "library function outside subset",
+	ReasonOperationRefused:             "operation not enabled",
 }
 
 // Failure is one function that did not lower. FailureExpression indexes its
@@ -158,6 +162,9 @@ type jumpFixup struct {
 // that do not lower are listed in the failures and have no code. prgrm must
 // be compiled and not yet run.
 func Program(prgrm *ast.CXProgram) (ir.Image, []Failure) {
+	if code := prgrm.CXProgramOperationRefused(); code != 0 {
+		return ir.Image{}, []Failure{{FailureReason: ReasonOperationRefused, FailureOpcode: uint32(code)}}
+	}
 	s := &state{
 		statePrgrm:      prgrm,
 		stateStackSize:  pointerToUint32(prgrm.Stack.Size),

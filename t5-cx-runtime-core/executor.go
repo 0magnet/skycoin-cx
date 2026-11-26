@@ -53,6 +53,9 @@ func ExecutorLower(prgrm *ast.CXProgram) (image ir.Image, failures []lower.Failu
 // executorFailureDescribe names the reason and function of a failure.
 func executorFailureDescribe(prgrm *ast.CXProgram, failure lower.Failure) string {
 	description := lower.ReasonNames[failure.FailureReason]
+	if failure.FailureReason == lower.ReasonOperationRefused {
+		return description + ", " + constants.LibraryOperationName(int(failure.FailureOpcode))
+	}
 	if failure.FailureReason == lower.ReasonOpcodeOutsideSubset {
 		if row, found := constants.OpcodeLifecycleLiveByNumber(int(failure.FailureOpcode)); found {
 			description += " " + row.Name

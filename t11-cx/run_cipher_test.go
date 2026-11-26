@@ -118,6 +118,7 @@ func runCipherPrograms(tb testing.TB) []runBenchProgram {
 func runCipherCompile(tb testing.TB, p runBenchProgram) *ast.CXProgram {
 	compileRunProgram(tb, p)
 	actions.AST.ProgramLibrariesEnabled[constants.LibraryNumberCipher] = true
+	core.CoreLibrariesEnabledResolve(actions.AST)
 	execute.RunPrepare(actions.AST)
 	return actions.AST
 }
@@ -215,6 +216,7 @@ func TestRunVmCipherAllocs(t *testing.T) {
 	initProgram()
 	compileRunProgram(t, runBenchProgram{name: "cipher", source: runCipherHashStateVmSource})
 	actions.AST.ProgramLibrariesEnabled[constants.LibraryNumberCipher] = true
+	core.CoreLibrariesEnabledResolve(actions.AST)
 	image, _, outside := core.ExecutorLower(actions.AST)
 	if outside != "" {
 		t.Fatalf("does not lower: %s", outside)
