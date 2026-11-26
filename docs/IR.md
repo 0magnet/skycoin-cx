@@ -48,7 +48,7 @@ The `cx` command (`t11-cx/main.go`) builds the program in this order.
 4. `compileSourceStrings` (`t11-cx/helpers.go`), which the cx command and
    the tests share, calls `cxparsing.SourceStringsParse`, which runs the
    two passes below.
-5. `cxparsing.SysInitFunctionAdd` (`t9-cxparsing/utils.go`) adds the function
+5. `cxparsing.SysInitFunctionAdd` (`t9-cx-compiler-parsing/utils.go`) adds the function
    `*init` (`constants.SYS_INIT_FUNC`) to package `main`. Its body is
    `CXProgram.SysInitExpressions`, the global initializers collected by
    `actions.GlobalInPackageDeclare`.
@@ -58,10 +58,10 @@ The `cx` command (`t11-cx/main.go`) builds the program in this order.
 
 ### Pass 1, declarations
 
-`cxparsing.Preliminarystage` (`t9-cxparsing/utils.go`) first scans every
+`cxparsing.Preliminarystage` (`t9-cx-compiler-parsing/utils.go`) first scans every
 file with regular expressions for `package`, `type`, `var` and `import`
 lines. It then calls `cxparsing.Passone` for each file, which calls
-`cxpartialparsing.Parse` (`t5-cxpartialparsing`, generated from
+`cxpartialparsing.Parse` (`t5-cx-compiler-partialparsing`, generated from
 `cxpartialparsing.y`). The pass 1 grammar only calls
 `actions.PackageDeclare`, `actions.ImportDeclare`, `actions.StructDeclare`,
 `actions.GlobalInPackageDeclare` and the `actions.DeclarationSpecifiers*`
@@ -72,15 +72,15 @@ global, but no function.
 
 `SourceStringsParse` then calls `cxparsing.Passtwo` for each file, which
 calls `cxparsingcompletor.Parse(cxparsingcompletor.LexerNew(b))`
-(`t8-cxparsingcompletor`, generated from `parsingcompletor.y`). The grammar
-actions call into `t4-actions`. They build expression lists bottom up, for
+(`t8-cx-compiler-fullparsing`, generated from `parsingcompletor.y`). The grammar
+actions call into `t4-cx-compiler-astbuild`. They build expression lists bottom up, for
 example `actions.OperatorExpression`, `actions.PostfixExpressionFunCall`,
 `actions.SelectionExpressions`, `actions.IterationExpressions`,
 `actions.PrimaryExpressionsWrite` and `actions.Assignment`.
 
 A function is finished by `actions.FunctionHeader`, which adds the
 `CXFunction`, and `actions.FunctionDeclaration`
-(`t4-actions/functions.go`), which
+(`t4-cx-compiler-astbuild/functions.go`), which
 
 * adds the parameters with `FunctionAddParameters`,
 * resolves `goto` targets with `GoTosResolve`,
@@ -375,7 +375,7 @@ run, so the heap grows without a Go allocation (D42). `Stack.StartsAt` stays 0.
   `CXCall.FramePointer`. Parameters, then outputs, then locals and
   temporaries get offsets from 0 in declaration order. A local's
   `Offset` is relative to the frame.
-* Data. `actions.PrimaryWrite` (`t4-actions/misc.go`) appends every
+* Data. `actions.PrimaryWrite` (`t4-cx-compiler-astbuild/misc.go`) appends every
   literal and global to the data segment at compile time, grows
   `Data.Size` and moves `Heap.StartsAt` to `Data.StartsAt + Data.Size`.
   A literal's `Offset` is absolute.

@@ -1,14 +1,14 @@
 this is first draft
 
-The CX grammar is defined in two yacc files, [t5-cxpartialparsing/cxpartialparsing.y](../t5-cxpartialparsing/cxpartialparsing.y) for the first pass and [t8-cxparsingcompletor/parsingcompletor.y](../t8-cxparsingcompletor/parsingcompletor.y) for the second.
+The CX grammar is defined in two yacc files, [t5-cx-compiler-partialparsing/cxpartialparsing.y](../t5-cx-compiler-partialparsing/cxpartialparsing.y) for the first pass and [t8-cx-compiler-fullparsing/parsingcompletor.y](../t8-cx-compiler-fullparsing/parsingcompletor.y) for the second.
 
 cx grammer is used to generate cx parser which is used to generate program ast.
 
 `make build-parser` passes them to goyacc to regenerate the parsers:
 
 ```
-go tool goyacc -o t5-cxpartialparsing/cxpartialparsing.go -v /dev/null t5-cxpartialparsing/cxpartialparsing.y
-go tool goyacc -o t8-cxparsingcompletor/parsingcompletor.go -v /dev/null t8-cxparsingcompletor/parsingcompletor.y
+go tool goyacc -o t5-cx-compiler-partialparsing/cxpartialparsing.go -v /dev/null t5-cx-compiler-partialparsing/cxpartialparsing.y
+go tool goyacc -o t8-cx-compiler-fullparsing/parsingcompletor.go -v /dev/null t8-cx-compiler-fullparsing/parsingcompletor.y
 ```
 
 
@@ -40,7 +40,7 @@ function_declaration:
 if we found grammer function_declaration at the time of parsing then its corresponding action is perform 
 actions.FunctionDeclaration()
 
-All CX actions are defined in [t4-actions](../t4-actions).
+All CX actions are defined in [t4-cx-compiler-astbuild](../t4-cx-compiler-astbuild).
 
 
 at the end of SourceStringsParse() we get complete CXProgram as object.

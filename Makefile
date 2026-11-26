@@ -212,9 +212,9 @@ check-parser: ## Check that the CX parsers are what make build-parser writes fro
 
 build-parser: ## Regenerate the CX parsers from the .y grammars
 	mkdir -p bin
-	go tool goyacc -o t5-cxpartialparsing/cxpartialparsing.go -v bin/goyacc.output t5-cxpartialparsing/cxpartialparsing.y
-	go tool goyacc -o t8-cxparsingcompletor/parsingcompletor.go -v bin/goyacc.output t8-cxparsingcompletor/parsingcompletor.y
-	gofmt -w t5-cxpartialparsing t8-cxparsingcompletor
+	go tool goyacc -o t5-cx-compiler-partialparsing/cxpartialparsing.go -v bin/goyacc.output t5-cx-compiler-partialparsing/cxpartialparsing.y
+	go tool goyacc -o t8-cx-compiler-fullparsing/parsingcompletor.go -v bin/goyacc.output t8-cx-compiler-fullparsing/parsingcompletor.y
+	gofmt -w t5-cx-compiler-partialparsing t8-cx-compiler-fullparsing
 
 clean: ## Remove binaries
 	rm -rf ./bin

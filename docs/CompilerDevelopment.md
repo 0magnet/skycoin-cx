@@ -15,7 +15,7 @@ When submitting changes to CX core, the development team uses Git pull requests 
 
 # CX Lexer
 CX in house `lexer` generates a chain of tokens which is used by yacc for parsing.
-Found in [t5-cxpartialparsing/lex.go](../t5-cxpartialparsing/lex.go).
+Found in [t5-cx-compiler-partialparsing/lex.go](../t5-cx-compiler-partialparsing/lex.go).
 
 
 
@@ -23,7 +23,7 @@ Found in [t5-cxpartialparsing/lex.go](../t5-cxpartialparsing/lex.go).
 
 `Preliminarystage`
 
-The compiler creates an AST first by using regular expression parsing (found in [utils.go](../t9-cxparsing/utils.go) which structures the AST to include all package declarations, import chains, struct declarations, and globals, skipping over comments. 
+The compiler creates an AST first by using regular expression parsing (found in [utils.go](../t9-cx-compiler-parsing/utils.go) which structures the AST to include all package declarations, import chains, struct declarations, and globals, skipping over comments. 
 This preliminary stage of parsing aids further stages since the structure of a CX repository and the names of custom types are already known. 
 
 `Passone`
@@ -37,7 +37,7 @@ The second parsing stage fully compiles functions and all expressions. This func
 Finally, the `main` function and invisible `*init` functions are created, the latter of which acts as an initializer for global variables. 
 
 The lifetime of a CX program in depth is given here:
-1. [Preliminarystage](../t9-cxparsing/utils.go) - here, a copy of the source code is passed in as an array of strings, along with the file names. A series of regular expressions are compiled to check for various things. Finally, the source code is iterated over, and for each file, we iterate over a scanner of the file. Then, for each successful scan:
+1. [Preliminarystage](../t9-cx-compiler-parsing/utils.go) - here, a copy of the source code is passed in as an array of strings, along with the file names. A series of regular expressions are compiled to check for various things. Finally, the source code is iterated over, and for each file, we iterate over a scanner of the file. Then, for each successful scan:
     1. We first check if we’re in a comment or not. If we are, we continue scanning and ignore the following steps.
     2. Next, we check if this current line contains a package declaration. If so, then we check if the program has added a package with that name. If not, then we add that package to the CXProgram (PRGM0, basically the main program). Remember, now that package is the current package.
     3. We do the same thing for structures.
@@ -198,7 +198,7 @@ There are also Selectors like previously defined for CXFunctions and CXPackages-
 
 Finally, there is PrintAllObjects, a printing algorithm used for printing the program state when debugging.
 
-Two small makers remain. `temporaryVariableNameGenerate(name)` in [t4-actions/counter.go](../t4-actions/counter.go) returns a unique identifier with the prefix `name_`. `CallMake` in [t4-execute/execute.go](../t4-execute/execute.go) returns a blank CXCall with the given CXFunction as the Operator.
+Two small makers remain. `temporaryVariableNameGenerate(name)` in [t4-cx-compiler-astbuild/counter.go](../t4-cx-compiler-astbuild/counter.go) returns a unique identifier with the prefix `name_`. `CallMake` in [t4-execute/execute.go](../t4-execute/execute.go) returns a blank CXCall with the given CXFunction as the Operator.
 
 The opcodes used by the CX runtime are in [t4-opcodes](../t4-opcodes), and their numbers are fixed in [t1-cx-core-opcodetable/opcodes.go](../t1-cx-core-opcodetable/opcodes.go).
 

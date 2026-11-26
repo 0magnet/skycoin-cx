@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"
-	cxparsing "github.com/skycoin/skycoin-cx/t9-cxparsing"
+	"github.com/skycoin/skycoin-cx/t9-cx-compiler-parsing"
 )
 
 // compileBenchmarkPrograms are the CX programs BenchmarkCompile parses,
@@ -27,7 +27,7 @@ var compileBenchmarkPrograms = []string{
 // managers of actions.AST, reported per compile so object model changes show
 // up.
 func compileBenchmarkObjectCount() int {
-	program := actions.AST
+	program := astbuild.AST
 	return len(program.CXPackages) + program.CxIrState.CXFunctionMng.CXFunctionLen() + len(program.CXStructs) +
 		len(program.CXAtomicOps) + program.CxIrState.CXLineMng.CXLineLen() + program.CxIrState.CXArgumentMng.CXArgumentLen() +
 		program.CxIrState.CXTypeSignatureMng.CXTypeSignatureLen() + program.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayLen() +
@@ -53,15 +53,15 @@ func BenchmarkCompile(b *testing.B) {
 				b.StopTimer()
 				// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 				// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0054 S0055.
-				actions.AST = cxinit.ProgramMake()
-				cxinit.PackagesRegister(actions.AST)
+				astbuild.AST = cxinit.ProgramMake()
+				cxinit.PackagesRegister(astbuild.AST)
 				environment.FoundCompileErrors = false
 				environment.HeapOffset = 0
 				b.StartTimer()
-				if err := cxparsing.SourceStringsParse([]string{string(source)}, []string{programPath}); err != nil {
+				if err := parsing.SourceStringsParse([]string{string(source)}, []string{programPath}); err != nil {
 					b.Fatalf("%s: %v", programPath, err)
 				}
-				if err := cxparsing.SysInitFunctionAdd(actions.AST); err != nil {
+				if err := parsing.SysInitFunctionAdd(astbuild.AST); err != nil {
 					b.Fatalf("%s: %v", programPath, err)
 				}
 				b.StopTimer()

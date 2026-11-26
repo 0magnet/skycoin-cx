@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/skycoin/skycoin-cx/t10-cx-tools-repl"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t5-cxos"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"
 )
@@ -16,12 +16,12 @@ import (
 const hello = "package main\nimport \"sys/string\"\nfunc main() {\n\tstring.PrintLine(\"hi\")\n}\n"
 
 func TestMain(m *testing.M) {
-	actions.ConstantsInit()
-	cxos.ConstantsInit(actions.ConstI32Add)
+	astbuild.ConstantsInit()
+	cxos.ConstantsInit(astbuild.ConstI32Add)
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0011 S0012.
-	actions.AST = cxinit.ProgramMake()
-	cxinit.PackagesRegister(actions.AST)
+	astbuild.AST = cxinit.ProgramMake()
+	cxinit.PackagesRegister(astbuild.AST)
 	os.Exit(m.Run())
 }
 

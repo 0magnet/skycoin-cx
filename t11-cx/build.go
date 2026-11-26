@@ -11,7 +11,7 @@ import (
 	filelog "github.com/skycoin/skycoin-cx/t0-cx-runtime-filelog"
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	actions "github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
 
@@ -80,7 +80,7 @@ func buildRun(args []string) int {
 	}
 
 	var missing []string
-	for _, code := range core.OpcodesUsed(actions.AST) {
+	for _, code := range core.OpcodesUsed(astbuild.AST) {
 		if !core.OpcodeLinked(code) {
 			missing = append(missing, core.OpcodeName(code))
 		}
@@ -92,8 +92,8 @@ func buildRun(args []string) int {
 	if err != nil {
 		return buildFail(err.Error())
 	}
-	active := core.LibrariesActive(actions.AST)
-	for library, used := range actions.AST.ProgramLibrariesUsed {
+	active := core.LibrariesActive(astbuild.AST)
+	for library, used := range astbuild.AST.ProgramLibrariesUsed {
 		active[library] = active[library] && used
 	}
 	libraries := core.LibraryNames(active)
@@ -129,14 +129,14 @@ func buildRun(args []string) int {
 // and returns the program as cx build appends it to the core. Its hash is
 // the program hash of an execution record, see docs/ExecutionRecords.md.
 func buildProgramImage() ([]byte, error) {
-	core.LibrariesEnabledResolve(actions.AST)
-	for library, enabled := range actions.AST.ProgramLibrariesEnabled {
-		actions.AST.ProgramLibrariesEnabled[library] = enabled && actions.AST.ProgramLibrariesUsed[library]
-		if !actions.AST.ProgramLibrariesUsed[library] {
-			actions.AST.ProgramOperationsEnabled.OpcodeSetLibraryRemove(library)
+	core.LibrariesEnabledResolve(astbuild.AST)
+	for library, enabled := range astbuild.AST.ProgramLibrariesEnabled {
+		astbuild.AST.ProgramLibrariesEnabled[library] = enabled && astbuild.AST.ProgramLibrariesUsed[library]
+		if !astbuild.AST.ProgramLibrariesUsed[library] {
+			astbuild.AST.ProgramOperationsEnabled.OpcodeSetLibraryRemove(library)
 		}
 	}
-	return ast.CXProgramSerialize(actions.AST, true, nil)
+	return ast.CXProgramSerialize(astbuild.AST, true, nil)
 }
 
 // buildOptionsParse splits args into the flags of cx build and the rest. It

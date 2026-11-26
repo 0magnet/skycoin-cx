@@ -44,10 +44,10 @@ Counts are files, not rows.
 |---|---|---:|---|---|---|
 | cx | `cx/astapi/` | 10 | keep | `t9-cx-core-astapi` | Programmatic AST construction, used by the generator and tests |
 | cx | `cx/generator/` | 2 | keep | `t10-cx-tools-programgenerator` | Random program generator for the serializer tests |
-| cx | `cxparser/actions/` | 16 | keep | `t4-actions` | Semantic actions called from the grammars |
-| cx | `cxparser/cxparsing/` | 3 | keep | `t9-cxparsing` | Driver for the parse passes, gained SourceStringsParse |
-| cx | `cxparser/cxparsingcompletor/` | 7 | keep | `t8-cxparsingcompletor` | Pass two grammar (.y) and its generated parser |
-| cx | `cxparser/cxpartialparsing/` | 5 | keep | `t5-cxpartialparsing` | Pass one grammar (.y) and its generated parser |
+| cx | `cxparser/actions/` | 16 | keep | `t4-cx-compiler-astbuild` | Semantic actions called from the grammars |
+| cx | `cxparser/cxparsing/` | 3 | keep | `t9-cx-compiler-parsing` | Driver for the parse passes, gained SourceStringsParse |
+| cx | `cxparser/cxparsingcompletor/` | 7 | keep | `t8-cx-compiler-fullparsing` | Pass two grammar (.y) and its generated parser |
+| cx | `cxparser/cxpartialparsing/` | 5 | keep | `t5-cx-compiler-partialparsing` | Pass one grammar (.y) and its generated parser |
 
 ## VM and runtime
 
@@ -72,7 +72,7 @@ Counts are files, not rows.
 
 | Repo | Path | Files | Action | Now in | Reason |
 |---|---|---:|---|---|---|
-| cx | `cmd/declaration_extractor/` | 70 | keep | `t6-declextractor` | Declaration extraction for the new type checker, tests pass |
+| cx | `cmd/declaration_extractor/` | 70 | keep | `t6-cx-compiler-declarationextractor` | Declaration extraction for the new type checker, tests pass |
 | cx | `cmd/packageloader/` | 3 | keep | `t3-cx-tools-packagecli` | CLI main and makefile for the v1 loader |
 | cx | `cmd/packageloader2/` | 3 | merge | `t3-packageloader2` | CLI for the v2 loader, merge into t3-cx-tools-packagecli |
 | cx | `cmd/packageloader2/bolt/` | 1 | delete | `(shared t0-cx-tools-packagestore)` | Byte identical copy of packageloader/bolt |
@@ -89,7 +89,7 @@ Counts are files, not rows.
 | cx | `cmd/packageloader/loader/` | 17 | keep | `t1-cx-tools-packageloader` | v1 loader, used by the type checker |
 | cx | `cmd/packageloader/redis/` | 1 | removed (#114) | `t0-plredis` | Redis store, superseded by bolt or a minimalist key-value store |
 | cx | `cmd/packageloader/tree/` | 7 | keep | `t2-cx-tools-packagetree` | Import tree output |
-| cx | `cmd/type_checker/` | 24 | keep | `t8-typechecker` | Work in progress type checker, its tests panic upstream too |
+| cx | `cmd/type_checker/` | 24 | keep | `t8-cx-compiler-typechecker` | Work in progress type checker, its tests panic upstream too |
 
 ## Tooling
 

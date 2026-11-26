@@ -5,10 +5,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 
 	"github.com/skycoin/skycoin-cx/t4-execute"
-	cxparsing "github.com/skycoin/skycoin-cx/t9-cxparsing"
+	"github.com/skycoin/skycoin-cx/t9-cx-compiler-parsing"
 )
 
 func captureStdout(t *testing.T, fn func()) string {
@@ -35,23 +35,23 @@ func captureStdout(t *testing.T, fn func()) string {
 func TestRunCompiledMaxOps(t *testing.T) {
 	initProgram()
 	src := "package main\nimport \"sys/string\"\nfunc f() {\n\tstring.PrintLine(\"in f\")\n}\nfunc main() {\n\tf()\n\tf()\n\tfor true {\n\t}\n}\n"
-	if err := cxparsing.SourceStringsParse([]string{src}, []string{"step.cx"}); err != nil {
+	if err := parsing.SourceStringsParse([]string{src}, []string{"step.cx"}); err != nil {
 		t.Fatal(err)
 	}
-	if err := cxparsing.SysInitFunctionAdd(actions.AST); err != nil {
+	if err := parsing.SysInitFunctionAdd(astbuild.AST); err != nil {
 		t.Fatal(err)
 	}
-	actions.AST.CxIrState.StringPool.StringPoolFreeze()
-	before := len(actions.AST.CXAtomicOps)
+	astbuild.AST.CxIrState.StringPool.StringPoolFreeze()
+	before := len(astbuild.AST.CXAtomicOps)
 	out := captureStdout(t, func() {
-		if err := execute.RunCompiled(actions.AST, 1000, nil); err != nil {
+		if err := execute.RunCompiled(astbuild.AST, 1000, nil); err != nil {
 			t.Fatal(err)
 		}
 	})
 	if out != "in f\nin f\n" {
 		t.Errorf("stdout %q, want %q", out, "in f\nin f\n")
 	}
-	if after := len(actions.AST.CXAtomicOps); after != before {
+	if after := len(astbuild.AST.CXAtomicOps); after != before {
 		t.Errorf("CXAtomicOps grew from %d to %d", before, after)
 	}
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 )
 
@@ -47,7 +47,7 @@ func main() {
 		return true
 	}
 	defer func() { ast.OpcodeDispatch = core }()
-	if err := execute.RunCompiled(actions.AST, 0, nil); err != nil {
+	if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
 		t.Fatal(err)
 	}
 	if calls != 1 {

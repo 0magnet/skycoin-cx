@@ -14,7 +14,7 @@ import (
 	profiling "github.com/skycoin/skycoin-cx/t1-profiling"
 	"github.com/skycoin/skycoin-cx/t10-cx-tools-repl"      // thin: only Repl, TargetFunction; only user of cxrepl, could merge it here, max tier 11 to 10
 	"github.com/skycoin/skycoin-cx/t2-cx-core-environment" // thin: only DebugGolangStackTrace; no depth gain
-	actions "github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	cxnet "github.com/skycoin/skycoin-cx/t4-cxnet"          // thin: only ConstantsInit; no depth gain
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core" // thin: only ExecutorRun, ExecutorMemoryLimitsClamp and the executor names; no depth gain
 	cxos "github.com/skycoin/skycoin-cx/t5-cxos"            // thin: only ConstantsInit; no depth gain
@@ -65,8 +65,8 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 		os.Exit(valuetypes.CXCompilationError)
 	}
 	defer root.Close()
-	actions.AST.ProgramSandboxRoot = root
-	actions.AST.ProgramStdinInit(os.Stdin)
+	astbuild.AST.ProgramSandboxRoot = root
+	astbuild.AST.ProgramStdinInit(os.Stdin)
 
 	profiling.ProfileStart("run")
 
@@ -82,7 +82,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 		return
 	}
 
-	if code := core.ExecutorRun(actions.AST, options.executor, cxArgs); code != valuetypes.CXSuccess {
+	if code := core.ExecutorRun(astbuild.AST, options.executor, cxArgs); code != valuetypes.CXSuccess {
 		os.Exit(int(code))
 	}
 }
@@ -235,18 +235,18 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 	// Init 4-9 run here, after the flags, so the heap flags size the program.
 	// Init 1-3 are package vars (see the VIOLATION comments).
 	// Init 4: cx.* constants in actions.ConstCodes
-	actions.ConstantsInit()
+	astbuild.ConstantsInit()
 	// Init 5: os.* constants (empty with nocxos)
-	cxos.ConstantsInit(actions.ConstI32Add)
-	cxnet.ConstantsInit(actions.ConstI32Add)
+	cxos.ConstantsInit(astbuild.ConstI32Add)
+	cxnet.ConstantsInit(astbuild.ConstI32Add)
 	// Init 6: gl, glfw and al constants (empty without cxfx)
 	cxfx.ConstantsInit()
 	// Init 7: actions.AST, the program state
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0062 S0063.
-	actions.AST = cxinit.ProgramMake()
+	astbuild.AST = cxinit.ProgramMake()
 	// Init 8: native packages in the program and the global opcode tables
-	cxinit.PackagesRegister(actions.AST)
+	cxinit.PackagesRegister(astbuild.AST)
 	// Init 9: built-in opcode and operator tables
 
 	enabled, operations, problem := librariesEnabledParse(options.enable)
@@ -254,8 +254,8 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 		fmt.Fprintln(os.Stderr, problem)
 		os.Exit(valuetypes.CXCompilationError)
 	}
-	actions.AST.ProgramLibrariesEnabled = enabled
-	actions.AST.ProgramOperationsEnabled = operations
+	astbuild.AST.ProgramLibrariesEnabled = enabled
+	astbuild.AST.ProgramOperationsEnabled = operations
 	if problem := netModeSet(options); problem != "" {
 		fmt.Fprintln(os.Stderr, problem)
 		os.Exit(valuetypes.CXCompilationError)

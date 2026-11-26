@@ -5,7 +5,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes" // thin: only Code; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	cxparseractions "github.com/skycoin/skycoin-cx/t4-actions" // thin: only AST, WritePrimary; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild" // thin: only AST, WritePrimary; no depth gain
 )
 
 // ExpressionNativeInputAdd adds native input to an expression
@@ -449,8 +449,8 @@ func ExpressionLiteralInputAdd(cxprogram *ast.CXProgram, packageName, functionNa
 		return err
 	}
 
-	cxparseractions.AST = cxprogram
-	litArg := cxparseractions.PrimaryWrite(cxprogram, argType, bytes, false)
+	astbuild.AST = cxprogram
+	litArg := astbuild.PrimaryWrite(cxprogram, argType, bytes, false)
 
 	cxAtomicOp2, _, err := cxprogram.OperationGet(expr)
 	if err != nil {

@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	"github.com/skycoin/skycoin-cx/t4-actions"
-	cxparsing "github.com/skycoin/skycoin-cx/t9-cxparsing"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
+	"github.com/skycoin/skycoin-cx/t9-cx-compiler-parsing"
 )
 
 // A global that takes its type from a value, var inferred = f(), has the
@@ -17,22 +17,22 @@ func TestGlobalInferredMatchesDeclared(t *testing.T) {
 		t.Run(typ, func(t *testing.T) {
 			initProgram()
 			src := fmt.Sprintf("package main\ntype Point struct {\n\tx i32\n\ty f64\n}\nfunc value() (r %s) {\n\treturn r\n}\nvar inferred = value()\nvar declared %s\nfunc main() {\n}\n", typ, typ)
-			if err := cxparsing.SourceStringsParse([]string{src}, []string{"infer.cx"}); err != nil {
+			if err := parsing.SourceStringsParse([]string{src}, []string{"infer.cx"}); err != nil {
 				t.Fatal(err)
 			}
-			pkg, err := actions.AST.PackageGet(actions.AST.CxIrState.CxIrStateNameMain)
+			pkg, err := astbuild.AST.PackageGet(astbuild.AST.CxIrState.CxIrStateNameMain)
 			if err != nil {
 				t.Fatal(err)
 			}
-			inferred, err := pkg.GlobalGet(actions.AST, actions.AST.CXProgramNameIntern("inferred"))
+			inferred, err := pkg.GlobalGet(astbuild.AST, astbuild.AST.CXProgramNameIntern("inferred"))
 			if err != nil {
 				t.Fatal(err)
 			}
-			declared, err := pkg.GlobalGet(actions.AST, actions.AST.CXProgramNameIntern("declared"))
+			declared, err := pkg.GlobalGet(astbuild.AST, astbuild.AST.CXProgramNameIntern("declared"))
 			if err != nil {
 				t.Fatal(err)
 			}
-			if got, want := globalTypeDescription(actions.AST, inferred), globalTypeDescription(actions.AST, declared); got != want {
+			if got, want := globalTypeDescription(astbuild.AST, inferred), globalTypeDescription(astbuild.AST, declared); got != want {
 				t.Errorf("inferred global\n%s\nwant the declared global\n%s", got, want)
 			}
 		})

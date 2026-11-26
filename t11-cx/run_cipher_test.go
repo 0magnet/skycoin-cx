@@ -10,7 +10,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 	"github.com/skycoin/skycoin/src/cipher"
@@ -117,10 +117,10 @@ func runCipherPrograms(tb testing.TB) []runBenchProgram {
 // it to run.
 func runCipherCompile(tb testing.TB, p runBenchProgram) *ast.CXProgram {
 	compileRunProgram(tb, p)
-	actions.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberCipher] = true
-	core.LibrariesEnabledResolve(actions.AST)
-	execute.RunPrepare(actions.AST)
-	return actions.AST
+	astbuild.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberCipher] = true
+	core.LibrariesEnabledResolve(astbuild.AST)
+	execute.RunPrepare(astbuild.AST)
+	return astbuild.AST
 }
 
 // runCipherAllocs returns the allocations of one run of p, each run on its
@@ -215,9 +215,9 @@ func TestRunVmCipherAllocs(t *testing.T) {
 	defer debug.SetGCPercent(debug.SetGCPercent(-1))
 	initProgram()
 	compileRunProgram(t, runBenchProgram{name: "cipher", source: runCipherHashStateVmSource})
-	actions.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberCipher] = true
-	core.LibrariesEnabledResolve(actions.AST)
-	image, _, outside := core.ExecutorLower(actions.AST)
+	astbuild.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberCipher] = true
+	core.LibrariesEnabledResolve(astbuild.AST)
+	image, _, outside := core.ExecutorLower(astbuild.AST)
 	if outside != "" {
 		t.Fatalf("does not lower: %s", outside)
 	}

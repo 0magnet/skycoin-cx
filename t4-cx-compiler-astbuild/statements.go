@@ -1,0 +1,53 @@
+package astbuild
+
+import (
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
+)
+
+const (
+	SelectionReserved = iota
+	SelectionElseIf
+	SelectionElseIfElse
+)
+
+// used for selection_statement to layout its outputs
+type SelectStatement struct {
+	// OBJMODEL: []CXExpressionGid or CXExpressionGid, phase 5 #347.
+	// Now objects held by value, site S1205.
+	Condition []ast.CXExpression
+	// OBJMODEL: []CXExpressionGid or CXExpressionGid, phase 5 #347.
+	// Now objects held by value, site S1206.
+	Then []ast.CXExpression
+	// OBJMODEL: []CXExpressionGid or CXExpressionGid, phase 5 #347.
+	// Now objects held by value, site S1207.
+	Else []ast.CXExpression
+}
+
+// SelectionStatementCreate creates series of expressions that will create
+// an if elseif else condition.
+//
+// Input arguments description:
+//
+//		prgrm - a CXProgram that contains all the data and arrays of the program.
+//	 conditionExprs - contains the condition of the first if statement.
+//		thenExprs - contains the statements if condition is true.
+//		elseifExprs - contains the statements for another if condition for an
+//					  elseif statement.
+//	 elseExprs - contains the statements if condition is false and there are
+//				 	no elseif conditions.
+//	 statementType - determines if the statement is an if+elseif+else or if+elseif only.
+func SelectionStatementCreate(prgrm *ast.CXProgram, conditionExprs []ast.CXExpression, thenExprs []ast.CXExpression, elseifExprs []SelectStatement, elseExprs []ast.CXExpression, statementType int) []ast.CXExpression {
+	var lastElse []ast.CXExpression
+	switch statementType {
+	case SelectionElseIfElse:
+		lastElse = elseExprs
+	case SelectionElseIf:
+		lastElse = nil
+	}
+
+	for c := len(elseifExprs) - 1; c >= 0; c-- {
+		lastElse = SelectionExpressions(prgrm, elseifExprs[c].Condition, elseifExprs[c].Then, lastElse)
+	}
+
+	return SelectionExpressions(prgrm, conditionExprs, thenExprs, lastElse)
+}

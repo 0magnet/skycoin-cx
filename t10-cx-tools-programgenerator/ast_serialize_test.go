@@ -10,8 +10,8 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t10-cx-tools-programgenerator"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"                           // thin: tests use only MakeProgram, RegisterPackages; no depth gain
-	cxparsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: tests use only InitCXCore; no depth gain
+	cxinit "github.com/skycoin/skycoin-cx/t7-init"             // thin: tests use only MakeProgram, RegisterPackages; no depth gain
+	"github.com/skycoin/skycoin-cx/t8-cx-compiler-fullparsing" // thin: tests use only InitCXCore; no depth gain
 	"github.com/skycoin/skycoin-cx/t9-cx-core-astapi"
 )
 
@@ -83,7 +83,7 @@ func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *ast.CXP
 
 	// Needed for FunctionNativeExpressionAdd
 	// because of dependency on cxast.OpNames
-	cxparsingcompletor.CXCoreInit()
+	fullparsing.CXCoreInit()
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a constructor call, site S0013.
 	cxProgram = cxinit.ProgramMake()

@@ -6,7 +6,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
@@ -37,9 +37,9 @@ func main() {
 func runLibraryCallLoopCompile(tb testing.TB) {
 	compileRunProgram(tb, runBenchProgram{name: "library-loop", source: runLibraryCallLoopSource})
 	for _, library := range []int{opcodetable.LibraryNumberFile, opcodetable.LibraryNumberNet, opcodetable.LibraryNumberCipher} {
-		actions.AST.ProgramLibrariesEnabled[library] = true
+		astbuild.AST.ProgramLibrariesEnabled[library] = true
 	}
-	core.LibrariesEnabledResolve(actions.AST)
+	core.LibrariesEnabledResolve(astbuild.AST)
 }
 
 // BenchmarkRunLibraryCall times a loop of system library calls on the old
@@ -51,16 +51,16 @@ func BenchmarkRunLibraryCall(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			b.StopTimer()
 			runLibraryCallLoopCompile(b)
-			execute.RunPrepare(actions.AST)
+			execute.RunPrepare(astbuild.AST)
 			b.StartTimer()
-			if err := execute.RunCompiled(actions.AST, 0, nil); err != nil {
+			if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
 				b.Fatal(err)
 			}
 		}
 	})
 	b.Run("vm", func(b *testing.B) {
 		runLibraryCallLoopCompile(b)
-		image, _, outside := core.ExecutorLower(actions.AST)
+		image, _, outside := core.ExecutorLower(astbuild.AST)
 		if outside != "" {
 			b.Fatalf("does not lower: %s", outside)
 		}
@@ -68,7 +68,7 @@ func BenchmarkRunLibraryCall(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			if code := core.ExecutorVmRunMachine(actions.AST, machine); code != valuetypes.CXSuccess {
+			if code := core.ExecutorVmRunMachine(astbuild.AST, machine); code != valuetypes.CXSuccess {
 				b.Fatalf("code %d", code)
 			}
 		}

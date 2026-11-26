@@ -18,10 +18,10 @@ import (
 	"github.com/skycoin/skycoin-cx/t4-execute"             // thin: only RunCompiled; no depth gain
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"         // thin: only MakeProgram, RegisterPackages; no depth gain
 
-	"github.com/skycoin/skycoin-cx/t4-actions"                               // thin: only AST, LineNo; no depth gain
-	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing"     // thin: only CurrentFile, Parse, Program; no depth gain
-	cxparsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only Lexer, NewLexer, Parse; no depth gain
-	cxparsering "github.com/skycoin/skycoin-cx/t9-cxparsing"                 // thin: only AddInitFunction, ErrCompilation; could move AddInitFunction to t4-actions
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"       // thin: only AST, LineNo; no depth gain
+	"github.com/skycoin/skycoin-cx/t5-cx-compiler-partialparsing" // thin: only CurrentFile, Parse, Program; no depth gain
+	"github.com/skycoin/skycoin-cx/t8-cx-compiler-fullparsing"    // thin: only Lexer, NewLexer, Parse; no depth gain
+	"github.com/skycoin/skycoin-cx/t9-cx-compiler-parsing"        // thin: only AddInitFunction, ErrCompilation; could move AddInitFunction to t4-cx-compiler-astbuild
 )
 
 const VERSION = "0.8.0"
@@ -36,7 +36,7 @@ var TargetStruct string = ""
 var TargetModule string = ""
 
 func unsafeEval(code string) (out string) {
-	var lexer *cxparsingcompletor.Lexer
+	var lexer *fullparsing.Lexer
 
 	// storing strings sent to standard output
 	old := os.Stdout
@@ -68,70 +68,70 @@ func unsafeEval(code string) (out string) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			printer.CompileErrorsPrint(actions.AST)
+			printer.CompileErrorsPrint(astbuild.AST)
 			restore()
 			out = fmt.Sprintf("%v", r)
 			// lexer.Stop()
 		}
 	}()
 
-	actions.LineNo = 0
+	astbuild.LineNo = 0
 	// Eval code has no file, and a file Gid of an earlier program is stale.
-	actions.CurrentFile = ast.SourceFileGidNil
-	cxpartialparsing.CurrentFile = ast.SourceFileGidNil
+	astbuild.CurrentFile = ast.SourceFileGidNil
+	partialparsing.CurrentFile = ast.SourceFileGidNil
 	environment.FoundCompileErrors = false
 
 	// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0001 S0002.
-	actions.AST = cxinit.ProgramMake()
-	cxinit.PackagesRegister(actions.AST)
-	cxpartialparsing.Program = actions.AST
+	astbuild.AST = cxinit.ProgramMake()
+	cxinit.PackagesRegister(astbuild.AST)
+	partialparsing.Program = astbuild.AST
 
-	parseErrors := cxpartialparsing.Parse(code)
+	parseErrors := partialparsing.Parse(code)
 
-	actions.AST = cxpartialparsing.Program
+	astbuild.AST = partialparsing.Program
 
-	lexer = cxparsingcompletor.LexerNew(bytes.NewBufferString(code))
-	parseErrors += cxparsingcompletor.Parse(lexer)
-	printer.CompileErrorsPrint(actions.AST)
+	lexer = fullparsing.LexerNew(bytes.NewBufferString(code))
+	parseErrors += fullparsing.Parse(lexer)
+	printer.CompileErrorsPrint(astbuild.AST)
 	if parseErrors > 0 || environment.FoundCompileErrors {
 		restore()
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0003 S0004.
-		actions.AST = cxinit.ProgramMake()
-		cxinit.PackagesRegister(actions.AST)
-		return cxparsering.ErrCompilation.Error()
+		astbuild.AST = cxinit.ProgramMake()
+		cxinit.PackagesRegister(astbuild.AST)
+		return parsing.ErrCompilation.Error()
 	}
-	err = cxparsering.SysInitFunctionAdd(actions.AST)
+	err = parsing.SysInitFunctionAdd(astbuild.AST)
 	if err != nil {
 		restore()
 		return fmt.Sprintf("%s", err)
 	}
 	// SysInitFunctionAdd records initialization cycles and global type errors (#519).
 	if environment.FoundCompileErrors {
-		printer.CompileErrorsPrint(actions.AST)
+		printer.CompileErrorsPrint(astbuild.AST)
 		restore()
-		actions.AST = cxinit.ProgramMake()
-		cxinit.PackagesRegister(actions.AST)
-		return cxparsering.ErrCompilation.Error()
+		astbuild.AST = cxinit.ProgramMake()
+		cxinit.PackagesRegister(astbuild.AST)
+		return parsing.ErrCompilation.Error()
 	}
 
-	actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
-	actions.AST.CxIrState.StringPool.StringPoolFreeze()
+	astbuild.AST.CxIrState.CxIrStateManagerGrowBoundary()
+	astbuild.AST.CxIrState.StringPool.StringPoolFreeze()
 	//err = actions.AST.RunCompiled(0, nil);
-	err = execute.RunCompiled(actions.AST, 0, nil)
-	if actions.AST.RuntimeError.RuntimeErrorRecordRaised {
-		os.Exit(printer.RuntimeErrorPrint(actions.AST))
+	err = execute.RunCompiled(astbuild.AST, 0, nil)
+	if astbuild.AST.RuntimeError.RuntimeErrorRecordRaised {
+		os.Exit(printer.RuntimeErrorPrint(astbuild.AST))
 	}
 	if err != nil {
 		restore()
 		// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0005 S0006.
-		ast.ProgramMemoryRelease(actions.AST)
-		actions.AST = cxinit.ProgramMake()
-		cxinit.PackagesRegister(actions.AST)
+		ast.ProgramMemoryRelease(astbuild.AST)
+		astbuild.AST = cxinit.ProgramMake()
+		cxinit.PackagesRegister(astbuild.AST)
 		return fmt.Sprintf("%s", err)
 	}
 	//Tod: If error equals nill?
@@ -141,9 +141,9 @@ func unsafeEval(code string) (out string) {
 	// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0007 S0008.
-	ast.ProgramMemoryRelease(actions.AST)
-	actions.AST = cxinit.ProgramMake()
-	cxinit.PackagesRegister(actions.AST)
+	ast.ProgramMemoryRelease(astbuild.AST)
+	astbuild.AST = cxinit.ProgramMake()
+	cxinit.PackagesRegister(astbuild.AST)
 	return out
 }
 
@@ -170,8 +170,8 @@ func Eval(code string) string {
 		// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0009 S0010.
-		actions.AST = cxinit.ProgramMake()
-		cxinit.PackagesRegister(actions.AST)
+		astbuild.AST = cxinit.ProgramMake()
+		cxinit.PackagesRegister(astbuild.AST)
 		return "Timed out."
 	}
 }
@@ -184,11 +184,11 @@ func Repl() {
 
 	// fi := bufio.NewReader(os.NewFile(0, "stdin"))
 	fi := bufio.NewReader(os.Stdin)
-	actions.AST.ProgramStdinInit(fi)
+	astbuild.AST.ProgramStdinInit(fi)
 	// scanner := bufio.NewScanner(os.Stdin)
 
 	for {
-		actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
+		astbuild.AST.CxIrState.CxIrStateManagerGrowBoundary()
 		var inp string
 		var ok bool
 
@@ -207,8 +207,8 @@ func Repl() {
 
 			b := bytes.NewBufferString(inp)
 
-			cxparsingcompletor.Parse(cxparsingcompletor.LexerNew(b))
-			printer.CompileErrorsPrint(actions.AST)
+			fullparsing.Parse(fullparsing.LexerNew(b))
+			printer.CompileErrorsPrint(astbuild.AST)
 			//yyParse(LexerNew(b))
 		} else {
 			if TargetFunction != "" {

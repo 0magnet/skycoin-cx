@@ -7,7 +7,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
 
@@ -24,7 +24,7 @@ const buildImageExtension = ".cximage"
 // refused. -stack-size sets the stack of the image, which a microcontroller
 // needs far below the 1 MB default.
 func buildImage(options buildOptions) int {
-	prgrm := actions.AST
+	prgrm := astbuild.AST
 	core.LibrariesEnabledResolve(prgrm)
 	for library, enabled := range prgrm.ProgramLibrariesEnabled {
 		prgrm.ProgramLibrariesEnabled[library] = enabled && prgrm.ProgramLibrariesUsed[library]

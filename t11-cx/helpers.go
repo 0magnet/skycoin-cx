@@ -18,11 +18,11 @@ import (
 	"github.com/skycoin/skycoin-cx/t10-cx-tools-repl" // thin: only Repl, TargetFunction; only user of cxrepl, could merge it here, max tier 11 to 10
 	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	actions "github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	printer "github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"             // thin: only MakeProgram, RegisterPackages; no depth gain
-	cxgo "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only Tokenize; no depth gain
-	cxparsing "github.com/skycoin/skycoin-cx/t9-cxparsing"     // thin: only AddInitFunction, ErrCompilation, ParseSourceStrings; no depth gain
+	"github.com/skycoin/skycoin-cx/t8-cx-compiler-fullparsing" // thin: only Tokenize; no depth gain
+	"github.com/skycoin/skycoin-cx/t9-cx-compiler-parsing"     // thin: only AddInitFunction, ErrCompilation, ParseSourceStrings; no depth gain
 )
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) bool {
@@ -48,13 +48,13 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 
 	profiling.ProfileStart("parse")
 	defer profiling.ProfileStop("parse")
-	defer func() { printer.CompileErrorsPrint(actions.AST) }()
+	defer func() { printer.CompileErrorsPrint(astbuild.AST) }()
 
-	if actions.AST == nil {
+	if astbuild.AST == nil {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0056 S0057.
-		actions.AST = cxinit.ProgramMake()
-		cxinit.PackagesRegister(actions.AST)
+		astbuild.AST = cxinit.ProgramMake()
+		cxinit.PackagesRegister(astbuild.AST)
 	}
 
 	sources := make([]string, len(sourceCode))
@@ -71,7 +71,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	repl.TargetFunction = opcodetable.MainFunction
 
 	if err := compileSourceStrings(fileNames, sources); err != nil {
-		if err != cxparsing.ErrCompilation {
+		if err != parsing.ErrCompilation {
 			fmt.Fprintln(os.Stdout, "error:", err)
 		}
 		profiling.CleanupAndExit(valuetypes.CXCompilationError)
@@ -83,25 +83,25 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 // compileSourceStrings compiles sources, named by fileNames, into actions.AST
 // with its *init. The cx command and the tests compile through it (#516).
 func compileSourceStrings(fileNames []string, sources []string) error {
-	if err := cxparsing.SourceStringsParse(sources, fileNames); err != nil {
+	if err := parsing.SourceStringsParse(sources, fileNames); err != nil {
 		return err
 	}
 
 	// Checking if a main package exists. If not, create and add it to `AST`.
-	if _, err := actions.AST.FunctionGet(actions.AST.CxIrState.CxIrStateNameMain, actions.AST.CxIrState.CxIrStateNameMain); err != nil {
-		initMainPkg(actions.AST)
+	if _, err := astbuild.AST.FunctionGet(astbuild.AST.CxIrState.CxIrStateNameMain, astbuild.AST.CxIrState.CxIrStateNameMain); err != nil {
+		initMainPkg(astbuild.AST)
 	}
 
 	// Adding *init function that initializes all the global variables.
-	if err := cxparsing.SysInitFunctionAdd(actions.AST); err != nil {
+	if err := parsing.SysInitFunctionAdd(astbuild.AST); err != nil {
 		return fmt.Errorf("initializing *init: %w", err)
 	}
 
-	actions.LineNo = 0
+	astbuild.LineNo = 0
 
 	if environment.FoundCompileErrors {
-		printer.CompileErrorsPrint(actions.AST)
-		return cxparsing.ErrCompilation
+		printer.CompileErrorsPrint(astbuild.AST)
+		return parsing.ErrCompilation
 	}
 	return nil
 }
@@ -120,7 +120,7 @@ func initMainPkg(prgrm *ast.CXProgram) {
 	if err != nil {
 		panic(err)
 	}
-	_, fn := ast.FunctionMake(prgrm, prgrm.CxIrState.CxIrStateNameMain, actions.CurrentFile, actions.LineNo)
+	_, fn := ast.FunctionMake(prgrm, prgrm.CxIrState.CxIrStateNameMain, astbuild.CurrentFile, astbuild.LineNo)
 	modPkg.FunctionAdd(prgrm, fn)
 }
 
@@ -168,7 +168,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		defer w.Close()
 	}
 
-	cxgo.Tokenize(r, w, lines, sourceFilename)
+	fullparsing.Tokenize(r, w, lines, sourceFilename)
 }
 
 func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
@@ -181,7 +181,7 @@ func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File)
 	}
 
 	// Print CX program.
-	actions.AST.ProgramPrint()
+	astbuild.AST.ProgramPrint()
 
 	if opcodes.AssertFailed() {
 		os.Exit(valuetypes.CXAssert)

@@ -211,7 +211,7 @@ They are not marked one by one.
 ### GC root tables
 
 - t3-cx-core-ast/cxfunction_def.go:48 `ListOfPointers` and :57 `ListOfSlots`
-- t4-actions/gcroot.go:31 adds to `ListOfSlots`, t4-actions/functions.go:1223
+- t4-cx-compiler-astbuild/gcroot.go:31 adds to `ListOfSlots`, t4-cx-compiler-astbuild/functions.go:1223
   to :1308 reads and adds to `ListOfPointers`
 - t3-cx-core-ast/serialize.go:736 to :751 writes and :807 to :831 reads both tables
 

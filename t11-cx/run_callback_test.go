@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 )
 
@@ -42,7 +42,7 @@ func runCallbackFunction(t testing.TB, prgrm *ast.CXProgram, name string) *ast.C
 // back.
 func runCallbackPrepare(t testing.TB) (*ast.CXProgram, *ast.CXFunction, [][]byte) {
 	compileRunProgram(t, runBenchProgram{name: "callback", source: runCallbackSource})
-	prgrm := actions.AST
+	prgrm := astbuild.AST
 	execute.RunPrepare(prgrm)
 	mainFn := runCallbackFunction(t, prgrm, "main")
 	prgrm.CallStack[0] = execute.CallMake(prgrm, prgrm.CXProgramFunctionGid(mainFn))
