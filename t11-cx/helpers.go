@@ -232,30 +232,36 @@ type SourceCode struct {
 	Code string //Unused?
 }
 
-// CXPathGet sets the bin, pkg and src paths from -cxpath, else CXPATH, else
-// $HOME/cx. It does not create the directories.
-func CXPathGet(options cxCmdFlags) {
-	var err error
-	CXPATH := ""
-	if os.Getenv("CXPATH") != "" {
-		CXPATH = os.Getenv("CXPATH")
-	}
-	// `options.cxpath` overrides `os.Getenv("CXPATH")`
+// CXPathSet sets the bin, pkg and src paths of globals from --cxpath, else
+// CXPATH, else cx/ in the home directory. It returns an error when none is
+// known, as on js/wasm without HOME, and then leaves the paths unset.
+func CXPathSet(options cxCmdFlags) error {
+	cxPath := os.Getenv("CXPATH")
 	if options.cxpath != "" {
-		CXPATH, err = filepath.Abs(options.cxpath)
+		absolute, err := filepath.Abs(options.cxpath)
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("--cxpath %s: %w", options.cxpath, err)
 		}
+		cxPath = absolute
 	}
-	if os.Getenv("CXPATH") == "" && options.cxpath == "" {
-		usr, err := user.Current()
+	if cxPath == "" {
+		home, err := cxPathHomeDirectory()
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("CXPATH is not set and there is no home directory: %w", err)
 		}
+		cxPath = filepath.Join(home, "cx")
+	}
+	globals.BINPATH = filepath.Join(cxPath, "bin/")
+	globals.PKGPATH = filepath.Join(cxPath, "pkg/")
+	globals.SRCPATH = filepath.Join(cxPath, "src/")
+	return nil
+}
 
-		CXPATH = usr.HomeDir + "/cx/"
+// cxPathHomeDirectory is the home directory of the user, from os/user and
+// else from $HOME, since user.Current fails on js/wasm.
+var cxPathHomeDirectory = func() (string, error) {
+	if current, err := user.Current(); err == nil && current.HomeDir != "" {
+		return current.HomeDir, nil
 	}
-	globals.BINPATH = filepath.Join(CXPATH, "bin/")
-	globals.PKGPATH = filepath.Join(CXPATH, "pkg/")
-	globals.SRCPATH = filepath.Join(CXPATH, "src/")
+	return os.UserHomeDir()
 }

@@ -102,7 +102,9 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 		Checking if CXPATH is set, either by setting an environment variable
 		 or by setting the `--cxpath` flag.
 	*/
-	CXPathGet(options)
+	if err := CXPathSet(options); err != nil {
+		fmt.Fprintln(os.Stderr, "cx:", err)
+	}
 
 	/*
 		checkHelp checks  for command line argument string "help"
