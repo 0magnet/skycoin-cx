@@ -494,10 +494,10 @@ func OpGlAppend(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	outputSlicePointer := outputs[0].Offset
 	outputSliceOffset := types.Read_ptr(prgrm.Memory, outputSlicePointer)
 
-	inputSliceOffset := ast.GetSliceOffset(prgrm, inputs[0].FramePointer, inputs[0].TypeSignature)
+	inputSliceOffset := ast.SliceOffsetGet(prgrm, inputs[0].FramePointer, inputs[0].TypeSignature)
 	var inputSliceLen types.Pointer
 	if inputSliceOffset != 0 {
-		inputSliceLen = ast.GetSliceLen(prgrm, inputSliceOffset)
+		inputSliceLen = ast.SliceLenGet(prgrm, inputSliceOffset)
 	}
 
 	obj := inputs[1].Get_bytes(prgrm)

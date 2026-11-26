@@ -15,8 +15,8 @@ func RegisterPackage(prgrm *ast.CXProgram) {
 
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now a constructor call, site S1359.
-	cipherPkg := ast.MakePackage(prgrm.CXProgramNameIntern("cipher"))
+	cipherPkg := ast.PackageMake(prgrm.CXProgramNameIntern("cipher"))
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now an arena insert, site S1362.
-	prgrm.AddPackage(cipherPkg)
+	prgrm.PackageAdd(cipherPkg)
 }

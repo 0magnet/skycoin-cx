@@ -37,8 +37,8 @@ func (cxprogram *CXProgram) RunBuffersPrepare() {
 func (cxprogram *CXProgram) runBuffersArity() (int, int) {
 	inputCount, outputCount := 0, 0
 	for i := range cxprogram.CXAtomicOps {
-		inputCount = max(inputCount, len(cxprogram.CXAtomicOps[i].GetInputs(cxprogram)))
-		outputCount = max(outputCount, len(cxprogram.CXAtomicOps[i].GetOutputs(cxprogram)))
+		inputCount = max(inputCount, len(cxprogram.CXAtomicOps[i].InputsGet(cxprogram)))
+		outputCount = max(outputCount, len(cxprogram.CXAtomicOps[i].OutputsGet(cxprogram)))
 	}
 	return inputCount, outputCount
 }

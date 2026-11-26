@@ -94,7 +94,7 @@ func NativeParameters(prgrm *CXProgram, parameters []constants.OpcodeParameter) 
 			args = append(args, Slice(parameter.OpcodeParameterType))
 		case constants.OpcodeParameterFormStruct:
 			structType := constants.OpcodeParameterStructTable[parameter.OpcodeParameterStruct]
-			args = append(args, MakeStructParameter(prgrm, structType.OpcodeParameterStructPackage, structType.OpcodeParameterStructType, structType.OpcodeParameterStructName))
+			args = append(args, StructParameterMake(prgrm, structType.OpcodeParameterStructPackage, structType.OpcodeParameterStructType, structType.OpcodeParameterStructName))
 		default:
 			args = append(args, Param(parameter.OpcodeParameterType))
 		}

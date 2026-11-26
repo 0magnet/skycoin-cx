@@ -88,7 +88,7 @@ func compileSourceStrings(fileNames []string, sources []string) error {
 	}
 
 	// Checking if a main package exists. If not, create and add it to `AST`.
-	if _, err := actions.AST.GetFunction(actions.AST.CxIrState.CxIrStateNameMain, actions.AST.CxIrState.CxIrStateNameMain); err != nil {
+	if _, err := actions.AST.FunctionGet(actions.AST.CxIrState.CxIrStateNameMain, actions.AST.CxIrState.CxIrStateNameMain); err != nil {
 		initMainPkg(actions.AST)
 	}
 
@@ -110,18 +110,18 @@ func compileSourceStrings(fileNames []string, sources []string) error {
 func initMainPkg(prgrm *ast.CXProgram) {
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now a constructor call, site S0058.
-	mod := ast.MakePackage(prgrm.CxIrState.CxIrStateNameMain)
+	mod := ast.PackageMake(prgrm.CxIrState.CxIrStateNameMain)
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now an arena insert, site S0059.
-	modIdx := prgrm.AddPackage(mod)
+	modIdx := prgrm.PackageAdd(mod)
 	// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 	// Now an arena getter, site S0060.
-	modPkg, err := prgrm.GetPackageFromArray(modIdx)
+	modPkg, err := prgrm.PackageFromArrayGet(modIdx)
 	if err != nil {
 		panic(err)
 	}
-	_, fn := ast.MakeFunction(prgrm, prgrm.CxIrState.CxIrStateNameMain, actions.CurrentFile, actions.LineNo)
-	modPkg.AddFunction(prgrm, fn)
+	_, fn := ast.FunctionMake(prgrm, prgrm.CxIrState.CxIrStateNameMain, actions.CurrentFile, actions.LineNo)
+	modPkg.FunctionAdd(prgrm, fn)
 }
 
 // optionTokenize checks if the user wants to use CX to generate the lexer tokens
@@ -181,7 +181,7 @@ func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File)
 	}
 
 	// Print CX program.
-	actions.AST.PrintProgram()
+	actions.AST.ProgramPrint()
 
 	if opcodes.AssertFailed() {
 		os.Exit(types.CX_ASSERT)

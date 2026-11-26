@@ -81,19 +81,19 @@ They have the following fields:
 * CurrentExpression - used by the REPL and parser when checking function validity and processing expressions at compile time.
 
 Functions/Methods (first two are functions, rest are methods): 
-* MakeFunction - same as other makers for the previous objects.
+* FunctionMake - same as other makers for the previous objects.
 * MakeNativeFunction - used to create Opcodes.
-* GetExpressions, GetExpressionByLabel, GetExpressionByLine - getters for exactly what they sound like. For GetExpressionByLine, and for other “Line” things, line just means “get the expression in Expressions at index ‘line’”.
+* ExpressionsGet, ExpressionByLabelGet, ExpressionByLineGet - getters for exactly what they sound like. For ExpressionByLineGet, and for other “Line” things, line just means “get the expression in Expressions at index ‘line’”.
 * GetCurrentExpression - returns CurrentExpression if not nil, otherwise first element in Expressions if not nil, otherwise an error.
-* AddInput, RemoveInput, AddOutput, RemoveOutput - same as CXExpression.
-* AddExpression - adds expression to the CXFunction’s Expressions. Also sets the expression’s Package to Package, Function to the caller, and sets CurrentExpression to the input expression, and increments Length.
-* RemoveExpression - Not sure when this is used, but does the same thing, but does not unset expression’s Package or Function fields, nor unsets CurrentExpression, nor decrements Length.
+* InputAdd, RemoveInput, OutputAdd, RemoveOutput - same as CXExpression.
+* ExpressionAdd - adds expression to the CXFunction’s Expressions. Also sets the expression’s Package to Package, Function to the caller, and sets CurrentExpression to the input expression, and increments Length.
+* ExpressionRemove - Not sure when this is used, but does the same thing, but does not unset expression’s Package or Function fields, nor unsets CurrentExpression, nor decrements Length.
 * SelectExpression - takes in an integer, and tries to return the element with that index from Expressions. Throws error if Expressions is nil or length zero. If index is out of bounds, it either returns the first or last expression from Expressions, depending on which end the index goes out of bounds at. Also sets CurrentExpression to the grabbed expression.
 
 ## CXStruct
 
-[CXStructs](../t3-ast/cxstruct_def.go) are the custom struct types in CX, albeit all struct types in CX are currently custom types. They have a Name, a Package they reside in, an array of CXArguments which represent the field names and types, and a Size, which is the precomputed CXStruct’s size in memory. They have a MakeStruct which takes in a name and outputs a blank CXStruct with said name, and also GetFields(), GetField(name), and more:
-* AddField - tries to add the CXArgument input to Fields. If the input’s name shares the name of another field, then CX panics. Otherwise, the input’s Offset is set to the previous field’s Offset (or zero if there are no other fields), plus the last field’s * TotalSize (or zero, if nonexistent). Size is incremented by the size of the input.
+[CXStructs](../t3-ast/cxstruct_def.go) are the custom struct types in CX, albeit all struct types in CX are currently custom types. They have a Name, a Package they reside in, an array of CXArguments which represent the field names and types, and a Size, which is the precomputed CXStruct’s size in memory. They have a StructMake which takes in a name and outputs a blank CXStruct with said name, and also GetFields(), FieldGet(name), and more:
+* FieldAdd - tries to add the CXArgument input to Fields. If the input’s name shares the name of another field, then CX panics. Otherwise, the input’s Offset is set to the previous field’s Offset (or zero if there are no other fields), plus the last field’s * TotalSize (or zero, if nonexistent). Size is incremented by the size of the input.
 * RemoveField - same thing as previous, but forgets to update the offset, Size, and other things.
 
 ## CXPackage

@@ -77,7 +77,7 @@ func TestASTAPI_Expressions(t *testing.T) {
 	})
 
 	t.Run("print program", func(t *testing.T) {
-		cxprogram.PrintProgram()
+		cxprogram.ProgramPrint()
 	})
 
 	t.Run("remove expression from a function", func(t *testing.T) {
@@ -90,6 +90,6 @@ func TestASTAPI_Expressions(t *testing.T) {
 	})
 
 	t.Run("print program", func(t *testing.T) {
-		cxprogram.PrintProgram()
+		cxprogram.ProgramPrint()
 	})
 }

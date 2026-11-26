@@ -102,7 +102,7 @@ func affordanceLiteralValue(prgrm *ast.CXProgram, literal *ast.AffordanceLiteral
 		return fail(ast.AffordanceClauseStruct, "strct cannot be combined with var")
 	}
 
-	pkg, err := prgrm.GetPackageFromArray(literal.AffordanceLiteralPackage)
+	pkg, err := prgrm.PackageFromArrayGet(literal.AffordanceLiteralPackage)
 	if err != nil {
 		return value, false
 	}
@@ -111,7 +111,7 @@ func affordanceLiteralValue(prgrm *ast.CXProgram, literal *ast.AffordanceLiteral
 		if !ok {
 			return fail(ast.AffordanceClausePackage, "package '"+name(ast.AffordanceClausePackage)+"' is not imported")
 		}
-		if pkg, err = prgrm.GetPackageFromArray(imported); err != nil {
+		if pkg, err = prgrm.PackageFromArrayGet(imported); err != nil {
 			return value, false
 		}
 	}
@@ -144,7 +144,7 @@ func affordanceLiteralValue(prgrm *ast.CXProgram, literal *ast.AffordanceLiteral
 		if fn == nil {
 			if pkg.Globals != nil {
 				for _, field := range pkg.Globals.Fields {
-					if prgrm.GetCXTypeSignatureFromArray(field).Name == variableName {
+					if prgrm.CXTypeSignatureFromArrayGet(field).Name == variableName {
 						value.AffordanceValueKind = ast.AffordanceKindGlobal
 						value.AffordanceValueVariable = field
 						return value, true
@@ -171,9 +171,9 @@ func affordanceLiteralValue(prgrm *ast.CXProgram, literal *ast.AffordanceLiteral
 // is set when sibling blocks of fn each declare a variable name at its own
 // offset.
 func affordanceFunctionVariable(prgrm *ast.CXProgram, fn *ast.CXFunction, name stringpool.StringGid) (variable ast.CXTypeSignatureIndex, found bool, ambiguous bool) {
-	for _, parameters := range [2][]ast.CXTypeSignatureIndex{fn.GetInputs(prgrm), fn.GetOutputs(prgrm)} {
+	for _, parameters := range [2][]ast.CXTypeSignatureIndex{fn.InputsGet(prgrm), fn.OutputsGet(prgrm)} {
 		for _, index := range parameters {
-			if StripNameNumber(prgrm, prgrm.GetCXTypeSignatureFromArray(index).Name) == name {
+			if StripNameNumber(prgrm, prgrm.CXTypeSignatureFromArrayGet(index).Name) == name {
 				return index, true, false
 			}
 		}
@@ -184,18 +184,18 @@ func affordanceFunctionVariable(prgrm *ast.CXProgram, fn *ast.CXFunction, name s
 		if fn.Expressions[e].Type != ast.CX_ATOMIC_OPERATOR {
 			continue
 		}
-		cxAtomicOp, err := prgrm.GetCXAtomicOp(fn.Expressions[e].Index)
+		cxAtomicOp, err := prgrm.CXAtomicOpGet(fn.Expressions[e].Index)
 		if err != nil {
 			continue
 		}
-		for _, index := range cxAtomicOp.GetOutputs(prgrm) {
-			signature := prgrm.GetCXTypeSignatureFromArray(index)
+		for _, index := range cxAtomicOp.OutputsGet(prgrm) {
+			signature := prgrm.CXTypeSignatureFromArrayGet(index)
 			if StripNameNumber(prgrm, signature.Name) != name || !ast.CXTypeSignatureWhole(prgrm, signature) {
 				continue
 			}
 			if !found {
-				variable, found, offset = index, true, signature.GetOffset(prgrm)
-			} else if signature.GetOffset(prgrm) != offset {
+				variable, found, offset = index, true, signature.OffsetGet(prgrm)
+			} else if signature.OffsetGet(prgrm) != offset {
 				return variable, found, true
 			}
 		}

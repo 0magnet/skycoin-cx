@@ -51,7 +51,7 @@ its statement or above its function, which then covers every site in it.
 
 ```go
 // VIOLATION STRHOT-234: E, error or assert text, built on a failure branch only, #412.
-func (cxprogram *CXProgram) GetCXArg(index CXArgumentIndex) *CXArgument {
+func (cxprogram *CXProgram) CXArgGet(index CXArgumentIndex) *CXArgument {
 ```
 
 The manager functions are generated, so their codes are in the table of

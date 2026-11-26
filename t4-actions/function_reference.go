@@ -15,13 +15,13 @@ func functionReferenceInputsResolve(prgrm *ast.CXProgram, expression *ast.CXAtom
 	if operator == nil || !operator.BuiltIn() || expression.Inputs == nil {
 		return
 	}
-	expected := operator.GetInputs(prgrm)
+	expected := operator.InputsGet(prgrm)
 	received := expression.Inputs.Fields
 	for i := 0; i < len(expected) && i < len(received); i++ {
 		if !functionReferenceParameter(prgrm, expected[i]) {
 			continue
 		}
-		receivedTypeSig := prgrm.GetCXTypeSignatureFromArray(received[i])
+		receivedTypeSig := prgrm.CXTypeSignatureFromArrayGet(received[i])
 		function, found := functionReferenceTarget(prgrm, receivedTypeSig)
 		if !found && !functionReferenceUnresolved(prgrm, receivedTypeSig) {
 			prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeFunctionReferenceInput, receivedTypeSig.ArgDetails, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(expressionOperatorName(prgrm, operator)), int64(i + 1), prgrm.CXProgramCompileErrorText(valueFormattedType(prgrm, receivedTypeSig))})
@@ -32,18 +32,18 @@ func functionReferenceInputsResolve(prgrm *ast.CXProgram, expression *ast.CXAtom
 		}
 		var literal [8]byte
 		types.Write_i64(literal[:], 0, int64(function))
-		received[i] = ast.AllocCXTypeSignatureOfCXArgBuilder(prgrm, WritePrimary(prgrm, types.I64, literal[:], false))
+		received[i] = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, WritePrimary(prgrm, types.I64, literal[:], false))
 	}
 }
 
 // functionReferenceParameter reports a native input declared as a function
 // reference.
 func functionReferenceParameter(prgrm *ast.CXProgram, typeSigIdx ast.CXTypeSignatureIndex) bool {
-	typeSig := prgrm.GetCXTypeSignatureFromArray(typeSigIdx)
+	typeSig := prgrm.CXTypeSignatureFromArrayGet(typeSigIdx)
 	if typeSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
 		return false
 	}
-	return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)).Type == types.FUNC
+	return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta)).Type == types.FUNC
 }
 
 // functionReferenceUnresolved reports a name that is neither a variable nor a
@@ -52,7 +52,7 @@ func functionReferenceUnresolved(prgrm *ast.CXProgram, typeSig *ast.CXTypeSignat
 	if typeSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
 		return false
 	}
-	return prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta)).Type == types.IDENTIFIER
+	return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta)).Type == types.IDENTIFIER
 }
 
 // functionReferenceTarget returns the function an argument names, the
@@ -61,15 +61,15 @@ func functionReferenceTarget(prgrm *ast.CXProgram, typeSig *ast.CXTypeSignature)
 	if typeSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
 		return ast.CXFunctionGidNil, false
 	}
-	arg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(typeSig.Meta))
+	arg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(typeSig.Meta))
 	if arg.Type != types.FUNC || len(arg.Fields) != 0 || len(arg.Indexes) != 0 {
 		return ast.CXFunctionGidNil, false
 	}
-	pkg, err := prgrm.GetPackageFromArray(arg.Package)
+	pkg, err := prgrm.PackageFromArrayGet(arg.Package)
 	if err != nil {
 		return ast.CXFunctionGidNil, false
 	}
-	fn, err := pkg.GetFunction(prgrm, StripNameNumber(prgrm, arg.Name))
+	fn, err := pkg.FunctionGet(prgrm, StripNameNumber(prgrm, arg.Name))
 	if err != nil {
 		return ast.CXFunctionGidNil, false
 	}

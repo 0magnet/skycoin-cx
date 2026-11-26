@@ -17,13 +17,13 @@ import (
 func DeclarePackage(prgrm *ast.CXProgram, pkgName string) {
 	pkgNameGid := prgrm.CXProgramNameIntern(pkgName)
 	// Add a new package to the program if it's not previously defined.
-	if _, err := prgrm.GetPackage(pkgNameGid); err != nil {
+	if _, err := prgrm.PackageGet(pkgNameGid); err != nil {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now a constructor call, site S1088.
-		pkg := ast.MakePackage(pkgNameGid)
+		pkg := ast.PackageMake(pkgNameGid)
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now an arena insert, site S1089.
-		prgrm.AddPackage(pkg)
+		prgrm.PackageAdd(pkg)
 	}
 
 	_, err := prgrm.SelectPackage(pkgNameGid)
@@ -48,7 +48,7 @@ func DeclareImport(prgrm *ast.CXProgram, impName string, currentFile ast.SourceF
 // named like the package reports as the import it shadows (#486).
 func DeclareImportAt(prgrm *ast.CXProgram, impName string, currentFile ast.SourceFileGid, lineNo int, column int) {
 	// Make sure we are inside a package
-	pkg, err := prgrm.GetCurrentPackage()
+	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)
@@ -87,14 +87,14 @@ func DeclareImportAt(prgrm *ast.CXProgram, impName string, currentFile ast.Sourc
 	prgrm.CXProgramImportPositionAdd(pkg.Name, identGid, ast.CXProgramImportPosition{ImportFile: currentFile, ImportLine: lineNo, ImportColumn: column})
 
 	// If the package is already imported, then there is nothing more to be done.
-	if _, err := pkg.GetImport(prgrm, identGid); err == nil {
+	if _, err := pkg.ImportGet(prgrm, identGid); err == nil {
 		return
 	}
 
 	// If the package is already defined in the program, just add it to
 	// the importing package.
-	if imp, err := prgrm.GetPackage(identGid); err == nil {
-		pkg.AddImport(prgrm, imp)
+	if imp, err := prgrm.PackageGet(identGid); err == nil {
+		pkg.ImportAdd(prgrm, imp)
 		return
 	}
 
@@ -104,17 +104,17 @@ func DeclareImportAt(prgrm *ast.CXProgram, impName string, currentFile ast.Sourc
 	if cxpackages.PackageDefault(ident) {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now a constructor call, site S1090.
-		imp := ast.MakePackage(identGid)
+		imp := ast.PackageMake(identGid)
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now an arena insert, site S1091.
-		impIdx := prgrm.AddPackage(imp)
+		impIdx := prgrm.PackageAdd(imp)
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S1092.
-		newImp, err := prgrm.GetPackageFromArray(impIdx)
+		newImp, err := prgrm.PackageFromArrayGet(impIdx)
 		if err != nil {
 			panic(err)
 		}
-		pkg.AddImport(prgrm, newImp)
+		pkg.ImportAdd(prgrm, newImp)
 
 		prgrm.CurrentPackage = ast.CXPackageIndex(pkg.Index)
 	} else {

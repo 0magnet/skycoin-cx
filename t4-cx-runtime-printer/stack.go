@@ -30,7 +30,7 @@ func printerStackValueLine(dst []byte, prgrm *ast.CXProgram, fp types.Pointer, a
 	if offset, valid := ast.FinalOffsetChecked(prgrm, fp, argTypeSig); !valid || int(offset) >= len(prgrm.Memory) {
 		dst = append(dst, printerStackValueBadIndex...)
 	} else {
-		dst = ast.AppendPrintableValue(dst, prgrm, fp, argTypeSig)
+		dst = ast.PrintableValueAppend(dst, prgrm, fp, argTypeSig)
 	}
 	return append(dst, '\n')
 }
@@ -62,7 +62,7 @@ func printerStackShown(sig *ast.CXTypeSignature, operator *ast.CXFunction, outpu
 func printerStackAtomicOp(cxprogram *ast.CXProgram, expr *ast.CXExpression) (*ast.CXAtomicOperator, *ast.CXFunction) {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S0469.
-	cxAtomicOp, err := cxprogram.GetCXAtomicOp(expr.Index)
+	cxAtomicOp, err := cxprogram.CXAtomicOpGet(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -74,9 +74,9 @@ func printerStackAtomicOp(cxprogram *ast.CXProgram, expr *ast.CXExpression) (*as
 // argument index of expression exprIndex, its outputs following its inputs.
 // The dump prints each variable once.
 func printerStackShownBefore(cxprogram *ast.CXProgram, op *ast.CXFunction, sig *ast.CXTypeSignature, exprIndex, index int) bool {
-	for _, params := range [2][]ast.CXTypeSignatureIndex{op.GetInputs(cxprogram), op.GetOutputs(cxprogram)} {
+	for _, params := range [2][]ast.CXTypeSignatureIndex{op.InputsGet(cxprogram), op.OutputsGet(cxprogram)} {
 		for _, paramIdx := range params {
-			if printerStackSameName(cxprogram.GetCXTypeSignatureFromArray(paramIdx), sig) {
+			if printerStackSameName(cxprogram.CXTypeSignatureFromArrayGet(paramIdx), sig) {
 				return true
 			}
 		}
@@ -84,13 +84,13 @@ func printerStackShownBefore(cxprogram *ast.CXProgram, op *ast.CXFunction, sig *
 	for e := 0; e <= exprIndex; e++ {
 		cxAtomicOp, operator := printerStackAtomicOp(cxprogram, &op.Expressions[e])
 		arg := 0
-		for k, args := range [2][]ast.CXTypeSignatureIndex{cxAtomicOp.GetInputs(cxprogram), cxAtomicOp.GetOutputs(cxprogram)} {
+		for k, args := range [2][]ast.CXTypeSignatureIndex{cxAtomicOp.InputsGet(cxprogram), cxAtomicOp.OutputsGet(cxprogram)} {
 			for _, argIdx := range args {
 				if e == exprIndex && arg == index {
 					return false
 				}
 				arg++
-				other := cxprogram.GetCXTypeSignatureFromArray(argIdx)
+				other := cxprogram.CXTypeSignatureFromArrayGet(argIdx)
 				if printerStackShown(other, operator, k == 1) && printerStackSameName(other, sig) {
 					return true
 				}
@@ -120,11 +120,11 @@ func PrinterStackPrint(cxprogram *ast.CXProgram) {
 		text = append(text, opName...)
 		text = append(text, "()\n"...)
 
-		for k, params := range [2][]ast.CXTypeSignatureIndex{op.GetInputs(cxprogram), op.GetOutputs(cxprogram)} {
+		for k, params := range [2][]ast.CXTypeSignatureIndex{op.InputsGet(cxprogram), op.OutputsGet(cxprogram)} {
 			for _, paramIdx := range params {
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S0465.
-				param := cxprogram.GetCXTypeSignatureFromArray(paramIdx)
+				param := cxprogram.CXTypeSignatureFromArrayGet(paramIdx)
 				if k == 0 {
 					text = append(text, "ProgramInput\n"...)
 				} else {
@@ -133,7 +133,7 @@ func PrinterStackPrint(cxprogram *ast.CXProgram) {
 				text = printerStackValueLine(text, cxprogram, fp, param, opName)
 				// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 				// Now an arena getter, site S0466.
-				if _, err := cxprogram.GetPackageFromArray(param.Package); err != nil {
+				if _, err := cxprogram.PackageFromArrayGet(param.Package); err != nil {
 					panic(err)
 				}
 			}
@@ -145,25 +145,25 @@ func PrinterStackPrint(cxprogram *ast.CXProgram) {
 		for e := range op.Expressions {
 			cxAtomicOp, operator := printerStackAtomicOp(cxprogram, &op.Expressions[e])
 			arg := 0
-			for k, args := range [2][]ast.CXTypeSignatureIndex{cxAtomicOp.GetInputs(cxprogram), cxAtomicOp.GetOutputs(cxprogram)} {
+			for k, args := range [2][]ast.CXTypeSignatureIndex{cxAtomicOp.InputsGet(cxprogram), cxAtomicOp.OutputsGet(cxprogram)} {
 				for _, argIdx := range args {
 					index := arg
 					arg++
 					// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 					// Now an arena getter, site S0471.
-					sig := cxprogram.GetCXTypeSignatureFromArray(argIdx)
+					sig := cxprogram.CXTypeSignatureFromArrayGet(argIdx)
 					if !printerStackShown(sig, operator, k == 1) {
 						continue
 					}
 					// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 					// Now an arena getter, site S0472.
-					if _, err := cxprogram.GetPackageFromArray(sig.Package); err != nil {
+					if _, err := cxprogram.PackageFromArrayGet(sig.Package); err != nil {
 						panic(err)
 					}
 					if printerStackShownBefore(cxprogram, op, sig, e, index) {
 						continue
 					}
-					text = printerStackValueLine(text, cxprogram, fp, sig, cxAtomicOp.GetOperatorNameBytes(cxprogram))
+					text = printerStackValueLine(text, cxprogram, fp, sig, cxAtomicOp.OperatorNameBytesGet(cxprogram))
 					exprsShown = true
 				}
 			}

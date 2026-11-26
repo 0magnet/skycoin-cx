@@ -22,14 +22,14 @@ import (
 //				   position is a redeclaration.
 func DeclareStruct(prgrm *ast.CXProgram, structName string, structFields []*ast.CXArgument, file ast.SourceFileGid, line int, column int) {
 	// Make sure we are inside a package.
-	pkg, err := prgrm.GetCurrentPackage()
+	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)
 	}
 
 	// Make sure a struct with the same name is not yet defined.
-	strct, err := prgrm.GetStruct(prgrm.CXProgramNameIntern(structName), pkg.Name)
+	strct, err := prgrm.StructGet(prgrm.CXProgramNameIntern(structName), pkg.Name)
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)
@@ -38,7 +38,7 @@ func DeclareStruct(prgrm *ast.CXProgram, structName string, structFields []*ast.
 	if strct.FileLine != 0 && (strct.FileName != file || strct.FileLine != line || strct.FileColumn != column) {
 		prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeRedeclaredBlock, file, line, column, ast.CompileErrorOperands{int64(strct.Name), int64(strct.FileName), int64(strct.FileLine), int64(strct.FileColumn)})
 		for _, field := range structFields {
-			prgrm.ReleaseCXArgBuilder(field)
+			prgrm.CXArgBuilderRelease(field)
 		}
 		return
 	}
@@ -52,16 +52,16 @@ func DeclareStruct(prgrm *ast.CXProgram, structName string, structFields []*ast.
 		fieldSize, fits := declarationArgSize(field)
 		if !fits || !declarationSizeSumFits(structSize, fieldSize) {
 			prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeDeclarationTooLarge, field.ArgDetails, ast.CompileErrorOperands{int64(field.Name)})
-			prgrm.ReleaseCXArgBuilder(field)
-		} else if _, err := strct.GetField(prgrm, field.Name); err == nil {
+			prgrm.CXArgBuilderRelease(field)
+		} else if _, err := strct.FieldGet(prgrm, field.Name); err == nil {
 			prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeStructFieldMultiplyDefined, field.ArgDetails, ast.CompileErrorOperands{int64(field.Name)})
-			prgrm.ReleaseCXArgBuilder(field)
+			prgrm.CXArgBuilderRelease(field)
 		} else if inner := declareStructArgValueStruct(field); inner != nil && declareStructContains(prgrm, inner, strct) {
 			prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeStructRecursive, field.ArgDetails, ast.CompileErrorOperands{int64(strct.Name)})
-			prgrm.ReleaseCXArgBuilder(field)
+			prgrm.CXArgBuilderRelease(field)
 		} else {
 			structSize += fieldSize
-			strct.AddField(prgrm, field)
+			strct.FieldAdd(prgrm, field)
 		}
 	}
 }
@@ -84,13 +84,13 @@ func declareStructContains(prgrm *ast.CXProgram, strct *ast.CXStruct, target *as
 		return true
 	}
 	for _, fieldIdx := range strct.Fields {
-		field := prgrm.GetCXTypeSignatureFromArray(fieldIdx)
+		field := prgrm.CXTypeSignatureFromArrayGet(fieldIdx)
 		var inner *ast.CXStruct
 		switch field.Type {
 		case ast.TYPE_STRUCT:
-			inner = prgrm.GetCXTypeSignatureStructFromArray(field.Meta).StructType
+			inner = prgrm.CXTypeSignatureStructFromArrayGet(field.Meta).StructType
 		case ast.TYPE_CXARGUMENT_DEPRECATE:
-			inner = declareStructArgValueStruct(prgrm.GetCXArgFromArray(ast.CXArgumentIndex(field.Meta)))
+			inner = declareStructArgValueStruct(prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(field.Meta)))
 		}
 		if inner != nil && declareStructContains(prgrm, inner, target) {
 			return true
@@ -113,7 +113,7 @@ type packageDeclaration struct {
 func PackageRedeclarationCheck(prgrm *ast.CXProgram, pkg *ast.CXPackage) {
 	var declarations []packageDeclaration
 	for _, strctIdx := range pkg.Structs {
-		strct := prgrm.GetStructFromArray(strctIdx)
+		strct := prgrm.StructFromArrayGet(strctIdx)
 		declarations = append(declarations, packageDeclaration{strct.Name, strct.FileName, strct.FileLine, strct.FileColumn})
 	}
 	methods := make(map[ast.CXFunctionGid]bool, len(pkg.Methods))
@@ -127,7 +127,7 @@ func PackageRedeclarationCheck(prgrm *ast.CXProgram, pkg *ast.CXPackage) {
 		}
 	}
 	for _, glblIdx := range pkg.Globals.Fields {
-		glbl := prgrm.GetCXTypeSignatureFromArray(glblIdx)
+		glbl := prgrm.CXTypeSignatureFromArrayGet(glblIdx)
 		file, line, column := ast.CXArgumentDebugPosition(prgrm, glbl.ArgDetails)
 		declarations = append(declarations, packageDeclaration{glbl.Name, file, line, column})
 	}

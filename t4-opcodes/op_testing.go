@@ -26,7 +26,7 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1341.
-		inp0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
+		inp0 = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
 
 		if inp0.Type == types.STR || inp0.PointerTargetType == types.STR {
 			byts1 = inputs[0].Get_str_bytes(prgrm)
@@ -52,13 +52,13 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 		var strTyped bool = false
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S1342.
-		structDetails := prgrm.GetCXTypeSignatureStructFromArray(inputs[0].TypeSignature.Meta)
+		structDetails := prgrm.CXTypeSignatureStructFromArrayGet(inputs[0].TypeSignature.Meta)
 
 		lenFlds := len(structDetails.Fields)
 		if lenFlds > 0 {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1343.
-			fld := prgrm.GetCXArgFromArray(structDetails.Fields[lenFlds-1])
+			fld := prgrm.CXArgFromArrayGet(structDetails.Fields[lenFlds-1])
 			if fld.Type == types.STR || fld.PointerTargetType == types.STR {
 				strTyped = true
 			}
@@ -78,9 +78,9 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 	same = bytes.Equal(byts1, byts2)
 	if !same {
 		message := inputs[2].Get_str_bytes(prgrm)
-		call := prgrm.GetCurrentCall()
+		call := prgrm.CurrentCallGet()
 		// expr := call.Operator.Expressions[call.Line]
-		cxLine, _ := prgrm.GetPreviousCXLine(prgrm.CxIrState.CXFunctionMng.CXFunctionGet(call.Operator).Expressions, call.Line)
+		cxLine, _ := prgrm.PreviousCXLineGet(prgrm.CxIrState.CXFunctionMng.CXFunctionGet(call.Operator).Expressions, call.Line)
 
 		if len(message) != 0 {
 			fmt.Printf("%s: %d: result was not equal to the expected value; %s\n", prgrm.CXProgramSourceFileText(cxLine.FileName), cxLine.LineNumber, message)

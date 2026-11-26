@@ -89,7 +89,7 @@ func DeclareImportScoped(prgrm *ast.CXProgram, path string, scope string, scopeL
 		return
 	}
 	DeclareImportAt(prgrm, path, currentFile, line, column)
-	pkg, err := prgrm.GetCurrentPackage()
+	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		panic(err)
 	}
@@ -135,7 +135,7 @@ func importScopedListed(names []ast.CXProgramImportScopedName, name stringpool.S
 // importScopedGlobal reports whether pkg has the global name.
 func importScopedGlobal(prgrm *ast.CXProgram, pkg *ast.CXPackage, name stringpool.StringGid) bool {
 	for _, fieldIdx := range pkg.Globals.Fields {
-		if prgrm.GetCXTypeSignatureFromArray(fieldIdx).Name == name {
+		if prgrm.CXTypeSignatureFromArrayGet(fieldIdx).Name == name {
 			return true
 		}
 	}
@@ -175,7 +175,7 @@ func importScopedMembers(prgrm *ast.CXProgram, source *ast.CXPackage) []stringpo
 		names = append(names, name)
 	}
 	for _, fieldIdx := range source.Globals.Fields {
-		names = append(names, prgrm.GetCXTypeSignatureFromArray(fieldIdx).Name)
+		names = append(names, prgrm.CXTypeSignatureFromArrayGet(fieldIdx).Name)
 	}
 	sourceText := prgrm.CXProgramNameText(source.Name)
 	if cxpackages.PackageDefault(sourceText) {
@@ -207,7 +207,7 @@ func importScopedProvides(prgrm *ast.CXProgram, scoped *ast.CXProgramImportScope
 		}
 		position = listed.ImportScopedNamePosition
 	}
-	source, err := prgrm.GetPackage(scoped.ImportScopedSource)
+	source, err := prgrm.PackageGet(scoped.ImportScopedSource)
 	if err != nil || !importScopedMember(prgrm, source, name) {
 		return position, false
 	}
@@ -257,7 +257,7 @@ func importScopedSource(prgrm *ast.CXProgram, pkg *ast.CXPackage, file ast.Sourc
 	if scoped == nil {
 		return nil
 	}
-	source, err := prgrm.GetPackage(scoped.ImportScopedSource)
+	source, err := prgrm.PackageGet(scoped.ImportScopedSource)
 	if err != nil {
 		return nil
 	}
@@ -271,7 +271,7 @@ func importScopedIdentifier(prgrm *ast.CXProgram, name stringpool.StringGid) []a
 	if len(prgrm.ImportScoped) == 0 || importScoped.locals[name] {
 		return nil
 	}
-	pkg, err := prgrm.GetCurrentPackage()
+	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		panic(err)
 	}
@@ -336,7 +336,7 @@ func importScopedStruct(prgrm *ast.CXProgram, pkg *ast.CXPackage, file ast.Sourc
 	if source == nil {
 		return nil
 	}
-	strct, err := prgrm.GetStruct(name, source.Name)
+	strct, err := prgrm.StructGet(name, source.Name)
 	if err != nil {
 		return nil
 	}
@@ -388,7 +388,7 @@ func ImportScopedCheck(prgrm *ast.CXProgram, pkg *ast.CXPackage) {
 		if scoped.ImportScopedPackage != pkg.Name {
 			continue
 		}
-		source, err := prgrm.GetPackage(scoped.ImportScopedSource)
+		source, err := prgrm.PackageGet(scoped.ImportScopedSource)
 		if err != nil || prgrm.CXProgramImportFailed(source.Name) {
 			continue
 		}
@@ -414,7 +414,7 @@ func ImportScopedCheck(prgrm *ast.CXProgram, pkg *ast.CXPackage) {
 // importScopedCheckName reports what name, which import number index of pkg
 // brings in at position, masks.
 func importScopedCheckName(prgrm *ast.CXProgram, pkg *ast.CXPackage, index int, name stringpool.StringGid, position ast.CXProgramImportPosition) {
-	if glbl, err := pkg.GetGlobal(prgrm, name); err == nil {
+	if glbl, err := pkg.GlobalGet(prgrm, name); err == nil {
 		file, line, column := ast.CXArgumentDebugPosition(prgrm, glbl.ArgDetails)
 		importScopedMaskReport(prgrm, name, file, line, column, position)
 		return
@@ -425,7 +425,7 @@ func importScopedCheckName(prgrm *ast.CXProgram, pkg *ast.CXPackage, index int, 
 		return
 	}
 	if strctIdx, found := pkg.Structs[name]; found {
-		strct := prgrm.GetStructFromArray(strctIdx)
+		strct := prgrm.StructFromArrayGet(strctIdx)
 		importScopedMaskReport(prgrm, name, strct.FileName, strct.FileLine, strct.FileColumn, position)
 		return
 	}

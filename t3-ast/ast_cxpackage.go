@@ -16,9 +16,9 @@ type CXPackageMethodKey struct {
 	CXPackageMethodKeyMethod stringpool.StringGid
 }
 
-// GetFunction returns the function fnName of pkg. A function of an import
+// FunctionGet returns the function fnName of pkg. A function of an import
 // is reached as pkg.name or through an import into scope, see #487.
-func (pkg *CXPackage) GetFunction(prgrm *CXProgram, fnName stringpool.StringGid) (*CXFunction, error) {
+func (pkg *CXPackage) FunctionGet(prgrm *CXProgram, fnName stringpool.StringGid) (*CXFunction, error) {
 	if fnIdx, ok := pkg.Functions[fnName]; ok {
 		fn := prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx)
 
@@ -28,23 +28,23 @@ func (pkg *CXPackage) GetFunction(prgrm *CXProgram, fnName stringpool.StringGid)
 	return nil, fmt.Errorf("function '%s' not found in package '%s'", prgrm.CXProgramNameText(fnName), prgrm.CXProgramNameText(pkg.Name))
 }
 
-// GetImport ...
-func (pkg *CXPackage) GetImport(prgrm *CXProgram, impName stringpool.StringGid) (*CXPackage, error) {
+// ImportGet ...
+func (pkg *CXPackage) ImportGet(prgrm *CXProgram, impName stringpool.StringGid) (*CXPackage, error) {
 	if _, ok := pkg.Imports[impName]; !ok {
 		return nil, fmt.Errorf("package '%s' not imported", prgrm.CXProgramNameText(impName))
 	}
 
 	// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 	// Now an arena getter, site S0161.
-	imp, err := prgrm.GetPackageFromArray(pkg.Imports[impName])
+	imp, err := prgrm.PackageFromArrayGet(pkg.Imports[impName])
 	if err != nil {
 		panic(err)
 	}
 	return imp, nil
 }
 
-// GetMethod returns the method methodName of the struct receiverName.
-func (pkg *CXPackage) GetMethod(prgrm *CXProgram, receiverName stringpool.StringGid, methodName stringpool.StringGid) (CXFunctionGid, error) {
+// MethodGet returns the method methodName of the struct receiverName.
+func (pkg *CXPackage) MethodGet(prgrm *CXProgram, receiverName stringpool.StringGid, methodName stringpool.StringGid) (CXFunctionGid, error) {
 	if fnIdx, ok := pkg.Methods[CXPackageMethodKey{CXPackageMethodKeyStruct: receiverName, CXPackageMethodKeyMethod: methodName}]; ok {
 		return fnIdx, nil
 	}
@@ -52,15 +52,15 @@ func (pkg *CXPackage) GetMethod(prgrm *CXProgram, receiverName stringpool.String
 	// Trying to find it among the built-ins.
 	// Most likely a method from a core package.
 	if native, found := prgrm.CXProgramNativeFind(&NativeNames, pkg.Name, receiverName, methodName); found {
-		opFnIdx := prgrm.AddNativeFunctionInArray(NativeFunctionOf(prgrm, native.NativeNameEntryCode))
+		opFnIdx := prgrm.NativeFunctionInArrayAdd(NativeFunctionOf(prgrm, native.NativeNameEntryCode))
 		return opFnIdx, nil
 	}
 
 	return CXFunctionGidNil, fmt.Errorf("method '%s.%s' not found in package '%s'", prgrm.CXProgramNameText(receiverName), prgrm.CXProgramNameText(methodName), prgrm.CXProgramNameText(pkg.Name))
 }
 
-// GetStruct returns the struct strctName of pkg, not one of its imports.
-func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName stringpool.StringGid) (*CXStruct, error) {
+// StructGet returns the struct strctName of pkg, not one of its imports.
+func (pkg *CXPackage) StructGet(prgrm *CXProgram, strctName stringpool.StringGid) (*CXStruct, error) {
 	if strctIdx, ok := pkg.Structs[strctName]; ok {
 		// OBJMODEL: state.CXStructMng.CXStructGet(gid), phase 5 #337.
 		// Now a pointer into an arena, site S0168.
@@ -71,12 +71,12 @@ func (pkg *CXPackage) GetStruct(prgrm *CXProgram, strctName stringpool.StringGid
 
 }
 
-// GetGlobal ...
-func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName stringpool.StringGid) (*CXTypeSignature, error) {
+// GlobalGet ...
+func (pkg *CXPackage) GlobalGet(prgrm *CXProgram, defName stringpool.StringGid) (*CXTypeSignature, error) {
 	for _, fieldIdx := range pkg.Globals.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0171.
-		field := prgrm.GetCXTypeSignatureFromArray(fieldIdx)
+		field := prgrm.CXTypeSignatureFromArrayGet(fieldIdx)
 		if field.Name == defName {
 			return field, nil
 		}
@@ -85,8 +85,8 @@ func (pkg *CXPackage) GetGlobal(prgrm *CXProgram, defName stringpool.StringGid) 
 	return nil, fmt.Errorf("global '%s' not found in package '%s'", prgrm.CXProgramNameText(defName), prgrm.CXProgramNameText(pkg.Name))
 }
 
-// GetCurrentFunction ...
-func (pkg *CXPackage) GetCurrentFunction(prgrm *CXProgram) (*CXFunction, error) {
+// CurrentFunctionGet ...
+func (pkg *CXPackage) CurrentFunctionGet(prgrm *CXProgram) (*CXFunction, error) {
 	if pkg.CurrentFunction == CXFunctionGidNil {
 		return nil, errors.New("current function is nil")
 	}
@@ -109,12 +109,12 @@ func (pkg *CXPackage) SelectFunction(prgrm *CXProgram, name stringpool.StringGid
 	return prgrm.CxIrState.CXFunctionMng.CXFunctionGet(idx), nil
 }
 
-// MakePackage creates a new empty CXPackage.
+// PackageMake creates a new empty CXPackage.
 //
 // It can be filled in later with imports, structs, globals and functions.
 // OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 // Now a constructor, site S0174.
-func MakePackage(name stringpool.StringGid) *CXPackage {
+func PackageMake(name stringpool.StringGid) *CXPackage {
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now a heap literal, site S0175.
 	return &CXPackage{
@@ -136,18 +136,18 @@ func MakePackage(name stringpool.StringGid) *CXPackage {
 // ----------------------------------------------------------------
 //                     `CXPackage` Member handling
 
-// AddImport ...
-func (pkg *CXPackage) AddImport(prgrm *CXProgram, imp *CXPackage) *CXPackage {
+// ImportAdd ...
+func (pkg *CXPackage) ImportAdd(prgrm *CXProgram, imp *CXPackage) *CXPackage {
 	if _, ok := pkg.Imports[imp.Name]; !ok {
-		// impIdx := prgrm.AddPackageInArray(imp)
+		// impIdx := prgrm.PackageInArrayAdd(imp)
 		pkg.Imports[imp.Name] = CXPackageIndex(imp.Index)
 	}
 
 	return pkg
 }
 
-// RemoveImport ...
-func (pkg *CXPackage) RemoveImport(impName stringpool.StringGid) {
+// ImportRemove ...
+func (pkg *CXPackage) ImportRemove(impName stringpool.StringGid) {
 	if _, ok := pkg.Imports[impName]; ok {
 		// OBJMODEL: state.CXPackageMng.CXPackageRelease(gid), phase 4 #361.
 		// Now a dropped object, site S0177.
@@ -155,9 +155,9 @@ func (pkg *CXPackage) RemoveImport(impName stringpool.StringGid) {
 	}
 }
 
-// AddFunction adds fn, allocated by MakeFunction, to pkg. A second function of the same name is an
+// FunctionAdd adds fn, allocated by FunctionMake, to pkg. A second function of the same name is an
 // error and stays out of pkg.Functions, so the first keeps the name as in Go.
-func (pkg *CXPackage) AddFunction(prgrm *CXProgram, fn *CXFunction) (*CXPackage, CXFunctionGid) {
+func (pkg *CXPackage) FunctionAdd(prgrm *CXProgram, fn *CXFunction) (*CXPackage, CXFunctionGid) {
 	return pkg, pkg.addFunction(prgrm, fn, CompileErrorCodeRedeclaredBlock)
 }
 
@@ -180,9 +180,9 @@ func (pkg *CXPackage) addFunction(prgrm *CXProgram, fn *CXFunction, code Compile
 	return fnIdx
 }
 
-// AddMethod adds fn, the method methodName of the struct receiverName. The
+// MethodAdd adds fn, the method methodName of the struct receiverName. The
 // name of fn is "receiverName.methodName", see CXProgramMethodNameIntern.
-func (pkg *CXPackage) AddMethod(prgrm *CXProgram, fn *CXFunction, receiverName stringpool.StringGid, methodName stringpool.StringGid) (*CXPackage, CXFunctionGid) {
+func (pkg *CXPackage) MethodAdd(prgrm *CXProgram, fn *CXFunction, receiverName stringpool.StringGid, methodName stringpool.StringGid) (*CXPackage, CXFunctionGid) {
 	key := CXPackageMethodKey{CXPackageMethodKeyStruct: receiverName, CXPackageMethodKeyMethod: methodName}
 	_, declared := pkg.Methods[key]
 	fnIdx := pkg.addFunction(prgrm, fn, CompileErrorCodeMethodRedeclared)
@@ -209,8 +209,8 @@ func (prgrm *CXProgram) FunctionDeclarationAt(fnIdx CXFunctionGid, file SourceFi
 	return fnIdx
 }
 
-// RemoveFunction removes the function fnName from pkg and releases it.
-func (pkg *CXPackage) RemoveFunction(prgrm *CXProgram, fnName stringpool.StringGid) {
+// FunctionRemove removes the function fnName from pkg and releases it.
+func (pkg *CXPackage) FunctionRemove(prgrm *CXProgram, fnName stringpool.StringGid) {
 	fnIdx, ok := pkg.Functions[fnName]
 	if !ok {
 		return
@@ -228,22 +228,22 @@ func (pkg *CXPackage) RemoveFunction(prgrm *CXProgram, fnName stringpool.StringG
 	prgrm.CXProgramFunctionRelease(fnIdx)
 }
 
-// AddStruct ...
-func (pkg *CXPackage) AddStruct(prgrm *CXProgram, strct *CXStruct) *CXPackage {
+// StructAdd ...
+func (pkg *CXPackage) StructAdd(prgrm *CXProgram, strct *CXStruct) *CXPackage {
 	if _, ok := pkg.Structs[strct.Name]; ok {
 		return pkg
 	}
 	strct.Package = CXPackageIndex(pkg.Index)
 	// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 	// Now an arena insert, site S0180.
-	strctIdx := prgrm.AddStructInArray(strct)
+	strctIdx := prgrm.StructInArrayAdd(strct)
 	pkg.Structs[strct.Name] = strctIdx
 
 	return pkg
 }
 
-// RemoveStruct ...
-func (pkg *CXPackage) RemoveStruct(strctName stringpool.StringGid) {
+// StructRemove ...
+func (pkg *CXPackage) StructRemove(strctName stringpool.StringGid) {
 	if _, ok := pkg.Structs[strctName]; !ok {
 		return
 	}
@@ -252,19 +252,19 @@ func (pkg *CXPackage) RemoveStruct(strctName stringpool.StringGid) {
 	delete(pkg.Structs, strctName)
 }
 
-// AddGlobal ...
-func (pkg *CXPackage) AddGlobal(prgrm *CXProgram, defIdx CXArgumentIndex) *CXPackage {
+// GlobalAdd ...
+func (pkg *CXPackage) GlobalAdd(prgrm *CXProgram, defIdx CXArgumentIndex) *CXPackage {
 	// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 	// Now an arena getter, site S0182.
-	defArg := prgrm.GetCXArgFromArray(defIdx)
+	defArg := prgrm.CXArgFromArrayGet(defIdx)
 	// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 	// Now an arena getter, site S1631.
-	prgrm.GetCXArg(CXArgumentIndex(defIdx)).Package = CXPackageIndex(pkg.Index)
+	prgrm.CXArgGet(CXArgumentIndex(defIdx)).Package = CXPackageIndex(pkg.Index)
 
 	for _, fieldIdx := range pkg.Globals.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0183.
-		field := prgrm.GetCXTypeSignatureFromArray(fieldIdx)
+		field := prgrm.CXTypeSignatureFromArrayGet(fieldIdx)
 		if field.Name == defArg.Name && field.Type == TYPE_CXARGUMENT_DEPRECATE {
 			return pkg
 		}
@@ -278,12 +278,12 @@ func (pkg *CXPackage) AddGlobal(prgrm *CXProgram, defIdx CXArgumentIndex) *CXPac
 func (pkg *CXPackage) AddGlobal_TypeSignature(prgrm *CXProgram, typeSignatureIdx CXTypeSignatureIndex) *CXPackage {
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0184.
-	typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+	typeSignature := prgrm.CXTypeSignatureFromArrayGet(typeSignatureIdx)
 	typeSignature.Package = CXPackageIndex(pkg.Index)
 	for _, fieldIdx := range pkg.Globals.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0185.
-		field := prgrm.GetCXTypeSignatureFromArray(fieldIdx)
+		field := prgrm.CXTypeSignatureFromArrayGet(fieldIdx)
 		if field.Name == typeSignature.Name {
 			return pkg
 		}
@@ -298,7 +298,7 @@ func (pkg *CXPackage) AddGlobal_TypeSignature(prgrm *CXProgram, typeSignatureIdx
 // func (pkg *CXPackage) RemoveGlobal(prgrm *CXProgram, defName string) {
 // 	lenGlobals := len(pkg.Globals)
 // 	for i, defIdx := range pkg.Globals {
-// 		def := prgrm.GetCXArg(defIdx)
+// 		def := prgrm.CXArgGet(defIdx)
 // 		if def.Name == defName {
 // 			if i == lenGlobals-1 {
 // 				pkg.Globals = pkg.Globals[:len(pkg.Globals)-1]

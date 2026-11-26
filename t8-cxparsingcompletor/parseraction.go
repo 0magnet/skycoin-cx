@@ -33,18 +33,18 @@ func ParserActionAssignmentExpression(left []ast.CXExpression, operator string, 
 
 							// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 							// Now an arena getter, site S1493.
-							fromExpression, err := actions.AST.GetCXAtomicOp(from.Index)
+							fromExpression, err := actions.AST.CXAtomicOpGet(from.Index)
 							if err != nil {
 								panic(err)
 							}
 
 							// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 							// Now an arena getter, site S1494.
-							fromExpressionOutputTypeSig := actions.AST.GetCXTypeSignatureFromArray(fromExpression.GetOutputs(actions.AST)[0])
+							fromExpressionOutputTypeSig := actions.AST.CXTypeSignatureFromArrayGet(fromExpression.OutputsGet(actions.AST)[0])
 							fromExpressionOutputIdx := fromExpressionOutputTypeSig.Meta
 							// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 							// Now an arena getter, site S1773.
-							actions.AST.GetCXArg(ast.CXArgumentIndex(fromExpressionOutputIdx)).PreviouslyDeclared = true
+							actions.AST.CXArgGet(ast.CXArgumentIndex(fromExpressionOutputIdx)).PreviouslyDeclared = true
 						}
 					}
 					result = actions.ArrayLiteralAssignment(actions.AST, left, right)
@@ -60,18 +60,18 @@ func ParserActionAssignmentExpression(left []ast.CXExpression, operator string, 
 
 							// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 							// Now an arena getter, site S1495.
-							fromExpression, err := actions.AST.GetCXAtomicOp(from.Index)
+							fromExpression, err := actions.AST.CXAtomicOpGet(from.Index)
 							if err != nil {
 								panic(err)
 							}
 
 							// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 							// Now an arena getter, site S1496.
-							fromExpressionOutputTypeSig := actions.AST.GetCXTypeSignatureFromArray(fromExpression.GetOutputs(actions.AST)[0])
+							fromExpressionOutputTypeSig := actions.AST.CXTypeSignatureFromArrayGet(fromExpression.OutputsGet(actions.AST)[0])
 							fromExpressionOutputIdx := fromExpressionOutputTypeSig.Meta
 							// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 							// Now an arena getter, site S1774.
-							actions.AST.GetCXArg(ast.CXArgumentIndex(fromExpressionOutputIdx)).PreviouslyDeclared = true
+							actions.AST.CXArgGet(ast.CXArgumentIndex(fromExpressionOutputIdx)).PreviouslyDeclared = true
 						}
 					}
 					result = actions.StructLiteralAssignment(actions.AST, left, right)
@@ -97,7 +97,7 @@ func ParserActionExpressionStatement(exprs []ast.CXExpression) []ast.CXExpressio
 	var err error
 
 	if len(exprs) > 0 {
-		lastFirstAtomicOp, err = actions.AST.GetCXAtomicOpFromExpressions(exprs, len(exprs)-1)
+		lastFirstAtomicOp, err = actions.AST.CXAtomicOpFromExpressionsGet(exprs, len(exprs)-1)
 		if err != nil {
 			panic(err)
 		}
@@ -105,12 +105,12 @@ func ParserActionExpressionStatement(exprs []ast.CXExpression) []ast.CXExpressio
 	lastFirstAtomicOpOperator := actions.AST.CxIrState.CxIrStateFunctionGetOrNil(lastFirstAtomicOp.Operator)
 
 	if len(exprs) > 0 && lastFirstAtomicOpOperator == nil && !exprs[len(exprs)-1].TypeMethodCall() && !actions.ExpressionsDeclareInvalid(actions.AST, exprs) {
-		outs := lastFirstAtomicOp.GetOutputs(actions.AST)
+		outs := lastFirstAtomicOp.OutputsGet(actions.AST)
 
 		if len(outs) > 0 {
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 			// Now an arena getter, site S1499.
-			outTypeSig := actions.AST.GetCXTypeSignatureFromArray(outs[0])
+			outTypeSig := actions.AST.CXTypeSignatureFromArrayGet(outs[0])
 			actions.AST.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeInvalidExpression, outTypeSig.ArgDetails, ast.CompileErrorOperands{})
 		} else {
 			actions.AST.CXProgramCompileErrorAdd(ast.CompileErrorCodeInvalidExpression, actions.CurrentFile, actions.LineNo, ast.CompileErrorOperands{})
@@ -131,7 +131,7 @@ func ParserActionExpressionStatement(exprs []ast.CXExpression) []ast.CXExpressio
 // it is, which IterationExpressions reads in place (skycoin-cx#21).
 func ParserActionLoopCondition(exprs []ast.CXExpression) []ast.CXExpression {
 	if len(exprs) > 0 && exprs[len(exprs)-1].Type != ast.CX_LINE && !exprs[len(exprs)-1].TypeMethodCall() {
-		cxAtomicOp, err := actions.AST.GetCXAtomicOpFromExpressions(exprs, len(exprs)-1)
+		cxAtomicOp, err := actions.AST.CXAtomicOpFromExpressionsGet(exprs, len(exprs)-1)
 		if err != nil {
 			panic(err)
 		}
@@ -255,12 +255,12 @@ func ParserActionDeclareLocals(names []*ast.CXArgument, spec *ast.CXArgument, va
 		return append(result, ParserActionMultipleAssignment(targets, "=", values)...)
 	}
 	if len(targets) == 1 && len(values) == 1 {
-		actions.AST.ReleaseCXArgBuilder(names[0])
+		actions.AST.CXArgBuilderRelease(names[0])
 		return ParserActionAssignmentExpression(targets[0], ":=", values[0])
 	}
 	if result = ParserActionMultipleAssignment(targets, ":=", values); result != nil {
 		for _, name := range names {
-			actions.AST.ReleaseCXArgBuilder(name)
+			actions.AST.CXArgBuilderRelease(name)
 		}
 		return result
 	}

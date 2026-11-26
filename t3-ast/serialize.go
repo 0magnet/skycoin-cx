@@ -22,14 +22,14 @@ type SerializeCodec interface {
 // compiled program, so that a deserialized program lowers and runs as the
 // original does. The layout is in "Serialized form" in docs/IR.md.
 
-// SerializeCXProgram translates cx program to slice of bytes that we can save.
+// CXProgramSerialize translates cx program to slice of bytes that we can save.
 // These slice of bytes can then be deserialize in the future and
 // be translated back to cx program.
 // includeMemory stores the program memory, without which a deserialized
 // program gets zeroed memory of the same size. A nil codec leaves the bytes
 // uncompressed. A non-nil codec must be initialized, and the bytes then
 // include the memory and are compressed.
-func SerializeCXProgram(prgrm *CXProgram, includeMemory bool, codec SerializeCodec) ([]byte, error) {
+func CXProgramSerialize(prgrm *CXProgram, includeMemory bool, codec SerializeCodec) ([]byte, error) {
 	b, _, err := encodeCXProgram(prgrm, includeMemory || codec != nil)
 	if err != nil || codec == nil {
 		return b, err

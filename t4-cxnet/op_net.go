@@ -32,10 +32,10 @@ func netReplayEndAssertFailure() {
 // program memory.
 func netBufferView(prgrm *ast.CXProgram, value *ast.CXValue) []byte {
 	signature := value.TypeSignature
-	if signature.Type != ast.TYPE_ARRAY_ATOMIC || signature.GetType(prgrm) != types.UI8 {
+	if signature.Type != ast.TYPE_ARRAY_ATOMIC || signature.TypeGet(prgrm) != types.UI8 {
 		netBufferAssertFailure()
 	}
-	return prgrm.Memory[value.Offset : value.Offset+signature.GetArraySize(prgrm)]
+	return prgrm.Memory[value.Offset : value.Offset+signature.ArraySizeGet(prgrm)]
 }
 
 // netBufferAssertFailure ends a program that passes a buffer that is not a

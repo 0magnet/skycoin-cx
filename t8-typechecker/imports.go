@@ -18,20 +18,20 @@ func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
 
 		// Get Package
 		pkgNameGid := actions.AST.CXProgramNameIntern(imprt.ImportName)
-		pkg, err := actions.AST.GetPackage(pkgNameGid)
+		pkg, err := actions.AST.PackageGet(pkgNameGid)
 
 		// If package not in AST
 		if err != nil || pkg == nil {
 
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1516.
-			newPkg := ast.MakePackage(pkgNameGid)
+			newPkg := ast.PackageMake(pkgNameGid)
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1517.
-			pkgIdx := actions.AST.AddPackage(newPkg)
+			pkgIdx := actions.AST.PackageAdd(newPkg)
 			// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 			// Now an arena getter, site S1518.
-			newPkg, err := actions.AST.GetPackageFromArray(pkgIdx)
+			newPkg, err := actions.AST.PackageFromArrayGet(pkgIdx)
 
 			if err != nil {
 				return err
@@ -46,20 +46,20 @@ func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
 
 		// Get Package
 		pkgNameGid := actions.AST.CXProgramNameIntern(imprt.PackageID)
-		pkg, err := actions.AST.GetPackage(pkgNameGid)
+		pkg, err := actions.AST.PackageGet(pkgNameGid)
 
 		// If package not in AST
 		if err != nil || pkg == nil {
 
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1519.
-			newPkg := ast.MakePackage(pkgNameGid)
+			newPkg := ast.PackageMake(pkgNameGid)
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1520.
-			pkgIdx := actions.AST.AddPackage(newPkg)
+			pkgIdx := actions.AST.PackageAdd(newPkg)
 			// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 			// Now an arena getter, site S1521.
-			newPkg, err := actions.AST.GetPackageFromArray(pkgIdx)
+			newPkg, err := actions.AST.PackageFromArrayGet(pkgIdx)
 
 			if err != nil {
 				return err

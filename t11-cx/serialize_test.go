@@ -34,7 +34,7 @@ func serializeCompile(t *testing.T, name string, source string) *ast.CXProgram {
 func TestSerializeDeclaration(t *testing.T) {
 	prgrm := serializeCompile(t, "declaration.cx", serializeDeclarationSource)
 	for _, includeMemory := range []bool{false, true} {
-		b, err := ast.SerializeCXProgram(prgrm, includeMemory, nil)
+		b, err := ast.CXProgramSerialize(prgrm, includeMemory, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -61,7 +61,7 @@ func TestSerializeDeclaration(t *testing.T) {
 // #293.
 func TestSerializeDebugInfoSections(t *testing.T) {
 	prgrm := serializeCompile(t, "declaration.cx", serializeDeclarationSource)
-	b, err := ast.SerializeCXProgram(prgrm, true, nil)
+	b, err := ast.CXProgramSerialize(prgrm, true, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func TestSerializeDebugInfoSections(t *testing.T) {
 // version is refused with an error that names it. See #295.
 func TestSerializeHeaderMismatch(t *testing.T) {
 	prgrm := serializeCompile(t, "declaration.cx", serializeDeclarationSource)
-	b, err := ast.SerializeCXProgram(prgrm, true, nil)
+	b, err := ast.CXProgramSerialize(prgrm, true, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -122,7 +122,7 @@ func TestSerializeMalformed(t *testing.T) {
 		t.Fatal(err)
 	}
 	prgrm := serializeCompile(t, "test-escape-gc.cx", string(source))
-	b, err := ast.SerializeCXProgram(prgrm, true, nil)
+	b, err := ast.CXProgramSerialize(prgrm, true, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

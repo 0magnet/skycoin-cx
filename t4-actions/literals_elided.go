@@ -127,7 +127,7 @@ func literalTypeName(typ LiteralType) string {
 // LiteralSliceNest makes the slice literal exprs one dimension deeper, so
 // `[]` before `[]i32{[]i32{1}}` gives a [][]i32.
 func LiteralSliceNest(prgrm *ast.CXProgram, exprs []ast.CXExpression) []ast.CXExpression {
-	lastExpression, err := prgrm.GetCXAtomicOpFromExpressions(exprs, len(exprs)-1)
+	lastExpression, err := prgrm.CXAtomicOpFromExpressionsGet(exprs, len(exprs)-1)
 	if err != nil {
 		panic(err)
 	}
@@ -137,19 +137,19 @@ func LiteralSliceNest(prgrm *ast.CXProgram, exprs []ast.CXExpression) []ast.CXEx
 		}
 		// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 		// Now an arena getter, site S1486.
-		expression, err := prgrm.GetCXAtomicOp(expr.Index)
+		expression, err := prgrm.CXAtomicOpGet(expr.Index)
 		if err != nil {
 			panic(err)
 		}
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now arena getters, sites S1487 S1488.
-		expressionOutputTypeSig := prgrm.GetCXTypeSignatureFromArray(expression.GetOutputs(prgrm)[0])
-		lastExpressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(lastExpression.GetInputs(prgrm)[0])
+		expressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(expression.OutputsGet(prgrm)[0])
+		lastExpressionInputTypeSig := prgrm.CXTypeSignatureFromArrayGet(lastExpression.InputsGet(prgrm)[0])
 		switch expressionOutputTypeSig.Type {
 		case ast.TYPE_CXARGUMENT_DEPRECATE:
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1489.
-			expressionOutputArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
+			expressionOutputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionOutputTypeSig.Meta))
 			if expressionOutputArg.Name == lastExpressionInputTypeSig.Name {
 				expressionOutputArg.Lengths = append(expressionOutputArg.Lengths, 0)
 				expressionOutputArg.DeclarationSpecifiers = append(expressionOutputArg.DeclarationSpecifiers, constants.DECL_SLICE)
@@ -158,19 +158,19 @@ func LiteralSliceNest(prgrm *ast.CXProgram, exprs []ast.CXExpression) []ast.CXEx
 			if expressionOutputTypeSig.Name == lastExpressionInputTypeSig.Name {
 				// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 				// Now an arena getter, sites S1490 S1491.
-				sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(expressionOutputTypeSig.Meta)
+				sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(expressionOutputTypeSig.Meta)
 				sliceDetails.Lengths = append(sliceDetails.Lengths, 0)
 			}
 		}
 	}
 	// The value the literal gives, read by := and calls, gets the dimension too.
-	if outputs := lastExpression.GetOutputs(prgrm); len(outputs) > 0 {
-		if sig := prgrm.GetCXTypeSignatureFromArray(outputs[0]); sig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			out := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(sig.Meta))
+	if outputs := lastExpression.OutputsGet(prgrm); len(outputs) > 0 {
+		if sig := prgrm.CXTypeSignatureFromArrayGet(outputs[0]); sig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			out := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(sig.Meta))
 			out.Lengths = append(out.Lengths, 0)
 			out.DeclarationSpecifiers = append(out.DeclarationSpecifiers, constants.DECL_SLICE)
 		} else if sig.Type == ast.TYPE_SLICE_ATOMIC || sig.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
-			details := prgrm.GetCXTypeSignatureArrayFromArray(sig.Meta)
+			details := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
 			details.Lengths = append(details.Lengths, 0)
 		}
 	}
@@ -184,8 +184,8 @@ func literalValueInvalid(prgrm *ast.CXProgram, exprs []ast.CXExpression) bool {
 	if len(exprs) == 0 || exprs[len(exprs)-1].Type == ast.CX_LINE {
 		return false
 	}
-	outputs := prgrm.CXAtomicOps[exprs[len(exprs)-1].Index].GetOutputs(prgrm)
-	return len(outputs) == 1 && typeSignatureInvalid(prgrm, prgrm.GetCXTypeSignatureFromArray(outputs[0]))
+	outputs := prgrm.CXAtomicOps[exprs[len(exprs)-1].Index].OutputsGet(prgrm)
+	return len(outputs) == 1 && typeSignatureInvalid(prgrm, prgrm.CXTypeSignatureFromArrayGet(outputs[0]))
 }
 
 // LiteralTypeSlices makes elem the element type of count slice dimensions,
@@ -264,7 +264,7 @@ func literalCompoundElided(prgrm *ast.CXProgram, typ *ast.CXArgument, elem Liter
 		}
 		return UnaryExpression(prgrm, "&", PrimaryStructLiteral(prgrm, prgrm.CXProgramNameText(typ.StructType.Name), elem.Line, 0, elem.Fields))
 	}
-	prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeLiteralElementType, CurrentFile, elem.Line, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(ast.GetFormattedType(prgrm, prgrm.GetCXTypeSignatureFromArray(ast.AllocCXTypeSignatureOfCXArg(prgrm, typ))))})
+	prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeLiteralElementType, CurrentFile, elem.Line, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(ast.FormattedTypeGet(prgrm, prgrm.CXTypeSignatureFromArrayGet(ast.CXTypeSignatureOfCXArgAlloc(prgrm, typ))))})
 	return nil
 }
 
@@ -299,7 +299,7 @@ func literalTypeSimple(prgrm *ast.CXProgram, typ *ast.CXArgument) (LiteralType, 
 
 // literalStructLocal reports whether strct is a struct of the current package.
 func literalStructLocal(prgrm *ast.CXProgram, strct *ast.CXStruct) bool {
-	pkg, err := prgrm.GetCurrentPackage()
+	pkg, err := prgrm.CurrentPackageGet()
 	return err == nil && strct != nil && strct.Package == ast.CXPackageIndex(pkg.Index)
 }
 

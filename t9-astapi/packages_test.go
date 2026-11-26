@@ -38,6 +38,6 @@ func TestASTAPI_Packages(t *testing.T) {
 	})
 
 	t.Run("print program", func(t *testing.T) {
-		cxprogram.PrintProgram()
+		cxprogram.ProgramPrint()
 	})
 }

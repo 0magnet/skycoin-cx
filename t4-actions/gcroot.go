@@ -62,7 +62,7 @@ func gcValueReferences(prgrm *ast.CXProgram, specs []int, typ types.Code, strct 
 		return typ == types.STR
 	}
 	for _, fieldIdx := range strct.Fields {
-		specs, typ, fieldStruct, _ := ast.SignatureGCDeclaration(prgrm, prgrm.GetCXTypeSignatureFromArray(fieldIdx))
+		specs, typ, fieldStruct, _ := ast.SignatureGCDeclaration(prgrm, prgrm.CXTypeSignatureFromArrayGet(fieldIdx))
 		if gcValueReferences(prgrm, specs, typ, fieldStruct, depth+1) {
 			return true
 		}

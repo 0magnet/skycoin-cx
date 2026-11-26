@@ -23,7 +23,7 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 	// Adding an expression can grow CXAtomicOps, so operators are looked up
 	// by index after every addition.
 	fnIdx := prgrm.CXProgramFunctionGid(inputFn)
-	fnOutputs := inputFn.GetOutputs(prgrm)
+	fnOutputs := inputFn.OutputsGet(prgrm)
 	newExprs := numExprs - len(inputFn.Expressions)
 
 	for i := 0; i < newExprs; i++ {
@@ -39,17 +39,17 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0021.
-		exprCXLine := cxast.MakeCXLineExpression(prgrm, cxast.SourceFileGidNil, -1, stringpool.StringGidNil)
+		exprCXLine := cxast.CXLineExpressionMake(prgrm, cxast.SourceFileGidNil, -1, stringpool.StringGidNil)
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0022.
-		expr := cxast.MakeAtomicOperatorExpression(prgrm, op)
+		expr := cxast.AtomicOperatorExpressionMake(prgrm, op)
 		cxAtomicOp := getAtomicOp(prgrm, expr.Index)
 		cxAtomicOp.Package = cxast.CXPackageIndex(inputPkg.Index)
 		cxAtomicOp.Function = fnIdx
 
 		for _, inp := range op.Inputs {
 			inpIdx := getRandInp(prgrm, fnIdx, op.AtomicOPCode, inp.Type)
-			getAtomicOp(prgrm, expr.Index).AddInput(prgrm, inpIdx)
+			getAtomicOp(prgrm, expr.Index).InputAdd(prgrm, inpIdx)
 		}
 
 		// if operator is jmp, add then and else lines
@@ -71,15 +71,15 @@ func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 		// The expression is added before its outputs are chosen, so its
 		// own slot is one of the options.
 		fn := prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx)
-		fn.AddExpression(prgrm, exprCXLine)
-		fn.AddExpression(prgrm, expr)
+		fn.ExpressionAdd(prgrm, exprCXLine)
+		fn.ExpressionAdd(prgrm, expr)
 
 		cxAtomicOp = getAtomicOp(prgrm, expr.Index)
 		if last && len(fnOutputs) > 0 {
-			cxAtomicOp.AddOutput(prgrm, fnOutputs[0])
+			cxAtomicOp.OutputAdd(prgrm, fnOutputs[0])
 		} else {
 			for _, out := range op.Outputs {
-				cxAtomicOp.AddOutput(prgrm, getRandOut(prgrm, fnIdx, out.Type))
+				cxAtomicOp.OutputAdd(prgrm, getRandOut(prgrm, fnIdx, out.Type))
 			}
 		}
 	}
@@ -114,7 +114,7 @@ func getRandFn(fnSet []*cxast.CXNativeFunction) *cxast.CXNativeFunction {
 func getAtomicOp(prgrm *cxast.CXProgram, index int) *cxast.CXAtomicOperator {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S0027.
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(index)
+	cxAtomicOp, err := prgrm.CXAtomicOpGet(index)
 	if err != nil {
 		panic(err)
 	}
@@ -122,23 +122,23 @@ func getAtomicOp(prgrm *cxast.CXProgram, index int) *cxast.CXAtomicOperator {
 }
 
 // sigType reads the atomic type of a type signature, deprecated CXArgument
-// signatures included, which CXTypeSignature.GetType does not handle.
+// signatures included, which CXTypeSignature.TypeGet does not handle.
 func sigType(prgrm *cxast.CXProgram, idx cxast.CXTypeSignatureIndex) types.Code {
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0028.
-	sig := prgrm.GetCXTypeSignatureFromArray(idx)
+	sig := prgrm.CXTypeSignatureFromArrayGet(idx)
 	if sig.Type == cxast.TYPE_CXARGUMENT_DEPRECATE {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0029.
-		return prgrm.GetCXArgFromArray(cxast.CXArgumentIndex(sig.Meta)).Type
+		return prgrm.CXArgFromArrayGet(cxast.CXArgumentIndex(sig.Meta)).Type
 	}
-	return sig.GetType(prgrm)
+	return sig.TypeGet(prgrm)
 }
 
 func sigSize(prgrm *cxast.CXProgram, idx cxast.CXTypeSignatureIndex) types.Pointer {
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0030.
-	return prgrm.GetCXTypeSignatureFromArray(idx).GetSize(prgrm, false)
+	return prgrm.CXTypeSignatureFromArrayGet(idx).SizeGet(prgrm, false)
 }
 
 // opOutput returns the first output of the operator behind expression exprPos
@@ -150,7 +150,7 @@ func opOutput(prgrm *cxast.CXProgram, fn *cxast.CXFunction, exprPos int) (cxast.
 		return 0, false
 	}
 	operator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(getAtomicOp(prgrm, expr.Index).Operator)
-	outputs := operator.GetOutputs(prgrm)
+	outputs := operator.OutputsGet(prgrm)
 	if len(outputs) == 0 {
 		return 0, false
 	}
@@ -160,10 +160,10 @@ func opOutput(prgrm *cxast.CXProgram, fn *cxast.CXFunction, exprPos int) (cxast.
 // slotOffset is the stack offset of the slot owned by expression exprPos,
 // after fn's inputs, outputs and the slots of the expressions before it.
 func slotOffset(prgrm *cxast.CXProgram, fn *cxast.CXFunction, exprPos int) (offset types.Pointer) {
-	for _, idx := range fn.GetInputs(prgrm) {
+	for _, idx := range fn.InputsGet(prgrm) {
 		offset += sigSize(prgrm, idx)
 	}
-	for _, idx := range fn.GetOutputs(prgrm) {
+	for _, idx := range fn.OutputsGet(prgrm) {
 		offset += sigSize(prgrm, idx)
 	}
 	for p := 0; p < exprPos; p++ {
@@ -180,13 +180,13 @@ func calcFnSize(prgrm *cxast.CXProgram, fn *cxast.CXFunction) types.Pointer {
 
 // newSlot adds an atomic type signature for the slot of expression exprPos.
 func newSlot(prgrm *cxast.CXProgram, fn *cxast.CXFunction, exprPos int, typ types.Code) cxast.CXTypeSignatureIndex {
-	_, arg := cxast.MakeField(prgrm, prgrm.CXProgramNameIntern(strconv.Itoa(exprPos)), typ, cxast.SourceFileGidNil, -1)
-	arg.SetType(typ)
+	_, arg := cxast.FieldMake(prgrm, prgrm.CXProgramNameIntern(strconv.Itoa(exprPos)), typ, cxast.SourceFileGidNil, -1)
+	arg.TypeSet(typ)
 	arg.Package = fn.Package
 	arg.Offset = slotOffset(prgrm, fn, exprPos)
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureAlloc(), phase 4 #331.
 	// Now an arena insert, site S0033.
-	return prgrm.AddCXTypeSignatureInArray(cxast.GetCXTypeSignatureRepresentationOfCXArg(prgrm, arg))
+	return prgrm.CXTypeSignatureInArrayAdd(cxast.CXTypeSignatureRepresentationOfCXArgGet(prgrm, arg))
 }
 
 // copySig adds a copy of the type signature at idx, so each use of a
@@ -194,20 +194,20 @@ func newSlot(prgrm *cxast.CXProgram, fn *cxast.CXFunction, exprPos int, typ type
 func copySig(prgrm *cxast.CXProgram, idx cxast.CXTypeSignatureIndex) cxast.CXTypeSignatureIndex {
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureAlloc(), phase 4 #331.
 	// Also state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332. Site S0034 S0035.
-	sig := *prgrm.GetCXTypeSignatureFromArray(idx)
+	sig := *prgrm.CXTypeSignatureFromArrayGet(idx)
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureAlloc(), phase 4 #331.
 	// Now an arena insert, site S0036.
-	return prgrm.AddCXTypeSignatureInArray(&sig)
+	return prgrm.CXTypeSignatureInArrayAdd(&sig)
 }
 
 // findArgOptions lists the inputs of fn and the outputs already written by
 // its expressions that have type argTypeToFind.
 func findArgOptions(prgrm *cxast.CXProgram, fn *cxast.CXFunction, argTypeToFind types.Code) []cxast.CXTypeSignatureIndex {
 	var options []cxast.CXTypeSignatureIndex
-	for _, idx := range fn.GetInputs(prgrm) {
+	for _, idx := range fn.InputsGet(prgrm) {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0037.
-		if sigType(prgrm, idx) == argTypeToFind && prgrm.GetCXTypeSignatureFromArray(idx).Name != stringpool.StringGidNil {
+		if sigType(prgrm, idx) == argTypeToFind && prgrm.CXTypeSignatureFromArrayGet(idx).Name != stringpool.StringGidNil {
 			options = append(options, idx)
 		}
 	}
@@ -216,10 +216,10 @@ func findArgOptions(prgrm *cxast.CXProgram, fn *cxast.CXFunction, argTypeToFind 
 		if expr.Type != cxast.CX_ATOMIC_OPERATOR {
 			continue
 		}
-		outputs := getAtomicOp(prgrm, expr.Index).GetOutputs(prgrm)
+		outputs := getAtomicOp(prgrm, expr.Index).OutputsGet(prgrm)
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0038.
-		if len(outputs) > 0 && sigType(prgrm, outputs[0]) == argTypeToFind && prgrm.GetCXTypeSignatureFromArray(outputs[0]).Name != stringpool.StringGidNil {
+		if len(outputs) > 0 && sigType(prgrm, outputs[0]) == argTypeToFind && prgrm.CXTypeSignatureFromArrayGet(outputs[0]).Name != stringpool.StringGidNil {
 			options = append(options, outputs[0])
 		}
 	}
@@ -244,24 +244,24 @@ func addNewExpression(prgrm *cxast.CXProgram, fnIdx cxast.CXFunctionGid, express
 	native := cxast.NativeFunctionOf(prgrm, expressionType)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0040.
-	newExprCXLine := cxast.MakeCXLineExpression(prgrm, cxast.SourceFileGidNil, -1, stringpool.StringGidNil)
+	newExprCXLine := cxast.CXLineExpressionMake(prgrm, cxast.SourceFileGidNil, -1, stringpool.StringGidNil)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0041.
-	newExpr := cxast.MakeAtomicOperatorExpression(prgrm, native)
+	newExpr := cxast.AtomicOperatorExpressionMake(prgrm, native)
 
 	for _, inp := range native.Inputs {
 		options := findArgOptions(prgrm, prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx), inp.Type)
 		inpIdx := copySig(prgrm, options[rand.Intn(len(options))])
-		getAtomicOp(prgrm, newExpr.Index).AddInput(prgrm, inpIdx)
+		getAtomicOp(prgrm, newExpr.Index).InputAdd(prgrm, inpIdx)
 	}
 
 	fn := prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx)
-	fn.AddExpression(prgrm, newExprCXLine)
-	fn.AddExpression(prgrm, newExpr)
+	fn.ExpressionAdd(prgrm, newExprCXLine)
+	fn.ExpressionAdd(prgrm, newExpr)
 
 	exprPos := len(fn.Expressions) - 1
 	outIdx := newSlot(prgrm, fn, exprPos, native.Outputs[0].Type)
-	getAtomicOp(prgrm, newExpr.Index).AddOutput(prgrm, outIdx)
+	getAtomicOp(prgrm, newExpr.Index).OutputAdd(prgrm, outIdx)
 
 	return copySig(prgrm, outIdx)
 }
@@ -330,8 +330,8 @@ func GenerateSampleProgram(t *testing.T, withLiteral bool) *cxast.CXProgram {
 	functionSetNames := []string{"i32.add", "i32.mul", "i32.sub", "i32.eq", "i32.uneq", "i32.gt", "i32.gteq", "i32.lt", "i32.lteq", "bool.not", "bool.or", "bool.and", "bool.uneq", "bool.eq", "i32.neg", "i32.abs", "i32.bitand", "i32.bitor", "i32.bitxor", "i32.bitclear", "i32.bitshl", "i32.bitshr", "i32.max", "i32.min", "i32.rand"}
 	fns := GetFunctionSet(cxProgram, functionSetNames)
 
-	fn, _ := cxProgram.GetFunction(cxProgram.CXProgramNameIntern("TestFunction"), cxProgram.CxIrState.CxIrStateNameMain)
-	pkg, _ := cxProgram.GetPackage(cxProgram.CxIrState.CxIrStateNameMain)
+	fn, _ := cxProgram.FunctionGet(cxProgram.CXProgramNameIntern("TestFunction"), cxProgram.CxIrState.CxIrStateNameMain)
+	pkg, _ := cxProgram.PackageGet(cxProgram.CxIrState.CxIrStateNameMain)
 	GenerateRandomExpressions(cxProgram, fn, pkg, fns, 30)
 
 	if withLiteral {
@@ -345,7 +345,7 @@ func GenerateSampleProgram(t *testing.T, withLiteral bool) *cxast.CXProgram {
 
 	}
 
-	cxProgram.PrintProgram()
+	cxProgram.ProgramPrint()
 	return cxProgram
 }
 

@@ -63,7 +63,7 @@ func TestASTAPI_Functions(t *testing.T) {
 	})
 
 	t.Run("print program", func(t *testing.T) {
-		cxprogram.PrintProgram()
+		cxprogram.ProgramPrint()
 	})
 
 	// t.Run("remove first input of function", func(t *testing.T) {
@@ -81,7 +81,7 @@ func TestASTAPI_Functions(t *testing.T) {
 	// })
 
 	t.Run("print program", func(t *testing.T) {
-		cxprogram.PrintProgram()
+		cxprogram.ProgramPrint()
 	})
 
 	t.Run("remove function from package", func(t *testing.T) {
@@ -92,6 +92,6 @@ func TestASTAPI_Functions(t *testing.T) {
 	})
 
 	t.Run("print program", func(t *testing.T) {
-		cxprogram.PrintProgram()
+		cxprogram.ProgramPrint()
 	})
 }

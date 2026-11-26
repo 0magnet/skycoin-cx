@@ -94,17 +94,17 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxpartialparsing.Program.GetPackage(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1])); err != nil {
+					if pkg, err := cxpartialparsing.Program.PackageGet(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1])); err != nil {
 						// then it hasn't been added
 						// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 						// Now a constructor call, site S1620.
-						newPkg := ast.MakePackage(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]))
+						newPkg := ast.PackageMake(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]))
 						// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 						// Now an arena insert, site S1621.
-						pkgIdx := cxpartialparsing.Program.AddPackage(newPkg)
+						pkgIdx := cxpartialparsing.Program.PackageAdd(newPkg)
 						// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 						// Now an arena getter, site S1622.
-						newPkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+						newPkg, err = cxpartialparsing.Program.PackageFromArrayGet(pkgIdx)
 						if err != nil {
 							panic(err)
 						}
@@ -129,12 +129,12 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 
 				if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
 					// sourcesWithPackageClause dropped every file without a package clause.
-					if _, err := cxpartialparsing.Program.GetStruct(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]), prePkg.Name); err != nil {
+					if _, err := cxpartialparsing.Program.StructGet(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]), prePkg.Name); err != nil {
 						// then it hasn't been added
 						// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 						// Now a constructor call, site S1623.
-						strct := ast.MakeStruct(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]))
-						prePkg.AddStruct(cxpartialparsing.Program, strct)
+						strct := ast.StructMake(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]))
+						prePkg.StructAdd(cxpartialparsing.Program, strct)
 					}
 				}
 			}
@@ -192,7 +192,7 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 				if match := preliminaryImportName.FindSubmatchIndex(line); match != nil {
 					pkgName := string(line[match[len(match)-2]:match[len(match)-1]])
 					// Checking if `pkgName` already exists and if it's not a standard library package.
-					if _, err := cxpartialparsing.Program.GetPackage(preliminaryImportIdent(cxpartialparsing.Program, pkgName)); err != nil && !cxpackages.ImportBuiltin(pkgName) && !cxpartialparsing.Program.CXProgramImportFailed(preliminaryImportIdent(cxpartialparsing.Program, pkgName)) {
+					if _, err := cxpartialparsing.Program.PackageGet(preliminaryImportIdent(cxpartialparsing.Program, pkgName)); err != nil && !cxpackages.ImportBuiltin(pkgName) && !cxpartialparsing.Program.CXProgramImportFailed(preliminaryImportIdent(cxpartialparsing.Program, pkgName)) {
 						dir := filepath.Join(globals.SRCPATH, pkgName)
 						_, sourceCode, fileNames, err := sourceargs.Parse([]string{dir}, false)
 						if err != nil {
@@ -215,17 +215,17 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxpartialparsing.Program.GetPackage(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1])); err != nil {
+					if pkg, err := cxpartialparsing.Program.PackageGet(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1])); err != nil {
 						// then it hasn't been added
 						// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 						// Now a constructor call, site S1624.
-						prePkg = ast.MakePackage(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]))
+						prePkg = ast.PackageMake(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1]))
 						// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 						// Now an arena insert, site S1625.
-						pkgIdx := cxpartialparsing.Program.AddPackage(prePkg)
+						pkgIdx := cxpartialparsing.Program.PackageAdd(prePkg)
 						// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 						// Now an arena getter, site S1626.
-						prePkg, err = cxpartialparsing.Program.GetPackageFromArray(pkgIdx)
+						prePkg, err = cxpartialparsing.Program.PackageFromArrayGet(pkgIdx)
 						if err != nil {
 							panic(err)
 						}
@@ -277,7 +277,7 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 				}
 
 				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxpartialparsing.Program.GetPackage(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1])); err != nil {
+					if pkg, err := cxpartialparsing.Program.PackageGet(cxpartialparsing.Program.CXProgramNameIntern(match[len(match)-1])); err != nil {
 						// it should be already present
 						panic(err)
 					} else {
@@ -296,14 +296,14 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 					continue
 				}
 				if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
-					if _, err := prePkg.GetGlobal(actions.AST, actions.AST.CXProgramNameIntern(match[len(match)-1])); err != nil {
+					if _, err := prePkg.GlobalGet(actions.AST, actions.AST.CXProgramNameIntern(match[len(match)-1])); err != nil {
 						// then it hasn't been added
-						_, arg := ast.MakeArgument(actions.AST, actions.AST.CXProgramNameIntern(match[len(match)-1]), ast.SourceFileGidNil, 0)
+						_, arg := ast.ArgumentMake(actions.AST, actions.AST.CXProgramNameIntern(match[len(match)-1]), ast.SourceFileGidNil, 0)
 						arg.Offset = types.InvalidPointer
 						arg.Package = ast.CXPackageIndex(prePkg.Index)
 						argIdx := ast.CXArgumentIndex(arg.Index)
 
-						prePkg.AddGlobal(actions.AST, argIdx)
+						prePkg.GlobalAdd(actions.AST, argIdx)
 					}
 				}
 			}
@@ -337,13 +337,13 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 
 func AddInitFunction(prgrm *ast.CXProgram) error {
 	prgrm.CxIrState.CxIrStateManagerGrowBoundary()
-	mainPkg, err := prgrm.GetPackage(prgrm.CxIrState.CxIrStateNameMain)
+	mainPkg, err := prgrm.PackageGet(prgrm.CxIrState.CxIrStateNameMain)
 	if err != nil {
 		return err
 	}
 
-	_, initFn := ast.MakeFunction(prgrm, prgrm.CxIrState.CxIrStateNameSysInit, actions.CurrentFile, actions.LineNo)
-	_, fnIdx := mainPkg.AddFunction(prgrm, initFn)
+	_, initFn := ast.FunctionMake(prgrm, prgrm.CxIrState.CxIrStateNameSysInit, actions.CurrentFile, actions.LineNo)
+	_, fnIdx := mainPkg.FunctionAdd(prgrm, initFn)
 	globalsMethodResultsDeclare(prgrm, prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx))
 
 	globalsInitializersOrder(prgrm)
@@ -363,8 +363,8 @@ func preliminaryImportFailed(prgrm *ast.CXProgram, path string, name string, lin
 	prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeImportFailed, prgrm.CXProgramSourceFileIntern(name), line, column, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(path), prgrm.CXProgramCompileErrorText(reason)})
 	ident := preliminaryImportIdent(prgrm, path)
 	prgrm.CXProgramImportFailedAdd(ident)
-	if _, err := prgrm.GetPackage(ident); err != nil {
-		prgrm.AddPackage(ast.MakePackage(ident))
+	if _, err := prgrm.PackageGet(ident); err != nil {
+		prgrm.PackageAdd(ast.PackageMake(ident))
 	}
 }
 
@@ -397,7 +397,7 @@ func preliminaryImport(prgrm *ast.CXProgram, path string, sourceCode []*os.File,
 	}
 	ident := preliminaryImportIdent(prgrm, path)
 	prgrm.CXProgramImportFailedAdd(ident)
-	if pkg, err := prgrm.GetPackage(ident); err == nil {
+	if pkg, err := prgrm.PackageGet(ident); err == nil {
 		clear(pkg.Functions)
 		clear(pkg.Structs)
 		clear(pkg.Methods)

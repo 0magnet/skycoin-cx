@@ -429,15 +429,15 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	if inputs[1].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1388.
-		inp1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
+		inp1 = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(inputs[1].TypeSignature.Meta))
 
 		inpType = inp1.Type
-		inpIsSlice = (inp1.GetAssignmentElement(prgrm)).SliceTyped()
-		inpSize = (inp1.GetAssignmentElement(prgrm)).Size
+		inpIsSlice = (inp1.AssignmentElementGet(prgrm)).SliceTyped()
+		inpSize = (inp1.AssignmentElementGet(prgrm)).Size
 	} else if inputs[1].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S1389.
-		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(inputs[1].TypeSignature.Meta)
+		sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(inputs[1].TypeSignature.Meta)
 		inpType = types.Code(sliceDetails.Meta)
 		inpIsSlice = true
 		inpSize = inpType.Size()
@@ -448,14 +448,14 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1390.
-		out0 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+		out0 = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
 
 		outType = out0.Type
-		outIsSlice = (out0.GetAssignmentElement(prgrm)).SliceTyped()
+		outIsSlice = (out0.AssignmentElementGet(prgrm)).SliceTyped()
 	} else if outputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S1391.
-		sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(outputs[0].TypeSignature.Meta)
+		sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(outputs[0].TypeSignature.Meta)
 
 		outType = types.Code(sliceDetails.Meta)
 		outIsSlice = true
@@ -472,7 +472,7 @@ func getSlice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	// The count is a ui64. One past what the heap can hold reads nothing.
 	count64 := inputs[2].Get_ui64(prgrm)
 	if count64 > uint64(ast.SliceElementLimit(prgrm, sizeofElement)) {
-		outputSliceOffset = ast.GetSliceOffset(prgrm, inputs[1].FramePointer, inputs[1].TypeSignature)
+		outputSliceOffset = ast.SliceOffsetGet(prgrm, inputs[1].FramePointer, inputs[1].TypeSignature)
 		return
 	}
 	count = types.Pointer(count64)

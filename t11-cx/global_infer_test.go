@@ -20,15 +20,15 @@ func TestGlobalInferredMatchesDeclared(t *testing.T) {
 			if err := cxparsing.ParseSourceStrings([]string{src}, []string{"infer.cx"}); err != nil {
 				t.Fatal(err)
 			}
-			pkg, err := actions.AST.GetPackage(actions.AST.CxIrState.CxIrStateNameMain)
+			pkg, err := actions.AST.PackageGet(actions.AST.CxIrState.CxIrStateNameMain)
 			if err != nil {
 				t.Fatal(err)
 			}
-			inferred, err := pkg.GetGlobal(actions.AST, actions.AST.CXProgramNameIntern("inferred"))
+			inferred, err := pkg.GlobalGet(actions.AST, actions.AST.CXProgramNameIntern("inferred"))
 			if err != nil {
 				t.Fatal(err)
 			}
-			declared, err := pkg.GetGlobal(actions.AST, actions.AST.CXProgramNameIntern("declared"))
+			declared, err := pkg.GlobalGet(actions.AST, actions.AST.CXProgramNameIntern("declared"))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -41,15 +41,15 @@ func TestGlobalInferredMatchesDeclared(t *testing.T) {
 
 // globalTypeDescription prints what the type of the global glbl is made of.
 func globalTypeDescription(prgrm *ast.CXProgram, glbl *ast.CXTypeSignature) string {
-	text := fmt.Sprintf("signature type %d pass by %d deref %v type %s size %d", glbl.Type, glbl.PassBy, glbl.Deref, ast.GetFormattedType(prgrm, glbl), glbl.GetSize(prgrm, false))
+	text := fmt.Sprintf("signature type %d pass by %d deref %v type %s size %d", glbl.Type, glbl.PassBy, glbl.Deref, ast.FormattedTypeGet(prgrm, glbl), glbl.SizeGet(prgrm, false))
 	switch glbl.Type {
 	case ast.TYPE_ATOMIC, ast.TYPE_POINTER_ATOMIC:
 		text += fmt.Sprintf(" meta %d", glbl.Meta)
 	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_SLICE_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
-		array := prgrm.GetCXTypeSignatureArrayFromArray(glbl.Meta)
+		array := prgrm.CXTypeSignatureArrayFromArrayGet(glbl.Meta)
 		text += fmt.Sprintf(" element %d lengths %v indexes %d", array.Meta, array.Lengths, len(array.Indexes))
 	case ast.TYPE_CXARGUMENT_DEPRECATE:
-		arg := prgrm.GetCXArg(ast.CXArgumentIndex(glbl.Meta))
+		arg := prgrm.CXArgGet(ast.CXArgumentIndex(glbl.Meta))
 		structName := ""
 		if arg.StructType != nil {
 			structName = prgrm.CXProgramNameText(arg.StructType.Name)

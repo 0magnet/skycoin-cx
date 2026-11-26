@@ -33,13 +33,13 @@ func derefOpFound(arg *ast.CXArgument, spec int) bool {
 // literal points to itself, storage being the zero value of a variable,
 // whose pointer stays nil.
 func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, storage bool) *ast.CXArgument {
-	pkg, err := prgrm.GetCurrentPackage()
+	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		panic(err)
 	}
 
-	_, arg := ast.MakeArgument(prgrm, stringpool.StringGidNil, CurrentFile, LineNo)
-	arg.SetType(typeCode)
+	_, arg := ast.ArgumentMake(prgrm, stringpool.StringGidNil, CurrentFile, LineNo)
+	arg.TypeSet(typeCode)
 	arg.Package = ast.CXPackageIndex(pkg.Index)
 
 	size := types.Cast_int_to_ptr(len(byts))
@@ -83,7 +83,7 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, storag
 
 // WritePrimary writes those bytes to prgrm.Data and returns a []CXExpression.
 func WritePrimaryExprs(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, sliceTyped bool) []ast.CXExpression {
-	pkg, err := prgrm.GetCurrentPackage()
+	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		panic(err)
 	}
@@ -92,11 +92,11 @@ func WritePrimaryExprs(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, s
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1055.
-	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+	expr := ast.AtomicOperatorExpressionMake(prgrm, nil)
 	prgrm.CXAtomicOps[expr.Index].Package = ast.CXPackageIndex(pkg.Index)
 
-	typeSigIdx := ast.AllocCXTypeSignatureOfCXArgBuilder(prgrm, arg)
-	prgrm.CXAtomicOps[expr.Index].AddOutput(prgrm, typeSigIdx)
+	typeSigIdx := ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, arg)
+	prgrm.CXAtomicOps[expr.Index].OutputAdd(prgrm, typeSigIdx)
 
 	// OBJMODEL: state.CXExpressionMng (manager storage) or []CXExpressionGid, phase 4 #346.
 	// Now a slice of objects, site S1057.
@@ -114,27 +114,27 @@ func PrimaryIdentifier(prgrm *ast.CXProgram, ident string) []ast.CXExpression {
 
 // primaryIdentifierExpressions is PrimaryIdentifier for an interned name.
 func primaryIdentifierExpressions(prgrm *ast.CXProgram, identGid stringpool.StringGid) []ast.CXExpression {
-	pkg, err := prgrm.GetCurrentPackage()
+	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		panic(err)
 	}
 
-	_, arg := ast.MakeArgument(prgrm, identGid, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
-	arg.SetType(types.IDENTIFIER)
+	_, arg := ast.ArgumentMake(prgrm, identGid, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
+	arg.TypeSet(types.IDENTIFIER)
 	arg.Package = ast.CXPackageIndex(pkg.Index)
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1080.
-	expr := ast.MakeAtomicOperatorExpression(prgrm, nil)
+	expr := ast.AtomicOperatorExpressionMake(prgrm, nil)
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S1081.
-	expression, err := prgrm.GetCXAtomicOp(expr.Index)
+	expression, err := prgrm.CXAtomicOpGet(expr.Index)
 	if err != nil {
 		panic(err)
 	}
 
-	typeSigIdx := ast.AllocCXTypeSignatureOfCXArgBuilder(prgrm, arg)
-	expression.AddOutput(prgrm, typeSigIdx)
+	typeSigIdx := ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, arg)
+	expression.OutputAdd(prgrm, typeSigIdx)
 	expression.Package = ast.CXPackageIndex(pkg.Index)
 	// OBJMODEL: state.CXExpressionMng (manager storage) or []CXExpressionGid, phase 4 #346.
 	// Now a slice of objects, site S1083.
@@ -145,15 +145,15 @@ func primaryIdentifierExpressions(prgrm *ast.CXProgram, identGid stringpool.Stri
 func ArgsAllBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S1084.
-	expression, err := prgrm.GetCXAtomicOp(expr.Index)
+	expression, err := prgrm.CXAtomicOpGet(expr.Index)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, inputIdx := range expression.GetInputs(prgrm) {
+	for _, inputIdx := range expression.InputsGet(prgrm) {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S1085.
-		input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
+		input := prgrm.CXTypeSignatureFromArrayGet(inputIdx)
 
 		var inpType types.Code
 
@@ -161,14 +161,14 @@ func ArgsAllBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 		if input.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1087.
-			inp = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(input.Meta))
+			inp = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(input.Meta))
 
 			inpType = inp.Type
 			if inp.Type == types.POINTER {
 				inpType = inp.PointerTargetType
 			}
 		} else {
-			inpType = input.GetType(prgrm)
+			inpType = input.TypeGet(prgrm)
 		}
 
 		// TODO: Check why STR is considered as basic type.

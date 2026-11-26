@@ -64,7 +64,7 @@ Not managed, with the reason.
   pointer fields `TypeSignature` and `Expr` become Gids in the Gid phase of
   the objects they point at.
 * `DereferenceStruct` (`t3-ast/mem_offset.go`) lives on the stack of
-  `GetFinalOffset` only.
+  `FinalOffsetGet` only.
 * The serializer (`t3-ast/serialize.go`) writes the managers and arenas as
   bytes and reads them back slot for slot, so it holds no objects.
 * `CXArgumentSlice`, `CXArgumentStruct` and `CXArgumentPointer` were
@@ -366,7 +366,7 @@ reaches every type, and the check keeps the copies from drifting.
 ## Fon and Fof, helper functions
 
 `<obj>_fon.go` (function-on) holds helpers that write to one object, such as
-`SetType` on a `CXArgument`. `<obj>_fof.go` (function-of) holds helpers that
+`TypeSet` on a `CXArgument`. `<obj>_fof.go` (function-of) holds helpers that
 only read one object, such as `PointerTyped` or a size computed from the
 object's own fields.
 
@@ -452,11 +452,11 @@ The field points at the state, not at a managed object, so rule 3 does not
 apply to it. It goes in phase 5 of `CXProgram`, when `state *CxIrState`
 replaces `prgrm *CXProgram` as the parameter and the program becomes the
 one object in `state.CXProgramMng`. A builder that had no program in scope
-takes one, so `MakeArgument`, `MakeField` and `MakeGlobal` take `prgrm`
+takes one, so `ArgumentMake`, `FieldMake` and `GlobalMake` take `prgrm`
 first. They allocate in `CXArgumentMng` and return the Gid and the pointer
-from the one Get after the Alloc, like `AllocCXArgument`,
-`AllocCXTypeSignature` and `AllocCXTypeSignatureOfCXArg`. A builder that
-ends up named by nothing is released. `Param` and `MakeStructParameter` use
+from the one Get after the Alloc, like `CXArgumentAlloc`,
+`CXTypeSignatureAlloc` and `CXTypeSignatureOfCXArgAlloc`. A builder that
+ends up named by nothing is released. `Param` and `StructParameterMake` use
 the heap builder `nativeArgument`, because the natives they make are shared
 by every program until the `CXNativeFunction` allocation phase.
 
@@ -695,7 +695,7 @@ object and phase are in
 
 In phase 4 a field that names an object by an `int` index keeps the index,
 which is the Gid's index bits, `int(objmodel.GidIndex(int64(gid)))`. The
-old getter, such as `GetCXLine`, builds the Gid back from the slot's
+old getter, such as `CXLineGet`, builds the Gid back from the slot's
 generation and calls Get, so its callers wait for phase 5. A site that
 fills an object may take the Get pointer right after its Alloc and keep it
 across other Allocs in the same call.
@@ -717,7 +717,7 @@ constructors create it.
 the object in `ArgDetails`, a pointer field that a `CXArgument` and its
 `CXTypeSignature` share and write through, so it cannot move into the manager
 before that field is a `CXArgumentDebugGid` (#306, #307). A native parameter
-made by `Param` or `MakeStructParameter` belongs to no program, so its
+made by `Param` or `StructParameterMake` belongs to no program, so its
 `ArgDetails` is `CXArgumentDebugGidNil`, and `CXArgumentDebugFileLine`
 reads it as an empty file name and line -1, as before.
 
@@ -757,7 +757,7 @@ comment in that PR. The line numbers are not checked.
 | --- | --- |
 | `ctor-def` | a constructor, `Make*`, `MakeCall`, `Param`, `Slice`, `nativeArgCopy`, `Deserialize`, `deserializeArgument`, `deserializeExpression` or the test generator `GenerateSampleProgram` |
 | `ctor-call` | a call to one of those constructors |
-| `arena-add` | a call that inserts into an arena, `Add*InArray`, `AddCXLine`, `AddCXAtomicOp`, `AddPackage` and the `astapi` wrappers |
+| `arena-add` | a call that inserts into an arena, `Add*InArray`, `AddCXLine`, `CXAtomicOpAdd`, `PackageAdd` and the `astapi` wrappers |
 | `arena-append` | an `append` to an arena slice inside those functions |
 | `alloc-literal-heap` | `&<Obj>{...}` |
 | `alloc-literal-value` | `<Obj>{...}` that becomes an object |
@@ -766,7 +766,7 @@ comment in that PR. The line numbers are not checked.
 | `make-slice` | `make([]<Obj>...)`, `make([]*<Obj>...)` or a slice literal of objects |
 | `release-call` | a `Remove*` call |
 | `drop` | an object dropped for Go's garbage collector, a list field truncated or spliced, a `delete` from a name map, or a program replaced |
-| `get-call` | an arena getter, `Get*FromArray`, `GetCXArg`, `GetCXAtomicOp`, `GetCXLine` |
+| `get-call` | an arena getter, `Get*FromArray`, `CXArgGet`, `CXAtomicOpGet`, `CXLineGet` |
 | `get-addr-arena` | `&prgrm.<arena>[i]` |
 | `ptr-field` | a struct field that holds a pointer to an object |
 | `ptr-global` | a package variable that holds a pointer to an object |
@@ -797,8 +797,8 @@ The counts per object.
 The list was made with a `go/ast` and `go/types` walk of every package,
 generated parser sites mapped to their grammar through the `//line`
 directives. The call counts agree with the codebase-memory call graph, for
-example 30 `MakeArgument` callers, 34 `AddCXTypeSignatureInArray` callers,
-19 `AddCXArgInArray` callers and 90 `GetCXArgFromArray` callers. GC here
+example 30 `ArgumentMake` callers, 34 `CXTypeSignatureInArrayAdd` callers,
+19 `CXArgInArrayAdd` callers and 90 `CXArgFromArrayGet` callers. GC here
 means Go's garbage collector. `t3-ast/garbage_collector.go` collects the CX
 heap in `CXProgram.Memory`, which holds no IR objects.
 

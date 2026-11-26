@@ -20,7 +20,7 @@ func ToString(cxprogram *CXProgram) string {
 	var ast3 string
 	// ast3 += "Program\n" //why is top line "Program" ???
 
-	BuildStrPackages(cxprogram, &ast3) //what does this do?
+	StrPackagesBuild(cxprogram, &ast3) //what does this do?
 
 	return ast3
 }
@@ -36,7 +36,7 @@ func buildStrImports(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 	for _, impIdx := range slices.Sorted(maps.Values(pkg.Imports)) {
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S0476.
-		impPkg, err := prgrm.GetPackageFromArray(impIdx)
+		impPkg, err := prgrm.PackageFromArrayGet(impIdx)
 		if err != nil {
 			panic(err)
 		}
@@ -55,9 +55,9 @@ func buildStrGlobals(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 	for idx, glblIdx := range pkg.Globals.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0477.
-		glbl := prgrm.GetCXTypeSignatureFromArray(glblIdx)
+		glbl := prgrm.CXTypeSignatureFromArrayGet(glblIdx)
 
-		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, prgrm.CXProgramNameText(glbl.Name), GetFormattedType(prgrm, glbl))
+		*ast += fmt.Sprintf("\t\t%d.- Global: %s %s\n", idx, prgrm.CXProgramNameText(glbl.Name), FormattedTypeGet(prgrm, glbl))
 	}
 }
 
@@ -76,10 +76,10 @@ func buildStrStructs(prgrm *CXProgram, pkg *CXPackage, ast *string) {
 		for k, typeSignatureIdx := range strct.Fields {
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 			// Now an arena getter, site S0478.
-			typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
+			typeSignature := prgrm.CXTypeSignatureFromArrayGet(typeSignatureIdx)
 
 			*ast += fmt.Sprintf("\t\t\t%d.- Field: %s %s\n",
-				k, prgrm.CXProgramNameText(typeSignature.Name), GetFormattedType(prgrm, typeSignature))
+				k, prgrm.CXProgramNameText(typeSignature.Name), FormattedTypeGet(prgrm, typeSignature))
 
 		}
 
@@ -112,8 +112,8 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 		var inps bytes.Buffer
 		var outs bytes.Buffer
 
-		getFormattedParam(prgrm, fn.GetInputs(prgrm), pkg, &inps)
-		getFormattedParam(prgrm, fn.GetOutputs(prgrm), pkg, &outs)
+		getFormattedParam(prgrm, fn.InputsGet(prgrm), pkg, &inps)
+		getFormattedParam(prgrm, fn.OutputsGet(prgrm), pkg, &outs)
 
 		*ast1 += fmt.Sprintf("\t\t%d.- Function: %s (%s) (%s)\n",
 			j, prgrm.CXProgramNameText(fn.Name), inps.String(), outs.String())
@@ -126,7 +126,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 
 			// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 			// Now an arena getter, site S0480.
-			cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+			cxAtomicOp, err := prgrm.CXAtomicOpGet(expr.Index)
 			if err != nil {
 				panic(err)
 			}
@@ -149,13 +149,13 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 				}
 			}
 
-			getFormattedParam(prgrm, cxAtomicOp.GetInputs(prgrm), pkg, &inps)
-			getFormattedParam(prgrm, cxAtomicOp.GetOutputs(prgrm), pkg, &outs)
+			getFormattedParam(prgrm, cxAtomicOp.InputsGet(prgrm), pkg, &inps)
+			getFormattedParam(prgrm, cxAtomicOp.OutputsGet(prgrm), pkg, &outs)
 
 			if expr.Type == CX_LINE {
 				// OBJMODEL: state.CXLineMng.CXLineGet(gid), phase 5 #312.
 				// Now an arena getter, site S0482.
-				cxLine, _ := prgrm.GetCXLine(expr.Index)
+				cxLine, _ := prgrm.CXLineGet(expr.Index)
 				*ast1 += fmt.Sprintf("\t\t\t%d.- Line: %v: %s\n",
 					k,
 					cxLine.LineNumber,
@@ -176,16 +176,16 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 			} else {
 				// Then it's a variable declaration. These are represented
 				// by expressions without operators that only have outputs.
-				cxAtomicOpOutputs := cxAtomicOp.GetOutputs(prgrm)
+				cxAtomicOpOutputs := cxAtomicOp.OutputsGet(prgrm)
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S0483.
-				cxAtomicOpOutputTypeSignature := prgrm.GetCXTypeSignatureFromArray(cxAtomicOpOutputs[len(cxAtomicOpOutputs)-1])
+				cxAtomicOpOutputTypeSignature := prgrm.CXTypeSignatureFromArrayGet(cxAtomicOpOutputs[len(cxAtomicOpOutputs)-1])
 				if len(cxAtomicOpOutputs) > 0 {
 					*ast1 += fmt.Sprintf("\t\t\t%d.- Declaration%s: %s %s\n",
 						k,
 						lbl,
 						prgrm.CXProgramNameText(cxAtomicOpOutputTypeSignature.Name),
-						GetFormattedType(prgrm, cxAtomicOpOutputTypeSignature))
+						FormattedTypeGet(prgrm, cxAtomicOpOutputTypeSignature))
 				}
 			}
 		}
@@ -194,16 +194,16 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 	}
 }
 
-// BuildStrPackages is an auxiliary function for `ToString`. It starts the
+// StrPackagesBuild is an auxiliary function for `ToString`. It starts the
 // process of building string format of the abstract syntax tree of a CX program.
-func BuildStrPackages(prgrm *CXProgram, ast *string) {
+func StrPackagesBuild(prgrm *CXProgram, ast *string) {
 	// We need to declare the counter outside so we can
 	// ignore the increments from core or stdlib packages.
 	var i int
 	for _, pkgIdx := range packagesOrdered(prgrm) {
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S0484.
-		pkg, err := prgrm.GetPackageFromArray(pkgIdx)
+		pkg, err := prgrm.PackageFromArrayGet(pkgIdx)
 		if err != nil {
 			panic(err)
 		}
@@ -235,7 +235,7 @@ func packagesOrdered(prgrm *CXProgram) []CXPackageIndex {
 			return
 		}
 		visited[pkgIdx] = true
-		if pkg, err := prgrm.GetPackageFromArray(pkgIdx); err == nil {
+		if pkg, err := prgrm.PackageFromArrayGet(pkgIdx); err == nil {
 			for _, impIdx := range slices.Sorted(maps.Values(pkg.Imports)) {
 				visit(impIdx)
 			}
@@ -256,7 +256,7 @@ func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex
 	for i, paramTypeSigIdx := range paramTypeSigIdxs {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0485.
-		paramTypeSig := prgrm.GetCXTypeSignatureFromArray(paramTypeSigIdx)
+		paramTypeSig := prgrm.CXTypeSignatureFromArrayGet(paramTypeSigIdx)
 
 		// Checking if this argument comes from an imported package.
 		externalPkg := false
@@ -267,9 +267,9 @@ func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex
 		if paramTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0486.
-			param := prgrm.GetCXArgFromArray(CXArgumentIndex(paramTypeSig.Meta))
+			param := prgrm.CXArgFromArrayGet(CXArgumentIndex(paramTypeSig.Meta))
 
-			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(prgrm, param, externalPkg, pkg), GetFormattedType(prgrm, paramTypeSig)))
+			buf.WriteString(fmt.Sprintf("%s %s", FormattedNameGet(prgrm, param, externalPkg, pkg), FormattedTypeGet(prgrm, paramTypeSig)))
 		} else {
 			name := prgrm.CXProgramNameText(paramTypeSig.Name)
 
@@ -283,7 +283,7 @@ func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex
 				name = fmt.Sprintf("%s.%s", prgrm.CXProgramNameText(pkg.Name), name)
 			}
 
-			buf.WriteString(fmt.Sprintf("%s %s", name, GetFormattedType(prgrm, paramTypeSig)))
+			buf.WriteString(fmt.Sprintf("%s %s", name, FormattedTypeGet(prgrm, paramTypeSig)))
 		}
 
 		if i != len(paramTypeSigIdxs)-1 {
@@ -298,14 +298,14 @@ func SignatureStringOfFunction(prgrm *CXProgram, pkg *CXPackage, f *CXFunction) 
 	var ins bytes.Buffer
 	var outs bytes.Buffer
 
-	getFormattedParam(prgrm, f.GetInputs(prgrm), pkg, &ins)
-	getFormattedParam(prgrm, f.GetOutputs(prgrm), pkg, &outs)
+	getFormattedParam(prgrm, f.InputsGet(prgrm), pkg, &ins)
+	getFormattedParam(prgrm, f.OutputsGet(prgrm), pkg, &outs)
 
 	return fmt.Sprintf("func %s(%s) (%s)",
 		prgrm.CXProgramNameText(f.Name), ins.String(), outs.String())
 }
 
-// getFormattedDerefs is an auxiliary function for `GetFormattedName`. This
+// getFormattedDerefs is an auxiliary function for `FormattedNameGet`. This
 // function formats indexing and pointer dereferences associated to `arg`.
 func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg *CXPackage) string {
 	name := ""
@@ -327,7 +327,7 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg 
 	for _, idxIdx := range arg.Indexes {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0498.
-		idx := prgrm.GetCXTypeSignatureFromArray(idxIdx)
+		idx := prgrm.CXTypeSignatureFromArrayGet(idxIdx)
 		// Checking if the value is in data segment.
 		// If this is the case, we can safely display it.
 		idxValue := ""
@@ -346,11 +346,11 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg 
 	return name
 }
 
-// GetFormattedName reads `arg.DereferenceOperations` and builds a string that
+// FormattedNameGet reads `arg.DereferenceOperations` and builds a string that
 // depicts how an argument is being accessed. Example outputs: "foo[3]",
 // "**bar", "foo.bar[0]". If `includePkg` is `true`, the argument name will
 // include the package name that contains it, such as in "pkg.foo".
-func GetFormattedName(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg *CXPackage) string {
+func FormattedNameGet(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg *CXPackage) string {
 	// Getting formatted name which does not include fields.
 	name := getFormattedDerefs(prgrm, arg, includePkg, pkg)
 
@@ -358,7 +358,7 @@ func GetFormattedName(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg *C
 	for _, fldIdx := range arg.Fields {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0499.
-		fld := prgrm.GetCXArgFromArray(fldIdx)
+		fld := prgrm.CXArgFromArrayGet(fldIdx)
 		name = fmt.Sprintf("%s.%s", name, getFormattedDerefs(prgrm, fld, includePkg, pkg))
 	}
 
@@ -378,8 +378,8 @@ func formatParameters(prgrm *CXProgram, params []CXTypeSignatureIndex) string {
 	for i, paramIdx := range params {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0500.
-		param := prgrm.GetCXTypeSignatureFromArray(paramIdx)
-		types += GetFormattedType(prgrm, param)
+		param := prgrm.CXTypeSignatureFromArrayGet(paramIdx)
+		types += FormattedTypeGet(prgrm, param)
 		if i != len(params)-1 {
 			types += ", "
 		}
@@ -389,14 +389,14 @@ func formatParameters(prgrm *CXProgram, params []CXTypeSignatureIndex) string {
 	return types
 }
 
-// GetFormattedType builds a string with the CXGO type representation of `arg`.
-func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
+// FormattedTypeGet builds a string with the CXGO type representation of `arg`.
+func FormattedTypeGet(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	typ := ""
 
 	if typeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0501.
-		expressionOutputArg := prgrm.GetCXArgFromArray(CXArgumentIndex(typeSig.Meta))
+		expressionOutputArg := prgrm.CXArgFromArrayGet(CXArgumentIndex(typeSig.Meta))
 		typ = getFormattedType_CXArg(prgrm, expressionOutputArg)
 	} else if typeSig.Type == TYPE_ATOMIC {
 		typ = types.Code(typeSig.Meta).Name()
@@ -412,7 +412,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	} else if typeSig.Type == TYPE_ARRAY_ATOMIC {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0502.
-		arraySignature := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
+		arraySignature := prgrm.CXTypeSignatureArrayFromArrayGet(typeSig.Meta)
 
 		arrLen := len(arraySignature.Lengths) - len(arraySignature.Indexes)
 		if arrLen != 0 {
@@ -429,7 +429,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	} else if typeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0503.
-		arraySignature := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
+		arraySignature := prgrm.CXTypeSignatureArrayFromArrayGet(typeSig.Meta)
 
 		arrLen := len(arraySignature.Lengths) - len(arraySignature.Indexes)
 		if arrLen != 0 {
@@ -447,7 +447,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	} else if typeSig.Type == TYPE_SLICE_ATOMIC {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0504.
-		arraySignature := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
+		arraySignature := prgrm.CXTypeSignatureArrayFromArrayGet(typeSig.Meta)
 
 		arrLen := len(arraySignature.Lengths) - len(arraySignature.Indexes)
 		if arrLen != 0 {
@@ -463,7 +463,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	} else if typeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0505.
-		arraySignature := prgrm.GetCXTypeSignatureArrayFromArray(typeSig.Meta)
+		arraySignature := prgrm.CXTypeSignatureArrayFromArrayGet(typeSig.Meta)
 
 		arrLen := len(arraySignature.Lengths) - len(arraySignature.Indexes)
 		if arrLen != 0 {
@@ -479,13 +479,13 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	} else if typeSig.Type == TYPE_STRUCT {
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S0506.
-		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSig.Meta)
+		structDetails := prgrm.CXTypeSignatureStructFromArrayGet(typeSig.Meta)
 		lenFlds := len(structDetails.Fields)
 		if lenFlds > 0 {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0507.
-			fld := prgrm.GetCXArgFromArray(structDetails.Fields[lenFlds-1])
-			fld = fld.GetAssignmentElement(prgrm)
+			fld := prgrm.CXArgFromArrayGet(structDetails.Fields[lenFlds-1])
+			fld = fld.AssignmentElementGet(prgrm)
 
 			// TODO: to be replaced with correct
 			// way of getting type, that is not
@@ -502,13 +502,13 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	} else if typeSig.Type == TYPE_POINTER_STRUCT {
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S0508.
-		structDetails := prgrm.GetCXTypeSignatureStructFromArray(typeSig.Meta)
+		structDetails := prgrm.CXTypeSignatureStructFromArrayGet(typeSig.Meta)
 		lenFlds := len(structDetails.Fields)
 		if lenFlds > 0 {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0509.
-			fld := prgrm.GetCXArgFromArray(structDetails.Fields[lenFlds-1])
-			fld = fld.GetAssignmentElement(prgrm)
+			fld := prgrm.CXArgFromArrayGet(structDetails.Fields[lenFlds-1])
+			fld = fld.AssignmentElementGet(prgrm)
 
 			// TODO: to be replaced with correct
 			// way of getting type, that is not
@@ -530,7 +530,7 @@ func GetFormattedType(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 
 func getFormattedType_CXArg(prgrm *CXProgram, arg *CXArgument) string {
 	typ := ""
-	elt := arg.GetAssignmentElement(prgrm)
+	elt := arg.AssignmentElementGet(prgrm)
 
 	// Lengths are outermost first and specifiers innermost first, and a slice
 	// takes a length of 0, so [2][]i32 has lengths {2, 0}.
@@ -571,23 +571,23 @@ func getFormattedType_CXArg(prgrm *CXProgram, arg *CXArgument) string {
 					// if elt.IsLocalDeclaration {
 					// Then it's a local variable, which can be assigned to a
 					// lambda function, for example.
-					// typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Inputs))
-					// typ += formatParameters(prgrm, prgrm.ConvertIndexArgsToPointerArgs(elt.Outputs))
+					// typ += formatParameters(prgrm, prgrm.IndexArgsToPointerArgsConvert(elt.Inputs))
+					// typ += formatParameters(prgrm, prgrm.IndexArgsToPointerArgsConvert(elt.Outputs))
 					// } else {
 					// Then it refers to a named function defined in a package.
 					// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 					// Now an arena getter, site S0510.
-					pkg, err := prgrm.GetPackageFromArray(arg.Package)
+					pkg, err := prgrm.PackageFromArrayGet(arg.Package)
 					if err != nil {
 						prgrm.CXProgramCompileErrorAddDebug(CompileErrorCodeMessage, elt.ArgDetails, CompileErrorOperands{prgrm.CXProgramCompileErrorText(err.Error())})
 						return typ
 					}
 
-					fn, err := pkg.GetFunction(prgrm, elt.Name)
+					fn, err := pkg.FunctionGet(prgrm, elt.Name)
 					if err == nil {
 						// Adding list of inputs and outputs types.
-						typ += formatParameters(prgrm, fn.GetInputs(prgrm))
-						typ += formatParameters(prgrm, fn.GetOutputs(prgrm))
+						typ += formatParameters(prgrm, fn.InputsGet(prgrm))
+						typ += formatParameters(prgrm, fn.OutputsGet(prgrm))
 					}
 					// }
 				}
@@ -604,8 +604,8 @@ func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 	for _, typeSignatureIdx := range s.Fields {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0511.
-		typeSignature := prgrm.GetCXTypeSignatureFromArray(typeSignatureIdx)
-		fields += fmt.Sprintf(" %s %s;", prgrm.CXProgramNameText(typeSignature.Name), GetFormattedType(prgrm, typeSignature))
+		typeSignature := prgrm.CXTypeSignatureFromArrayGet(typeSignatureIdx)
+		fields += fmt.Sprintf(" %s %s;", prgrm.CXProgramNameText(typeSignature.Name), FormattedTypeGet(prgrm, typeSignature))
 	}
 
 	return fmt.Sprintf("%s struct {%s }", prgrm.CXProgramNameText(s.Name), fields)

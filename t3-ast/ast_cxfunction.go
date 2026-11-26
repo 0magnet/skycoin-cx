@@ -19,10 +19,10 @@ func (cxf CXFunction) Atomic() bool {
 	return cxf.AtomicOPCode != 0
 }
 
-// MakeFunction allocates an empty function in the program's CXFunctionMng
+// FunctionMake allocates an empty function in the program's CXFunctionMng
 // and returns its Gid and the pointer to fill it through. Parameters and
 // contents are added later.
-func MakeFunction(prgrm *CXProgram, name stringpool.StringGid, fileName SourceFileGid, fileLine int) (CXFunctionGid, *CXFunction) {
+func FunctionMake(prgrm *CXProgram, name stringpool.StringGid, fileName SourceFileGid, fileLine int) (CXFunctionGid, *CXFunction) {
 	gid, fn := prgrm.CXProgramFunctionAlloc()
 	fn.Name = name
 	fn.FileName = fileName
@@ -39,8 +39,8 @@ func MakeFunction(prgrm *CXProgram, name stringpool.StringGid, fileName SourceFi
 // ----------------------------------------------------------------
 //                             `CXFunction` Getters
 
-// GetExpressions is not used
-func (fn *CXFunction) GetExpressions(prgrm *CXProgram) ([]CXExpression, error) {
+// ExpressionsGet is not used
+func (fn *CXFunction) ExpressionsGet(prgrm *CXProgram) ([]CXExpression, error) {
 	if fn.Expressions == nil {
 		return nil, fmt.Errorf("function '%s' has no expressions", prgrm.CXProgramNameText(fn.Name))
 	}
@@ -49,22 +49,22 @@ func (fn *CXFunction) GetExpressions(prgrm *CXProgram) ([]CXExpression, error) {
 
 }
 
-// GetExpressionByLabel
-func (fn *CXFunction) GetExpressionByLabel(prgrm *CXProgram, lbl string) (*CXExpression, error) {
+// ExpressionByLabelGet
+func (fn *CXFunction) ExpressionByLabelGet(prgrm *CXProgram, lbl string) (*CXExpression, error) {
 	if fn.Expressions == nil {
 		return nil, fmt.Errorf("function '%s' has no expressions", prgrm.CXProgramNameText(fn.Name))
 	}
 
 	for _, expr := range fn.Expressions {
-		if prgrm.CXProgramNameText(expr.GetLabel(prgrm)) == lbl {
+		if prgrm.CXProgramNameText(expr.LabelGet(prgrm)) == lbl {
 			return &expr, nil
 		}
 	}
 	return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, prgrm.CXProgramNameText(fn.Name))
 }
 
-// GetExpressionByLine ...
-func (fn *CXFunction) GetExpressionByLine(prgrm *CXProgram, line int) (*CXExpression, error) {
+// ExpressionByLineGet ...
+func (fn *CXFunction) ExpressionByLineGet(prgrm *CXProgram, line int) (*CXExpression, error) {
 	if fn.Expressions == nil {
 		return nil, fmt.Errorf("function '%s' has no expressions", prgrm.CXProgramNameText(fn.Name))
 	}
@@ -79,22 +79,22 @@ func (fn *CXFunction) GetExpressionByLine(prgrm *CXProgram, line int) (*CXExpres
 // ----------------------------------------------------------------
 //                     `CXFunction` Member handling
 
-// AddInput adds param to the inputs of fn. It takes a managed param, which it
+// InputAdd adds param to the inputs of fn. It takes a managed param, which it
 // releases when the signature does not name it or the input exists.
-func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction {
-	fnInputs := fn.GetInputs(prgrm)
+func (fn *CXFunction) InputAdd(prgrm *CXProgram, param *CXArgument) *CXFunction {
+	fnInputs := fn.InputsGet(prgrm)
 	for _, inputIdx := range fnInputs {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0136.
-		input := prgrm.GetCXTypeSignatureFromArray(inputIdx)
+		input := prgrm.CXTypeSignatureFromArrayGet(inputIdx)
 		if input.Name == param.Name {
-			prgrm.ReleaseCXArgBuilder(param)
+			prgrm.CXArgBuilderRelease(param)
 			return fn
 		}
 	}
 
 	param.Package = fn.Package
-	newFieldIdx := AllocCXTypeSignatureOfCXArgBuilder(prgrm, param)
+	newFieldIdx := CXTypeSignatureOfCXArgBuilderAlloc(prgrm, param)
 
 	if fn.Inputs == nil {
 		// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
@@ -107,7 +107,7 @@ func (fn *CXFunction) AddInput(prgrm *CXProgram, param *CXArgument) *CXFunction 
 	return fn
 }
 
-func (fn *CXFunction) GetInputs(prgrm *CXProgram) []CXTypeSignatureIndex {
+func (fn *CXFunction) InputsGet(prgrm *CXProgram) []CXTypeSignatureIndex {
 	if fn == nil || fn.Inputs == nil {
 		return []CXTypeSignatureIndex{}
 	}
@@ -120,7 +120,7 @@ func (fn *CXFunction) GetInputs(prgrm *CXProgram) []CXTypeSignatureIndex {
 // 	if len(fn.Inputs) > 0 {
 // 		lenInps := len(fn.Inputs)
 // 		for i, inpIdx := range fn.Inputs {
-// 			inp := prgrm.GetCXArgFromArray(inpIdx)
+// 			inp := prgrm.CXArgFromArrayGet(inpIdx)
 // 			if inp.Name == inpName {
 // 				if i == lenInps {
 // 					fn.Inputs = fn.Inputs[:len(fn.Inputs)-1]
@@ -133,15 +133,15 @@ func (fn *CXFunction) GetInputs(prgrm *CXProgram) []CXTypeSignatureIndex {
 // 	}
 // }
 
-// AddOutput adds param to the outputs of fn like AddInput.
-func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction {
-	fnOutputs := fn.GetOutputs(prgrm)
+// OutputAdd adds param to the outputs of fn like InputAdd.
+func (fn *CXFunction) OutputAdd(prgrm *CXProgram, param *CXArgument) *CXFunction {
+	fnOutputs := fn.OutputsGet(prgrm)
 	for _, outputIdx := range fnOutputs {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0139.
-		output := prgrm.GetCXTypeSignatureFromArray(outputIdx)
+		output := prgrm.CXTypeSignatureFromArrayGet(outputIdx)
 		if output.Name == param.Name {
-			prgrm.ReleaseCXArgBuilder(param)
+			prgrm.CXArgBuilderRelease(param)
 			return fn
 		}
 	}
@@ -152,9 +152,9 @@ func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction
 	// return and assignment paths have no array signature case.
 	var newFieldIdx CXTypeSignatureIndex
 	if CXArgumentTypeArrayAtomic(param) || CXArgumentTypePointerArrayAtomic(param) {
-		newFieldIdx = AllocCXTypeSignatureOfCXArgDeprecate(prgrm, param)
+		newFieldIdx = CXTypeSignatureOfCXArgDeprecateAlloc(prgrm, param)
 	} else {
-		newFieldIdx = AllocCXTypeSignatureOfCXArgBuilder(prgrm, param)
+		newFieldIdx = CXTypeSignatureOfCXArgBuilderAlloc(prgrm, param)
 	}
 
 	if fn.Outputs == nil {
@@ -168,7 +168,7 @@ func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction
 	return fn
 }
 
-func (fn *CXFunction) GetOutputs(prgrm *CXProgram) []CXTypeSignatureIndex {
+func (fn *CXFunction) OutputsGet(prgrm *CXProgram) []CXTypeSignatureIndex {
 	if fn == nil || fn.Outputs == nil {
 		return []CXTypeSignatureIndex{}
 	}
@@ -181,7 +181,7 @@ func (fn *CXFunction) GetOutputs(prgrm *CXProgram) []CXTypeSignatureIndex {
 // 	if len(fn.Outputs) > 0 {
 // 		lenOuts := len(fn.Outputs)
 // 		for i, outIdx := range fn.Outputs {
-// 			out := prgrm.GetCXArgFromArray(outIdx)
+// 			out := prgrm.CXArgFromArrayGet(outIdx)
 // 			if out.Name == outName {
 // 				if i == lenOuts {
 // 					fn.Outputs = fn.Outputs[:len(fn.Outputs)-1]
@@ -194,12 +194,12 @@ func (fn *CXFunction) GetOutputs(prgrm *CXProgram) []CXTypeSignatureIndex {
 // 	}
 // }
 
-// AddExpression ...
-func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFunction {
+// ExpressionAdd ...
+func (fn *CXFunction) ExpressionAdd(prgrm *CXProgram, expr *CXExpression) *CXFunction {
 	if expr.Type == CX_ATOMIC_OPERATOR {
 		// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 		// Now an arena getter, site S0142.
-		cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+		cxAtomicOp, err := prgrm.CXAtomicOpGet(expr.Index)
 		if err != nil {
 			panic(err)
 		}
@@ -213,10 +213,10 @@ func (fn *CXFunction) AddExpression(prgrm *CXProgram, expr *CXExpression) *CXFun
 	return fn
 }
 
-func (fn *CXFunction) AddExpressionByLineNumber(prgrm *CXProgram, expr *CXExpression, line int) *CXFunction {
+func (fn *CXFunction) ExpressionByLineNumberAdd(prgrm *CXProgram, expr *CXExpression, line int) *CXFunction {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S0143.
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	cxAtomicOp, err := prgrm.CXAtomicOpGet(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -240,8 +240,8 @@ func (fn *CXFunction) AddExpressionByLineNumber(prgrm *CXProgram, expr *CXExpres
 
 }
 
-// RemoveExpression ...
-func (fn *CXFunction) RemoveExpression(line int) {
+// ExpressionRemove ...
+func (fn *CXFunction) ExpressionRemove(line int) {
 	if len(fn.Expressions) > 0 {
 		lenExprs := len(fn.Expressions)
 		if line >= lenExprs-1 || line < 0 {
@@ -256,7 +256,7 @@ func (fn *CXFunction) RemoveExpression(line int) {
 	}
 }
 
-func (fn *CXFunction) AddLocalVariableName(name stringpool.StringGid) error {
+func (fn *CXFunction) LocalVariableNameAdd(name stringpool.StringGid) error {
 	fn.LocalVariables = append(fn.LocalVariables, name)
 
 	return nil
@@ -272,7 +272,7 @@ func (fn *CXFunction) LocalVariableDeclared(name stringpool.StringGid) bool {
 	return false
 }
 
-func (fn *CXFunction) RemoveLocalVariableFromArray(name stringpool.StringGid) error {
+func (fn *CXFunction) LocalVariableFromArrayRemove(name stringpool.StringGid) error {
 	for idx, localVar := range fn.LocalVariables {
 		if name == localVar {
 			fn.LocalVariables = append(fn.LocalVariables[:idx], fn.LocalVariables[idx+1:]...)
@@ -286,18 +286,18 @@ func (fn *CXFunction) RemoveLocalVariableFromArray(name stringpool.StringGid) er
 // ----------------------------------------------------------------
 //                             `CXFunction` Selectors
 
-// MakeAtomicOperatorExpression ...
+// AtomicOperatorExpressionMake ...
 // OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 // Now a constructor, site S0148.
-func MakeAtomicOperatorExpression(prgrm *CXProgram, op *CXNativeFunction) *CXExpression {
+func AtomicOperatorExpressionMake(prgrm *CXProgram, op *CXNativeFunction) *CXExpression {
 	var opIdx CXFunctionGid
 	if op != nil {
-		opIdx = prgrm.AddNativeFunctionInArray(op)
+		opIdx = prgrm.NativeFunctionInArrayAdd(op)
 	}
 
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorAlloc(), phase 4 #341.
 	// Now a heap literal, site S0150 S0151.
-	index := prgrm.AddCXAtomicOp(&CXAtomicOperator{
+	index := prgrm.CXAtomicOpAdd(&CXAtomicOperator{
 		Operator: opIdx,
 		// Function: -1,
 	})
@@ -310,10 +310,10 @@ func MakeAtomicOperatorExpression(prgrm *CXProgram, op *CXNativeFunction) *CXExp
 	}
 }
 
-// MakeCXLineExpression ...
+// CXLineExpressionMake ...
 // OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 // Now a constructor, site S0153.
-func MakeCXLineExpression(prgrm *CXProgram, fileName SourceFileGid, lineNo int, lineStr stringpool.StringGid) *CXExpression {
+func CXLineExpressionMake(prgrm *CXProgram, fileName SourceFileGid, lineNo int, lineStr stringpool.StringGid) *CXExpression {
 	lineGid := prgrm.CxIrState.CXLineMng.CXLineAlloc()
 	line := prgrm.CxIrState.CXLineMng.CXLineGet(lineGid)
 	line.FileName = fileName
@@ -334,8 +334,8 @@ func MakeCXLineExpression(prgrm *CXProgram, fileName SourceFileGid, lineNo int, 
 func (fn *CXFunction) SelectExpression(line int) (*CXExpression, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
-	// 		if mod, err := cxt.GetCurrentPackage(); err == nil {
-	// 			if fn, err := mod.GetCurrentFunction(); err == nil {
+	// 		if mod, err := cxt.CurrentPackageGet(); err == nil {
+	// 			if fn, err := mod.CurrentFunctionGet(); err == nil {
 	// 				fn.SelectExpression(line)
 	// 			}
 	// 		}

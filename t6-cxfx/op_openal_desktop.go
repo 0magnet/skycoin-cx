@@ -107,7 +107,7 @@ func OpAlGenBuffers(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 	for _, b := range buffers { // REFACTOR append with copy ?
 		var obj [4]byte
 		types.Write_i32(obj[:], 0, int32(b))
-		outputSliceOffset = ast.WriteToSlice(prgrm, outputSliceOffset, obj[:])
+		outputSliceOffset = ast.SliceWrite(prgrm, outputSliceOffset, obj[:])
 	}
 	outputs[0].Set_ptr(prgrm, outputSliceOffset)
 }
@@ -127,7 +127,7 @@ func OpAlGenSources(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 	for _, s := range sources { // REFACTOR append with copy ?
 		var obj [4]byte
 		types.Write_i32(obj[:], 0, int32(s))
-		outputSliceOffset = ast.WriteToSlice(prgrm, outputSliceOffset, obj[:])
+		outputSliceOffset = ast.SliceWrite(prgrm, outputSliceOffset, obj[:])
 	}
 	outputs[0].Set_ptr(prgrm, outputSliceOffset)
 }

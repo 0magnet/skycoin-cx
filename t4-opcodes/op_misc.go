@@ -12,13 +12,13 @@ func OpIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	if outputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1302.
-		out1 = prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
+		out1 = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(outputs[0].TypeSignature.Meta))
 
 		var elt *ast.CXArgument
 		if len(out1.Fields) > 0 {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1303.
-			elt = prgrm.GetCXArgFromArray(out1.Fields[len(out1.Fields)-1])
+			elt = prgrm.CXArgFromArrayGet(out1.Fields[len(out1.Fields)-1])
 		} else {
 			elt = out1
 		}
@@ -73,12 +73,12 @@ func OpIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 }
 
 func OpGoto(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := prgrm.GetCurrentCall()
+	call := prgrm.CurrentCallGet()
 	expr := prgrm.CxIrState.CXFunctionMng.CXFunctionGet(call.Operator).Expressions[call.Line]
 
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S1304.
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	cxAtomicOp, err := prgrm.CXAtomicOpGet(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -87,12 +87,12 @@ func OpGoto(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 func OpJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := prgrm.GetCurrentCall()
+	call := prgrm.CurrentCallGet()
 	expr := inputs[0].Expr
 
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S1305.
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	cxAtomicOp, err := prgrm.CXAtomicOpGet(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -105,12 +105,12 @@ func OpJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 }
 
 func OpAbsJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := prgrm.GetCurrentCall()
+	call := prgrm.CurrentCallGet()
 	expr := inputs[0].Expr
 
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S1306.
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	cxAtomicOp, err := prgrm.CXAtomicOpGet(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -123,12 +123,12 @@ func OpAbsJmp(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 }
 
 func OpBreak(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := prgrm.GetCurrentCall()
+	call := prgrm.CurrentCallGet()
 	expr := prgrm.CxIrState.CXFunctionMng.CXFunctionGet(call.Operator).Expressions[call.Line]
 
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S1307.
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	cxAtomicOp, err := prgrm.CXAtomicOpGet(expr.Index)
 	if err != nil {
 		panic(err)
 	}
@@ -137,12 +137,12 @@ func OpBreak(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 }
 
 func OpContinue(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	call := prgrm.GetCurrentCall()
+	call := prgrm.CurrentCallGet()
 	expr := prgrm.CxIrState.CXFunctionMng.CXFunctionGet(call.Operator).Expressions[call.Line]
 
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S1308.
-	cxAtomicOp, err := prgrm.GetCXAtomicOp(expr.Index)
+	cxAtomicOp, err := prgrm.CXAtomicOpGet(expr.Index)
 	if err != nil {
 		panic(err)
 	}

@@ -113,7 +113,7 @@ func TestRunHeapCapExceeded(t *testing.T) {
 		t.Fatalf("panic value %#v, want a request of %d bytes and a cap of %d", record.RuntimeErrorRecordPanicValue, want, heapCap)
 	}
 
-	image, err := ast.SerializeCXProgram(actions.AST, true, nil)
+	image, err := ast.CXProgramSerialize(actions.AST, true, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

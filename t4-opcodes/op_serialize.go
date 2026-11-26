@@ -17,7 +17,7 @@ import (
 // see docs/GarbageCollector.md.
 // VIOLATION VMALLOC-023: runs the serializer, compiler code, #407.
 func OpSerialize(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	byts, ok := ast.SerializeAffordance(prgrm, ast.AffordanceValueRead(prgrm.Memory, inputs[0].Offset))
+	byts, ok := ast.AffordanceSerialize(prgrm, ast.AffordanceValueRead(prgrm.Memory, inputs[0].Offset))
 	if !ok {
 		panic(types.CX_RUNTIME_INVALID_ARGUMENT)
 	}

@@ -1288,7 +1288,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:259
 		{
-			actions.AST.PrintProgram()
+			actions.AST.ProgramPrint()
 		}
 	case 10:
 		yyDollar = yyS[yypt-3 : yypt+1]
@@ -1471,7 +1471,7 @@ yydefault:
 			nameDetails := actions.AST.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet(yyDollar[1].argument.ArgDetails)
 			typeDetails := actions.AST.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet(yyDollar[2].argument.ArgDetails)
 			typeDetails.FileName, typeDetails.FileLine, typeDetails.FileColumn = nameDetails.FileName, nameDetails.FileLine, nameDetails.FileColumn
-			actions.AST.ReleaseCXArgBuilder(yyDollar[1].argument)
+			actions.AST.CXArgBuilderRelease(yyDollar[1].argument)
 
 			yyVAL.argument = yyDollar[2].argument
 		}
@@ -1479,9 +1479,9 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:467
 		{
-			if pkg, err := actions.AST.GetCurrentPackage(); err == nil {
-				_, arg := ast.MakeArgument(actions.AST, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
-				arg.SetType(types.UNDEFINED)
+			if pkg, err := actions.AST.CurrentPackageGet(); err == nil {
+				_, arg := ast.ArgumentMake(actions.AST, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
+				arg.TypeSet(types.UNDEFINED)
 				arg.Name = actions.AST.CXProgramNameIntern(yyDollar[1].tok)
 				actions.AST.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet(arg.ArgDetails).FileColumn = yyDollar[1].column
 				arg.Package = ast.CXPackageIndex(pkg.Index)
@@ -1552,15 +1552,15 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:536
 		{
-			_, arg := ast.MakeArgument(actions.AST, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
-			arg.SetType(types.FUNC)
+			_, arg := ast.ArgumentMake(actions.AST, stringpool.StringGidNil, actions.CurrentFile, actions.LineNo)
+			arg.TypeSet(types.FUNC)
 
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1480.
-			arg.Inputs = actions.AST.AddPointerArgsToCXArgsArray(yyDollar[2].arguments)
+			arg.Inputs = actions.AST.PointerArgsToCXArgsArrayAdd(yyDollar[2].arguments)
 			// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 			// Now an arena insert, site S1481.
-			arg.Outputs = actions.AST.AddPointerArgsToCXArgsArray(yyDollar[3].arguments)
+			arg.Outputs = actions.AST.PointerArgsToCXArgsArrayAdd(yyDollar[3].arguments)
 			yyVAL.argument = actions.DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_FUNC)
 		}
 	case 65:
@@ -2832,7 +2832,7 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:1651
 		{
-			pkg, err := actions.AST.GetCurrentPackage()
+			pkg, err := actions.AST.CurrentPackageGet()
 			if err != nil {
 				panic(err)
 			}
@@ -2842,7 +2842,7 @@ yydefault:
 			exprCXLine := actions.MakeCXLineExpressionCurrent(actions.AST)
 			// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 			// Now a constructor call, site S1503.
-			expr := ast.MakeAtomicOperatorExpression(actions.AST, ast.NativeFunctionOf(actions.AST, constants.OP_GOTO))
+			expr := ast.AtomicOperatorExpressionMake(actions.AST, ast.NativeFunctionOf(actions.AST, constants.OP_GOTO))
 			expressionIdx := expr.Index
 			actions.AST.CXAtomicOps[expressionIdx].Package = ast.CXPackageIndex(pkg.Index)
 			actions.AST.CXAtomicOps[expressionIdx].Label = actions.AST.CXProgramNameIntern(yyDollar[2].tok)

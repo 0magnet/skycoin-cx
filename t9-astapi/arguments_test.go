@@ -89,7 +89,7 @@ func TestASTAPI_Arguments(t *testing.T) {
 	})
 
 	t.Run("print program", func(t *testing.T) {
-		cxprogram.PrintProgram()
+		cxprogram.ProgramPrint()
 	})
 
 	t.Run("make input of an expression a pointer", func(t *testing.T) {
@@ -107,7 +107,7 @@ func TestASTAPI_Arguments(t *testing.T) {
 	})
 
 	t.Run("print program", func(t *testing.T) {
-		cxprogram.PrintProgram()
+		cxprogram.ProgramPrint()
 	})
 
 	// t.Run("remove input from an expression", func(t *testing.T) {
@@ -125,23 +125,23 @@ func TestASTAPI_Arguments(t *testing.T) {
 	// })
 
 	t.Run("print program", func(t *testing.T) {
-		cxprogram.PrintProgram()
+		cxprogram.ProgramPrint()
 	})
 
 	t.Run("add global", func(t *testing.T) {
-		_, arg := cxast.MakeGlobal(cxprogram, cxprogram.CXProgramNameIntern("testGlobal"), types.I16, cxast.SourceFileGidNil, -1)
+		_, arg := cxast.GlobalMake(cxprogram, cxprogram.CXProgramNameIntern("testGlobal"), types.I16, cxast.SourceFileGidNil, -1)
 
 		// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 		// Now an arena getter, site S1589.
-		cxpackage, err := cxprogram.GetPackageFromArray(cxprogram.Packages[cxprogram.CxIrState.CxIrStateNameMain])
+		cxpackage, err := cxprogram.PackageFromArrayGet(cxprogram.Packages[cxprogram.CxIrState.CxIrStateNameMain])
 		if err != nil {
 			panic(err)
 		}
 
 		// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 		// Now an arena insert, site S1590.
-		argIdx := cxprogram.AddCXArgInArray(arg)
-		cxpackage.AddGlobal(cxprogram, argIdx)
+		argIdx := cxprogram.CXArgInArrayAdd(arg)
+		cxpackage.GlobalAdd(cxprogram, argIdx)
 	})
 
 	t.Run("get accessible i16 args", func(t *testing.T) {

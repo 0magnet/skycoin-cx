@@ -32,7 +32,7 @@ func newTestProgram() *ast.CXProgram {
 }
 
 func strValue(prgrm *ast.CXProgram, offset types.Pointer, s string) ast.CXValue {
-	ast.AllocateStrAt(prgrm, offset, s)
+	ast.StrAllocateAt(prgrm, offset, s)
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureAlloc(), phase 4 #331.
 	// Now a heap literal, site S1420.
 	return ast.CXValue{Offset: offset, TypeSignature: &ast.CXTypeSignature{Offset: offset}}

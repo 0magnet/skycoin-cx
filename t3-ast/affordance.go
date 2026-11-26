@@ -123,16 +123,16 @@ func (prgrm *CXProgram) CXProgramAffordanceLiteralsTake() []AffordanceLiteral {
 // function or struct, which Deserialize does not load.
 const serializeAffordanceMagic = "CXSELECT"
 
-// SerializeAffordance returns the bytes serialize gives for value: the whole
+// AffordanceSerialize returns the bytes serialize gives for value: the whole
 // program, the bytes in use of a memory segment, the bytes of a variable, or
 // a package, function or struct as the serialized program encodes it. A
 // variable of a function that has no call on the call stack, and an index
 // outside the program, are an error.
 // VIOLATION VMALLOC-019: the selection runs the encoder of the serializer, compiler code, #407.
-func SerializeAffordance(prgrm *CXProgram, value AffordanceValue) ([]byte, bool) {
+func AffordanceSerialize(prgrm *CXProgram, value AffordanceValue) ([]byte, bool) {
 	switch value.AffordanceValueKind {
 	case AffordanceKindProgram:
-		b, err := SerializeCXProgram(prgrm, true, nil)
+		b, err := CXProgramSerialize(prgrm, true, nil)
 		return b, err == nil
 	case AffordanceKindMemory:
 		var first, last types.Pointer
@@ -208,7 +208,7 @@ func affordanceVariableBytes(prgrm *CXProgram, value AffordanceValue) ([]byte, b
 	if value.AffordanceValueVariable < 0 || uint32(value.AffordanceValueVariable) >= prgrm.CxIrState.CXTypeSignatureMng.CXTypeSignatureMngNext {
 		return nil, false
 	}
-	variable := prgrm.GetCXTypeSignatureFromArray(value.AffordanceValueVariable)
+	variable := prgrm.CXTypeSignatureFromArrayGet(value.AffordanceValueVariable)
 	var framePointer types.Pointer
 	if value.AffordanceValueKind == AffordanceKindLocal {
 		found := false
@@ -224,8 +224,8 @@ func affordanceVariableBytes(prgrm *CXProgram, value AffordanceValue) ([]byte, b
 			return nil, false
 		}
 	}
-	address := frameAddress(prgrm, framePointer, variable.GetOffset(prgrm))
-	return affordanceBytes(prgrm, address, address+variable.GetSize(prgrm, true))
+	address := frameAddress(prgrm, framePointer, variable.OffsetGet(prgrm))
+	return affordanceBytes(prgrm, address, address+variable.SizeGet(prgrm, true))
 }
 
 // affordanceIndexesSorted returns the indexes of names in increasing order.
@@ -243,15 +243,15 @@ func affordanceIndexesSorted[Index ~int](names map[stringpool.StringGid]Index) [
 func CXTypeSignatureWhole(prgrm *CXProgram, sig *CXTypeSignature) bool {
 	switch sig.Type {
 	case TYPE_ATOMIC, TYPE_SLICE_ATOMIC:
-		return sig.Type == TYPE_ATOMIC || len(prgrm.GetCXTypeSignatureArrayFromArray(sig.Meta).Indexes) == 0
+		return sig.Type == TYPE_ATOMIC || len(prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta).Indexes) == 0
 	case TYPE_POINTER_ATOMIC, TYPE_POINTER_SLICE_ATOMIC:
 		return !sig.Deref
 	case TYPE_ARRAY_ATOMIC, TYPE_POINTER_ARRAY_ATOMIC:
-		return !sig.Deref && len(prgrm.GetCXTypeSignatureArrayFromArray(sig.Meta).Indexes) == 0
+		return !sig.Deref && len(prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta).Indexes) == 0
 	case TYPE_STRUCT, TYPE_POINTER_STRUCT:
-		return !sig.Deref && len(prgrm.GetCXTypeSignatureStructFromArray(sig.Meta).Fields) == 0
+		return !sig.Deref && len(prgrm.CXTypeSignatureStructFromArrayGet(sig.Meta).Fields) == 0
 	case TYPE_CXARGUMENT_DEPRECATE:
-		arg := prgrm.GetCXArgFromArray(CXArgumentIndex(sig.Meta))
+		arg := prgrm.CXArgFromArrayGet(CXArgumentIndex(sig.Meta))
 		return len(arg.Fields) == 0 && len(arg.Indexes) == 0 && len(arg.DereferenceOperations) == 0
 	}
 	return false

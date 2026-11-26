@@ -12,7 +12,7 @@ import (
 )
 
 // buildString appends the text printf and sprintf make of inputs to res and
-// returns it. %v appends the value with ast.AppendPrintableValue.
+// returns it. %v appends the value with ast.PrintableValueAppend.
 // VIOLATION VMALLOC-022: appending grows the format buffer past its size, once, #407.
 func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, res []byte) []byte {
 	fmtStr := inputs[0].Get_str_bytes(prgrm)
@@ -74,7 +74,7 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, res []byte) []byte 
 					res = strconv.AppendFloat(res, inp.Get_f64(prgrm), 'f', 16, 64)
 				}
 			case 'v':
-				res = ast.AppendPrintableValue(res, prgrm, inp.FramePointer, inp.TypeSignature)
+				res = ast.PrintableValueAppend(res, prgrm, inp.FramePointer, inp.TypeSignature)
 			case 'b':
 				res = strconv.AppendBool(res, inp.Get_bool(prgrm))
 			}
@@ -90,9 +90,9 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, res []byte) []byte 
 		lInps := len(inputs[specifiersCounter+1:])
 		for c := 0; c < lInps; c++ {
 			inp := &inputs[specifiersCounter+1+c]
-			res = inp.TypeSignature.AppendValueTypeName(res, prgrm)
+			res = inp.TypeSignature.ValueTypeNameAppend(res, prgrm)
 			res = append(res, '=')
-			res = ast.AppendPrintableValue(res, prgrm, inp.FramePointer, inp.TypeSignature)
+			res = ast.PrintableValueAppend(res, prgrm, inp.FramePointer, inp.TypeSignature)
 			if c != lInps-1 {
 				res = append(res, ", "...)
 			}

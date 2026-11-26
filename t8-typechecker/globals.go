@@ -21,20 +21,20 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 
 		// Get Package
 		pkgNameGid := actions.AST.CXProgramNameIntern(global.PackageID)
-		pkg, err := actions.AST.GetPackage(pkgNameGid)
+		pkg, err := actions.AST.PackageGet(pkgNameGid)
 
 		// If package not in AST
 		if err != nil || pkg == nil {
 
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now a constructor call, site S1510.
-			newPkg := ast.MakePackage(pkgNameGid)
+			newPkg := ast.PackageMake(pkgNameGid)
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 			// Now an arena insert, site S1511.
-			pkgIdx := actions.AST.AddPackage(newPkg)
+			pkgIdx := actions.AST.PackageAdd(newPkg)
 			// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
 			// Now an arena getter, site S1512.
-			newPkg, err := actions.AST.GetPackageFromArray(pkgIdx)
+			newPkg, err := actions.AST.PackageFromArrayGet(pkgIdx)
 
 			if err != nil {
 				return err
@@ -57,12 +57,12 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 		globalTokens := reGlobalDeclaration.FindSubmatch(globalDeclaration)
 
 		// add Global as CX Argument to CX Package
-		_, globalArg := ast.MakeArgument(prgrm, prgrm.CXProgramNameIntern(global.GlobalVariableName), prgrm.CXProgramSourceFileIntern(global.FileID), global.LineNumber)
+		_, globalArg := ast.ArgumentMake(prgrm, prgrm.CXProgramNameIntern(global.GlobalVariableName), prgrm.CXProgramSourceFileIntern(global.FileID), global.LineNumber)
 		globalArg.Offset = types.InvalidPointer
 		globalArg.Package = ast.CXPackageIndex(pkg.Index)
 		globalArgIdx := ast.CXArgumentIndex(globalArg.Index)
 
-		pkg.AddGlobal(actions.AST, globalArgIdx)
+		pkg.GlobalAdd(actions.AST, globalArgIdx)
 
 		var declarationSpecifier *ast.CXArgument
 
@@ -73,7 +73,7 @@ func ParseGlobals(files []*loader.File, globals []declaration_extractor.GlobalDe
 
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1515.
-		actions.DeclareGlobalInPackage(actions.AST, nil, actions.AST.GetCXArgFromArray(globalArgIdx), declarationSpecifier, nil, false)
+		actions.DeclareGlobalInPackage(actions.AST, nil, actions.AST.CXArgFromArrayGet(globalArgIdx), declarationSpecifier, nil, false)
 
 	}
 	return nil

@@ -174,7 +174,7 @@ func NameCheckRun(rows []NameRow, allowlistPath string) int {
 // are subjects as well, as in RunBuffersPrepare and CompileErrorList.
 var NameCheckVerbs = map[string]bool{
 	"add": true, "alloc": true, "allocate": true, "append": true, "apply": true,
-	"assign": true, "build": true, "calculate": true, "call": true, "cast": true,
+	"assign": true, "build": true, "calculate": true, "cast": true,
 	"check": true, "clear": true, "close": true, "collect": true,
 	"compute": true, "convert": true, "copy": true, "create": true, "declare": true,
 	"decode": true, "delete": true, "deserialize": true, "emit": true, "encode": true,

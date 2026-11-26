@@ -2,7 +2,7 @@
 
 This document describes what the CX compiler produces. That is the
 in-memory program the VM executes, a `*ast.CXProgram` from `t3-ast`, and
-the byte form `ast.SerializeCXProgram` writes. Every type, field and
+the byte form `ast.CXProgramSerialize` writes. Every type, field and
 function named here is in this repository, and the worked example was
 produced by compiling a real program and dumping it.
 
@@ -119,15 +119,15 @@ such as `CXStructIndex`, or by Gid into a manager, such as `CXFunctionGid`.
 
 | Arena | Element | Index type | Getter |
 | --- | --- | --- | --- |
-| `CXPackages` | `CXPackage` | `CXPackageIndex` | `GetPackageFromArray` |
+| `CXPackages` | `CXPackage` | `CXPackageIndex` | `PackageFromArrayGet` |
 | `CxIrState.CXFunctionMng`, was `CXFunctions` | `CXFunction` | `CXFunctionGid` | `CXFunctionMng.CXFunctionGet`, `CxIrStateFunctionGetOrNil` (nil for `CXFunctionGidNil`) |
 | `CXStructs` | `CXStruct` | `CXStructIndex` | direct index |
-| `CXAtomicOps` | `CXAtomicOperator` | `int` | `GetCXAtomicOp` |
-| `CxIrState.CXLineMng`, was `CXLines` | `CXLine` | `int`, the slot index | `GetCXLine` |
-| `CXArgs` | `CXArgument` | `CXArgumentIndex` | `GetCXArg`, `GetCXArgFromArray` |
-| `CXTypeSignatures` | `CXTypeSignature` | `CXTypeSignatureIndex` | `GetCXTypeSignatureFromArray` |
-| `CxIrState.CXTypeSignature_ArrayMng`, was `TypeSignatureForArrays` | `CXTypeSignature_Array` | `int`, the slot index | `GetCXTypeSignatureArrayFromArray` |
-| `CxIrState.CXTypeSignature_StructMng`, was `TypeSignatureForStructs` | `CXTypeSignature_Struct` | `int`, the slot index | `GetCXTypeSignatureStructFromArray` |
+| `CXAtomicOps` | `CXAtomicOperator` | `int` | `CXAtomicOpGet` |
+| `CxIrState.CXLineMng`, was `CXLines` | `CXLine` | `int`, the slot index | `CXLineGet` |
+| `CXArgs` | `CXArgument` | `CXArgumentIndex` | `CXArgGet`, `CXArgFromArrayGet` |
+| `CXTypeSignatures` | `CXTypeSignature` | `CXTypeSignatureIndex` | `CXTypeSignatureFromArrayGet` |
+| `CxIrState.CXTypeSignature_ArrayMng`, was `TypeSignatureForArrays` | `CXTypeSignature_Array` | `int`, the slot index | `CXTypeSignatureArrayFromArrayGet` |
+| `CxIrState.CXTypeSignature_StructMng`, was `TypeSignatureForStructs` | `CXTypeSignature_Struct` | `int`, the slot index | `CXTypeSignatureStructFromArrayGet` |
 
 Several fields still hold Go pointers instead of indexes. Each is marked
 in the source and becomes a generational index under the object model in
@@ -168,7 +168,7 @@ in `CXPackages`, and three name maps, `Imports` (to `CXPackageIndex`),
 
 `CXFunctionMng` holds more than the user's functions. Every expression that
 calls a native operator gets its own copy of the native, made by
-`CXProgram.AddNativeFunctionInArray` from `ast.NativeFunctionOf(prgrm, opcode)`,
+`CXProgram.NativeFunctionInArrayAdd` from `ast.NativeFunctionOf(prgrm, opcode)`,
 which makes it from `constants.OpcodeSignatureTable`. The copy has
 `AtomicOPCode` set and no `Expressions`. A system library function is the
 native `ast.NativeFunctionOf(prgrm, ast.LibraryFunctionKey(library, function))`
@@ -205,7 +205,7 @@ open and close a symbol scope in `FunctionDeclaration`.
 
 A `CX_LINE` expression points at an `ast.CXLine`
 (`t3-ast/cxline_def.go`) with `FileName`, `LineNumber`, `LineColumn` and
-`LineStr`. `ast.MakeCXLineExpression` creates them. The parser puts one before each
+`LineStr`. `ast.CXLineExpressionMake` creates them. The parser puts one before each
 statement, and error messages use the nearest preceding marker. The VM
 skips them, but they take a slot in `Expressions`, so jump distances
 count them.
@@ -218,7 +218,7 @@ A `CX_ATOMIC_OPERATOR` expression points at an `ast.CXAtomicOperator`
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `Operator` | `CXFunctionGid` | What runs, see below |
-| `Inputs`, `Outputs` | `*CXStruct` | `Fields` are the `CXTypeSignatureIndex` of each operand. Read them with `GetInputs(prgrm)` and `GetOutputs(prgrm)` |
+| `Inputs`, `Outputs` | `*CXStruct` | `Fields` are the `CXTypeSignatureIndex` of each operand. Read them with `InputsGet(prgrm)` and `OutputsGet(prgrm)` |
 | `Function` | `CXFunctionGid` | The function this expression belongs to |
 | `Package` | `CXPackageIndex` | The package of that function |
 | `Label` | `string` | `goto` label, empty otherwise |
@@ -312,7 +312,7 @@ dimension, 0 for a slice dimension) and `Indexes`, the index operands when
 the signature reads an element. `ast.CXTypeSignature_Struct` holds
 `StructType` and `Fields`, the field access chain.
 
-`ast.GetCXTypeSignatureRepresentationOfCXArg` converts a `CXArgument` to
+`ast.CXTypeSignatureRepresentationOfCXArgGet` converts a `CXArgument` to
 the most specific signature it can. Anything it cannot express, such as
 a struct field access, a slice of structs or a function value, becomes
 `TYPE_CXARGUMENT_DEPRECATE`.
@@ -337,7 +337,7 @@ fields the VM reads are
 * `Inputs` and `Outputs` for a function value,
 * `StructType` and `PassBy`.
 
-`ast.GetFinalOffset` (`t3-ast/mem_offset.go`) turns an operand and a frame
+`ast.FinalOffsetGet` (`t3-ast/mem_offset.go`) turns an operand and a frame
 pointer into an absolute address in `Memory`, applying the dereferences.
 
 ### Type codes
@@ -379,13 +379,13 @@ run, so the heap grows without a Go allocation (D42). `Stack.StartsAt` stays 0.
   literal and global to the data segment at compile time, grows
   `Data.Size` and moves `Heap.StartsAt` to `Data.StartsAt + Data.Size`.
   A literal's `Offset` is absolute.
-* Heap. `ast.AllocateSeq` (`t3-ast/ast_memory.go`) allocates objects.
+* Heap. `ast.SequenceAllocate` (`t3-ast/ast_memory.go`) allocates objects.
   `Heap.Pointer` is relative to `Heap.StartsAt`, and the first
   `NULL_HEAP_ADDRESS_OFFSET` bytes are the `nil` address. Each object has
   a header of `types.OBJECT_HEADER_SIZE` bytes (`t0-types/types_object.go`),
   a 1 byte GC mark, a forwarding address and the object size.
 
-`GetFinalOffset` tells a frame offset from an absolute one by value. An
+`FinalOffsetGet` tells a frame offset from an absolute one by value. An
 offset below `Stack.Size` gets the frame pointer added, anything else is
 used as it is.
 
@@ -519,7 +519,7 @@ per-expression native copies.
 
 ### API
 
-`ast.SerializeCXProgram(prgrm, includeMemory, codec)`,
+`ast.CXProgramSerialize(prgrm, includeMemory, codec)`,
 `ast.Deserialize(b, codec)`, `ast.SerializedHeaderCheck(b)` and
 `ast.SerializedSizesOf(prgrm, includeMemory, wholeMemory)` are in
 `t3-ast/serialize.go`.
@@ -621,7 +621,7 @@ into `CXStructs` again. A struct that is owned through a pointer, such as
 `CXFunction.Inputs` or `CXPackage.Globals`, is written in place. A call
 stack entry writes the index of its function.
 
-`SerializeCXProgram` fails when one of the managers no compile stage fills
+`CXProgramSerialize` fails when one of the managers no compile stage fills
 yet, such as `CXFunctionMng`, holds an object. `TestSerializeFieldCounts`
 in `t3-ast` fails when a type the serializer writes gains a field.
 
@@ -836,7 +836,7 @@ the jumps, `test` on non-string values and calls. Anything else gives a
 `lower.Failure` with a `ReasonCode`.
 
 * An operand may index arrays, select struct fields and dereference pointers,
-  the steps `GetFinalOffset` takes. Field offsets fold into a static offset.
+  the steps `FinalOffsetGet` takes. Field offsets fold into a static offset.
   An index or dereference becomes `OpcodeAddressIndex` or
   `OpcodeAddressDeref` code that writes the address to a scratch slot, and
   `OpcodeAddressLoad` or `OpcodeAddressStore` moves the value. The
@@ -898,7 +898,7 @@ prints a stack overflow or runtime error for both.
   ([#186](https://github.com/skycoin/skycoin-cx/issues/186),
   [#250](https://github.com/skycoin/skycoin-cx/issues/250)).
 * Native operators were described by shared `CXArgument` values, and
-  `GetCXTypeSignatureRepresentationOfCXArg` wrote one program's indexes
+  `CXTypeSignatureRepresentationOfCXArgGet` wrote one program's indexes
   into them, which broke the next REPL program
   ([#174](https://github.com/skycoin/skycoin-cx/issues/174), closed).
   Each expression still gets its own copy of the native function in
@@ -908,7 +908,7 @@ prints a stack overflow or runtime error for both.
   stays a `TYPE_CXARGUMENT_DEPRECATE`. A `*[]str` is a
   `TYPE_CXARGUMENT_DEPRECATE` too, and `OpIdentity` and the vm lowering test
   for it with `CXArgumentStringSlicePointer` so `p = &s` takes its address.
-* `GetFinalOffset` decides whether an offset is in the frame by comparing
+* `FinalOffsetGet` decides whether an offset is in the frame by comparing
   it with `Stack.Size`, not by a flag on the operand.
 * The line marker before the `jmp` of an `if` carries the line of the
   closing brace, line 9 in the worked example, because

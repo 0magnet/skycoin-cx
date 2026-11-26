@@ -65,7 +65,7 @@ func escapeAnalyze(prgrm *ast.CXProgram, params []escapeParam, results []*ast.CX
 		if param.escapeParamArgument != nil {
 			state.escapeStateStructs[param.escapeParamName] = param.escapeParamArgument.StructType
 		} else {
-			state.escapeStateStructs[param.escapeParamName] = param.escapeParamSignature.GetStructType(prgrm)
+			state.escapeStateStructs[param.escapeParamName] = param.escapeParamSignature.StructTypeGet(prgrm)
 		}
 		state.escapePointsAdd(key, map[escapeKey]bool{{escapeKeyName: param.escapeParamName, escapeKeyPointee: true}: true})
 	}
@@ -84,13 +84,13 @@ func escapeAnalyze(prgrm *ast.CXProgram, params []escapeParam, results []*ast.CX
 			state.escapeLoopAdd(i, op, operator)
 			continue
 		}
-		for _, outputIdx := range op.GetOutputs(prgrm) {
-			sig := prgrm.GetCXTypeSignatureFromArray(outputIdx)
+		for _, outputIdx := range op.OutputsGet(prgrm) {
+			sig := prgrm.CXTypeSignatureFromArrayGet(outputIdx)
 			name := StripNameNumber(prgrm, sig.Name)
 			if !state.escapeStateResults[name] {
 				state.escapeStateLocals[name] = escapeSignatureSpecifiers(prgrm, sig)
 				state.escapeStateDeclared[name] = append(state.escapeStateDeclared[name], i)
-				state.escapeStateStructs[name] = sig.GetStructType(prgrm)
+				state.escapeStateStructs[name] = sig.StructTypeGet(prgrm)
 			}
 		}
 	}
@@ -142,7 +142,7 @@ func escapeAtomicOp(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXAtomicO
 	if expr.Type == ast.CX_LINE {
 		return nil
 	}
-	op, err := prgrm.GetCXAtomicOp(expr.Index)
+	op, err := prgrm.CXAtomicOpGet(expr.Index)
 	if err != nil {
 		return nil
 	}
@@ -157,8 +157,8 @@ func (state *escapeState) escapeExpression(expr *ast.CXExpression) {
 		return
 	}
 	operator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(op.Operator)
-	inputs := op.GetInputs(prgrm)
-	outputs := op.GetOutputs(prgrm)
+	inputs := op.InputsGet(prgrm)
+	outputs := op.OutputsGet(prgrm)
 	switch {
 	case operator == nil:
 	case expr.TypeMethodCall() && len(inputs) > 0:
@@ -203,8 +203,8 @@ func (state *escapeState) escapeMethodCall(inputs, outputs []ast.CXTypeSignature
 		state.escapeAdd(receiver)
 		state.escapeAdd(state.escapeAddressSources(inputs[0]))
 	} else {
-		methodInputs := method.GetInputs(prgrm)
-		if len(methodInputs) > 0 && typeSignaturePointer(prgrm, prgrm.GetCXTypeSignatureFromArray(methodInputs[0])) {
+		methodInputs := method.InputsGet(prgrm)
+		if len(methodInputs) > 0 && typeSignaturePointer(prgrm, prgrm.CXTypeSignatureFromArrayGet(methodInputs[0])) {
 			for key := range state.escapeAddressSources(inputs[0]) {
 				receiver[key] = true
 			}
@@ -224,11 +224,11 @@ func (state *escapeState) escapeMethodCall(inputs, outputs []ast.CXTypeSignature
 // receiver is not a local struct this analysis can type.
 func (state *escapeState) escapeMethod(receiverIdx ast.CXTypeSignatureIndex) *ast.CXFunction {
 	prgrm := state.escapeStatePrgrm
-	sig := prgrm.GetCXTypeSignatureFromArray(receiverIdx)
+	sig := prgrm.CXTypeSignatureFromArrayGet(receiverIdx)
 	if sig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
 		return nil
 	}
-	receiver := prgrm.GetCXArg(ast.CXArgumentIndex(sig.Meta))
+	receiver := prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta))
 	if len(receiver.Fields) != 1 {
 		return nil
 	}
@@ -236,11 +236,11 @@ func (state *escapeState) escapeMethod(receiverIdx ast.CXTypeSignatureIndex) *as
 	if strct == nil {
 		return nil
 	}
-	pkg, err := prgrm.GetPackageFromArray(strct.Package)
+	pkg, err := prgrm.PackageFromArrayGet(strct.Package)
 	if err != nil {
 		return nil
 	}
-	fnIdx, err := pkg.GetMethod(prgrm, strct.Name, prgrm.GetCXArgFromArray(receiver.Fields[0]).Name)
+	fnIdx, err := pkg.MethodGet(prgrm, strct.Name, prgrm.CXArgFromArrayGet(receiver.Fields[0]).Name)
 	if err != nil {
 		return nil
 	}
@@ -271,7 +271,7 @@ func (state *escapeState) escapeCallArgument(fn *ast.CXFunction, i int, sources 
 // may be.
 func (state *escapeState) escapeSources(sigIdx ast.CXTypeSignatureIndex) map[escapeKey]bool {
 	prgrm := state.escapeStatePrgrm
-	sig := prgrm.GetCXTypeSignatureFromArray(sigIdx)
+	sig := prgrm.CXTypeSignatureFromArrayGet(sigIdx)
 	if ast.CXTypeSignaturePassBy(prgrm, sig) == constants.PASSBY_REFERENCE {
 		return state.escapeAddressSources(sigIdx)
 	}
@@ -302,7 +302,7 @@ func (state *escapeState) escapeSources(sigIdx ast.CXTypeSignatureIndex) map[esc
 // the local, or what the local points to when the access goes through it.
 func (state *escapeState) escapeAddressSources(sigIdx ast.CXTypeSignatureIndex) map[escapeKey]bool {
 	prgrm := state.escapeStatePrgrm
-	sig := prgrm.GetCXTypeSignatureFromArray(sigIdx)
+	sig := prgrm.CXTypeSignatureFromArrayGet(sigIdx)
 	name := StripNameNumber(prgrm, sig.Name)
 	specs, found := state.escapeStateLocals[name]
 	if !found {
@@ -324,7 +324,7 @@ func (state *escapeState) escapeStore(outputIdx ast.CXTypeSignatureIndex, source
 		return
 	}
 	prgrm := state.escapeStatePrgrm
-	sig := prgrm.GetCXTypeSignatureFromArray(outputIdx)
+	sig := prgrm.CXTypeSignatureFromArrayGet(outputIdx)
 	name := StripNameNumber(prgrm, sig.Name)
 	specs, found := state.escapeStateLocals[name]
 	if !found {
@@ -407,19 +407,19 @@ func escapeAccessInside(prgrm *ast.CXProgram, specs []int, strct *ast.CXStruct, 
 	if sig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
 		return !sig.Deref
 	}
-	arg := prgrm.GetCXArg(ast.CXArgumentIndex(sig.Meta))
+	arg := prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta))
 	stack, inside := escapeAccessIndexes(specs, arg)
 	for _, fieldIdx := range arg.Fields {
 		if !inside || strct == nil || len(stack) == 0 || stack[len(stack)-1] != constants.DECL_STRUCT {
 			return false
 		}
-		field := prgrm.GetCXArgFromArray(fieldIdx)
-		fieldSig, err := strct.GetField(prgrm, field.Name)
+		field := prgrm.CXArgFromArrayGet(fieldIdx)
+		fieldSig, err := strct.FieldGet(prgrm, field.Name)
 		if err != nil {
 			return false
 		}
 		stack, inside = escapeAccessIndexes(escapeSignatureSpecifiers(prgrm, fieldSig), field)
-		strct = fieldSig.GetStructType(prgrm)
+		strct = fieldSig.StructTypeGet(prgrm)
 	}
 	return inside
 }
@@ -461,7 +461,7 @@ func escapeParamSpecifiers(prgrm *ast.CXProgram, param escapeParam) []int {
 // variable a declaration signature declares.
 func escapeSignatureSpecifiers(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) []int {
 	array := func(base []int) []int {
-		details := prgrm.GetCXTypeSignatureArrayFromArray(sig.Meta)
+		details := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
 		for range details.Lengths {
 			base = append(base, constants.DECL_ARRAY)
 		}
@@ -469,7 +469,7 @@ func escapeSignatureSpecifiers(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) [
 	}
 	switch sig.Type {
 	case ast.TYPE_CXARGUMENT_DEPRECATE:
-		return prgrm.GetCXArg(ast.CXArgumentIndex(sig.Meta)).DeclarationSpecifiers
+		return prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta)).DeclarationSpecifiers
 	case ast.TYPE_POINTER_ATOMIC:
 		return []int{constants.DECL_BASIC, constants.DECL_POINTER}
 	case ast.TYPE_ARRAY_ATOMIC:
@@ -507,13 +507,13 @@ func escapePrologue(prgrm *ast.CXProgram, params []escapeParam, escaped map[stri
 		hidden := prgrm.CXProgramNameIntern(escapeInputPrefix + prgrm.CXProgramNameText(param.escapeParamName))
 		source := param.escapeParamArgument
 		if source == nil {
-			source = param.escapeParamSignature.GetCXArgFormat(prgrm)
+			source = param.escapeParamSignature.CXArgFormatGet(prgrm)
 		}
 		if param.escapeParamSignature != nil {
 			param.escapeParamSignature.Name = hidden
 		}
 		_, line := ast.CXArgumentDebugFileLine(prgrm, source.ArgDetails)
-		_, specs := ast.MakeArgument(prgrm, param.escapeParamName, CurrentFile, line)
+		_, specs := ast.ArgumentMake(prgrm, param.escapeParamName, CurrentFile, line)
 		specsIndex, specsDetails := specs.Index, specs.ArgDetails
 		*specs = *source
 		specs.Index, specs.ArgDetails = specsIndex, specsDetails
@@ -524,7 +524,7 @@ func escapePrologue(prgrm *ast.CXProgram, params []escapeParam, escaped map[stri
 		specs.PassBy = constants.PASSBY_VALUE
 		source.Name = hidden
 
-		_, declarator := ast.MakeArgument(prgrm, param.escapeParamName, CurrentFile, line)
+		_, declarator := ast.ArgumentMake(prgrm, param.escapeParamName, CurrentFile, line)
 		prologue = append(prologue, DeclareLocal(prgrm, declarator, specs, primaryIdentifierExpressions(prgrm, hidden), true)...)
 	}
 	if prologue == nil {
@@ -556,11 +556,11 @@ func escapeDeclare(prgrm *ast.CXProgram, symbolTable *SymbolTable, typeSig *ast.
 // names and the body, after the copies of the escaped inputs.
 func escapeFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []*ast.CXArgument, exprs []ast.CXExpression) (map[stringpool.StringGid]bool, []ast.CXExpression) {
 	var params []escapeParam
-	if fnInputs := fn.GetInputs(prgrm); len(fnInputs) != len(inputs) && len(fnInputs) > 0 {
-		receiver := prgrm.GetCXTypeSignatureFromArray(fnInputs[0])
+	if fnInputs := fn.InputsGet(prgrm); len(fnInputs) != len(inputs) && len(fnInputs) > 0 {
+		receiver := prgrm.CXTypeSignatureFromArrayGet(fnInputs[0])
 		param := escapeParam{escapeParamName: StripNameNumber(prgrm, receiver.Name), escapeParamSignature: receiver}
 		if receiver.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
-			param.escapeParamArgument = prgrm.GetCXArg(ast.CXArgumentIndex(receiver.Meta))
+			param.escapeParamArgument = prgrm.CXArgGet(ast.CXArgumentIndex(receiver.Meta))
 		}
 		params = append(params, param)
 	}
@@ -617,7 +617,7 @@ func (state *escapeState) escapeStructLiteralTemporary(name stringpool.StringGid
 	if sig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
 		return true
 	}
-	arg := prgrm.GetCXArg(ast.CXArgumentIndex(sig.Meta))
+	arg := prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta))
 	return len(arg.Fields) == 0 && len(arg.Indexes) == 0
 }
 

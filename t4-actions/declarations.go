@@ -62,8 +62,8 @@ func DeclarationSpecifiers(declSpec *ast.CXArgument, arrayLengths []types.Pointe
 
 // DeclarationSpecifiersBasic() returns a type specifier created from one of the builtin types.
 func DeclarationSpecifiersBasic(prgrm *ast.CXProgram, typeCode types.Code) *ast.CXArgument {
-	_, arg := ast.MakeArgument(prgrm, stringpool.StringGidNil, CurrentFile, LineNo)
-	arg.SetType(typeCode)
+	_, arg := ast.ArgumentMake(prgrm, stringpool.StringGidNil, CurrentFile, LineNo)
+	arg.TypeSet(typeCode)
 	return DeclarationSpecifiers(arg, []types.Pointer{0}, constants.DECL_BASIC)
 }
 
@@ -72,7 +72,7 @@ func DeclarationSpecifiersBasic(prgrm *ast.CXProgram, typeCode types.Code) *ast.
 // name starts, or at the token the parser is at for a column of 0.
 func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName string,
 	external bool, currentFile ast.SourceFileGid, lineNo int, column int) *ast.CXArgument {
-	pkg, err := prgrm.GetCurrentPackage()
+	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		panic(err)
 	}
@@ -84,14 +84,14 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 	var strct *ast.CXStruct
 	if external {
 		// custom type in an imported package
-		imp, err := pkg.GetImport(prgrm, prgrm.CXProgramNameIntern(pkgName))
+		imp, err := pkg.ImportGet(prgrm, prgrm.CXProgramNameIntern(pkgName))
 		if err != nil {
 			prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeMessage, currentFile, lineNo, column, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(err.Error())})
 
 			return declarationSpecifiersMissing(prgrm, currentFile, lineNo)
 		}
 
-		strct, err = prgrm.GetStruct(identGid, imp.Name)
+		strct, err = prgrm.StructGet(identGid, imp.Name)
 		if err != nil {
 			// A package whose import failed has no types, and its import is the
 			// error. Its uses report nothing more.
@@ -104,7 +104,7 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		}
 	} else {
 		// custom type in the current package, or one an import into scope brings in
-		strct, err = prgrm.GetStruct(identGid, pkg.Name)
+		strct, err = prgrm.StructGet(identGid, pkg.Name)
 		if err != nil {
 			if scopedStruct := importScopedStruct(prgrm, pkg, currentFile, identGid); scopedStruct != nil {
 				strct, err = scopedStruct, nil
@@ -117,10 +117,10 @@ func DeclarationSpecifiersStruct(prgrm *ast.CXProgram, ident string, pkgName str
 		}
 	}
 
-	_, arg := ast.MakeArgument(prgrm, stringpool.StringGidNil, currentFile, lineNo)
+	_, arg := ast.ArgumentMake(prgrm, stringpool.StringGidNil, currentFile, lineNo)
 	arg.Type = types.STRUCT
 	arg.StructType = strct
-	arg.Size = strct.GetStructSize(prgrm)
+	arg.Size = strct.StructSizeGet(prgrm)
 	arg.Package = ast.CXPackageIndex(pkg.Index)
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
 
@@ -139,8 +139,8 @@ func declarationSpecifiersMissing(prgrm *ast.CXProgram, currentFile ast.SourceFi
 // declarationSpecifiersPlaceholder stands in for a type that failed to resolve
 // after its compile error is recorded, so parsing goes on without a nil.
 func declarationSpecifiersPlaceholder(prgrm *ast.CXProgram, currentFile ast.SourceFileGid, lineNo int) *ast.CXArgument {
-	_, arg := ast.MakeArgument(prgrm, stringpool.StringGidNil, currentFile, lineNo)
-	arg.SetType(types.UNDEFINED)
+	_, arg := ast.ArgumentMake(prgrm, stringpool.StringGidNil, currentFile, lineNo)
+	arg.TypeSet(types.UNDEFINED)
 	arg.Size = 0
 	return arg
 }
@@ -150,7 +150,7 @@ func declarationSpecifiersPlaceholder(prgrm *ast.CXProgram, currentFile ast.Sour
 const declarationSizeLimit = uint64(types.MAX_UINT32)
 
 // declarationArgSize returns the bytes a declaration of arg takes, and false
-// when they pass declarationSizeLimit. It follows ast.GetArgSize.
+// when they pass declarationSizeLimit. It follows ast.ArgSizeGet.
 func declarationArgSize(arg *ast.CXArgument) (types.Pointer, bool) {
 	// The last specifier is the outermost, so [3]*i32 is an array of pointers.
 	for i := len(arg.DeclarationSpecifiers) - 1; i >= 0; i-- {

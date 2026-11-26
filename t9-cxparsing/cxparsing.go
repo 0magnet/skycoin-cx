@@ -67,14 +67,14 @@ func parseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
 		Adding global variables `OS_ARGS` to the `os` (operating system)
 		package.
 	*/
-	if osPkg, err := actions.AST.GetPackage(actions.AST.CxIrState.CxIrStateNameOs); err == nil {
-		if _, err := osPkg.GetGlobal(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs); err != nil {
-			_, arg0 := ast.MakeArgument(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs, ast.SourceFileGidNil, -1)
-			arg0.SetType(types.UNDEFINED)
+	if osPkg, err := actions.AST.PackageGet(actions.AST.CxIrState.CxIrStateNameOs); err == nil {
+		if _, err := osPkg.GlobalGet(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs); err != nil {
+			_, arg0 := ast.ArgumentMake(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs, ast.SourceFileGidNil, -1)
+			arg0.TypeSet(types.UNDEFINED)
 			arg0.Package = ast.CXPackageIndex(osPkg.Index)
 
-			_, arg1 := ast.MakeArgument(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs, ast.SourceFileGidNil, -1)
-			arg1.SetType(types.STR)
+			_, arg1 := ast.ArgumentMake(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs, ast.SourceFileGidNil, -1)
+			arg1.TypeSet(types.STR)
 			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_BASIC)
 			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_SLICE)
 			actions.DeclareGlobalInPackage(actions.AST, osPkg, arg0, arg1, nil, false)
