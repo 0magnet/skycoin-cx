@@ -53,12 +53,12 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 
 	reImp := regexp.MustCompile("import")
 
-	profiling.StartProfile("1. packages/structs")
+	profiling.ProfileStart("1. packages/structs")
 	// 1. Identify all the packages and structs
 	for srcI, srcStr := range srcStrs {
 		actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
 		srcName := srcNames[srcI]
-		profiling.StartProfile(srcName)
+		profiling.ProfileStart(srcName)
 
 		reader := strings.NewReader(srcStr)
 		scanner := bufio.NewScanner(reader)
@@ -139,17 +139,17 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 				}
 			}
 		}
-		profiling.StopProfile(srcName)
+		profiling.ProfileStop(srcName)
 	} // for range srcStrs
-	profiling.StopProfile("1. packages/structs")
+	profiling.ProfileStop("1. packages/structs")
 
-	profiling.StartProfile("2. globals")
+	profiling.ProfileStart("2. globals")
 	// 2. Identify all global variables
 	//    We also identify packages again, so we know to what
 	//    package we're going to add the variable declaration to.
 	for i, source := range srcStrs {
 		actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
-		profiling.StartProfile(srcNames[i])
+		profiling.ProfileStart(srcNames[i])
 		// inBlock needs to be 0 to guarantee that we're in the global scope
 		var inBlock int
 		var commentedCode bool
@@ -308,15 +308,15 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 				}
 			}
 		}
-		profiling.StopProfile(srcNames[i])
+		profiling.ProfileStop(srcNames[i])
 	}
-	profiling.StopProfile("2. globals")
+	profiling.ProfileStop("2. globals")
 
-	profiling.StartProfile("3. cxpartialparsing")
+	profiling.ProfileStart("3. cxpartialparsing")
 
 	for i, source := range srcStrs {
 		actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
-		profiling.StartProfile(srcNames[i])
+		profiling.ProfileStart(srcNames[i])
 		source = source + "\n"
 		// Each file selects its package with its package clause.
 		actions.AST.CurrentPackage = -1
@@ -328,14 +328,14 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 			passone
 		*/
 		parseErrors += Passone(source)
-		profiling.StopProfile(srcNames[i])
+		profiling.ProfileStop(srcNames[i])
 	}
 
-	profiling.StopProfile("3. cxpartialparsing")
+	profiling.ProfileStop("3. cxpartialparsing")
 	return parseErrors, packages
 }
 
-func AddInitFunction(prgrm *ast.CXProgram) error {
+func SysInitFunctionAdd(prgrm *ast.CXProgram) error {
 	prgrm.CxIrState.CxIrStateManagerGrowBoundary()
 	mainPkg, err := prgrm.PackageGet(prgrm.CxIrState.CxIrStateNameMain)
 	if err != nil {

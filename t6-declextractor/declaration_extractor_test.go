@@ -209,7 +209,7 @@ func TestDeclarationExtractor_ExtractImports(t *testing.T) {
 				t.Fatal(filepath.Base(tc.testDir), err)
 			}
 
-			gotImports, gotErr := declaration_extractor.ExtractImports(ReplaceCommentsWithWhitespaces, tc.testDir)
+			gotImports, gotErr := declaration_extractor.ImportsExtract(ReplaceCommentsWithWhitespaces, tc.testDir)
 
 			for _, wantImport := range tc.wantImports {
 
@@ -337,7 +337,7 @@ func TestDeclarationExtractor_ExtractGlobals(t *testing.T) {
 				t.Fatal(filepath.Base(tc.testDir), err)
 			}
 
-			gotGlobals, gotErr := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			gotGlobals, gotErr := declaration_extractor.GlobalsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 
 			for _, wantGlobal := range tc.wantGlobals {
 
@@ -542,7 +542,7 @@ func TestDeclarationExtractor_ExtractEnums(t *testing.T) {
 				t.Fatal(filepath.Base(tc.testDir), err)
 			}
 
-			gotEnums, gotErr := declaration_extractor.ExtractEnums(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			gotEnums, gotErr := declaration_extractor.EnumsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 
 			for _, wantEnum := range tc.wantEnums {
 
@@ -678,7 +678,7 @@ func TestDeclarationExtractor_ExtractTypeDefinitions(t *testing.T) {
 				t.Fatal(filepath.Base(tc.testDir), err)
 			}
 
-			gotTypeDefinitions, gotErr := declaration_extractor.ExtractTypeDefinitions(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			gotTypeDefinitions, gotErr := declaration_extractor.TypeDefinitionsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 
 			for _, wantTypeDef := range tc.wantTypeDefinitions {
 
@@ -912,7 +912,7 @@ func TestDeclarationExtractor_ExtractStructs(t *testing.T) {
 				t.Fatal(filepath.Base(tc.testDir), err)
 			}
 
-			gotStructs, gotErr := declaration_extractor.ExtractStructs(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			gotStructs, gotErr := declaration_extractor.StructsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 
 			for _, wantStruct := range tc.wantStructs {
 
@@ -1087,7 +1087,7 @@ func TestDeclarationExtractor_ExtractFuncs(t *testing.T) {
 				t.Fatal(filepath.Base(tc.testDir), err)
 			}
 
-			gotFuncs, gotErr := declaration_extractor.ExtractFuncs(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			gotFuncs, gotErr := declaration_extractor.FuncsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 
 			for _, wantFunc := range tc.wantFuncs {
 
@@ -1186,32 +1186,32 @@ func TestDeclarationExtractor_ReDeclarationCheck(t *testing.T) {
 				t.Fatal(filepath.Base(tc.testDir), err)
 			}
 
-			imports, err := declaration_extractor.ExtractImports(ReplaceCommentsWithWhitespaces, tc.testDir)
+			imports, err := declaration_extractor.ImportsExtract(ReplaceCommentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			globals, err := declaration_extractor.GlobalsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			enums, err := declaration_extractor.ExtractEnums(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			enums, err := declaration_extractor.EnumsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			typeDefinitions, err := declaration_extractor.ExtractTypeDefinitions(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			typeDefinitions, err := declaration_extractor.TypeDefinitionsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			structs, err := declaration_extractor.ExtractStructs(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			structs, err := declaration_extractor.StructsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extractor.ExtractFuncs(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			funcs, err := declaration_extractor.FuncsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1269,32 +1269,32 @@ func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 				t.Fatal(filepath.Base(tc.testDir), err)
 			}
 
-			imports, err := declaration_extractor.ExtractImports(ReplaceCommentsWithWhitespaces, tc.testDir)
+			imports, err := declaration_extractor.ImportsExtract(ReplaceCommentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			globals, err := declaration_extractor.GlobalsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			enums, err := declaration_extractor.ExtractEnums(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			enums, err := declaration_extractor.EnumsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			typeDefinitions, err := declaration_extractor.ExtractTypeDefinitions(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			typeDefinitions, err := declaration_extractor.TypeDefinitionsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			structs, err := declaration_extractor.ExtractStructs(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			structs, err := declaration_extractor.StructsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extractor.ExtractFuncs(ReplaceStringContentsWithWhitespaces, tc.testDir)
+			funcs, err := declaration_extractor.FuncsExtract(ReplaceStringContentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1303,7 +1303,7 @@ func TestDeclarationExtractor_GetDeclarations(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			declarations := declaration_extractor.GetDeclarations(ReplaceCommentsWithWhitespaces, globals, enums, typeDefinitions, structs, funcs)
+			declarations := declaration_extractor.DeclarationsGet(ReplaceCommentsWithWhitespaces, globals, enums, typeDefinitions, structs, funcs)
 
 			for i := range declarations {
 				if declarations[i] != tc.wantDeclarations[i] {
@@ -1435,17 +1435,17 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 			if perr != nil {
 				t.Fatal(perr)
 			}
-			err := loader.LoadCXProgram("mypkg1", sourceCodes)
+			err := loader.CXProgramLoad("mypkg1", sourceCodes)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("mypkg1")
+			files, err := file_output.ImportFilesGet("mypkg1")
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
+			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.AllDeclarationsExtract(files)
 
 			if len(Imports) == 0 && len(Globals) == 0 && len(Enums) == 0 && len(Structs) == 0 && len(Funcs) == 0 {
 				t.Error("No Declarations found")
@@ -1506,7 +1506,7 @@ func BenchmarkDeclarationExtractor_ExtractFuncs(b *testing.B) {
 				b.Fatal(err)
 			}
 			for n := 0; n < b.N; n++ {
-				declaration_extractor.ExtractFuncs(srcBytes, bm.testDir)
+				declaration_extractor.FuncsExtract(srcBytes, bm.testDir)
 			}
 		})
 	}

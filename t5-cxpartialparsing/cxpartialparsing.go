@@ -37,7 +37,7 @@ var fileName string
 func Parse(code string) int {
 	yyErrorVerbose = true
 	codeBuf := bytes.NewBufferString(code)
-	return yyParse(NewLexer(codeBuf))
+	return yyParse(LexerNew(codeBuf))
 }
 
 func PreFunctionDeclaration(fnIdx ast.CXFunctionGid, inputs []*ast.CXArgument, outputs []*ast.CXArgument) {
@@ -1275,19 +1275,19 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:198
 		{
-			actions.DeclareGlobals(Program, yyDollar[1].arguments, yyDollar[2].argument, nil, nil, false)
+			actions.GlobalsDeclare(Program, yyDollar[1].arguments, yyDollar[2].argument, nil, nil, false)
 		}
 	case 15:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:202
 		{
-			actions.DeclareGlobals(Program, yyDollar[1].arguments, yyDollar[2].argument, nil, varValues(yylex, yyDollar[4].ints), true)
+			actions.GlobalsDeclare(Program, yyDollar[1].arguments, yyDollar[2].argument, nil, varValues(yylex, yyDollar[4].ints), true)
 		}
 	case 16:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:206
 		{
-			actions.DeclareGlobals(Program, yyDollar[1].arguments, nil, nil, varValues(yylex, yyDollar[3].ints), true)
+			actions.GlobalsDeclare(Program, yyDollar[1].arguments, nil, nil, varValues(yylex, yyDollar[3].ints), true)
 		}
 	case 17:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -1317,7 +1317,7 @@ yydefault:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:237
 		{
-			actions.DeclareStruct(Program, yyDollar[2].tok, yyDollar[4].arguments, CurrentFile, yyDollar[2].line, yyDollar[2].column)
+			actions.StructDeclare(Program, yyDollar[2].tok, yyDollar[4].arguments, CurrentFile, yyDollar[2].line, yyDollar[2].column)
 		}
 	case 22:
 		yyDollar = yyS[yypt-3 : yypt+1]
@@ -1355,37 +1355,37 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:266
 		{
-			actions.DeclarePackage(Program, yyDollar[2].tok)
+			actions.PackageDeclare(Program, yyDollar[2].tok)
 		}
 	case 28:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:273
 		{
-			actions.DeclareImportAt(Program, yyDollar[2].tok, CurrentFile, lineNo, yyDollar[2].column)
+			actions.ImportDeclareAt(Program, yyDollar[2].tok, CurrentFile, lineNo, yyDollar[2].column)
 		}
 	case 29:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:279
 		{
-			actions.DeclareImportScoped(Program, yyDollar[3].tok, "", 0, 0, nil, CurrentFile, yyDollar[3].line, yyDollar[3].column)
+			actions.ImportScopedDeclare(Program, yyDollar[3].tok, "", 0, 0, nil, CurrentFile, yyDollar[3].line, yyDollar[3].column)
 		}
 	case 30:
 		yyDollar = yyS[yypt-5 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:283
 		{
-			actions.DeclareImportScoped(Program, yyDollar[4].tok, yyDollar[2].tok, yyDollar[2].line, yyDollar[2].column, nil, CurrentFile, yyDollar[4].line, yyDollar[4].column)
+			actions.ImportScopedDeclare(Program, yyDollar[4].tok, yyDollar[2].tok, yyDollar[2].line, yyDollar[2].column, nil, CurrentFile, yyDollar[4].line, yyDollar[4].column)
 		}
 	case 31:
 		yyDollar = yyS[yypt-6 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:287
 		{
-			actions.DeclareImportScoped(Program, yyDollar[5].tok, "", 0, 0, actions.ImportScopedNamesTake(), CurrentFile, yyDollar[5].line, yyDollar[5].column)
+			actions.ImportScopedDeclare(Program, yyDollar[5].tok, "", 0, 0, actions.ImportScopedNamesTake(), CurrentFile, yyDollar[5].line, yyDollar[5].column)
 		}
 	case 32:
 		yyDollar = yyS[yypt-7 : yypt+1]
 //line t5-cxpartialparsing/cxpartialparsing.y:291
 		{
-			actions.DeclareImportScoped(Program, yyDollar[6].tok, yyDollar[2].tok, yyDollar[2].line, yyDollar[2].column, actions.ImportScopedNamesTake(), CurrentFile, yyDollar[6].line, yyDollar[6].column)
+			actions.ImportScopedDeclare(Program, yyDollar[6].tok, yyDollar[2].tok, yyDollar[2].line, yyDollar[2].column, actions.ImportScopedNamesTake(), CurrentFile, yyDollar[6].line, yyDollar[6].column)
 		}
 	case 33:
 		yyDollar = yyS[yypt-1 : yypt+1]

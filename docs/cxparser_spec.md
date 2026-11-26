@@ -79,7 +79,7 @@ Output:
 `Package -> {Name: "main", LineNo: 2, FileName: "main.cx", SourceFiles: [{FileName: "main.cx", SourceCode: ...}]}`
 
 **Actions called**
- - [`actions.DeclarePackage`](../t4-actions/packages.go)
+ - [`actions.PackageDeclare`](../t4-actions/packages.go)
 
 ### Stage 2: Parse Struct and Enum types
 
@@ -109,7 +109,7 @@ Output:
 `Struct -> { PackageName: "main", Name: "Entry", LineNo: 8, FileName: "main.cx", Fields: {Name: age, Type: i32} }`
 
 **Actions called**
- - [`actions.DeclareStruct`](../t4-actions/structs.go)
+ - [`actions.StructDeclare`](../t4-actions/structs.go)
 
 ### Stage 3: Declare Global Variables
 
@@ -137,7 +137,7 @@ Output:
 `GlobalVariable -> { PackageName: "main", Name: "a", Type: i32, LineNo: 12, FileName: "main.cx", Offset: -1 }`.
 
 **Actions called**
- - [`actions.DeclareGlobalInPackage`](../t4-actions/variables.go)
+ - [`actions.GlobalInPackageDeclare`](../t4-actions/variables.go)
 
 ### Stage 4: Parse Function Type Signatures
 

@@ -10,14 +10,14 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only ReadProgram and StoredPackage; no depth gain
 )
 
-func SavePackagesToDisk(programName string, outDir string) error {
+func PackagesToDiskSave(programName string, outDir string) error {
 	if programName == "" {
 		return errors.New("save packages: empty program name")
 	}
 	if outDir == "" {
 		return fmt.Errorf("save packages %s: empty output path", programName)
 	}
-	stored, err := loader.ReadProgram(programName)
+	stored, err := loader.ProgramRead(programName)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func SavePackagesToDisk(programName string, outDir string) error {
 			dir = filepath.Join(dir, pkg.Package.PackageName)
 		}
 
-		err = SaveFilesToDisk(pkg, dir)
+		err = FilesToDiskSave(pkg, dir)
 		if err != nil {
 			return err
 		}
@@ -43,7 +43,7 @@ func SavePackagesToDisk(programName string, outDir string) error {
 	return nil
 }
 
-func SaveFilesToDisk(pkg loader.StoredPackage, dir string) error {
+func FilesToDiskSave(pkg loader.StoredPackage, dir string) error {
 	if dir == "" {
 		return fmt.Errorf("save files of package %s: empty output path", pkg.Package.PackageName)
 	}

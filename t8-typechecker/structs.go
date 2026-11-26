@@ -10,7 +10,7 @@ import (
 // Parse Structs
 // - takes in structs from cx/cmd/declaration_extractor
 // - adds structs to AST
-func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDeclaration) error {
+func StructsParse(files []*loader.File, structs []declaration_extractor.StructDeclaration) error {
 	prgrm := actions.AST
 
 	// Get Package
@@ -50,7 +50,7 @@ func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDe
 
 		pkg = pkg.StructAdd(actions.AST, structCX)
 
-		src, err := GetSourceBytes(files, strct.FileID)
+		src, err := SourceBytesGet(files, strct.FileID)
 		if err != nil {
 			return err
 		}
@@ -61,7 +61,7 @@ func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDe
 
 			structFieldLine := src[strctFieldDec.StartOffset : strctFieldDec.StartOffset+strctFieldDec.Length]
 
-			structFieldSpecifier, err := ParseParameterDeclaration(prgrm, structFieldLine, pkg, prgrm.CXProgramSourceFileIntern(strct.FileID), strctFieldDec.LineNumber)
+			structFieldSpecifier, err := ParameterDeclarationParse(prgrm, structFieldLine, pkg, prgrm.CXProgramSourceFileIntern(strct.FileID), strctFieldDec.LineNumber)
 			if err != nil {
 				return err
 			}
@@ -69,7 +69,7 @@ func ParseStructs(files []*loader.File, structs []declaration_extractor.StructDe
 			structFields = append(structFields, structFieldSpecifier)
 		}
 
-		actions.DeclareStruct(actions.AST, strct.StructName, structFields, prgrm.CXProgramSourceFileIntern(strct.FileID), strct.LineNumber, 0)
+		actions.StructDeclare(actions.AST, strct.StructName, structFields, prgrm.CXProgramSourceFileIntern(strct.FileID), strct.LineNumber, 0)
 
 	}
 	return nil

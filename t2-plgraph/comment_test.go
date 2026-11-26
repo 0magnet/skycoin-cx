@@ -27,7 +27,7 @@ func loadSource(t *testing.T, name string, files map[string]string) {
 		t.Fatal(err)
 	}
 	closeFiles(t, sourceCodes)
-	if err := loader.LoadCXProgram(name, sourceCodes); err != nil {
+	if err := loader.CXProgramLoad(name, sourceCodes); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -36,7 +36,7 @@ func TestGraphSkipsCommentedImport(t *testing.T) {
 	loadSource(t, "GraphComment", map[string]string{
 		"m.cx": "package main\nimport \"sys/os\"\n/*\nimport \"fromcomment\"\n*/\nfunc main() {\n}\n",
 	})
-	got, err := GetImportGraph("GraphComment")
+	got, err := ImportGraphGet("GraphComment")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func TestGraphExternalImportOnce(t *testing.T) {
 		"main.cx": "package main\nimport \"sys/os\"\nimport \"b\"\nfunc main() {\n}\n",
 		"b/b.cx":  "package b\nimport \"sys/os\"\n",
 	})
-	got, err := GetImportGraph("GraphExternal")
+	got, err := ImportGraphGet("GraphExternal")
 	if err != nil {
 		t.Fatal(err)
 	}

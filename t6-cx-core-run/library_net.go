@@ -20,7 +20,7 @@ const coreLibraryNetLinked = true
 
 // The net library is linked into this core, see coreLibraryRegisters.
 func init() {
-	coreLibraryRegisters = append(coreLibraryRegisters, cxnet.RegisterPackage)
+	coreLibraryRegisters = append(coreLibraryRegisters, cxnet.PackageRegister)
 	if path := os.Getenv(coreNetReplayEnv); path != "" {
 		netbatch.NetRunMode, netbatch.NetRunRecordPath = netbatch.NetModeReplay, path
 	}

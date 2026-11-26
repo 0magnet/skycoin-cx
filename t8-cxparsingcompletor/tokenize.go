@@ -10,14 +10,14 @@ import (
 func Tokenize(r io.Reader, w io.Writer, lines []string, sourceFileName string) {
 	var sym yySymType
 
-	lex := NewLexer(r)
+	lex := LexerNew(r)
 	var token int = 1
 	var line, newLine int
 	var lineTokens, packageName, funcName string
 	var printLine, parseFunc, parsePackage bool
 
 	for token > 0 {
-		token, newLine = lex.PrintLex(&sym)
+		token, newLine = lex.LexPrint(&sym)
 
 		if parseFunc {
 			funcName = TokenValue(token, &sym).(string)

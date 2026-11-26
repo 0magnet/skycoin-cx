@@ -26,7 +26,7 @@ type StructField struct {
 	StructFieldName string // name of variable being declared
 }
 
-func ExtractStructs(source []byte, fileName string) ([]StructDeclaration, error) {
+func StructsExtract(source []byte, fileName string) ([]StructDeclaration, error) {
 
 	var StructDeclarationsArray []StructDeclaration
 	var pkg string

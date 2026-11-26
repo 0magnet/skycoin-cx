@@ -13,8 +13,8 @@ import (
 func TestOpcodeNamesMatchLifecycleTable(t *testing.T) {
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a constructor call, site S1465.
-	prgrm := MakeProgram()
-	RegisterPackages(prgrm)
+	prgrm := ProgramMake()
+	PackagesRegister(prgrm)
 
 	for _, entry := range ast.NativeNames.NativeNameIndexAll() {
 		code, name := entry.NativeNameEntryCode, entry.NativeNameEntryText
@@ -61,8 +61,8 @@ func TestOpcodeNamesMatchLifecycleTable(t *testing.T) {
 func TestLibraryFunctionsMatchLifecycleTable(t *testing.T) {
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a constructor call, as in TestOpcodeNamesMatchLifecycleTable.
-	prgrm := MakeProgram()
-	RegisterPackages(prgrm)
+	prgrm := ProgramMake()
+	PackagesRegister(prgrm)
 
 	for _, row := range constants.LibraryFunctionLifecycleTable {
 		key := ast.LibraryFunctionKey(row.LibraryNumber, row.Number)
@@ -110,8 +110,8 @@ func TestLibraryFunctionsMatchLifecycleTable(t *testing.T) {
 func TestOpcodeNativesAndDispatch(t *testing.T) {
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a constructor call, as in TestOpcodeNamesMatchLifecycleTable.
-	prgrm := MakeProgram()
-	RegisterPackages(prgrm)
+	prgrm := ProgramMake()
+	PackagesRegister(prgrm)
 
 	for _, row := range constants.OpcodeDefinitionTable {
 		if !constants.OpcodeLinked(row.Number) {

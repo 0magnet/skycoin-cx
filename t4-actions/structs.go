@@ -9,7 +9,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
-// DeclareStruct takes a name of a struct and a slice of fields representing
+// StructDeclare takes a name of a struct and a slice of fields representing
 // the members and adds the struct to the package.
 //
 // Input arguments description:
@@ -20,7 +20,7 @@ import (
 //	 file, line, column - the position of the name. Both passes declare each
 //				   struct, and a struct of the package declared at another
 //				   position is a redeclaration.
-func DeclareStruct(prgrm *ast.CXProgram, structName string, structFields []*ast.CXArgument, file ast.SourceFileGid, line int, column int) {
+func StructDeclare(prgrm *ast.CXProgram, structName string, structFields []*ast.CXArgument, file ast.SourceFileGid, line int, column int) {
 	// Make sure we are inside a package.
 	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {

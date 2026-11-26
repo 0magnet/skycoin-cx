@@ -45,7 +45,7 @@ func runCallbackPrepare(t testing.TB) (*ast.CXProgram, *ast.CXFunction, [][]byte
 	prgrm := actions.AST
 	execute.RunPrepare(prgrm)
 	mainFn := runCallbackFunction(t, prgrm, "main")
-	prgrm.CallStack[0] = execute.MakeCall(prgrm, prgrm.CXProgramFunctionGid(mainFn))
+	prgrm.CallStack[0] = execute.CallMake(prgrm, prgrm.CXProgramFunctionGid(mainFn))
 	prgrm.CallCounter = 0
 	prgrm.Stack.Pointer = mainFn.Size
 	inputs := [][]byte{make([]byte, 4), make([]byte, 4)}

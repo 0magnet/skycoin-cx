@@ -105,7 +105,7 @@ func Execute(c *cli.Command) error {
 		fmt.Printf("Resulting test mask: %06b\n", testsMask)
 	}
 
-	tester := runner.NewTestRunner(&runner.Config{
+	tester := runner.TestRunnerNew(&runner.Config{
 		CxPath:         cxPath,
 		WorkingDir:     workingDir,
 		TestsMask:      testsMask,

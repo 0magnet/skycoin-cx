@@ -61,7 +61,7 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0980.
-	slcVarExprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	slcVarExprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// adding the declaration
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0981.
@@ -121,7 +121,7 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 
 			// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 			// Now a constructor call, site S0988.
-			symExprExprCXLine := MakeCXLineExpressionCurrent(prgrm)
+			symExprExprCXLine := CXLineExpressionCurrentMake(prgrm)
 			// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 			// Now a constructor call, site S0989.
 			symExpr := ast.AtomicOperatorExpressionMake(prgrm, nil)
@@ -238,7 +238,7 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1004.
-	symExprExprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	symExprExprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1005.
 	symExpr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OP_IDENTITY))
@@ -330,7 +330,7 @@ func sliceLiteralStructElement(prgrm *ast.CXProgram, strct *ast.CXStruct, elemen
 		return ast.CXTypeSignatureOfCXArgDeprecateAlloc(prgrm, arg)
 	}
 
-	declCXLine := MakeCXLineExpressionCurrent(prgrm)
+	declCXLine := CXLineExpressionCurrentMake(prgrm)
 	decl := ast.AtomicOperatorExpressionMake(prgrm, nil)
 	prgrm.CXAtomicOps[decl.Index].Package = ast.CXPackageIndex(pkg.Index)
 	prgrm.CXAtomicOps[decl.Index].OutputAdd(prgrm, elementArg(true))
@@ -698,7 +698,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1027.
-	arrVarExprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	arrVarExprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1028.
 	arrVarExpr := ast.AtomicOperatorExpressionMake(prgrm, nil)
@@ -742,7 +742,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
 
-			idxArg := WritePrimary(prgrm, types.I32, encoder.Serialize(int32(endPointsCounter)), false)
+			idxArg := PrimaryWrite(prgrm, types.I32, encoder.Serialize(int32(endPointsCounter)), false)
 			// index is always i32
 			// hence, always an atomic type
 
@@ -773,7 +773,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 
 			// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 			// Now a constructor call, site S1036.
-			symExprCXLine := MakeCXLineExpressionCurrent(prgrm)
+			symExprCXLine := CXLineExpressionCurrentMake(prgrm)
 			// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 			// Now a constructor call, site S1037.
 			symExpr := ast.AtomicOperatorExpressionMake(prgrm, nil)
@@ -834,7 +834,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1044.
-	symExprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	symExprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1045.
 	symExpr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OP_IDENTITY))
@@ -966,7 +966,7 @@ func structLiteralValue(prgrm *ast.CXProgram, strct *ast.CXStruct, name stringpo
 	if err != nil {
 		panic(err)
 	}
-	declCXLine := MakeCXLineExpressionCurrent(prgrm)
+	declCXLine := CXLineExpressionCurrentMake(prgrm)
 	decl := ast.AtomicOperatorExpressionMake(prgrm, nil)
 	prgrm.CXAtomicOps[decl.Index].Package = ast.CXPackageIndex(pkg.Index)
 	prgrm.CXAtomicOps[decl.Index].OutputAdd(prgrm, structLiteralVariable(prgrm, strct, name, true))
@@ -1051,7 +1051,7 @@ func structLiteralInvalid(prgrm *ast.CXProgram) []ast.CXExpression {
 		arg.PreviouslyDeclared = !declaration
 		return ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, arg)
 	}
-	declCXLine := MakeCXLineExpressionCurrent(prgrm)
+	declCXLine := CXLineExpressionCurrentMake(prgrm)
 	decl := ast.AtomicOperatorExpressionMake(prgrm, nil)
 	prgrm.CXAtomicOps[decl.Index].Package = ast.CXPackageIndex(pkg.Index)
 	prgrm.CXAtomicOps[decl.Index].OutputAdd(prgrm, variable(true))

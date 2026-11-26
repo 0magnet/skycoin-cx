@@ -349,7 +349,7 @@ func PostfixExpressionNative(prgrm *ast.CXProgram, typeCode types.Code, opStrCod
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1144.
-	exprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	exprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1145.
 	var expr *ast.CXExpression
@@ -522,7 +522,7 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression,
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1160.
-	exprCXLine := MakeCXLineExpressionCurrent(prgrm)
+	exprCXLine := CXLineExpressionCurrentMake(prgrm)
 	var expr *ast.CXExpression
 	if increment {
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
@@ -657,7 +657,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		if cxpackages.PackageDefault(prgrm.CXProgramNameText(leftExprOutputTypeSig.Name)) {
 			if constantName, ok := prgrm.CXProgramNativeFind(&ConstNames, leftExprOutputTypeSig.Name, stringpool.StringGidNil, identGid); ok {
 				constant := Constants[constantName.NativeNameEntryCode]
-				valArg := WritePrimary(prgrm, constant.Type, constant.Value, false)
+				valArg := PrimaryWrite(prgrm, constant.Type, constant.Value, false)
 
 				// TODO: to be removed and implemented with correct process to change the index
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.

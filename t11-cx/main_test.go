@@ -45,11 +45,11 @@ func TestNoArgsStartsRepl(t *testing.T) {
 }
 
 func initProgram() {
-	actions.InitConstants()
-	cxos.InitConstants(actions.AddConstI32)
-	cxnet.InitConstants(actions.AddConstI32)
+	actions.ConstantsInit()
+	cxos.ConstantsInit(actions.ConstI32Add)
+	cxnet.ConstantsInit(actions.ConstI32Add)
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0064 S0065.
-	actions.AST = cxinit.MakeProgram()
-	cxinit.RegisterPackages(actions.AST)
+	actions.AST = cxinit.ProgramMake()
+	cxinit.PackagesRegister(actions.AST)
 }

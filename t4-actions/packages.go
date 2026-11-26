@@ -8,13 +8,13 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
-// DeclarePackage() switches the current package in the program.
+// PackageDeclare() switches the current package in the program.
 //
 // Input arguments description:
 //
 //	prgrm - a CXProgram that contains all the data and arrays of the program.
 //	pkgName - name of the package to declare.
-func DeclarePackage(prgrm *ast.CXProgram, pkgName string) {
+func PackageDeclare(prgrm *ast.CXProgram, pkgName string) {
 	pkgNameGid := prgrm.CXProgramNameIntern(pkgName)
 	// Add a new package to the program if it's not previously defined.
 	if _, err := prgrm.PackageGet(pkgNameGid); err != nil {
@@ -32,7 +32,7 @@ func DeclarePackage(prgrm *ast.CXProgram, pkgName string) {
 	}
 }
 
-// DeclareImport()
+// ImportDeclare()
 //
 // Input arguments description:
 //
@@ -40,13 +40,13 @@ func DeclarePackage(prgrm *ast.CXProgram, pkgName string) {
 //	impName - name of the import to declare.
 //	currentFile - the current cx source code file.
 //	lineNo - the current line number from the source code.
-func DeclareImport(prgrm *ast.CXProgram, impName string, currentFile ast.SourceFileGid, lineNo int) {
-	DeclareImportAt(prgrm, impName, currentFile, lineNo, prgrm.CXProgramCompileErrorColumn(currentFile, lineNo))
+func ImportDeclare(prgrm *ast.CXProgram, impName string, currentFile ast.SourceFileGid, lineNo int) {
+	ImportDeclareAt(prgrm, impName, currentFile, lineNo, prgrm.CXProgramCompileErrorColumn(currentFile, lineNo))
 }
 
-// DeclareImportAt is DeclareImport of the path at column, which a local
+// ImportDeclareAt is ImportDeclare of the path at column, which a local
 // named like the package reports as the import it shadows (#486).
-func DeclareImportAt(prgrm *ast.CXProgram, impName string, currentFile ast.SourceFileGid, lineNo int, column int) {
+func ImportDeclareAt(prgrm *ast.CXProgram, impName string, currentFile ast.SourceFileGid, lineNo int, column int) {
 	// Make sure we are inside a package
 	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
@@ -54,7 +54,7 @@ func DeclareImportAt(prgrm *ast.CXProgram, impName string, currentFile ast.Sourc
 		panic(err)
 	}
 
-	if err := cxpackages.CheckImport(impName); err != nil {
+	if err := cxpackages.ImportCheck(impName); err != nil {
 		prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeMessage, currentFile, lineNo, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(err.Error())})
 		return
 	}

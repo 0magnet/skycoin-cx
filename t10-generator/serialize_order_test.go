@@ -18,11 +18,11 @@ func sampleProgramWithPackages(t *testing.T) *cxast.CXProgram {
 	for _, pkg := range []string{"alpha", "beta", "gamma", "delta"} {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now an arena insert, site S0050.
-		if err := astapi.AddEmptyPackage(prgrm, pkg); err != nil {
+		if err := astapi.EmptyPackageAdd(prgrm, pkg); err != nil {
 			t.Fatal(err)
 		}
 		for _, fn := range []string{"one", "two", "three"} {
-			if err := astapi.AddEmptyFunctionToPackage(prgrm, pkg, pkg+"_"+fn); err != nil {
+			if err := astapi.PackageEmptyFunctionAdd(prgrm, pkg, pkg+"_"+fn); err != nil {
 				t.Fatal(err)
 			}
 		}

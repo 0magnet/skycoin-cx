@@ -84,20 +84,20 @@ func OpGlfwPollEvents(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 
 func glfwSetKeyCallback(window *glfw.Window) {
 	window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-		PushKeyboardEvent(ActionType(action), int32(key), int64(scancode), int32(mods))
+		KeyboardEventPush(ActionType(action), int32(key), int64(scancode), int32(mods))
 	})
 }
 
 func glfwSetCursorPosCallback(window *glfw.Window, eventType EventType) {
 	window.SetCursorPosCallback(func(w *glfw.Window, xpos float64, ypos float64) {
-		PushMouseEvent(eventType, ACTION_MOVE, 0, -1, 0, xpos, ypos)
+		MouseEventPush(eventType, ACTION_MOVE, 0, -1, 0, xpos, ypos)
 	})
 }
 
 func glfwSetMouseButtonCallback(window *glfw.Window, eventType EventType) {
 	window.SetMouseButtonCallback(func(w *glfw.Window, key glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
 		x, y := w.GetCursorPos()
-		PushMouseEvent(eventType, ActionType(action), int32(key), -1, int32(mods), x, y)
+		MouseEventPush(eventType, ActionType(action), int32(key), -1, int32(mods), x, y)
 	})
 }
 
@@ -130,21 +130,21 @@ func OpGlfwSetMouseCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs 
 
 func OpGlfwSetFramebufferSizeCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	cxfxWindowGet(inputs[0].Get_i32(prgrm)).SetFramebufferSizeCallback(func(w *glfw.Window, width int, height int) {
-		PushFramebufferSizeEvent(float64(width), float64(height)) // TODO : to deprecate, use float64
+		FramebufferSizeEventPush(float64(width), float64(height)) // TODO : to deprecate, use float64
 	})
 	cxfxAppCallbackSet(prgrm, APP_FRAMEBUFFER_SIZE, inputs)
 }
 
 func OpGlfwSetWindowSizeCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	cxfxWindowGet(inputs[0].Get_i32(prgrm)).SetSizeCallback(func(w *glfw.Window, width int, height int) {
-		PushWindowSizeEvent(float64(width), float64(height)) // TODO : to deprecate, use float64
+		WindowSizeEventPush(float64(width), float64(height)) // TODO : to deprecate, use float64
 	})
 	cxfxAppCallbackSet(prgrm, APP_WINDOW_SIZE, inputs)
 }
 
 func OpGlfwSetWindowPosCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	cxfxWindowGet(inputs[0].Get_i32(prgrm)).SetPosCallback(func(w *glfw.Window, x int, y int) {
-		PushWindowPositionEvent(float64(x), float64(y)) // TODO to deprecate, use float64
+		WindowPositionEventPush(float64(x), float64(y)) // TODO to deprecate, use float64
 	})
 	cxfxAppCallbackSet(prgrm, APP_WINDOW_POSITION, inputs)
 }
@@ -152,7 +152,7 @@ func OpGlfwSetWindowPosCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outp
 func OpGlfwSetStartCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	cxfxWindowGet(inputs[0].Get_i32(prgrm))
 	cxfxAppCallbackSet(prgrm, APP_START, inputs)
-	PushEvent(APP_START)
+	EventPush(APP_START)
 }
 
 func OpGlfwSetStopCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {

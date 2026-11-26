@@ -46,7 +46,7 @@ func AffordanceLiteral(prgrm *ast.CXProgram, clauses []AffordanceClauseParsed, l
 	}
 	literal.AffordanceLiteralOffset = prgrm.Data.StartsAt + prgrm.Data.Size
 	prgrm.CXProgramAffordanceLiteralAdd(literal)
-	return WritePrimaryExprs(prgrm, types.AFF, make([]byte, types.AFF_SIZE), false)
+	return PrimaryExpressionsWrite(prgrm, types.AFF, make([]byte, types.AFF_SIZE), false)
 }
 
 // AffordanceLiteralsResolve writes the value of each aff literal compiled

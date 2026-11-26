@@ -19,7 +19,7 @@ type GlobalDeclaration struct {
 	GlobalVariableName string // name of variable being declared
 }
 
-func ExtractGlobals(source []byte, fileName string) ([]GlobalDeclaration, error) {
+func GlobalsExtract(source []byte, fileName string) ([]GlobalDeclaration, error) {
 
 	var GlobalDeclarationsArray []GlobalDeclaration
 	var pkg string

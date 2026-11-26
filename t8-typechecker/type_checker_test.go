@@ -136,8 +136,8 @@ func TestTypeChecker_ParseDeclarationSpecifier(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1528 S1529.
-			actions.AST = cxinit.MakeProgram()
-			cxinit.RegisterPackages(actions.AST)
+			actions.AST = cxinit.ProgramMake()
+			cxinit.PackagesRegister(actions.AST)
 
 			if tc.strctName != "" {
 
@@ -156,11 +156,11 @@ func TestTypeChecker_ParseDeclarationSpecifier(t *testing.T) {
 			}
 
 			if tc.pkgName != "" {
-				actions.DeclareImport(actions.AST, tc.pkgName, actions.AST.CXProgramSourceFileIntern(tc.fileName), tc.lineno)
+				actions.ImportDeclare(actions.AST, tc.pkgName, actions.AST.CXProgramSourceFileIntern(tc.fileName), tc.lineno)
 			}
 
 			var gotDeclarationSpecifier *ast.CXArgument
-			gotDeclarationSpecifier, gotErr := type_checker.ParseDeclarationSpecifier(actions.AST, []byte(tc.testString), actions.AST.CXProgramSourceFileIntern(tc.fileName), tc.lineno, gotDeclarationSpecifier)
+			gotDeclarationSpecifier, gotErr := type_checker.DeclarationSpecifierParse(actions.AST, []byte(tc.testString), actions.AST.CXProgramSourceFileIntern(tc.fileName), tc.lineno, gotDeclarationSpecifier)
 			gotTypeSignature := ast.CXTypeSignatureRepresentationOfCXArgGet(actions.AST, gotDeclarationSpecifier)
 			gotDeclarationSpecifierFormattedString := ast.FormattedTypeGet(actions.AST, gotTypeSignature)
 
@@ -264,8 +264,8 @@ func TestTypeChecker_ParseParameterDeclaration(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1533 S1534.
-			actions.AST = cxinit.MakeProgram()
-			cxinit.RegisterPackages(actions.AST)
+			actions.AST = cxinit.ProgramMake()
+			cxinit.PackagesRegister(actions.AST)
 
 			var pkg *ast.CXPackage
 			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
@@ -284,11 +284,11 @@ func TestTypeChecker_ParseParameterDeclaration(t *testing.T) {
 			}
 
 			if tc.pkgName != "" {
-				actions.DeclareImport(actions.AST, tc.pkgName, actions.AST.CXProgramSourceFileIntern(tc.fileName), tc.lineno)
+				actions.ImportDeclare(actions.AST, tc.pkgName, actions.AST.CXProgramSourceFileIntern(tc.fileName), tc.lineno)
 			}
 
 			var gotParameterDeclaration *ast.CXArgument
-			gotParameterDeclaration, gotErr := type_checker.ParseParameterDeclaration(actions.AST, []byte(tc.testString), pkg, actions.AST.CXProgramSourceFileIntern(tc.fileName), tc.lineno)
+			gotParameterDeclaration, gotErr := type_checker.ParameterDeclarationParse(actions.AST, []byte(tc.testString), pkg, actions.AST.CXProgramSourceFileIntern(tc.fileName), tc.lineno)
 			gotParameterDeclarationFormattedName := ast.FormattedNameGet(actions.AST, gotParameterDeclaration, false, pkg)
 			gotTypeSignature := ast.CXTypeSignatureRepresentationOfCXArgGet(actions.AST, gotParameterDeclaration)
 			gotParameterDeclarationFormattedType := ast.FormattedTypeGet(actions.AST, gotTypeSignature)
@@ -343,8 +343,8 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1538 S1539.
-			actions.AST = cxinit.MakeProgram()
-			cxinit.RegisterPackages(actions.AST)
+			actions.AST = cxinit.ProgramMake()
+			cxinit.PackagesRegister(actions.AST)
 
 			srcBytes, err := os.ReadFile(tc.testDir)
 			if err != nil {
@@ -353,12 +353,12 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(srcBytes)
 
-			Imports, err := declaration_extractor.ExtractImports(ReplaceCommentsWithWhitespaces, tc.testDir)
+			Imports, err := declaration_extractor.ImportsExtract(ReplaceCommentsWithWhitespaces, tc.testDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			err = type_checker.ParseImports(Imports)
+			err = type_checker.ImportsParse(Imports)
 
 			program := actions.AST
 
@@ -527,20 +527,20 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1542 S1543.
-			actions.AST = cxinit.MakeProgram()
-			cxinit.RegisterPackages(actions.AST)
+			actions.AST = cxinit.ProgramMake()
+			cxinit.PackagesRegister(actions.AST)
 
 			_, sourceCode, _, perr := sourceargs.Parse([]string{tc.testDir}, true)
 			if perr != nil {
 				t.Fatal(perr)
 			}
 
-			err := loader.LoadCXProgram("test", sourceCode)
+			err := loader.CXProgramLoad("test", sourceCode)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("test")
+			files, err := file_output.ImportFilesGet("test")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -551,12 +551,12 @@ func TestTypeChecker_ParseGlobals(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			Globals, err := declaration_extractor.ExtractGlobals(ReplaceStringContentsWithWhitespaces, files[0].FileName)
+			Globals, err := declaration_extractor.GlobalsExtract(ReplaceStringContentsWithWhitespaces, files[0].FileName)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			err = type_checker.ParseGlobals(files, Globals)
+			err = type_checker.GlobalsParse(files, Globals)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -693,31 +693,31 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1545 S1546.
-			actions.AST = cxinit.MakeProgram()
-			cxinit.RegisterPackages(actions.AST)
+			actions.AST = cxinit.ProgramMake()
+			cxinit.PackagesRegister(actions.AST)
 
 			_, sourceCode, _, perr := sourceargs.Parse([]string{tc.testDir}, true)
 			if perr != nil {
 				t.Fatal(perr)
 			}
 
-			err := loader.LoadCXProgram("test", sourceCode)
+			err := loader.CXProgramLoad("test", sourceCode)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("test")
+			files, err := file_output.ImportFilesGet("test")
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			ReplaceCommentsWithWhitespaces := declaration_extractor.ReplaceCommentsWithWhitespaces(files[0].Content)
 
-			structs, err := declaration_extractor.ExtractStructs(ReplaceCommentsWithWhitespaces, files[0].FileName)
+			structs, err := declaration_extractor.StructsExtract(ReplaceCommentsWithWhitespaces, files[0].FileName)
 
 			// The native packages register structs first, so count from the first new one.
 			firstStruct := len(actions.AST.CXStructs)
-			type_checker.ParseStructs(files, structs)
+			type_checker.StructsParse(files, structs)
 
 			program := actions.AST
 
@@ -872,20 +872,20 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1550 S1551.
-			actions.AST = cxinit.MakeProgram()
-			cxinit.RegisterPackages(actions.AST)
+			actions.AST = cxinit.ProgramMake()
+			cxinit.PackagesRegister(actions.AST)
 
 			_, sourceCode, _, perr := sourceargs.Parse([]string{tc.testDir}, true)
 			if perr != nil {
 				t.Fatal(perr)
 			}
 
-			err := loader.LoadCXProgram("test", sourceCode)
+			err := loader.CXProgramLoad("test", sourceCode)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("test")
+			files, err := file_output.ImportFilesGet("test")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -896,9 +896,9 @@ func TestTypeChecker_ParseFuncHeaders(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			funcs, err := declaration_extractor.ExtractFuncs(ReplaceStringContentsWithWhitespaces, files[0].FileName)
+			funcs, err := declaration_extractor.FuncsExtract(ReplaceStringContentsWithWhitespaces, files[0].FileName)
 
-			type_checker.ParseFuncHeaders(files, funcs)
+			type_checker.FuncHeadersParse(files, funcs)
 
 			program := actions.AST
 
@@ -1214,22 +1214,22 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 				t.Fatal(perr)
 			}
 
-			err := loader.LoadCXProgram("test", sourceCode)
+			err := loader.CXProgramLoad("test", sourceCode)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			files, err := file_output.GetImportFiles("test")
+			files, err := file_output.ImportFilesGet("test")
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.ExtractAllDeclarations(files)
+			Imports, Globals, Enums, TypeDefinitions, Structs, Funcs, gotErr := declaration_extractor.AllDeclarationsExtract(files)
 			if (Enums != nil && TypeDefinitions != nil) || gotErr != nil {
 				t.Fatal(gotErr)
 			}
 
-			err = type_checker.ParseAllDeclarations(files, Imports, Globals, Structs, Funcs)
+			err = type_checker.AllDeclarationsParse(files, Imports, Globals, Structs, Funcs)
 			if err != nil {
 				t.Fatal(err)
 			}

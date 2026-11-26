@@ -8,7 +8,7 @@ import (
 	cxparseractions "github.com/skycoin/skycoin-cx/t4-actions" // thin: only AST, WritePrimary; no depth gain
 )
 
-// AddNativeInputToExpression adds native input to an expression
+// ExpressionNativeInputAdd adds native input to an expression
 // in a function in cx program.
 //
 // The inputs are
@@ -27,7 +27,7 @@ import (
 //	    0.- Function: TestFunction (inputOne i32) (outputOne i16)
 //	        0.- Expression: z i16 = add(x i16)
 //
-// We use AddNativeInputToExpression(cxprogram, "main", "TestFunction", "y", cxtypes.I16, 0).
+// We use ExpressionNativeInputAdd(cxprogram, "main", "TestFunction", "y", cxtypes.I16, 0).
 // The Result will be:
 // 0.- Package: main
 //
@@ -36,13 +36,13 @@ import (
 //	        0.- Expression: z i16 = add(x i16, y i16)
 //
 // Note the y i16 added as an input to the expression in line 0.
-func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functionName, inputName string, inputType types.Code, lineNumber int) error {
-	pkg, err := FindPackage(cxprogram, packageName)
+func ExpressionNativeInputAdd(cxprogram *cxast.CXProgram, packageName, functionName, inputName string, inputType types.Code, lineNumber int) error {
+	pkg, err := PackageFind(cxprogram, packageName)
 	if err != nil {
 		return err
 	}
 
-	fn, err := FindFunction(cxprogram, functionName)
+	fn, err := FunctionFind(cxprogram, functionName)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 //
 // Note the y i16 removed from the expression in line 0.
 // func RemoveInputFromExpression(cxprogram *cxast.CXProgram, functionName string, lineNumber int) error {
-// 	fn, err := FindFunction(cxprogram, functionName)
+// 	fn, err := FunctionFind(cxprogram, functionName)
 // 	if err != nil {
 // 		return err
 // 	}
@@ -114,7 +114,7 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 // 	return nil
 // }
 
-// AddNativeOutputToExpression adds native output to
+// ExpressionNativeOutputAdd adds native output to
 // an expression in a function in cx program.
 //
 // The inputs are
@@ -133,7 +133,7 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 //	    0.- Function: TestFunction (inputOne i32) (outputOne i16)
 //	        0.- Expression: add(x i16, y i16)
 //
-// We use AddNativeOutputToExpression(cxprogram, "main", "TestFunction", "z", cxtypes.I16, 0).
+// We use ExpressionNativeOutputAdd(cxprogram, "main", "TestFunction", "z", cxtypes.I16, 0).
 // The Result will be:
 // 0.- Package: main
 //
@@ -142,13 +142,13 @@ func AddNativeInputToExpression(cxprogram *cxast.CXProgram, packageName, functio
 //	        0.- Expression: z i16 = add(x i16, y i16)
 //
 // Note the z i16 added as an output of the expression in line 0.
-func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functionName, outputName string, outputType types.Code, lineNumber int) error {
-	pkg, err := FindPackage(cxprogram, packageName)
+func ExpressionNativeOutputAdd(cxprogram *cxast.CXProgram, packageName, functionName, outputName string, outputType types.Code, lineNumber int) error {
+	pkg, err := PackageFind(cxprogram, packageName)
 	if err != nil {
 		return err
 	}
 
-	fn, err := FindFunction(cxprogram, functionName)
+	fn, err := FunctionFind(cxprogram, functionName)
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 //
 // Note the z i16 removed as an output from the expression in line 0.
 // func RemoveOutputFromExpression(cxprogram *cxast.CXProgram, functionName string, lineNumber int) error {
-// 	fn, err := FindFunction(cxprogram, functionName)
+// 	fn, err := FunctionFind(cxprogram, functionName)
 // 	if err != nil {
 // 		return err
 // 	}
@@ -220,7 +220,7 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 // 	return nil
 // }
 
-// MakeInputExpressionAPointer makes an input of an
+// ExpressionInputPointerMake makes an input of an
 // expression a pointer.
 //
 // The inputs are
@@ -238,7 +238,7 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 //	    0.- Function: TestFunction (inputOne i32) (outputOne i16)
 //	        0.- Expression: z i16 = add(x i16, y i16)
 //
-// We use MakeInputExpressionAPointer(cxprogram, "TestFunction", 0, 1).
+// We use ExpressionInputPointerMake(cxprogram, "TestFunction", 0, 1).
 // The Result will be:
 // 0.- Package: main
 //
@@ -247,8 +247,8 @@ func AddNativeOutputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 //	        0.- Expression: z i16 = add(x i16, y *i16)
 //
 // Note that y *i16 became a pointer.
-func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string, lineNumber, inputNumber int) error {
-	fn, err := FindFunction(cxprogram, functionName)
+func ExpressionInputPointerMake(cxprogram *cxast.CXProgram, functionName string, lineNumber, inputNumber int) error {
+	fn, err := FunctionFind(cxprogram, functionName)
 	if err != nil {
 		return err
 	}
@@ -277,7 +277,7 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 	return nil
 }
 
-// MakeOutputExpressionAPointer makes an output
+// ExpressionOutputPointerMake makes an output
 // of an expression a pointer.
 //
 // The inputs are
@@ -295,7 +295,7 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 //	    0.- Function: TestFunction (inputOne i32) (outputOne i16)
 //	        0.- Expression: z i16 = add(x i16, y i16)
 //
-// We use MakeOutputExpressionAPointer(cxprogram, "TestFunction", 0, 0).
+// We use ExpressionOutputPointerMake(cxprogram, "TestFunction", 0, 0).
 // The Result will be:
 // 0.- Package: main
 //
@@ -304,8 +304,8 @@ func MakeInputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string
 //	        0.- Expression: z *i16 = add(x i16, y i16)
 //
 // Note that z *i16 became a pointer.
-func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName string, lineNumber, outputNumber int) error {
-	fn, err := FindFunction(cxprogram, functionName)
+func ExpressionOutputPointerMake(cxprogram *cxast.CXProgram, functionName string, lineNumber, outputNumber int) error {
+	fn, err := FunctionFind(cxprogram, functionName)
 	if err != nil {
 		return err
 	}
@@ -334,7 +334,7 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 	return nil
 }
 
-// GetAccessibleArgsForFunctionByType gets all accessible
+// FunctionAccessibleArgsByTypeGet gets all accessible
 // arguments in cx program for a function by specified
 // argument type.
 //
@@ -354,15 +354,15 @@ func MakeOutputExpressionAPointer(cxprogram *cxast.CXProgram, functionName strin
 //	        0.- Function: TestFunction (inputOne i32) (outputOne i16)
 //	                0.- Expression: add(x i16)
 //
-// We use GetAccessibleArgsForFunctionByType(cxprogram, "main", "TestFunction", cxtypes.I16).
+// We use FunctionAccessibleArgsByTypeGet(cxprogram, "main", "TestFunction", cxtypes.I16).
 // We then get a result of
 // 1. testGlobal i16 arg in the form of cxast.CXTypeSignature.
 // 2. x i16 arg in the form of cxast.CXTypeSignature.
-func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocationName, functionName string, argType types.Code) ([]*cxast.CXTypeSignature, error) {
+func FunctionAccessibleArgsByTypeGet(cxprogram *cxast.CXProgram, packageLocationName, functionName string, argType types.Code) ([]*cxast.CXTypeSignature, error) {
 	var argsList []*cxast.CXTypeSignature
 
 	// Get all globals
-	pkg, err := FindPackage(cxprogram, packageLocationName)
+	pkg, err := PackageFind(cxprogram, packageLocationName)
 	if err != nil {
 		return nil, err
 	}
@@ -387,7 +387,7 @@ func GetAccessibleArgsForFunctionByType(cxprogram *cxast.CXProgram, packageLocat
 		}
 	}
 
-	fn, err := FindFunction(cxprogram, functionName)
+	fn, err := FunctionFind(cxprogram, functionName)
 	if err != nil {
 		return nil, err
 	}
@@ -433,13 +433,13 @@ func appendArgsByType(cxprogram *cxast.CXProgram, argsList []*cxast.CXTypeSignat
 	return argsList
 }
 
-func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functionName string, bytes []byte, argType types.Code, lineNumber int) error {
-	pkg, err := FindPackage(cxprogram, packageName)
+func ExpressionLiteralInputAdd(cxprogram *cxast.CXProgram, packageName, functionName string, bytes []byte, argType types.Code, lineNumber int) error {
+	pkg, err := PackageFind(cxprogram, packageName)
 	if err != nil {
 		return err
 	}
 	cxprogram.CurrentPackage = cxast.CXPackageIndex(pkg.Index)
-	fn, err := FindFunction(cxprogram, functionName)
+	fn, err := FunctionFind(cxprogram, functionName)
 	if err != nil {
 		return err
 	}
@@ -450,7 +450,7 @@ func AddLiteralInputToExpression(cxprogram *cxast.CXProgram, packageName, functi
 	}
 
 	cxparseractions.AST = cxprogram
-	litArg := cxparseractions.WritePrimary(cxprogram, argType, bytes, false)
+	litArg := cxparseractions.PrimaryWrite(cxprogram, argType, bytes, false)
 
 	cxAtomicOp2, _, err := cxprogram.OperationGet(expr)
 	if err != nil {

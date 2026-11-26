@@ -15,11 +15,11 @@ func TestSavePackage(t *testing.T) {
 	if perr != nil {
 		t.Fatal(perr)
 	}
-	if err := loader.LoadCXProgram("Test", sourceCodes); err != nil {
+	if err := loader.CXProgramLoad("Test", sourceCodes); err != nil {
 		t.Fatal(err)
 	}
 	dir := filepath.Join(t.TempDir(), "out") + "/"
-	if err := SavePackagesToDisk("Test", dir); err != nil {
+	if err := PackagesToDiskSave("Test", dir); err != nil {
 		t.Fatal(err)
 	}
 	got, err := os.ReadFile(filepath.Join(dir, "src", "testimport2", "testimport2file.cx"))
@@ -50,12 +50,12 @@ func TestSavePackageRejectsUnsafeNames(t *testing.T) {
 		put("unsafe-pkg", loader.Package{PackageName: "main", Files: []string{"unsafe-file"}})
 		put("UnsafeProgram", loader.PackageList{Packages: []string{"unsafe-pkg"}})
 		dir := filepath.Join(t.TempDir(), "out")
-		if err := SavePackagesToDisk("UnsafeProgram", dir); err == nil {
+		if err := PackagesToDiskSave("UnsafeProgram", dir); err == nil {
 			t.Errorf("file name %q: want an error, got nil", name)
 		}
 	}
 	put("unsafe-pkg", loader.Package{PackageName: "../up", Files: nil})
-	if err := SavePackagesToDisk("UnsafeProgram", filepath.Join(t.TempDir(), "out")); err == nil {
+	if err := PackagesToDiskSave("UnsafeProgram", filepath.Join(t.TempDir(), "out")); err == nil {
 		t.Error("package name ../up: want an error, got nil")
 	}
 }

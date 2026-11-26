@@ -27,7 +27,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 - t8-cxparsingcompletor/parsingcompletor.y is input
 */
 
-// var actions.AST = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+// var actions.AST = ProgramMake(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 
 func Parse(lexer *Lexer) int {
 	yyErrorVerbose = true
@@ -1300,19 +1300,19 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:288
 		{
-			actions.DeclareGlobals(actions.AST, yyDollar[1].arguments, yyDollar[2].argument, nil, nil, false)
+			actions.GlobalsDeclare(actions.AST, yyDollar[1].arguments, yyDollar[2].argument, nil, nil, false)
 		}
 	case 18:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:292
 		{
-			actions.DeclareGlobals(actions.AST, yyDollar[1].arguments, yyDollar[2].argument, yyDollar[4].arrayArguments, nil, true)
+			actions.GlobalsDeclare(actions.AST, yyDollar[1].arguments, yyDollar[2].argument, yyDollar[4].arrayArguments, nil, true)
 		}
 	case 19:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:296
 		{
-			actions.DeclareGlobals(actions.AST, yyDollar[1].arguments, nil, yyDollar[3].arrayArguments, nil, true)
+			actions.GlobalsDeclare(actions.AST, yyDollar[1].arguments, nil, yyDollar[3].arrayArguments, nil, true)
 		}
 	case 20:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -1330,7 +1330,7 @@ yydefault:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:314
 		{
-			actions.DeclareStruct(actions.AST, yyDollar[2].tok, yyDollar[4].arguments, actions.CurrentFile, yyDollar[2].line, yyDollar[2].column)
+			actions.StructDeclare(actions.AST, yyDollar[2].tok, yyDollar[4].arguments, actions.CurrentFile, yyDollar[2].line, yyDollar[2].column)
 		}
 	case 23:
 		yyDollar = yyS[yypt-3 : yypt+1]
@@ -1368,13 +1368,13 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:344
 		{
-			actions.DeclarePackage(actions.AST, yyDollar[2].tok)
+			actions.PackageDeclare(actions.AST, yyDollar[2].tok)
 		}
 	case 29:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:351
 		{
-			// DeclareImport($2)
+			// ImportDeclare($2)
 		}
 	case 36:
 		yyDollar = yyS[yypt-2 : yypt+1]
@@ -1937,7 +1937,7 @@ yydefault:
 //line t8-cxparsingcompletor/parsingcompletor.y:819
 		{
 			position := actions.TokenPositionPush(yyDollar[1].line, yyDollar[1].column)
-			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.STR, types.Make_obj([]byte(yyDollar[1].tok)), false)
+			yyVAL.expressions = actions.PrimaryExpressionsWrite(actions.AST, types.STR, types.Make_obj([]byte(yyDollar[1].tok)), false)
 			actions.TokenPositionPop(position)
 		}
 	case 127:
@@ -1945,7 +1945,7 @@ yydefault:
 //line t8-cxparsingcompletor/parsingcompletor.y:825
 		{
 			position := actions.TokenPositionPush(yyDollar[1].line, yyDollar[1].column)
-			exprs := actions.WritePrimaryExprs(actions.AST, types.BOOL, encoder.Serialize(yyDollar[1].bool), false)
+			exprs := actions.PrimaryExpressionsWrite(actions.AST, types.BOOL, encoder.Serialize(yyDollar[1].bool), false)
 			actions.TokenPositionPop(position)
 			yyVAL.expressions = exprs
 		}
@@ -1954,7 +1954,7 @@ yydefault:
 //line t8-cxparsingcompletor/parsingcompletor.y:832
 		{
 			position := actions.TokenPositionPush(yyDollar[1].line, yyDollar[1].column)
-			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.I8, encoder.Serialize(yyDollar[1].i8), false)
+			yyVAL.expressions = actions.PrimaryExpressionsWrite(actions.AST, types.I8, encoder.Serialize(yyDollar[1].i8), false)
 			actions.TokenPositionPop(position)
 		}
 	case 129:
@@ -1962,7 +1962,7 @@ yydefault:
 //line t8-cxparsingcompletor/parsingcompletor.y:838
 		{
 			position := actions.TokenPositionPush(yyDollar[1].line, yyDollar[1].column)
-			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.I16, encoder.Serialize(yyDollar[1].i16), false)
+			yyVAL.expressions = actions.PrimaryExpressionsWrite(actions.AST, types.I16, encoder.Serialize(yyDollar[1].i16), false)
 			actions.TokenPositionPop(position)
 		}
 	case 130:
@@ -1970,7 +1970,7 @@ yydefault:
 //line t8-cxparsingcompletor/parsingcompletor.y:844
 		{
 			position := actions.TokenPositionPush(yyDollar[1].line, yyDollar[1].column)
-			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.I32, encoder.Serialize(yyDollar[1].i32), false)
+			yyVAL.expressions = actions.PrimaryExpressionsWrite(actions.AST, types.I32, encoder.Serialize(yyDollar[1].i32), false)
 			actions.TokenPositionPop(position)
 		}
 	case 131:
@@ -1978,7 +1978,7 @@ yydefault:
 //line t8-cxparsingcompletor/parsingcompletor.y:850
 		{
 			position := actions.TokenPositionPush(yyDollar[1].line, yyDollar[1].column)
-			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.I64, encoder.Serialize(yyDollar[1].i64), false)
+			yyVAL.expressions = actions.PrimaryExpressionsWrite(actions.AST, types.I64, encoder.Serialize(yyDollar[1].i64), false)
 			actions.TokenPositionPop(position)
 		}
 	case 132:
@@ -1986,7 +1986,7 @@ yydefault:
 //line t8-cxparsingcompletor/parsingcompletor.y:856
 		{
 			position := actions.TokenPositionPush(yyDollar[1].line, yyDollar[1].column)
-			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.UI8, encoder.Serialize(yyDollar[1].ui8), false)
+			yyVAL.expressions = actions.PrimaryExpressionsWrite(actions.AST, types.UI8, encoder.Serialize(yyDollar[1].ui8), false)
 			actions.TokenPositionPop(position)
 		}
 	case 133:
@@ -1994,7 +1994,7 @@ yydefault:
 //line t8-cxparsingcompletor/parsingcompletor.y:862
 		{
 			position := actions.TokenPositionPush(yyDollar[1].line, yyDollar[1].column)
-			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.UI16, encoder.Serialize(yyDollar[1].ui16), false)
+			yyVAL.expressions = actions.PrimaryExpressionsWrite(actions.AST, types.UI16, encoder.Serialize(yyDollar[1].ui16), false)
 			actions.TokenPositionPop(position)
 		}
 	case 134:
@@ -2002,7 +2002,7 @@ yydefault:
 //line t8-cxparsingcompletor/parsingcompletor.y:868
 		{
 			position := actions.TokenPositionPush(yyDollar[1].line, yyDollar[1].column)
-			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.UI32, encoder.Serialize(yyDollar[1].ui32), false)
+			yyVAL.expressions = actions.PrimaryExpressionsWrite(actions.AST, types.UI32, encoder.Serialize(yyDollar[1].ui32), false)
 			actions.TokenPositionPop(position)
 		}
 	case 135:
@@ -2010,7 +2010,7 @@ yydefault:
 //line t8-cxparsingcompletor/parsingcompletor.y:874
 		{
 			position := actions.TokenPositionPush(yyDollar[1].line, yyDollar[1].column)
-			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.UI64, encoder.Serialize(yyDollar[1].ui64), false)
+			yyVAL.expressions = actions.PrimaryExpressionsWrite(actions.AST, types.UI64, encoder.Serialize(yyDollar[1].ui64), false)
 			actions.TokenPositionPop(position)
 		}
 	case 136:
@@ -2018,7 +2018,7 @@ yydefault:
 //line t8-cxparsingcompletor/parsingcompletor.y:880
 		{
 			position := actions.TokenPositionPush(yyDollar[1].line, yyDollar[1].column)
-			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.F32, encoder.Serialize(yyDollar[1].f32), false)
+			yyVAL.expressions = actions.PrimaryExpressionsWrite(actions.AST, types.F32, encoder.Serialize(yyDollar[1].f32), false)
 			actions.TokenPositionPop(position)
 		}
 	case 137:
@@ -2026,7 +2026,7 @@ yydefault:
 //line t8-cxparsingcompletor/parsingcompletor.y:886
 		{
 			position := actions.TokenPositionPush(yyDollar[1].line, yyDollar[1].column)
-			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.F64, encoder.Serialize(yyDollar[1].f64), false)
+			yyVAL.expressions = actions.PrimaryExpressionsWrite(actions.AST, types.F64, encoder.Serialize(yyDollar[1].f64), false)
 			actions.TokenPositionPop(position)
 		}
 	case 138:
@@ -2661,7 +2661,7 @@ yydefault:
 		yyDollar = yyS[yypt-5 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:1493
 		{
-			yyVAL.expressions = actions.CreateSelectionStatement(actions.AST, yyDollar[2].expressions, yyDollar[3].expressions, yyDollar[4].SelectStatements, yyDollar[5].expressions, actions.SEL_ELSEIFELSE)
+			yyVAL.expressions = actions.SelectionStatementCreate(actions.AST, yyDollar[2].expressions, yyDollar[3].expressions, yyDollar[4].SelectStatements, yyDollar[5].expressions, actions.SEL_ELSEIFELSE)
 		}
 	case 284:
 		yyDollar = yyS[yypt-4 : yypt+1]
@@ -2673,7 +2673,7 @@ yydefault:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:1501
 		{
-			yyVAL.expressions = actions.CreateSelectionStatement(actions.AST, yyDollar[2].expressions, yyDollar[3].expressions, yyDollar[4].SelectStatements, nil, actions.SEL_ELSEIF)
+			yyVAL.expressions = actions.SelectionStatementCreate(actions.AST, yyDollar[2].expressions, yyDollar[3].expressions, yyDollar[4].SelectStatements, nil, actions.SEL_ELSEIF)
 		}
 	case 286:
 		yyDollar = yyS[yypt-3 : yypt+1]
@@ -2804,7 +2804,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:1626
 		{
-			yyVAL.expressions = actions.WritePrimaryExprs(actions.AST, types.BOOL, encoder.Serialize(true), false)
+			yyVAL.expressions = actions.PrimaryExpressionsWrite(actions.AST, types.BOOL, encoder.Serialize(true), false)
 		}
 	case 309:
 		yyDollar = yyS[yypt-2 : yypt+1]
@@ -2839,7 +2839,7 @@ yydefault:
 
 			// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 			// Now a constructor call, site S1502.
-			exprCXLine := actions.MakeCXLineExpressionCurrent(actions.AST)
+			exprCXLine := actions.CXLineExpressionCurrentMake(actions.AST)
 			// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 			// Now a constructor call, site S1503.
 			expr := ast.AtomicOperatorExpressionMake(actions.AST, ast.NativeFunctionOf(actions.AST, constants.OP_GOTO))
@@ -2867,7 +2867,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line t8-cxparsingcompletor/parsingcompletor.y:1680
 		{
-			yyVAL.expressions = actions.AddJmpToReturnExpressions(actions.AST, actions.ReturnExpressions{})
+			yyVAL.expressions = actions.ReturnExpressionsJmpAdd(actions.AST, actions.ReturnExpressions{})
 		}
 	case 316:
 		yyDollar = yyS[yypt-2 : yypt+1]
@@ -2875,7 +2875,7 @@ yydefault:
 		{
 			returnExpressions := yyDollar[2].ReturnExpressions
 			returnExpressions.Line, returnExpressions.Column = yyDollar[1].line, yyDollar[1].column
-			yyVAL.expressions = actions.AddJmpToReturnExpressions(actions.AST, returnExpressions)
+			yyVAL.expressions = actions.ReturnExpressionsJmpAdd(actions.AST, returnExpressions)
 		}
 	}
 	goto yystack /* stack new state and value */

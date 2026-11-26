@@ -7,7 +7,7 @@ import (
 )
 
 func TestConstantsHaveTheirOwnCodes(t *testing.T) {
-	InitConstants()
+	ConstantsInit()
 	names := map[int]string{}
 	for _, entry := range ConstNames.NativeNameIndexAll() {
 		name, code := entry.NativeNameEntryText, entry.NativeNameEntryCode

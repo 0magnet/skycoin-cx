@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// StartCPUProfile wrote <argv0>_<name>_cpu.pprof next to the executable
+// CPUProfileStart wrote <argv0>_<name>_cpu.pprof next to the executable
 // instead of the path it was given. See #118.
 func TestStartCPUProfileWritesTheGivenPath(t *testing.T) {
 	dir := t.TempDir()

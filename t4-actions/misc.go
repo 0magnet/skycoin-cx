@@ -28,11 +28,11 @@ func derefOpFound(arg *ast.CXArgument, spec int) bool {
 	return found
 }
 
-// WritePrimary writes those bytes to prgrm.Data and returns a new argument
+// PrimaryWrite writes those bytes to prgrm.Data and returns a new argument
 // for them. The caller takes the argument or releases it. A str
 // literal points to itself, storage being the zero value of a variable,
 // whose pointer stays nil.
-func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, storage bool) *ast.CXArgument {
+func PrimaryWrite(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, storage bool) *ast.CXArgument {
 	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		panic(err)
@@ -81,14 +81,14 @@ func WritePrimary(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, storag
 	return arg
 }
 
-// WritePrimary writes those bytes to prgrm.Data and returns a []CXExpression.
-func WritePrimaryExprs(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, sliceTyped bool) []ast.CXExpression {
+// PrimaryWrite writes those bytes to prgrm.Data and returns a []CXExpression.
+func PrimaryExpressionsWrite(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, sliceTyped bool) []ast.CXExpression {
 	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		panic(err)
 	}
 
-	arg := WritePrimary(prgrm, typeCode, byts, sliceTyped)
+	arg := PrimaryWrite(prgrm, typeCode, byts, sliceTyped)
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1055.

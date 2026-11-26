@@ -7,7 +7,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
-// StripNameNumber returns name without the n: prefix UpdateSymbolsTable gives
+// StripNameNumber returns name without the n: prefix SymbolsTableUpdate gives
 // a local variable.
 func StripNameNumber(prgrm *ast.CXProgram, name stringpool.StringGid) stringpool.StringGid {
 	text := prgrm.CXProgramNameBytes(name)

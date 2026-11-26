@@ -7,7 +7,7 @@ import (
 	"os"
 
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
-	profiling "github.com/skycoin/skycoin-cx/t1-profiling" // thin: only StartCPUProfileOnFile; no depth gain
+	profiling "github.com/skycoin/skycoin-cx/t1-profiling" // thin: only CPUProfileStartOnFile; no depth gain
 	ast "github.com/skycoin/skycoin-cx/t3-ast"
 )
 
@@ -32,7 +32,7 @@ func OpStartProfile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 		fmt.Fprintln(os.Stderr, fileError.FileErrorMessage)
 		return
 	}
-	stop, err := profiling.StartCPUProfileOnFile(file, profRate)
+	stop, err := profiling.CPUProfileStartOnFile(file, profRate)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return

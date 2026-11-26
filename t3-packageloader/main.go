@@ -51,7 +51,7 @@ func main() {
 	programName := *nameFlag
 
 	if *treeFlag {
-		output, err := tree.GetImportTree(programName)
+		output, err := tree.ImportTreeGet(programName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -60,7 +60,7 @@ func main() {
 	}
 
 	if *graphFlag {
-		output, err := graph.GetImportGraph(programName)
+		output, err := graph.ImportGraphGet(programName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -78,14 +78,14 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = loader.LoadCXProgram(programName, sourceCodes)
+		err = loader.CXProgramLoad(programName, sourceCodes)
 		if err != nil {
 			log.Fatal(err)
 		}
 		return
 	}
 	if *saveFlag {
-		err := encoder.SavePackagesToDisk(programName, path)
+		err := encoder.PackagesToDiskSave(programName, path)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -5,7 +5,7 @@ import (
 	cxast "github.com/skycoin/skycoin-cx/t3-ast"
 )
 
-// AddEmptyFunctionToPackage adds an empty function to a package in cx program.
+// PackageEmptyFunctionAdd adds an empty function to a package in cx program.
 //
 // The inputs are
 // cxprogram - in the form of cxast.CXProgram.
@@ -19,7 +19,7 @@ import (
 // We have this CX Program:
 // 0.- Package: main
 //
-// We use AddEmptyFunctionToPackage(cxprogram, "main", "TestFunction").
+// We use PackageEmptyFunctionAdd(cxprogram, "main", "TestFunction").
 // The Result will be:
 // 0.- Package: main
 //
@@ -27,8 +27,8 @@ import (
 //	    0.- Function: TestFunction()()
 //
 // Note the new function added to the package.
-func AddEmptyFunctionToPackage(cxprogram *cxast.CXProgram, packageName, functionName string) error {
-	pkg, err := FindPackage(cxprogram, packageName)
+func PackageEmptyFunctionAdd(cxprogram *cxast.CXProgram, packageName, functionName string) error {
+	pkg, err := PackageFind(cxprogram, packageName)
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func AddEmptyFunctionToPackage(cxprogram *cxast.CXProgram, packageName, function
 	return nil
 }
 
-// RemoveFunctionFromPackage removes a function from a package in cx program.
+// PackageFunctionRemove removes a function from a package in cx program.
 //
 // The inputs are
 // cxprogram - in the form of cxast.CXProgram.
@@ -57,13 +57,13 @@ func AddEmptyFunctionToPackage(cxprogram *cxast.CXProgram, packageName, function
 //	Functions
 //	    0.- Function: TestFunction()()
 //
-// We use RemoveFunctionFromPackage(cxprogram, "main", "TestFunction").
+// We use PackageFunctionRemove(cxprogram, "main", "TestFunction").
 // The Result will be:
 // 0.- Package: main
 //
 // Note the TestFunction was removed from the package.
-func RemoveFunctionFromPackage(cxprogram *cxast.CXProgram, packageName, functionName string) error {
-	pkg, err := FindPackage(cxprogram, packageName)
+func PackageFunctionRemove(cxprogram *cxast.CXProgram, packageName, functionName string) error {
+	pkg, err := PackageFind(cxprogram, packageName)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func RemoveFunctionFromPackage(cxprogram *cxast.CXProgram, packageName, function
 	return nil
 }
 
-// AddNativeInputToFunction adds a native input to a function in cx program.
+// FunctionNativeInputAdd adds a native input to a function in cx program.
 //
 // The inputs are
 // cxprogram - in the form of cxast.CXProgram.
@@ -96,7 +96,7 @@ func RemoveFunctionFromPackage(cxprogram *cxast.CXProgram, packageName, function
 //	Functions
 //	    0.- Function: TestFunction()()
 //
-// We use AddNativeInputToFunction(cxprogram, "main", "TestFunction", "inputOne", cxtypes.I32).
+// We use FunctionNativeInputAdd(cxprogram, "main", "TestFunction", "inputOne", cxtypes.I32).
 // The Result will be:
 // 0.- Package: main
 //
@@ -104,13 +104,13 @@ func RemoveFunctionFromPackage(cxprogram *cxast.CXProgram, packageName, function
 //	    0.- Function: TestFunction(inputOne i32) ()
 //
 // Note the new inputOne i32 input to the TestFunction.
-func AddNativeInputToFunction(cxprogram *cxast.CXProgram, packageName, functionName, inputName string, inputType types.Code) error {
-	pkg, err := FindPackage(cxprogram, packageName)
+func FunctionNativeInputAdd(cxprogram *cxast.CXProgram, packageName, functionName, inputName string, inputType types.Code) error {
+	pkg, err := PackageFind(cxprogram, packageName)
 	if err != nil {
 		return err
 	}
 
-	fn, err := FindFunction(cxprogram, functionName)
+	fn, err := FunctionFind(cxprogram, functionName)
 	if err != nil {
 		return err
 	}
@@ -145,7 +145,7 @@ func AddNativeInputToFunction(cxprogram *cxast.CXProgram, packageName, functionN
 //
 // Note the inputOne i32 input was removed from the TestFunction.
 // func RemoveFunctionInput(cxprogram *cxast.CXProgram, functionName, inputName string) error {
-// 	fn, err := FindFunction(cxprogram, functionName)
+// 	fn, err := FunctionFind(cxprogram, functionName)
 // 	if err != nil {
 // 		return err
 // 	}
@@ -154,7 +154,7 @@ func AddNativeInputToFunction(cxprogram *cxast.CXProgram, packageName, functionN
 // 	return nil
 // }
 
-// AddNativeOutputToFunction adds a native output to a function in cx program.
+// FunctionNativeOutputAdd adds a native output to a function in cx program.
 //
 // The inputs are
 // cxprogram - in the form of cxast.CXProgram.
@@ -176,7 +176,7 @@ func AddNativeInputToFunction(cxprogram *cxast.CXProgram, packageName, functionN
 //	Functions
 //	    0.- Function: TestFunction()()
 //
-// We use AddNativeOutputToFunction(cxprogram, "main", "TestFunction", "outputOne", cxtypes.I32).
+// We use FunctionNativeOutputAdd(cxprogram, "main", "TestFunction", "outputOne", cxtypes.I32).
 // The Result will be:
 // 0.- Package: main
 //
@@ -184,13 +184,13 @@ func AddNativeInputToFunction(cxprogram *cxast.CXProgram, packageName, functionN
 //	    0.- Function: TestFunction() (outputOne i32)
 //
 // Note the new outputOne i32 output of the TestFunction.
-func AddNativeOutputToFunction(cxprogram *cxast.CXProgram, packageName, functionName, outputName string, outputType types.Code) error {
-	pkg, err := FindPackage(cxprogram, packageName)
+func FunctionNativeOutputAdd(cxprogram *cxast.CXProgram, packageName, functionName, outputName string, outputType types.Code) error {
+	pkg, err := PackageFind(cxprogram, packageName)
 	if err != nil {
 		return err
 	}
 
-	fn, err := FindFunction(cxprogram, functionName)
+	fn, err := FunctionFind(cxprogram, functionName)
 	if err != nil {
 		return err
 	}
@@ -224,7 +224,7 @@ func AddNativeOutputToFunction(cxprogram *cxast.CXProgram, packageName, function
 //
 // Note the outputOne i32 output was removed from the TestFunction.
 // func RemoveFunctionOutput(cxprogram *cxast.CXProgram, functionName, outputName string) error {
-// 	fn, err := FindFunction(cxprogram, functionName)
+// 	fn, err := FunctionFind(cxprogram, functionName)
 // 	if err != nil {
 // 		return err
 // 	}

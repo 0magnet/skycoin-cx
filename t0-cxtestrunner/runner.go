@@ -26,7 +26,7 @@ type TestRunner struct {
 	TestSkipped int
 }
 
-func NewTestRunner(cfg *Config) *TestRunner {
+func TestRunnerNew(cfg *Config) *TestRunner {
 	return &TestRunner{
 		cfg: cfg,
 	}

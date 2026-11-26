@@ -17,7 +17,7 @@ func TestLexTokenLines(t *testing.T) {
 		{IDENTIFIER, 5}, {INT_LITERAL, 5},
 	}
 
-	lx := NewLexer(strings.NewReader(src))
+	lx := LexerNew(strings.NewReader(src))
 	var got []yySymType
 	for {
 		var lval yySymType

@@ -7,11 +7,11 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
-func GetImportGraph(programName string) (output string, err error) {
+func ImportGraphGet(programName string) (output string, err error) {
 	if programName == "" {
 		return output, errors.New("GetImportGraph: empty program name")
 	}
-	stored, err := loader.ReadProgram(programName)
+	stored, err := loader.ProgramRead(programName)
 	if err != nil {
 		return output, err
 	}

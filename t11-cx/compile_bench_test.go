@@ -53,15 +53,15 @@ func BenchmarkCompile(b *testing.B) {
 				b.StopTimer()
 				// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 				// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0054 S0055.
-				actions.AST = cxinit.MakeProgram()
-				cxinit.RegisterPackages(actions.AST)
+				actions.AST = cxinit.ProgramMake()
+				cxinit.PackagesRegister(actions.AST)
 				globals.FoundCompileErrors = false
 				globals.HeapOffset = 0
 				b.StartTimer()
-				if err := cxparsing.ParseSourceStrings([]string{string(source)}, []string{programPath}); err != nil {
+				if err := cxparsing.SourceStringsParse([]string{string(source)}, []string{programPath}); err != nil {
 					b.Fatalf("%s: %v", programPath, err)
 				}
-				if err := cxparsing.AddInitFunction(actions.AST); err != nil {
+				if err := cxparsing.SysInitFunctionAdd(actions.AST); err != nil {
 					b.Fatalf("%s: %v", programPath, err)
 				}
 				b.StopTimer()

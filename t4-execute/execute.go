@@ -67,7 +67,7 @@ func runSysInitFunc(cxprogram *ast.CXProgram, mod *ast.CXPackage) error {
 	// *init function
 	// OBJMODEL: state.CXCallMng.CXCallAlloc(), phase 4 #366.
 	// Now a constructor call, site S1249.
-	mainCall := MakeCall(cxprogram, cxprogram.CXProgramFunctionGid(fn))
+	mainCall := CallMake(cxprogram, cxprogram.CXProgramFunctionGid(fn))
 	cxprogram.CallStack[0] = mainCall
 	cxprogram.Stack.Pointer = fn.Size
 
@@ -160,7 +160,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 		// main function
 		// OBJMODEL: state.CXCallMng.CXCallAlloc(), phase 4 #366.
 		// Now a constructor call, site S1250.
-		mainCall := MakeCall(cxprogram, cxprogram.CXProgramFunctionGid(fn))
+		mainCall := CallMake(cxprogram, cxprogram.CXProgramFunctionGid(fn))
 		mainCall.FramePointer = cxprogram.Stack.Pointer
 		// initializing program resources
 		cxprogram.CallStack[0] = mainCall
@@ -200,7 +200,7 @@ func RunCompiled(cxprogram *ast.CXProgram, maxOps int, args []string) error {
 
 // OBJMODEL: state.CXCallMng.CXCallAlloc(), phase 4 #366.
 // Now a constructor, site S1251.
-func MakeCall(prgrm *ast.CXProgram, op ast.CXFunctionGid) ast.CXCall {
+func CallMake(prgrm *ast.CXProgram, op ast.CXFunctionGid) ast.CXCall {
 	// OBJMODEL: state.CXCallMng.CXCallAlloc(), phase 4 #366.
 	// Now a value literal, site S1252.
 	return ast.CXCall{

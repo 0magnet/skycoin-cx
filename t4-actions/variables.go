@@ -58,7 +58,7 @@ func globalInitializerResolve(prgrm *ast.CXProgram, initializer []ast.CXExpressi
 	}
 }
 
-// DeclareGlobalInPackage creates a global variable in a specified package
+// GlobalInPackageDeclare creates a global variable in a specified package
 //
 // If `doesInitialize` is true, then `initializer` is used to initialize the
 // new variable.
@@ -72,7 +72,7 @@ func globalInitializerResolve(prgrm *ast.CXProgram, initializer []ast.CXExpressi
 //	initializer - if doesInitialize is true then this contains the initial
 //				  value of the global.
 //	doesInitialize - true if global is initialized or given a value.
-func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
+func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	declarator *ast.CXArgument, declaration_specifiers *ast.CXArgument,
 	initializer []ast.CXExpression, doesInitialize bool) {
 	if pkg == nil {
@@ -98,7 +98,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		totalSize = 0
 	}
 
-	// ParseGlobals passes the argument the global already names as declarator.
+	// GlobalsParse passes the argument the global already names as declarator.
 	declaratorTaken := false
 	if _, err := pkg.GlobalGet(prgrm, declarator.Name); err != nil {
 		globalPlaceholderAdd(prgrm, pkg, declarator)
@@ -114,10 +114,10 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		if !glbl.Offset.Valid() {
 			var glblArg *ast.CXArgument
 			if declaration_specifiers.SliceTyped() { // TODO:PTR move branch in WritePrimary
-				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
+				glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type,
 					make([]byte, types.POINTER_SIZE), true)
 			} else {
-				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
+				glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type,
 					make([]byte, totalSize), true)
 			}
 			glblArgOffset = glblArg.Offset
@@ -268,9 +268,9 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// then it hasn't been defined
 		var glblArg *ast.CXArgument
 		if declaration_specifiers.SliceTyped() { // TODO:PTR move branch in WritePrimary
-			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
+			glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
 		} else {
-			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, totalSize), true)
+			glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type, make([]byte, totalSize), true)
 		}
 
 		declaration_specifiers.Name = declarator.Name
@@ -313,7 +313,7 @@ func localInitializationResolve(prgrm *ast.CXProgram, pkg *ast.CXPackage, initia
 
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S1230.
-		exprCXLine := MakeCXLineExpressionCurrent(prgrm)
+		exprCXLine := CXLineExpressionCurrentMake(prgrm)
 
 		// we need to create an expression that links the initializer expressions
 		// with the declared variable
@@ -386,7 +386,7 @@ func localInitializationResolve(prgrm *ast.CXProgram, pkg *ast.CXPackage, initia
 	}
 }
 
-// DeclareLocal() creates a local variable inside a function.
+// LocalDeclare() creates a local variable inside a function.
 //
 // Returns a list of expressions that contains the initialization, if any.
 //
@@ -398,7 +398,7 @@ func localInitializationResolve(prgrm *ast.CXProgram, pkg *ast.CXPackage, initia
 //	initializer - if doesInitialize is true then this contains the initial
 //				  value of the var.
 //	doesInitialize - true if var is initialized or given a value.
-func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
+func LocalDeclare(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationSpecifiers *ast.CXArgument,
 	initializer []ast.CXExpression, doesInitialize bool) []ast.CXExpression {
 	if _, fits := declarationArgSize(declarationSpecifiers); !fits {
 		prgrm.CXProgramCompileErrorAddDebug(ast.CompileErrorCodeDeclarationTooLarge, declarator.ArgDetails, ast.CompileErrorOperands{int64(declarator.Name)})
@@ -421,7 +421,7 @@ func DeclareLocal(prgrm *ast.CXProgram, declarator *ast.CXArgument, declarationS
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1239.
-	declCXLine := MakeCXLineExpressionCurrent(prgrm)
+	declCXLine := CXLineExpressionCurrentMake(prgrm)
 	// Declaration expression to handle the inline initialization.
 	// For example, `var foo i32 = 11` needs to be divided into two expressions:
 	// one that declares `foo`, and another that assigns 11 to `foo`
@@ -517,12 +517,12 @@ type GlobalValue struct {
 	GlobalValueEndColumn   int
 }
 
-// DeclareGlobals declares the globals of var a, b T and var a, b T = x, y.
+// GlobalsDeclare declares the globals of var a, b T and var a, b T = x, y.
 // Pass one passes each value in passOneValues, and pass two the values. A
 // spec without a type, var a, b = x, y, takes the type of each literal value
 // in pass one, and the inference pass of t9-cxparsing gives the others the
 // type of their value. Pass two then only adds the initializer.
-func DeclareGlobals(prgrm *ast.CXProgram, names []*ast.CXArgument, spec *ast.CXArgument, values [][]ast.CXExpression, passOneValues []GlobalValue, initialized bool) {
+func GlobalsDeclare(prgrm *ast.CXProgram, names []*ast.CXArgument, spec *ast.CXArgument, values [][]ast.CXExpression, passOneValues []GlobalValue, initialized bool) {
 	count := len(values)
 	if passOneValues != nil {
 		count = len(passOneValues)
@@ -540,7 +540,7 @@ func DeclareGlobals(prgrm *ast.CXProgram, names []*ast.CXArgument, spec *ast.CXA
 			// The names are invalid, so their uses report nothing more.
 			for _, name := range names {
 				if !GlobalRedeclarationCheck(prgrm, name) {
-					DeclareGlobalInPackage(prgrm, nil, name, DeclarationSpecifiersBasic(prgrm, types.INVALID), nil, false)
+					GlobalInPackageDeclare(prgrm, nil, name, DeclarationSpecifiersBasic(prgrm, types.INVALID), nil, false)
 				}
 			}
 			return
@@ -582,7 +582,7 @@ func DeclareGlobals(prgrm *ast.CXProgram, names []*ast.CXArgument, spec *ast.CXA
 		if initialized && values != nil {
 			initializer = values[i]
 		}
-		DeclareGlobalInPackage(prgrm, nil, name, nameSpec, initializer, initialized && values != nil)
+		GlobalInPackageDeclare(prgrm, nil, name, nameSpec, initializer, initialized && values != nil)
 	}
 }
 
@@ -604,7 +604,7 @@ func globalsDeclareResults(prgrm *ast.CXProgram, names []*ast.CXArgument, spec *
 			if i < len(names)-1 {
 				nameSpec = argumentCopy(prgrm, spec)
 			}
-			DeclareGlobalInPackage(prgrm, nil, name, nameSpec, nil, false)
+			GlobalInPackageDeclare(prgrm, nil, name, nameSpec, nil, false)
 		}
 		return
 	}

@@ -25,7 +25,7 @@ func TestProgramGenerator(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Now a constructor call, site S0049.
-			cxgenerator.GenerateSampleProgram(t, tc.withLiteral)
+			cxgenerator.SampleProgramGenerate(t, tc.withLiteral)
 		})
 	}
 }

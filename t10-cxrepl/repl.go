@@ -84,36 +84,36 @@ func unsafeEval(code string) (out string) {
 	// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0001 S0002.
-	actions.AST = cxinit.MakeProgram()
-	cxinit.RegisterPackages(actions.AST)
+	actions.AST = cxinit.ProgramMake()
+	cxinit.PackagesRegister(actions.AST)
 	cxpartialparsing.Program = actions.AST
 
 	parseErrors := cxpartialparsing.Parse(code)
 
 	actions.AST = cxpartialparsing.Program
 
-	lexer = cxparsingcompletor.NewLexer(bytes.NewBufferString(code))
+	lexer = cxparsingcompletor.LexerNew(bytes.NewBufferString(code))
 	parseErrors += cxparsingcompletor.Parse(lexer)
 	printer.PrinterCompileErrorsPrint(actions.AST)
 	if parseErrors > 0 || globals.FoundCompileErrors {
 		restore()
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0003 S0004.
-		actions.AST = cxinit.MakeProgram()
-		cxinit.RegisterPackages(actions.AST)
+		actions.AST = cxinit.ProgramMake()
+		cxinit.PackagesRegister(actions.AST)
 		return cxparsering.ErrCompilation.Error()
 	}
-	err = cxparsering.AddInitFunction(actions.AST)
+	err = cxparsering.SysInitFunctionAdd(actions.AST)
 	if err != nil {
 		restore()
 		return fmt.Sprintf("%s", err)
 	}
-	// AddInitFunction records initialization cycles and global type errors (#519).
+	// SysInitFunctionAdd records initialization cycles and global type errors (#519).
 	if globals.FoundCompileErrors {
 		printer.PrinterCompileErrorsPrint(actions.AST)
 		restore()
-		actions.AST = cxinit.MakeProgram()
-		cxinit.RegisterPackages(actions.AST)
+		actions.AST = cxinit.ProgramMake()
+		cxinit.PackagesRegister(actions.AST)
 		return cxparsering.ErrCompilation.Error()
 	}
 
@@ -130,8 +130,8 @@ func unsafeEval(code string) (out string) {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0005 S0006.
 		ast.ProgramMemoryRelease(actions.AST)
-		actions.AST = cxinit.MakeProgram()
-		cxinit.RegisterPackages(actions.AST)
+		actions.AST = cxinit.ProgramMake()
+		cxinit.PackagesRegister(actions.AST)
 		return fmt.Sprintf("%s", err)
 	}
 	//Tod: If error equals nill?
@@ -142,13 +142,13 @@ func unsafeEval(code string) (out string) {
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0007 S0008.
 	ast.ProgramMemoryRelease(actions.AST)
-	actions.AST = cxinit.MakeProgram()
-	cxinit.RegisterPackages(actions.AST)
+	actions.AST = cxinit.ProgramMake()
+	cxinit.PackagesRegister(actions.AST)
 	return out
 }
 
 // Eval runs code as a CX program and returns its output. The caller must
-// first run the init in t11-cx Run: InitConstants, MakeProgram, RegisterPackages.
+// first run the init in t11-cx Run: ConstantsInit, ProgramMake, PackagesRegister.
 func Eval(code string) string {
 	runtime.GOMAXPROCS(2)
 	ch := make(chan string, 1)
@@ -170,8 +170,8 @@ func Eval(code string) string {
 		// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0009 S0010.
-		actions.AST = cxinit.MakeProgram()
-		cxinit.RegisterPackages(actions.AST)
+		actions.AST = cxinit.ProgramMake()
+		cxinit.PackagesRegister(actions.AST)
 		return "Timed out."
 	}
 }
@@ -207,9 +207,9 @@ func Repl() {
 
 			b := bytes.NewBufferString(inp)
 
-			cxparsingcompletor.Parse(cxparsingcompletor.NewLexer(b))
+			cxparsingcompletor.Parse(cxparsingcompletor.LexerNew(b))
 			printer.PrinterCompileErrorsPrint(actions.AST)
-			//yyParse(NewLexer(b))
+			//yyParse(LexerNew(b))
 		} else {
 			if ReplTargetFn != "" {
 				ReplTargetFn = ""

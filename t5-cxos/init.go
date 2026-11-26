@@ -8,9 +8,9 @@ import (
 	"github.com/skycoin/skycoin-cx/t4-opcodes" // thin: only LibraryLink; registration API, keep
 )
 
-// RegisterPackage links the process library. The file functions are the
+// PackageRegister links the process library. The file functions are the
 // opcodes of constants.OpcodeGroupFile, which FileOpcodeDispatch runs.
-func RegisterPackage(prgrm *ast.CXProgram) {
+func PackageRegister(prgrm *ast.CXProgram) {
 	LibraryProcessRegister(prgrm)
 }
 

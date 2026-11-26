@@ -4,35 +4,35 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-constants" // thin: only CALLSTACK_SIZE, NULL_HEAP_ADDRESS_OFFSET, STACK_SIZE; no depth gain
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
-	"github.com/skycoin/skycoin-cx/t4-cipher"               // thin: only RegisterPackage, CipherOpcodeDispatch; registration list and opcode switch, keep
+	"github.com/skycoin/skycoin-cx/t4-cipher"               // thin: only PackageRegister, CipherOpcodeDispatch; registration list and opcode switch, keep
 	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"   // thin: only PrinterCompileErrorsRegister; registration list, keep
-	"github.com/skycoin/skycoin-cx/t4-cxnet"                // thin: only RegisterPackage, NetOpcodeDispatch; registration list and opcode switch, keep
+	"github.com/skycoin/skycoin-cx/t4-cxnet"                // thin: only PackageRegister, NetOpcodeDispatch; registration list and opcode switch, keep
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core" // thin: only CoreOpcodeDispatch; the opcode switch, keep
-	"github.com/skycoin/skycoin-cx/t5-cxos"                 // thin: only RegisterPackage, FileOpcodeDispatch; registration list and opcode switch, keep
+	"github.com/skycoin/skycoin-cx/t5-cxos"                 // thin: only PackageRegister, FileOpcodeDispatch; registration list and opcode switch, keep
 	"github.com/skycoin/skycoin-cx/t6-cxfx"                 // thin: only CxfxOpcodeDispatch; the opcode switch, keep
 
 	// "github.com/skycoin/cx/cx/packages/http"
 
-	"github.com/skycoin/skycoin-cx/t4-regexp" // thin: only RegisterPackage; registration list, keep
+	"github.com/skycoin/skycoin-cx/t4-regexp" // thin: only PackageRegister; registration list, keep
 )
 
-// RegisterPackages adds the native packages to prgrm, registers the system
+// PackagesRegister adds the native packages to prgrm, registers the system
 // libraries and sets the opcode switch of cx.
-func RegisterPackages(prgrm *ast.CXProgram) {
+func PackagesRegister(prgrm *ast.CXProgram) {
 	ast.OpcodeDispatch = OpcodeDispatch
-	cipher.RegisterPackage(prgrm)
-	cxos.RegisterPackage(prgrm)
+	cipher.PackageRegister(prgrm)
+	cxos.PackageRegister(prgrm)
 	printer.PrinterCompileErrorsRegister(prgrm)
-	// http.RegisterPackage()
-	regexp.RegisterPackage(prgrm)
-	cxnet.RegisterPackage(prgrm)
+	// http.PackageRegister()
+	regexp.PackageRegister(prgrm)
+	cxnet.PackageRegister(prgrm)
 }
 
-// MakeProgram returns a new empty program. Call RegisterPackages on it to add
+// ProgramMake returns a new empty program. Call PackagesRegister on it to add
 // the native packages.
 // OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 // Now a constructor, site S1460.
-func MakeProgram() *ast.CXProgram {
+func ProgramMake() *ast.CXProgram {
 	minHeapSize := ast.MinHeapSize()
 	state := &ast.CxIrState{}
 	state.CxIrStateInit()

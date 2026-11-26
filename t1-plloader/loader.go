@@ -17,7 +17,7 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
-func LoadCXProgram(programName string, sourceCode []*os.File) (err error) {
+func CXProgramLoad(programName string, sourceCode []*os.File) (err error) {
 	if programName == "" {
 		return errors.New("load program: empty program name")
 	}
@@ -132,7 +132,7 @@ func addNewPackage(packageListStruct *PackageList, packageName string, fileMap m
 
 	// Built-in packages are not in the directory
 	if packages.ImportBuiltin(packageName) {
-		return packages.CheckImport(packageName)
+		return packages.ImportCheck(packageName)
 	}
 
 	// Checks if package is found in the directory
@@ -154,7 +154,7 @@ func addNewPackage(packageListStruct *PackageList, packageName string, fileMap m
 	}
 
 	// Removes duplicates of imports and adds them to the import map
-	newImportList := RemoveDuplicates(importList)
+	newImportList := DuplicatesRemove(importList)
 	importMap[packageName] = newImportList
 
 	// Append the package to the package struct

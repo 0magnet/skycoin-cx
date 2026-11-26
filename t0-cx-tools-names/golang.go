@@ -62,11 +62,11 @@ func (c *GoCollector) Add(ident *ast.Ident, kind, parent string, exported bool) 
 		return
 	}
 	c.Seen[ident] = true
-	c.AddAt(ident.Pos(), ident.Name, kind, parent, exported && ast.IsExported(ident.Name))
+	c.RowAdd(ident.Pos(), ident.Name, kind, parent, exported && ast.IsExported(ident.Name))
 }
 
-// AddAt records a name that is not an identifier, such as an import path.
-func (c *GoCollector) AddAt(position token.Pos, name, kind, parent string, exported bool) {
+// RowAdd records a name that is not an identifier, such as an import path.
+func (c *GoCollector) RowAdd(position token.Pos, name, kind, parent string, exported bool) {
 	resolved := c.FileSet.Position(position)
 	c.Rows = append(c.Rows, NameRow{Repository: c.Repository, Language: "go", Package: c.Package, File: c.File, Line: resolved.Line, Column: resolved.Column, Name: name, Kind: kind, Parent: parent, Exported: exported, TestFile: c.TestFile})
 }
@@ -78,7 +78,7 @@ func (c *GoCollector) FileNames(file *ast.File) {
 		if err != nil {
 			path = spec.Path.Value
 		}
-		c.AddAt(spec.Path.Pos(), path, "import", "", false)
+		c.RowAdd(spec.Path.Pos(), path, "import", "", false)
 		if spec.Name != nil && spec.Name.Name != "." {
 			c.Add(spec.Name, "import_alias", "", false)
 		}

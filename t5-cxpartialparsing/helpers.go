@@ -49,7 +49,7 @@ func (yylex *Lexer) Lex(lval *yySymType) int {
 	return lval.yys
 }
 
-func NewLexer(rdr io.Reader) *Lexer {
+func LexerNew(rdr io.Reader) *Lexer {
 	lx := &Lexer{}
 	lx.init(rdr, func(l, c int, msg string) {
 		// The REPL recovers this panic and keeps going.

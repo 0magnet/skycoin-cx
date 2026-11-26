@@ -16,7 +16,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t4-actions"
 )
 
-func ParseParameterDeclaration(prgrm *ast.CXProgram, parameterString []byte, pkg *ast.CXPackage, fileName ast.SourceFileGid, lineno int) (*ast.CXArgument, error) {
+func ParameterDeclarationParse(prgrm *ast.CXProgram, parameterString []byte, pkg *ast.CXPackage, fileName ast.SourceFileGid, lineno int) (*ast.CXArgument, error) {
 	var parameterDeclaration *ast.CXArgument
 	reParameterDeclaration := regexp.MustCompile(`(\w+)\s+(.+)`)
 	parameterDeclarationTokens := reParameterDeclaration.FindSubmatch(parameterString)
@@ -33,7 +33,7 @@ func ParseParameterDeclaration(prgrm *ast.CXProgram, parameterString []byte, pkg
 	declarator.Name = prgrm.CxIrState.StringPool.StringPoolIntern(parameterDeclarationTokens[1])
 
 	//Set the decalaration type
-	parameterDeclaration, err := ParseDeclarationSpecifier(prgrm, parameterDeclarationTokens[2], fileName, lineno, parameterDeclaration)
+	parameterDeclaration, err := DeclarationSpecifierParse(prgrm, parameterDeclarationTokens[2], fileName, lineno, parameterDeclaration)
 	if err != nil {
 		prgrm.CXArgBuilderRelease(declarator)
 		return nil, err
@@ -49,7 +49,7 @@ func ParseParameterDeclaration(prgrm *ast.CXProgram, parameterString []byte, pkg
 	return parameterDeclaration, nil
 }
 
-func ParseDeclarationSpecifier(prgrm *ast.CXProgram, declarationSpecifierByte []byte, fileName ast.SourceFileGid, lineno int, declarationSpecifier *ast.CXArgument) (*ast.CXArgument, error) {
+func DeclarationSpecifierParse(prgrm *ast.CXProgram, declarationSpecifierByte []byte, fileName ast.SourceFileGid, lineno int, declarationSpecifier *ast.CXArgument) (*ast.CXArgument, error) {
 	// Base case if all parts are parsed
 	if declarationSpecifierByte == nil || len(declarationSpecifierByte) == 0 {
 		return declarationSpecifier, nil
@@ -75,23 +75,23 @@ func ParseDeclarationSpecifier(prgrm *ast.CXProgram, declarationSpecifierByte []
 			// Types like i32, str, aff, etc...
 			if val, ok := TypesMap[string(typeWordParts[0])]; ok {
 				newDeclarationSpecifierArg := actions.DeclarationSpecifiersBasic(prgrm, val)
-				return ParseDeclarationSpecifier(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
+				return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 			}
 
 			// Structs
 			newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(typeWordParts[0]), "", false, fileName, lineno, 0)
-			return ParseDeclarationSpecifier(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
+			return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 		}
 
 		// External types
 		if val, ok := TypesMap[string(typeWordParts[0])]; ok {
 			newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(typeWordParts[1]), val.Name(), true, fileName, lineno, 0)
-			return ParseDeclarationSpecifier(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
+			return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 		}
 
 		// External structs
 		newDeclarationSpecifierArg := actions.DeclarationSpecifiersStruct(actions.AST, string(typeWordParts[1]), string(typeWordParts[0]), true, fileName, lineno, 0)
-		return ParseDeclarationSpecifier(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
+		return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 	}
 
 	if lastByte == ']' {
@@ -112,12 +112,12 @@ func ParseDeclarationSpecifier(prgrm *ast.CXProgram, declarationSpecifierByte []
 
 			// Parsed right to left, so each length goes in front: outermost first.
 			newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{types.Pointer(byteToInt)}, constants.DECL_ARRAY)
-			return ParseDeclarationSpecifier(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
+			return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 		}
 
 		// Slices
 		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DECL_SLICE)
-		return ParseDeclarationSpecifier(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
+		return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 	}
 
 	// Pointer
@@ -125,7 +125,7 @@ func ParseDeclarationSpecifier(prgrm *ast.CXProgram, declarationSpecifierByte []
 		newLastIdx := bytes.LastIndex(declarationSpecifierByte, []byte("*"))
 		newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
 		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DECL_POINTER)
-		return ParseDeclarationSpecifier(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
+		return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 
 	}
 
@@ -134,7 +134,7 @@ func ParseDeclarationSpecifier(prgrm *ast.CXProgram, declarationSpecifierByte []
 }
 
 // Finds the SourceBytes from the files array
-func GetSourceBytes(files []*loader.File, fileName string) ([]byte, error) {
+func SourceBytesGet(files []*loader.File, fileName string) ([]byte, error) {
 	for _, file := range files {
 		if file.FileName == fileName {
 			return file.Content, nil

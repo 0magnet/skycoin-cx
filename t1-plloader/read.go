@@ -13,9 +13,9 @@ type StoredPackage struct {
 	Files   []File
 }
 
-// ReadProgram reads the program stored under programName, its packages and
+// ProgramRead reads the program stored under programName, its packages and
 // their files, in stored order.
-func ReadProgram(programName string) ([]StoredPackage, error) {
+func ProgramRead(programName string) ([]StoredPackage, error) {
 	if programName == "" {
 		return nil, errors.New("read program: empty program name")
 	}

@@ -24,7 +24,7 @@ func startCXVM() {
 	log.Printf("STARTING CXDROID N")
 	log.Printf("-----------------------------------------------------------------------------")
 	CXLogFile(true)
-	if CopyAssetsToFilesDir() {
+	if AssetsCopyToFilesDir() {
 		filesDir := asset.GetFilesDir()
 		CXSetWorkingDir(fmt.Sprintf("%s/", filesDir))
 		args := parseRunCli(filesDir)
@@ -48,15 +48,15 @@ func eventLoop(a app.App) {
 					glctx, _ = e.DrawContext.(gl.Context)
 					cxfx.SetGLContext(glctx)
 					cxfx.SetGOApp(a)
-					cxfx.PushEvent(cxfx.APP_START)
+					cxfx.EventPush(cxfx.APP_START)
 				case lifecycle.CrossOff:
-					cxfx.PushEvent(cxfx.APP_STOP)
+					cxfx.EventPush(cxfx.APP_STOP)
 				}
 			case size.Event:
-				cxfx.PushFramebufferSizeEvent(float64(e.WidthPx), float64(e.HeightPx))
-				cxfx.PushWindowSizeEvent(float64(e.WidthPx), float64(e.HeightPx))
+				cxfx.FramebufferSizeEventPush(float64(e.WidthPx), float64(e.HeightPx))
+				cxfx.WindowSizeEventPush(float64(e.WidthPx), float64(e.HeightPx))
 			case paint.Event:
-				cxfx.PushEvent(cxfx.APP_PAINT)
+				cxfx.EventPush(cxfx.APP_PAINT)
 				//if glctx == nil || e.External {
 				//	continue
 				//}
@@ -70,7 +70,7 @@ func eventLoop(a app.App) {
 				case touch.TypeEnd:
 					cxfxAction = cxfx.ACTION_RELEASE
 				}
-				cxfx.PushMouseEvent(cxfx.APP_MOUSE, cxfxAction, int32(e.Sequence), int64(e.Sequence), 0, float64(e.X), float64(e.Y))
+				cxfx.MouseEventPush(cxfx.APP_MOUSE, cxfxAction, int32(e.Sequence), int64(e.Sequence), 0, float64(e.X), float64(e.Y))
 			}
 		}
 	}()

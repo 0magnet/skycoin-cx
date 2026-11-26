@@ -16,20 +16,20 @@ import (
 	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing" // thin: only CurrentFile, Parse, Program; no depth gain
 )
 
-// ErrCompilation is returned by ParseSourceStrings when the source has
+// ErrCompilation is returned by SourceStringsParse when the source has
 // parse or compile errors. The errors themselves are printed to stdout.
 var ErrCompilation = errors.New("compilation error")
 
-// ParseSourceStrings parses CX source held in memory into actions.AST.
+// SourceStringsParse parses CX source held in memory into actions.AST.
 // It returns on errors instead of exiting, so the parser can be embedded in
 // a long running process.
-func ParseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
+func SourceStringsParse(sourceCodeStrings []string, fileNames []string) error {
 	// The compile errors print on return, and before a panic of the compiler.
 	defer func() { printer.PrinterCompileErrorsPrint(actions.AST) }()
 	return parseSourceStrings(sourceCodeStrings, fileNames)
 }
 
-// parseSourceStrings is ParseSourceStrings without printing the errors, which
+// parseSourceStrings is SourceStringsParse without printing the errors, which
 // an imported package leaves to the program that imports it.
 func parseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
 	cxpartialparsing.Program = actions.AST
@@ -77,7 +77,7 @@ func parseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
 			arg1.TypeSet(types.STR)
 			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_BASIC)
 			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_SLICE)
-			actions.DeclareGlobalInPackage(actions.AST, osPkg, arg0, arg1, nil, false)
+			actions.GlobalInPackageDeclare(actions.AST, osPkg, arg0, arg1, nil, false)
 		}
 	}
 
@@ -85,7 +85,7 @@ func parseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
 	// The body pass meets the errors of the values of deferred globals again.
 	actions.AST.CxIrState.CompileErrorList.CompileErrorListPreliminary = len(actions.AST.CxIrState.CompileErrorList.CompileErrorListRecords)
 
-	profiling.StartProfile("4. passtwo")
+	profiling.ProfileStart("4. passtwo")
 
 	/*
 	 The pass two of parsing that generates the actual output.
@@ -113,15 +113,15 @@ func parseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
 			actions.CurrentFile = actions.AST.CXProgramSourceFileIntern(fileNames[i])
 		}
 
-		profiling.StartProfile(actions.AST.CXProgramSourceFileText(actions.CurrentFile))
+		profiling.ProfileStart(actions.AST.CXProgramSourceFileText(actions.CurrentFile))
 
 		actions.ImportScopedDirectivesRead(actions.CurrentFile, source)
 		parseErrors += Passtwo(b)
 
-		profiling.StopProfile(actions.AST.CXProgramSourceFileText(actions.CurrentFile))
+		profiling.ProfileStop(actions.AST.CXProgramSourceFileText(actions.CurrentFile))
 	}
 
-	profiling.StopProfile("4. passtwo")
+	profiling.ProfileStop("4. passtwo")
 	actions.AffordanceLiteralsResolve(actions.AST)
 	actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
 

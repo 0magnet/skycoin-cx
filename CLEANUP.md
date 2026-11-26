@@ -45,7 +45,7 @@ Counts are files, not rows.
 | cx | `cx/astapi/` | 10 | keep | `t9-astapi` | Programmatic AST construction, used by the generator and tests |
 | cx | `cx/generator/` | 2 | keep | `t10-generator` | Random program generator for the serializer tests |
 | cx | `cxparser/actions/` | 16 | keep | `t4-actions` | Semantic actions called from the grammars |
-| cx | `cxparser/cxparsing/` | 3 | keep | `t9-cxparsing` | Driver for the parse passes, gained ParseSourceStrings |
+| cx | `cxparser/cxparsing/` | 3 | keep | `t9-cxparsing` | Driver for the parse passes, gained SourceStringsParse |
 | cx | `cxparser/cxparsingcompletor/` | 7 | keep | `t8-cxparsingcompletor` | Pass two grammar (.y) and its generated parser |
 | cx | `cxparser/cxpartialparsing/` | 5 | keep | `t5-cxpartialparsing` | Pass one grammar (.y) and its generated parser |
 

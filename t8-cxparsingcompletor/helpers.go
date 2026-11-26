@@ -32,7 +32,7 @@ func (yylex *Lexer) Lex(lval *yySymType) int {
 	return lval.yys
 }
 
-func (yylex *Lexer) PrintLex(lval *yySymType) (int, int) {
+func (yylex *Lexer) LexPrint(lval *yySymType) (int, int) {
 	yylex.next()
 	lval.scancopy(yylex.tok)
 	actions.LineNo = lval.line
@@ -54,7 +54,7 @@ func (yylex *Lexer) Next() int {
  }
 */
 
-func NewLexer(rdr io.Reader) *Lexer {
+func LexerNew(rdr io.Reader) *Lexer {
 	lx := &Lexer{}
 	lx.init(rdr, func(l, c int, msg string) {
 		// The REPL recovers this panic and keeps going.
@@ -101,7 +101,7 @@ func (lval *yySymType) scancopy(tok *yySymType) {
 // global or a function. A name after a period is a field or a member of a
 // package, and a name before a colon is a key of a struct literal.
 func Identifiers(text string) []string {
-	lexer := NewLexer(bytes.NewBufferString(text))
+	lexer := LexerNew(bytes.NewBufferString(text))
 	var result []string
 	previous := 0
 	pending := ""

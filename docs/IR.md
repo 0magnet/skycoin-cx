@@ -30,12 +30,12 @@ numbers quoted below are the same in every build. See [Opcodes](#opcodes).
 
 The `cx` command (`t11-cx/main.go`) builds the program in this order.
 
-1. `actions.InitConstants`, `cxos.InitConstants` and `cxfx.InitConstants`
+1. `actions.ConstantsInit`, `cxos.ConstantsInit` and `cxfx.ConstantsInit`
    fill the constant tables.
-2. `cxinit.MakeProgram` (`t7-init/init.go`) returns an empty
+2. `cxinit.ProgramMake` (`t7-init/init.go`) returns an empty
    `*ast.CXProgram` and stores it in the package variable `actions.AST`.
    Every later stage writes into `actions.AST`.
-3. `cxinit.RegisterPackages` adds the native packages and registers the
+3. `cxinit.PackagesRegister` adds the native packages and registers the
    system libraries `cipher`, `cxos` and `tcp`, and sets `ast.OpcodeDispatch`
    to the opcode switch. The opcodes are fixed when cx is compiled: their
    names, handlers and signatures are the rows of
@@ -46,12 +46,12 @@ The `cx` command (`t11-cx/main.go`) builds the program in this order.
    result by Gids in `CxIrState.CxIrStateNativeNames`. Constants such as
    `cx.SUCCESS` are found the same way in `actions.ConstNames`.
 4. `compileSourceStrings` (`t11-cx/helpers.go`), which the cx command and
-   the tests share, calls `cxparsing.ParseSourceStrings`, which runs the
+   the tests share, calls `cxparsing.SourceStringsParse`, which runs the
    two passes below.
-5. `cxparsing.AddInitFunction` (`t9-cxparsing/utils.go`) adds the function
+5. `cxparsing.SysInitFunctionAdd` (`t9-cxparsing/utils.go`) adds the function
    `*init` (`constants.SYS_INIT_FUNC`) to package `main`. Its body is
    `CXProgram.SysInitExprs`, the global initializers collected by
-   `actions.DeclareGlobalInPackage`.
+   `actions.GlobalInPackageDeclare`.
 6. `execute.RunCompiled` (`t4-execute/execute.go`) calls
    `CXProgram.EnsureMinimumHeapSize`, runs `*init`, pushes `main` onto the
    call stack and runs it.
@@ -63,20 +63,20 @@ file with regular expressions for `package`, `type`, `var` and `import`
 lines. It then calls `cxparsing.Passone` for each file, which calls
 `cxpartialparsing.Parse` (`t5-cxpartialparsing`, generated from
 `cxpartialparsing.y`). The pass 1 grammar only calls
-`actions.DeclarePackage`, `actions.DeclareImport`, `actions.DeclareStruct`,
-`actions.DeclareGlobalInPackage` and the `actions.DeclarationSpecifiers*`
+`actions.PackageDeclare`, `actions.ImportDeclare`, `actions.StructDeclare`,
+`actions.GlobalInPackageDeclare` and the `actions.DeclarationSpecifiers*`
 helpers. After pass 1 the program holds every package, import, struct and
 global, but no function.
 
 ### Pass 2, function bodies
 
-`ParseSourceStrings` then calls `cxparsing.Passtwo` for each file, which
-calls `cxparsingcompletor.Parse(cxparsingcompletor.NewLexer(b))`
+`SourceStringsParse` then calls `cxparsing.Passtwo` for each file, which
+calls `cxparsingcompletor.Parse(cxparsingcompletor.LexerNew(b))`
 (`t8-cxparsingcompletor`, generated from `parsingcompletor.y`). The grammar
 actions call into `t4-actions`. They build expression lists bottom up, for
 example `actions.OperatorExpression`, `actions.PostfixExpressionFunCall`,
 `actions.SelectionExpressions`, `actions.IterationExpressions`,
-`actions.WritePrimaryExprs` and `actions.Assignment`.
+`actions.PrimaryExpressionsWrite` and `actions.Assignment`.
 
 A function is finished by `actions.FunctionHeader`, which adds the
 `CXFunction`, and `actions.FunctionDeclaration`
@@ -84,11 +84,11 @@ A function is finished by `actions.FunctionHeader`, which adds the
 
 * adds the parameters with `FunctionAddParameters`,
 * resolves `goto` targets with `GoTosResolve`,
-* appends the expressions with `AddExprsToFunction`,
+* appends the expressions with `FunctionExpressionsAdd`,
 * gives every parameter and local a frame offset through
   `FunctionParametersDeclare`, `ExpressionArgumentsResolve` and
-  `UpdateSymbolsTable`, renaming each local to `<n>:<name>`,
-* type checks each expression (`CheckTypes`, `checkOperatorOperands`) and
+  `SymbolsTableUpdate`, renaming each local to `<n>:<name>`,
+* type checks each expression (`TypesCheck`, `checkOperatorOperands`) and
   replaces untyped operators with typed ones in `TypedOperatorResolve`,
   so `+` on `i32` becomes `i32.add`,
 * sets `CXFunction.LineCount = len(fn.Expressions)` and `CXFunction.Size`
@@ -273,7 +273,7 @@ with distance `n` continues at `i + n + 1`. `n = 0` falls through.
   statement labelled `L` has the same `Label` on each expression that has
   none yet. `actions.GoTosResolve`
   finds that expression at index `j` and sets `ThenLines = j - i - 1`.
-* `return` (`actions.AddJmpToReturnExpressions`) is an `OP_GOTO` with a
+* `return` (`actions.ReturnExpressionsJmpAdd`) is an `OP_GOTO` with a
   generated label `*lbl_<n>` and `ThenLines = types.MAX_INT32`, which
   moves `Line` past `LineCount` and so returns.
 
@@ -361,7 +361,7 @@ string being a pointer to a heap or data object. `AFF` is
    Stack.Size bytes     Data.Size bytes        Heap.Size bytes
 ```
 
-`cxinit.MakeProgram` allocates `constants.STACK_SIZE` plus
+`cxinit.ProgramMake` allocates `constants.STACK_SIZE` plus
 `ast.MinHeapSize()` bytes and sets `Stack.Size = constants.STACK_SIZE`,
 `Data.StartsAt = constants.STACK_SIZE` and
 `Heap.Pointer = constants.NULL_HEAP_ADDRESS_OFFSET`. `STACK_SIZE` defaults
@@ -375,7 +375,7 @@ run, so the heap grows without a Go allocation (D42). `Stack.StartsAt` stays 0.
   `CXCall.FramePointer`. Parameters, then outputs, then locals and
   temporaries get offsets from 0 in declaration order. A local's
   `Offset` is relative to the frame.
-* Data. `actions.WritePrimary` (`t4-actions/misc.go`) appends every
+* Data. `actions.PrimaryWrite` (`t4-actions/misc.go`) appends every
   literal and global to the data segment at compile time, grows
   `Data.Size` and moves `Heap.StartsAt` to `Data.StartsAt + Data.Size`.
   A literal's `Offset` is absolute.
@@ -460,8 +460,8 @@ types but not offsets or opcode numbers.
 ```
 
 The listing below came from a throwaway test that runs the same steps as
-`cx` (`InitConstants`, `MakeProgram`, `RegisterPackages`,
-`ParseSourceStrings`, `AddInitFunction`) and walks
+`cx` (`ConstantsInit`, `ProgramMake`, `PackagesRegister`,
+`SourceStringsParse`, `SysInitFunctionAdd`) and walks
 `CXFunction.Expressions`, `CXAtomicOps`, `CXLines` and `CXTypeSignatures`.
 
 Segments after compiling. `Stack.Size` 1048576, `Data.StartsAt` 1048576,

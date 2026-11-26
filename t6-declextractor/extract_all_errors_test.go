@@ -17,7 +17,7 @@ func TestDeclarationExtractor_ExtractAllDeclarationsManyErrors(t *testing.T) {
 
 	done := make(chan error, 1)
 	go func() {
-		_, _, _, _, _, _, err := declaration_extractor.ExtractAllDeclarations(files)
+		_, _, _, _, _, _, err := declaration_extractor.AllDeclarationsExtract(files)
 		done <- err
 	}()
 

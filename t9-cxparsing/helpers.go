@@ -23,7 +23,7 @@ passtwo perform cxparsingcompletor parsing using parsingcompletor.y and parsingc
 
 func Passtwo(b *bytes.Buffer) int {
 
-	parseErrors := cxparsingcompletor.Parse(cxparsingcompletor.NewLexer(b))
+	parseErrors := cxparsingcompletor.Parse(cxparsingcompletor.LexerNew(b))
 
 	return parseErrors
 }

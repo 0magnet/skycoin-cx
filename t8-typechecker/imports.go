@@ -7,11 +7,11 @@ import (
 	"github.com/skycoin/skycoin-cx/t6-declextractor"
 )
 
-func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
+func ImportsParse(imports []declaration_extractor.ImportDeclaration) error {
 
 	// Make and add import packages to AST
 	for _, imprt := range imports {
-		// DeclareImport adds the built-in packages under their own name.
+		// ImportDeclare adds the built-in packages under their own name.
 		if packages.ImportBuiltin(imprt.ImportName) {
 			continue
 		}
@@ -70,7 +70,7 @@ func ParseImports(imports []declaration_extractor.ImportDeclaration) error {
 
 		actions.AST.SelectPackage(pkgNameGid)
 
-		actions.DeclareImport(actions.AST, imprt.ImportName, actions.AST.CXProgramSourceFileIntern(imprt.FileID), imprt.LineNumber)
+		actions.ImportDeclare(actions.AST, imprt.ImportName, actions.AST.CXProgramSourceFileIntern(imprt.FileID), imprt.LineNumber)
 
 	}
 

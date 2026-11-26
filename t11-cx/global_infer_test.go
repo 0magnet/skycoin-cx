@@ -17,7 +17,7 @@ func TestGlobalInferredMatchesDeclared(t *testing.T) {
 		t.Run(typ, func(t *testing.T) {
 			initProgram()
 			src := fmt.Sprintf("package main\ntype Point struct {\n\tx i32\n\ty f64\n}\nfunc value() (r %s) {\n\treturn r\n}\nvar inferred = value()\nvar declared %s\nfunc main() {\n}\n", typ, typ)
-			if err := cxparsing.ParseSourceStrings([]string{src}, []string{"infer.cx"}); err != nil {
+			if err := cxparsing.SourceStringsParse([]string{src}, []string{"infer.cx"}); err != nil {
 				t.Fatal(err)
 			}
 			pkg, err := actions.AST.PackageGet(actions.AST.CxIrState.CxIrStateNameMain)

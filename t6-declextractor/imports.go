@@ -15,7 +15,7 @@ type ImportDeclaration struct {
 	ImportName string // name of import being declared
 }
 
-func ExtractImports(source []byte, fileName string) ([]ImportDeclaration, error) {
+func ImportsExtract(source []byte, fileName string) ([]ImportDeclaration, error) {
 
 	var ImportDeclarationsArray []ImportDeclaration
 	var pkg string

@@ -27,7 +27,7 @@ func loadSource(t *testing.T, name string, files map[string]string) {
 		t.Fatal(err)
 	}
 	closeFiles(t, sourceCodes)
-	if err := loader.LoadCXProgram(name, sourceCodes); err != nil {
+	if err := loader.CXProgramLoad(name, sourceCodes); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -36,7 +36,7 @@ func TestTreeSkipsCommentedImport(t *testing.T) {
 	loadSource(t, "TreeComment", map[string]string{
 		"m.cx": "package main\nimport \"sys/os\"\n/*\nimport \"fromcomment\"\n*/\nfunc main() {\n}\n",
 	})
-	got, err := GetImportTree("TreeComment")
+	got, err := ImportTreeGet("TreeComment")
 	if err != nil {
 		t.Fatal(err)
 	}

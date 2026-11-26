@@ -25,7 +25,7 @@ func affordanceCompile(t *testing.T, source string) []string {
 	initProgram()
 	globals.FoundCompileErrors = false
 	defer func() { globals.FoundCompileErrors = false }()
-	cxparsing.ParseSourceStrings([]string{source}, []string{"aff.cx"})
+	cxparsing.SourceStringsParse([]string{source}, []string{"aff.cx"})
 	var errors []string
 	for _, record := range actions.AST.CxIrState.CompileErrorList.CompileErrorListRecords {
 		text := fmt.Sprintf("%d", record.CompileErrorRecordCode)

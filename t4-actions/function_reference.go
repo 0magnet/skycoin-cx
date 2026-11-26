@@ -32,7 +32,7 @@ func functionReferenceInputsResolve(prgrm *ast.CXProgram, expression *ast.CXAtom
 		}
 		var literal [8]byte
 		types.Write_i64(literal[:], 0, int64(function))
-		received[i] = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, WritePrimary(prgrm, types.I64, literal[:], false))
+		received[i] = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, PrimaryWrite(prgrm, types.I64, literal[:], false))
 	}
 }
 

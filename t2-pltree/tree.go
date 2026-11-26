@@ -6,11 +6,11 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
-func GetImportTree(programName string) (output string, err error) {
+func ImportTreeGet(programName string) (output string, err error) {
 	if programName == "" {
 		return output, errors.New("GetImportTree: empty program name")
 	}
-	stored, err := loader.ReadProgram(programName)
+	stored, err := loader.ProgramRead(programName)
 	if err != nil {
 		return output, err
 	}
@@ -39,11 +39,11 @@ func GetImportTree(programName string) (output string, err error) {
 	return output, nil
 }
 
-func AddDependenciesRecur(importMap map[string][]string, dependencies []string, depth int, layers map[int]bool) (output string) {
+func DependenciesRecursiveAdd(importMap map[string][]string, dependencies []string, depth int, layers map[int]bool) (output string) {
 	return addDependencies(importMap, dependencies, depth, layers, map[string]bool{})
 }
 
-// addDependencies is AddDependenciesRecur with the packages on the current
+// addDependencies is DependenciesRecursiveAdd with the packages on the current
 // branch in onPath. The import map comes from stored data, so a cycle is
 // printed once with a marker instead of recursing forever.
 func addDependencies(importMap map[string][]string, dependencies []string, depth int, layers map[int]bool, onPath map[string]bool) (output string) {

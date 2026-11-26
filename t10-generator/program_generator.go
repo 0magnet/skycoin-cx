@@ -16,10 +16,10 @@ import (
 	"github.com/skycoin/skycoin-cx/t9-astapi"
 )
 
-// GenerateRandomExpressions appends random expressions built from fns to
+// RandomExpressionsGenerate appends random expressions built from fns to
 // inputFn. Each expression owns a stack slot named after its position in
 // inputFn.Expressions, and the last one writes to inputFn's first output.
-func GenerateRandomExpressions(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction, inputPkg *cxast.CXPackage, fns []*cxast.CXNativeFunction, numExprs int) {
+func RandomExpressionsGenerate(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction, inputPkg *cxast.CXPackage, fns []*cxast.CXNativeFunction, numExprs int) {
 	// Adding an expression can grow CXAtomicOps, so operators are looked up
 	// by index after every addition.
 	fnIdx := prgrm.CXProgramFunctionGid(inputFn)
@@ -281,7 +281,7 @@ func getRandOut(prgrm *cxast.CXProgram, fnIdx cxast.CXFunctionGid, outType types
 	return newSlot(prgrm, fn, options[rand.Intn(len(options))], outType)
 }
 
-func GetFunctionSet(prgrm *cxast.CXProgram, fnNames []string) (fns []*cxast.CXNativeFunction) {
+func FunctionSetGet(prgrm *cxast.CXProgram, fnNames []string) (fns []*cxast.CXNativeFunction) {
 	for _, fnName := range fnNames {
 		fn := cxast.NativeFunctionOf(prgrm, nativeCode(fnName))
 		if fn == nil {
@@ -295,50 +295,50 @@ func GetFunctionSet(prgrm *cxast.CXProgram, fnNames []string) (fns []*cxast.CXNa
 
 // OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 // Now a constructor, site S0045.
-func GenerateSampleProgram(t *testing.T, withLiteral bool) *cxast.CXProgram {
+func SampleProgramGenerate(t *testing.T, withLiteral bool) *cxast.CXProgram {
 	var cxProgram *cxast.CXProgram
 
-	// Needed for AddNativeExpressionToFunction
+	// Needed for FunctionNativeExpressionAdd
 	// because of dependency on cxast.NativeNames
-	cxparsingcompletor.InitCXCore()
+	cxparsingcompletor.CXCoreInit()
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a constructor call, site S0046.
-	cxProgram = cxinit.MakeProgram()
-	cxinit.RegisterPackages(cxProgram)
+	cxProgram = cxinit.ProgramMake()
+	cxinit.PackagesRegister(cxProgram)
 
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now an arena insert, site S0047.
-	err := astapi.AddEmptyPackage(cxProgram, "main")
+	err := astapi.EmptyPackageAdd(cxProgram, "main")
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = astapi.AddEmptyFunctionToPackage(cxProgram, "main", "TestFunction")
+	err = astapi.PackageEmptyFunctionAdd(cxProgram, "main", "TestFunction")
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = astapi.AddNativeInputToFunction(cxProgram, "main", "TestFunction", "inputOne", types.Code(types.I32))
+	err = astapi.FunctionNativeInputAdd(cxProgram, "main", "TestFunction", "inputOne", types.Code(types.I32))
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 
-	err = astapi.AddNativeOutputToFunction(cxProgram, "main", "TestFunction", "outputOne", types.Code(types.I32))
+	err = astapi.FunctionNativeOutputAdd(cxProgram, "main", "TestFunction", "outputOne", types.Code(types.I32))
 	if err != nil {
 		t.Errorf("want no error, got %v", err)
 	}
 	functionSetNames := []string{"i32.add", "i32.mul", "i32.sub", "i32.eq", "i32.uneq", "i32.gt", "i32.gteq", "i32.lt", "i32.lteq", "bool.not", "bool.or", "bool.and", "bool.uneq", "bool.eq", "i32.neg", "i32.abs", "i32.bitand", "i32.bitor", "i32.bitxor", "i32.bitclear", "i32.bitshl", "i32.bitshr", "i32.max", "i32.min", "i32.rand"}
-	fns := GetFunctionSet(cxProgram, functionSetNames)
+	fns := FunctionSetGet(cxProgram, functionSetNames)
 
 	fn, _ := cxProgram.FunctionGet(cxProgram.CXProgramNameIntern("TestFunction"), cxProgram.CxIrState.CxIrStateNameMain)
 	pkg, _ := cxProgram.PackageGet(cxProgram.CxIrState.CxIrStateNameMain)
-	GenerateRandomExpressions(cxProgram, fn, pkg, fns, 30)
+	RandomExpressionsGenerate(cxProgram, fn, pkg, fns, 30)
 
 	if withLiteral {
 		buf := new(bytes.Buffer)
 		var num int32 = 5
 		binary.Write(buf, binary.LittleEndian, num)
-		err = astapi.AddLiteralInputToExpression(cxProgram, "main", "TestFunction", buf.Bytes(), types.I32, 2)
+		err = astapi.ExpressionLiteralInputAdd(cxProgram, "main", "TestFunction", buf.Bytes(), types.I32, 2)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
