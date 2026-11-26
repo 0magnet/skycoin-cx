@@ -1,9 +1,9 @@
-// Command opcodegen writes the opcode signature tables of t1-constants from
+// Command opcodegen writes the opcode signature tables of t1-cx-core-opcodetable from
 // constants.OpcodeDefinitionTable, decision D21, and the library signature
 // tables and library switches from constants.LibraryFunctionDefinitionTable,
 // decision D96. With -check it fails when a
 // written file differs from what it would write. Run it with go generate
-// ./t1-constants or make generate-opcodes.
+// ./t1-cx-core-opcodetable or make generate-opcodes.
 package main
 
 import (
@@ -16,30 +16,30 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 )
 
 // goFunctionPackages maps the package of a GoFunction to its group.
-var goFunctionPackages = map[string]constants.OpcodeGroup{
-	"opcodes":  constants.OpcodeGroupCore,
-	"printer":  constants.OpcodeGroupCore,
-	"cxoscore": constants.OpcodeGroupOsCore,
-	"regexp":   constants.OpcodeGroupRegexp,
-	"cxfx":     constants.OpcodeGroupCxfx,
-	"cipher":   constants.OpcodeGroupCipher,
-	"cxnet":    constants.OpcodeGroupNet,
-	"cxos":     constants.OpcodeGroupFile,
+var goFunctionPackages = map[string]opcodetable.OpcodeGroup{
+	"opcodes":  opcodetable.OpcodeGroupCore,
+	"printer":  opcodetable.OpcodeGroupCore,
+	"cxoscore": opcodetable.OpcodeGroupOsCore,
+	"regexp":   opcodetable.OpcodeGroupRegexp,
+	"cxfx":     opcodetable.OpcodeGroupCxfx,
+	"cipher":   opcodetable.OpcodeGroupCipher,
+	"cxnet":    opcodetable.OpcodeGroupNet,
+	"cxos":     opcodetable.OpcodeGroupFile,
 }
 
 // generated is everything opcodegen derives from the definition table.
 type generated struct {
-	parameters []constants.OpcodeParameter
-	structs    []constants.OpcodeParameterStruct
-	signatures map[int]constants.OpcodeSignature
-	operators  map[types.Code]map[int]int
+	parameters []opcodetable.OpcodeParameter
+	structs    []opcodetable.OpcodeParameterStruct
+	signatures map[int]opcodetable.OpcodeSignature
+	operators  map[valuetypes.Code]map[int]int
 	nameRows   map[int]int
-	names      []constants.NativeName
+	names      []opcodetable.NativeName
 	size       int
 }
 
@@ -58,8 +58,8 @@ func main() {
 		os.Exit(1)
 	}
 	files := map[string][]byte{
-		"t1-constants/opcodes_signatures_gen.go":   gen.signaturesFile(),
-		"t1-constants/libraries_signatures_gen.go": libraries.signaturesFile(),
+		"t1-cx-core-opcodetable/opcodes_signatures_gen.go":   gen.signaturesFile(),
+		"t1-cx-core-opcodetable/libraries_signatures_gen.go": libraries.signaturesFile(),
 	}
 	llvmRowList, err := llvmRows()
 	if err != nil {
@@ -105,9 +105,9 @@ func main() {
 }
 
 // typeCodes maps a type name, as types.Code.Name spells it, to its code.
-func typeCodes() map[string]types.Code {
-	codes := map[string]types.Code{}
-	for code := types.BOOL; code < types.COUNT; code++ {
+func typeCodes() map[string]valuetypes.Code {
+	codes := map[string]valuetypes.Code{}
+	for code := valuetypes.BOOL; code < valuetypes.COUNT; code++ {
 		codes[code.Name()] = code
 	}
 	return codes
@@ -117,15 +117,15 @@ func typeCodes() map[string]types.Code {
 // derives the tables.
 func generate() (*generated, error) {
 	gen := &generated{
-		signatures: map[int]constants.OpcodeSignature{},
-		operators:  map[types.Code]map[int]int{},
+		signatures: map[int]opcodetable.OpcodeSignature{},
+		operators:  map[valuetypes.Code]map[int]int{},
 		nameRows:   map[int]int{},
 	}
 	codes := typeCodes()
 	defined := map[int]bool{}
 	previous := 0
-	for _, row := range constants.OpcodeDefinitionTable {
-		live, found := constants.OpcodeLifecycleLiveByNumber(row.Number)
+	for _, row := range opcodetable.OpcodeDefinitionTable {
+		live, found := opcodetable.OpcodeLifecycleLiveByNumber(row.Number)
 		if !found || live.Name != row.Name {
 			return nil, fmt.Errorf("definition %d %q is not a live row of OpcodeLifecycleTable", row.Number, row.Name)
 		}
@@ -134,11 +134,11 @@ func generate() (*generated, error) {
 		}
 		previous = row.Number
 		defined[row.Number] = true
-		signature := constants.OpcodeSignature{OpcodeSignatureGroup: constants.OpcodeGroupCore}
+		signature := opcodetable.OpcodeSignature{OpcodeSignatureGroup: opcodetable.OpcodeGroupCore}
 		if row.GoFunction != "" {
 			pkg, function, ok := strings.Cut(row.GoFunction, ".")
 			group, known := goFunctionPackages[pkg]
-			if ok && known && group != constants.OpcodeGroupCore && goFunctionInline(function) {
+			if ok && known && group != opcodetable.OpcodeGroupCore && goFunctionInline(function) {
 				if _, err := inlineCase(row, function); err != nil {
 					return nil, err
 				}
@@ -167,11 +167,11 @@ func generate() (*generated, error) {
 		}
 		gen.size = row.Number + 1
 	}
-	for index, row := range constants.OpcodeLifecycleTable {
+	for index, row := range opcodetable.OpcodeLifecycleTable {
 		if row.VersionDeprecated != 0 {
 			continue
 		}
-		if !defined[row.Number] && row.Number != constants.OpLibraryCall {
+		if !defined[row.Number] && row.Number != opcodetable.OpLibraryCall {
 			return nil, fmt.Errorf("live opcode %d %q has no definition row", row.Number, row.Name)
 		}
 		gen.nameRows[row.Number] = index + 1
@@ -179,12 +179,12 @@ func generate() (*generated, error) {
 			gen.size = row.Number + 1
 		}
 		if defined[row.Number] {
-			gen.names = append(gen.names, constants.NativeName{NativeNameText: row.Name, NativeNameCode: row.Number})
+			gen.names = append(gen.names, opcodetable.NativeName{NativeNameText: row.Name, NativeNameCode: row.Number})
 		}
 	}
-	for _, row := range constants.LibraryFunctionLifecycleTable {
+	for _, row := range opcodetable.LibraryFunctionLifecycleTable {
 		if row.VersionDeprecated == 0 {
-			gen.names = append(gen.names, constants.NativeName{NativeNameText: row.Name, NativeNameCode: constants.LibraryFunctionKey(row.LibraryNumber, row.Number)})
+			gen.names = append(gen.names, opcodetable.NativeName{NativeNameText: row.Name, NativeNameCode: opcodetable.LibraryFunctionKey(row.LibraryNumber, row.Number)})
 		}
 	}
 	sort.Slice(gen.names, func(left int, right int) bool {
@@ -200,21 +200,21 @@ func generate() (*generated, error) {
 
 // parametersParse appends the parameters spelled in text and returns their
 // count.
-func (gen *generated) parametersParse(codes map[string]types.Code, text string) (int, error) {
+func (gen *generated) parametersParse(codes map[string]valuetypes.Code, text string) (int, error) {
 	fields := strings.Fields(text)
 	for _, field := range fields {
-		parameter := constants.OpcodeParameter{OpcodeParameterForm: constants.OpcodeParameterFormAtomic}
+		parameter := opcodetable.OpcodeParameter{OpcodeParameterForm: opcodetable.OpcodeParameterFormAtomic}
 		if name, structName, ok := strings.Cut(field, ":"); ok {
 			pkg, typeName, ok := strings.Cut(structName, ".")
 			if !ok || name == "" {
 				return 0, fmt.Errorf("struct parameter %q is not name:pkg.Struct", field)
 			}
-			parameter = constants.OpcodeParameter{OpcodeParameterForm: constants.OpcodeParameterFormStruct, OpcodeParameterType: types.STRUCT, OpcodeParameterStruct: gen.structIndex(pkg, typeName, name)}
+			parameter = opcodetable.OpcodeParameter{OpcodeParameterForm: opcodetable.OpcodeParameterFormStruct, OpcodeParameterType: valuetypes.STRUCT, OpcodeParameterStruct: gen.structIndex(pkg, typeName, name)}
 			gen.parameters = append(gen.parameters, parameter)
 			continue
 		}
 		if element, ok := strings.CutPrefix(field, "[]"); ok {
-			parameter.OpcodeParameterForm = constants.OpcodeParameterFormSlice
+			parameter.OpcodeParameterForm = opcodetable.OpcodeParameterFormSlice
 			field = element
 		}
 		code, known := codes[field]
@@ -229,7 +229,7 @@ func (gen *generated) parametersParse(codes map[string]types.Code, text string) 
 
 // structIndex returns the row of the struct parameter, adding it when new.
 func (gen *generated) structIndex(pkg string, typeName string, name string) uint8 {
-	parameter := constants.OpcodeParameterStruct{OpcodeParameterStructPackage: pkg, OpcodeParameterStructType: typeName, OpcodeParameterStructName: name}
+	parameter := opcodetable.OpcodeParameterStruct{OpcodeParameterStructPackage: pkg, OpcodeParameterStructType: typeName, OpcodeParameterStructName: name}
 	for index, known := range gen.structs {
 		if known == parameter {
 			return uint8(index)
@@ -240,11 +240,11 @@ func (gen *generated) structIndex(pkg string, typeName string, name string) uint
 }
 
 // operatorAdd records row as the typed form of its untyped operator.
-func (gen *generated) operatorAdd(codes map[string]types.Code, row constants.OpcodeDefinition) error {
+func (gen *generated) operatorAdd(codes map[string]valuetypes.Code, row opcodetable.OpcodeDefinition) error {
 	typeName, operatorName, ok := strings.Cut(row.Operator, " ")
 	code, known := codes[typeName]
-	operator, found := constants.OpcodeLifecycleLiveByName(operatorName)
-	if !ok || !known || !found || operator.Number <= constants.StartOfOperators || operator.Number >= constants.EndOfOperators {
+	operator, found := opcodetable.OpcodeLifecycleLiveByName(operatorName)
+	if !ok || !known || !found || operator.Number <= opcodetable.StartOfOperators || operator.Number >= opcodetable.EndOfOperators {
 		return fmt.Errorf("definition %q: operator %q is not a type and an untyped operator", row.Name, row.Operator)
 	}
 	if gen.operators[code] == nil {
@@ -258,30 +258,30 @@ func (gen *generated) operatorAdd(codes map[string]types.Code, row constants.Opc
 }
 
 // typeConstant returns the name of the types constant for code.
-func typeConstant(code types.Code) string {
+func typeConstant(code valuetypes.Code) string {
 	switch code {
-	case types.POINTER:
-		return "types.POINTER"
-	case types.UNDEFINED:
-		return "types.UNDEFINED"
+	case valuetypes.POINTER:
+		return "valuetypes.POINTER"
+	case valuetypes.UNDEFINED:
+		return "valuetypes.UNDEFINED"
 	}
-	return "types." + strings.ToUpper(code.Name())
+	return "valuetypes." + strings.ToUpper(code.Name())
 }
 
-var parameterForms = map[constants.OpcodeParameterForm]string{
-	constants.OpcodeParameterFormAtomic: "OpcodeParameterFormAtomic",
-	constants.OpcodeParameterFormSlice:  "OpcodeParameterFormSlice",
-	constants.OpcodeParameterFormStruct: "OpcodeParameterFormStruct",
+var parameterForms = map[opcodetable.OpcodeParameterForm]string{
+	opcodetable.OpcodeParameterFormAtomic: "OpcodeParameterFormAtomic",
+	opcodetable.OpcodeParameterFormSlice:  "OpcodeParameterFormSlice",
+	opcodetable.OpcodeParameterFormStruct: "OpcodeParameterFormStruct",
 }
 
-var groupNames = map[constants.OpcodeGroup]string{
-	constants.OpcodeGroupCore:   "OpcodeGroupCore",
-	constants.OpcodeGroupOsCore: "OpcodeGroupOsCore",
-	constants.OpcodeGroupRegexp: "OpcodeGroupRegexp",
-	constants.OpcodeGroupCxfx:   "OpcodeGroupCxfx",
-	constants.OpcodeGroupCipher: "OpcodeGroupCipher",
-	constants.OpcodeGroupNet:    "OpcodeGroupNet",
-	constants.OpcodeGroupFile:   "OpcodeGroupFile",
+var groupNames = map[opcodetable.OpcodeGroup]string{
+	opcodetable.OpcodeGroupCore:   "OpcodeGroupCore",
+	opcodetable.OpcodeGroupOsCore: "OpcodeGroupOsCore",
+	opcodetable.OpcodeGroupRegexp: "OpcodeGroupRegexp",
+	opcodetable.OpcodeGroupCxfx:   "OpcodeGroupCxfx",
+	opcodetable.OpcodeGroupCipher: "OpcodeGroupCipher",
+	opcodetable.OpcodeGroupNet:    "OpcodeGroupNet",
+	opcodetable.OpcodeGroupFile:   "OpcodeGroupFile",
 }
 
 const header = "// Code generated by t2-cx-core-opcodegen from OpcodeDefinitionTable. DO NOT EDIT.\n\n"
@@ -289,7 +289,7 @@ const header = "// Code generated by t2-cx-core-opcodegen from OpcodeDefinitionT
 func (gen *generated) signaturesFile() []byte {
 	var b bytes.Buffer
 	b.WriteString(header)
-	b.WriteString("package constants\n\nimport (\n\t\"github.com/skycoin/skycoin-cx/t0-types\" // thin: only Code constants; core types, keep\n)\n\n")
+	b.WriteString("package opcodetable\n\nimport (\n\t\"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes\" // thin: only Code constants; core types, keep\n)\n\n")
 	fmt.Fprintf(&b, "// OpcodeSignatureTableSize is one past the highest live opcode number.\nconst OpcodeSignatureTableSize = %d\n\n", gen.size)
 	b.WriteString("// OpcodeParameterTable holds the parameters of every opcode signature. Read only.\nvar OpcodeParameterTable = [...]OpcodeParameter{\n")
 	for _, parameter := range gen.parameters {
@@ -308,8 +308,8 @@ func (gen *generated) signaturesFile() []byte {
 		fmt.Fprintf(&b, "\t%d: {%s, %t, %d, %d, %d},\n", number, groupNames[signature.OpcodeSignatureGroup], signature.OpcodeSignatureHandled, signature.OpcodeSignatureParameterFirst, signature.OpcodeSignatureInputCount, signature.OpcodeSignatureOutputCount)
 	}
 	b.WriteString("}\n\n// OpcodeOperatorTable is the typed form of each untyped operator by operand\n// type, indexed by the operator number less StartOfOperators plus one. Read only.\n")
-	b.WriteString("var OpcodeOperatorTable = [types.COUNT][EndOfOperators - StartOfOperators]uint16{\n")
-	for code := types.BOOL; code < types.COUNT; code++ {
+	b.WriteString("var OpcodeOperatorTable = [valuetypes.COUNT][EndOfOperators - StartOfOperators]uint16{\n")
+	for code := valuetypes.BOOL; code < valuetypes.COUNT; code++ {
 		operators := gen.operators[code]
 		if len(operators) == 0 {
 			continue

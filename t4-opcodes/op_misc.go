@@ -1,10 +1,10 @@
 package opcodes
 
 import (
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	// GCREACH: t3-ast owns the heap and the GC roots. This file reads and writes values
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. This file reads and writes values
 	// and allocates nothing, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 func OpIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -24,7 +24,7 @@ func OpIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 		}
 
 		if ast.CXArgumentStringSlicePointer(elt) {
-			if ast.CXTypeSignaturePassBy(prgrm, inputs[0].TypeSignature) == constants.PassByReference {
+			if ast.CXTypeSignaturePassBy(prgrm, inputs[0].TypeSignature) == opcodetable.PassByReference {
 				outputs[0].PtrSet(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
 			} else {
 				outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
@@ -36,7 +36,7 @@ func OpIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 			outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
 		}
 	} else if outputs[0].TypeSignature.Type == ast.TypeAtomic {
-		if outputs[0].TypeSignature.PassBy == constants.PassByReference {
+		if outputs[0].TypeSignature.PassBy == opcodetable.PassByReference {
 			outputs[0].PtrSet(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
 		} else {
 			outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
@@ -50,13 +50,13 @@ func OpIdentity(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 	} else if outputs[0].TypeSignature.Type == ast.TypeArrayAtomic {
 		outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
 	} else if outputs[0].TypeSignature.Type == ast.TypePointerArrayAtomic || outputs[0].TypeSignature.Type == ast.TypePointerSliceAtomic {
-		if inputs[0].TypeSignature.PassBy == constants.PassByReference {
+		if inputs[0].TypeSignature.PassBy == opcodetable.PassByReference {
 			outputs[0].PtrSet(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
 		} else {
 			outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))
 		}
 	} else if outputs[0].TypeSignature.Type == ast.TypeSliceAtomic {
-		if outputs[0].TypeSignature.PassBy == constants.PassByReference {
+		if outputs[0].TypeSignature.PassBy == opcodetable.PassByReference {
 			outputs[0].PtrSet(prgrm, ast.PointerOfAddress(prgrm, inputs[0].Offset))
 		} else {
 			outputs[0].BytesSet(prgrm, inputs[0].BytesGet(prgrm))

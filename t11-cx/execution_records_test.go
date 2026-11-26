@@ -21,10 +21,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t0-cxhash"
-	"github.com/skycoin/skycoin-cx/t0-textsections"
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-digest"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-textsections"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
@@ -65,13 +65,13 @@ const executionRecordsChildFailed = 125
 const executionRecordsFormatVersion = 2
 
 // executionRecordHashName names the hash of every hash in the record file.
-// It is the hash of CX, so decision D23 changes it in t0-cxhash for the
+// It is the hash of CX, so decision D23 changes it in t0-cx-core-digest for the
 // cipher library and the records at once.
-const executionRecordHashName = cxhash.CxHashName
+const executionRecordHashName = digest.CxHashName
 
 // executionRecordHash is the one hash function of the execution records.
 func executionRecordHash(data []byte) string {
-	sum := cxhash.CxHashOfBytes(data)
+	sum := digest.CxHashOfBytes(data)
 	return hex.EncodeToString(sum[:])
 }
 
@@ -371,7 +371,7 @@ func (harness executionRecordHarness) inputOf(inputs map[string]executionRecordI
 // build would append, or the child's exit code when it does not compile.
 func (harness executionRecordHarness) programHash(name string) (string, executionRecordRun) {
 	run := executionRecordProcess(harness.t, harness.executable, []string{executionRecordsProgramHashEnv + "=" + strings.Join(strings.Fields(name), executionRecordsArgumentSeparator)}, harness.tests, "")
-	if run.exitCode != types.CXSuccess {
+	if run.exitCode != valuetypes.CXSuccess {
 		return "", run
 	}
 	lines := strings.Fields(string(run.stdout))
@@ -397,7 +397,7 @@ func (harness executionRecordHarness) image(executor string, name string, input 
 // executionRecordVmOutside reports whether run is vm refusing a program that
 // does not lower.
 func executionRecordVmOutside(run executionRecordRun) bool {
-	return run.exitCode == types.CXRuntimeNotImplemented && bytes.Contains(run.stderr, []byte("cannot run on vm:"))
+	return run.exitCode == valuetypes.CXRuntimeNotImplemented && bytes.Contains(run.stderr, []byte("cannot run on vm:"))
 }
 
 // executionRecordGoPanic reports whether run ended in a Go panic.
@@ -438,7 +438,7 @@ func executionRecordFirstDifference(got, want []byte) (int, string, string) {
 }
 
 // executionRecordFileRead parses the record file, in the text form of
-// t0-textsections.
+// t0-cx-core-textsections.
 func executionRecordFileRead(path string) (executionRecordFile, error) {
 	file := executionRecordFile{inputs: map[string]executionRecordInput{}}
 	content, err := os.ReadFile(path)
@@ -668,9 +668,9 @@ func TestExecutionRecords(t *testing.T) {
 				buildArgs = append(buildArgs, "-o", output, "--core", dir)
 				build := executionRecordProcess(t, harness.cxExecutable, []string{"CX_TEST_RUN_MAIN=1"}, harness.tests, "", buildArgs...)
 				switch {
-				case build.exitCode != types.CXSuccess && bytes.Contains(build.stderr, []byte("opcodes it does not include")):
+				case build.exitCode != valuetypes.CXSuccess && bytes.Contains(build.stderr, []byte("opcodes it does not include")):
 					forms[executionRecordFormBuilt] = executionRecordFormOutcome{note: "uses opcodes outside the core"}
-				case build.exitCode != types.CXSuccess:
+				case build.exitCode != valuetypes.CXSuccess:
 					forms[executionRecordFormBuilt] = executionRecordFormOutcome{run: build, applicable: true, note: "cx build failed"}
 				default:
 					if program, fileError := core.TrailerRead(output); fileError == nil {
@@ -911,7 +911,7 @@ func executionRecordReason(t *testing.T, harness executionRecordHarness, program
 func executionRecordsProgramHashChild(args []string) {
 	options, _, sourceCode, fileNames, start := runStart(args)
 	if !start || !parseProgram(options, fileNames, sourceCode) {
-		os.Exit(types.CXCompilationError)
+		os.Exit(valuetypes.CXCompilationError)
 	}
 	image, err := buildProgramImage()
 	if err != nil {
@@ -919,7 +919,7 @@ func executionRecordsProgramHashChild(args []string) {
 		os.Exit(executionRecordsChildFailed)
 	}
 	fmt.Println(executionRecordHash(image))
-	os.Exit(types.CXSuccess)
+	os.Exit(valuetypes.CXSuccess)
 }
 
 // executionRecordsImageChild runs args as cx does, except that the compiled
@@ -928,7 +928,7 @@ func executionRecordsProgramHashChild(args []string) {
 func executionRecordsImageChild(args []string) {
 	options, cxArgs, sourceCode, fileNames, start := runStart(args)
 	if !start || !parseProgram(options, fileNames, sourceCode) {
-		os.Exit(types.CXCompilationError)
+		os.Exit(valuetypes.CXCompilationError)
 	}
 	image, err := buildProgramImage()
 	if err != nil {
@@ -943,7 +943,7 @@ func executionRecordsImageChild(args []string) {
 	printer.CompileErrorsRegister(prgrm)
 	actions.AST = prgrm
 	runProgram(options, cxArgs, sourceCode)
-	os.Exit(types.CXSuccess)
+	os.Exit(valuetypes.CXSuccess)
 }
 
 // executionRecordsChildArguments splits an argument environment variable.
@@ -963,7 +963,7 @@ func (harness executionRecordHarness) native(dir string, index int, name string,
 	buildArgs = append(buildArgs, "-o", output)
 	build := executionRecordProcess(harness.t, harness.cxExecutable, []string{"CX_TEST_RUN_MAIN=1"}, harness.tests, "", buildArgs...)
 	switch {
-	case build.exitCode != types.CXSuccess:
+	case build.exitCode != valuetypes.CXSuccess:
 		return executionRecordFormOutcome{run: build, applicable: true, note: "cx build --target=llvm failed"}
 	}
 	defer os.Remove(output)
@@ -995,7 +995,7 @@ func executionRecordImageCore(t *testing.T, dir string) string {
 		path += ".exe"
 	}
 	tags := "cxcore"
-	if types.PointerSize == 8 {
+	if valuetypes.PointerSize == 8 {
 		tags += ",ptr64"
 	}
 	if out, err := exec.Command("go", "build", "-o", path, "-tags", tags, "../t4-cx-core-image").CombinedOutput(); err != nil {
@@ -1013,11 +1013,11 @@ func (harness executionRecordHarness) imageCore(dir string, index int, runner st
 	buildArgs = append(buildArgs, "-o", output)
 	build := executionRecordProcess(harness.t, harness.cxExecutable, []string{"CX_TEST_RUN_MAIN=1"}, harness.tests, "", buildArgs...)
 	switch {
-	case build.exitCode != types.CXSuccess && bytes.Contains(build.stderr, []byte("which cx-core-image does not link")):
+	case build.exitCode != valuetypes.CXSuccess && bytes.Contains(build.stderr, []byte("which cx-core-image does not link")):
 		return executionRecordFormOutcome{note: "uses the file or net library"}
-	case build.exitCode == types.CXRuntimeLibraryDisabled:
+	case build.exitCode == valuetypes.CXRuntimeLibraryDisabled:
 		return executionRecordFormOutcome{note: "is refused before it runs"}
-	case build.exitCode != types.CXSuccess:
+	case build.exitCode != valuetypes.CXSuccess:
 		return executionRecordFormOutcome{run: build, applicable: true, note: "cx build --target=image failed"}
 	}
 	defer os.Remove(output)

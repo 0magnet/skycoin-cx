@@ -7,10 +7,10 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	filelog "github.com/skycoin/skycoin-cx/t0-cx-runtime-filelog"
-	types "github.com/skycoin/skycoin-cx/t0-types"
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
-	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	actions "github.com/skycoin/skycoin-cx/t4-actions"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
@@ -44,14 +44,14 @@ func buildRun(args []string) int {
 	options, problem := buildOptionsParse(args)
 	if options.buildOptionsHelp {
 		buildUsagePrint()
-		return types.CXSuccess
+		return valuetypes.CXSuccess
 	}
 	if problem != "" {
 		return buildFail(problem + ", see cx build --help")
 	}
 	compileOptions, cxArgs, sourceCode, fileNames, start := runStart(options.buildOptionsCompile)
 	if !start {
-		return types.CXSuccess
+		return valuetypes.CXSuccess
 	}
 	if len(cxArgs) > 0 {
 		return buildFail(fmt.Sprintf("program arguments %s are given when the built program runs, not to cx build", strings.Join(cxArgs, " ")))
@@ -70,7 +70,7 @@ func buildRun(args []string) int {
 		options.buildOptionsOutput = output
 	}
 	if !parseProgram(compileOptions, fileNames, sourceCode) {
-		return types.CXCompilationError
+		return valuetypes.CXCompilationError
 	}
 	if options.buildOptionsTarget == buildTargetImage {
 		return buildImage(options)
@@ -122,7 +122,7 @@ func buildRun(args []string) int {
 	if err := os.Chmod(output, 0o755); err != nil {
 		return buildFileFail(sandbox.FileErrorWrap(sandbox.FileOperationWrite, output, err))
 	}
-	return types.CXSuccess
+	return valuetypes.CXSuccess
 }
 
 // buildProgramImage keeps the enabled libraries the compiled program calls
@@ -289,7 +289,7 @@ func buildCorePath(path string, libraries []string) (string, string) {
 
 func buildFail(message string) int {
 	fmt.Fprintf(os.Stderr, "cx build: %s\n", message)
-	return types.CXCompilationError
+	return valuetypes.CXCompilationError
 }
 
 func buildFileFail(fileError *sandbox.FileError) int {

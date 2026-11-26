@@ -9,9 +9,9 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 )
@@ -20,31 +20,31 @@ import (
 // with. initHeap 0 collects after nearly every step that allocates.
 type runHeapProgram struct {
 	path     string
-	initHeap types.Pointer
-	heapCap  types.Pointer
+	initHeap valuetypes.Pointer
+	heapCap  valuetypes.Pointer
 }
 
 // runHeapPrograms allocate, collect and grow the heap: the GC tests with an
 // initial heap of 0 bytes, test-gc.cx at the default heap, and a live heap
 // grown near a heap cap of 512K that collects there.
 func runHeapPrograms() []runHeapProgram {
-	programs := []runHeapProgram{{"test-gc.cx", constants.HeapSizeInit, constants.MaxHeapSize}}
+	programs := []runHeapProgram{{"test-gc.cx", opcodetable.HeapSizeInit, opcodetable.MaxHeapSize}}
 	for _, path := range append(gcBenchPrograms, "test-gc.cx", "test-gc-slice-resize.cx", "test-gc-array-of-slices.cx") {
-		programs = append(programs, runHeapProgram{path, 0, constants.MaxHeapSize})
+		programs = append(programs, runHeapProgram{path, 0, opcodetable.MaxHeapSize})
 	}
-	return append(programs, runHeapProgram{"test-heap-cap-near.cx", constants.HeapSizeInit, 512 << 10})
+	return append(programs, runHeapProgram{"test-heap-cap-near.cx", opcodetable.HeapSizeInit, 512 << 10})
 }
 
 // runHeapCompile compiles the test program path with the heap sizes initHeap
 // and heapCap into a fresh actions.AST, prepared to run.
-func runHeapCompile(tb testing.TB, path string, initHeap types.Pointer, heapCap types.Pointer) {
+func runHeapCompile(tb testing.TB, path string, initHeap valuetypes.Pointer, heapCap valuetypes.Pointer) {
 	source, err := os.ReadFile(filepath.Join("..", "tests", path))
 	if err != nil {
 		tb.Fatal(err)
 	}
-	initSize, maxSize := constants.HeapSizeInit, constants.MaxHeapSize
-	constants.HeapSizeInit, constants.MaxHeapSize = initHeap, heapCap
-	defer func() { constants.HeapSizeInit, constants.MaxHeapSize = initSize, maxSize }()
+	initSize, maxSize := opcodetable.HeapSizeInit, opcodetable.MaxHeapSize
+	opcodetable.HeapSizeInit, opcodetable.MaxHeapSize = initHeap, heapCap
+	defer func() { opcodetable.HeapSizeInit, opcodetable.MaxHeapSize = initSize, maxSize }()
 	compileRunProgram(tb, runBenchProgram{name: path, source: string(source)})
 	execute.RunPrepare(actions.AST)
 }
@@ -58,15 +58,15 @@ func TestRunHeapAllocs(t *testing.T) {
 		t.Run(fmt.Sprintf("%s/heap-initial-%d", p.path, p.initHeap), func(t *testing.T) {
 			discardStdout(t)
 			// The run shrinks the heap no lower than HeapSizeInit, as cx does.
-			initSize := constants.HeapSizeInit
-			defer func() { constants.HeapSizeInit = initSize }()
+			initSize := opcodetable.HeapSizeInit
+			defer func() { opcodetable.HeapSizeInit = initSize }()
 			const runs = 2
 			var compiled []*ast.CXProgram
 			for i := 0; i <= runs; i++ {
 				runHeapCompile(t, p.path, p.initHeap, p.heapCap)
 				compiled = append(compiled, actions.AST)
 			}
-			constants.HeapSizeInit = p.initHeap
+			opcodetable.HeapSizeInit = p.initHeap
 			next := 0
 			var before, after runtime.MemStats
 			runtime.GC()
@@ -99,16 +99,16 @@ func TestRunHeapCapExceeded(t *testing.T) {
 	initProgram()
 	discardStdout(t)
 	const heapCap = 64 << 10
-	runHeapCompile(t, "test-heap-cap-exceeded.cx", constants.HeapSizeInit, heapCap)
+	runHeapCompile(t, "test-heap-cap-exceeded.cx", opcodetable.HeapSizeInit, heapCap)
 	if err := execute.RunCompiled(actions.AST, 0, nil); err != nil {
 		t.Fatal(err)
 	}
 	record := actions.AST.RuntimeError
-	if !record.RuntimeErrorRecordRaised || record.RuntimeErrorRecordCode != types.CXRuntimeHeapExhaustedError {
+	if !record.RuntimeErrorRecordRaised || record.RuntimeErrorRecordCode != valuetypes.CXRuntimeHeapExhaustedError {
 		t.Fatalf("runtime error %v code %d, want CX_RUNTIME_HEAP_EXHAUSTED_ERROR", record.RuntimeErrorRecordRaised, record.RuntimeErrorRecordCode)
 	}
 	outOfMemory, ok := record.RuntimeErrorRecordPanicValue.(ast.RuntimeOutOfMemory)
-	want := uint64(types.ObjectHeaderSize+constants.SliceHeaderSize) + 20000*4
+	want := uint64(valuetypes.ObjectHeaderSize+opcodetable.SliceHeaderSize) + 20000*4
 	if !ok || outOfMemory.RuntimeOutOfMemoryCap != heapCap || outOfMemory.RuntimeOutOfMemoryRequest != want {
 		t.Fatalf("panic value %#v, want a request of %d bytes and a cap of %d", record.RuntimeErrorRecordPanicValue, want, heapCap)
 	}

@@ -2,7 +2,7 @@ package type_checker
 
 import (
 	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: only File; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t6-declextractor"
 )

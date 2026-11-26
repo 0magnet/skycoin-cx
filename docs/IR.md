@@ -1,7 +1,7 @@
 # The CX intermediate representation
 
 This document describes what the CX compiler produces. That is the
-in-memory program the VM executes, a `*ast.CXProgram` from `t3-ast`, and
+in-memory program the VM executes, a `*ast.CXProgram` from `t3-cx-core-ast`, and
 the byte form `ast.CXProgramSerialize` writes. Every type, field and
 function named here is in this repository, and the worked example was
 produced by compiling a real program and dumping it.
@@ -96,7 +96,7 @@ A function is finished by `actions.FunctionHeader`, which adds the
 
 ## The program
 
-`ast.CXProgram` (`t3-ast/cxprogram_def.go`) is the root of the IR.
+`ast.CXProgram` (`t3-cx-core-ast/cxprogram_def.go`) is the root of the IR.
 
 | Field | Type | Contents |
 | --- | --- | --- |
@@ -141,13 +141,13 @@ in the source and becomes a generational index under the object model in
 
 ## Packages, functions and structs
 
-`ast.CXPackage` (`t3-ast/cxpackage_def.go`) has a `Name`, its own `Index`
+`ast.CXPackage` (`t3-cx-core-ast/cxpackage_def.go`) has a `Name`, its own `Index`
 in `CXPackages`, and three name maps, `Imports` (to `CXPackageIndex`),
 `Functions` (to `CXFunctionGid`) and `Structs` (to `CXStructIndex`).
 `Globals` is a `*CXStruct` whose `Fields` are the global variables.
 `CurrentFunction` is the function being parsed.
 
-`ast.CXFunction` (`t3-ast/cxfunction_def.go`) has
+`ast.CXFunction` (`t3-cx-core-ast/cxfunction_def.go`) has
 
 * `Index`, `Name` and `Package`,
 * `AtomicOPCode`, the opcode number, 0 for a user function.
@@ -164,7 +164,7 @@ in `CXPackages`, and three name maps, `Imports` (to `CXPackageIndex`),
 * `ListOfPointers []*CXArgument` and `ListOfSlots []CXFunctionSlot`, the GC
   roots of the frame. A slot is a local with its declared type, and the GC
   walks it by the `ast.Type` that `ast.GCTypeOf` builds from that type
-  (`t3-ast/gc_type.go`).
+  (`t3-cx-core-ast/gc_type.go`).
 
 `CXFunctionMng` holds more than the user's functions. Every expression that
 calls a native operator gets its own copy of the native, made by
@@ -177,7 +177,7 @@ is also its code in `ast.NativeNames`. Its copy has `AtomicOPCode`
 `OP_LIBRARY_CALL` and the two library numbers, and adding it marks the
 library in `CXProgram.ProgramLibrariesUsed`.
 
-`ast.CXStruct` (`t3-ast/cxstruct_def.go`) has `Index`, `Name`, `Package`,
+`ast.CXStruct` (`t3-cx-core-ast/cxstruct_def.go`) has `Index`, `Name`, `Package`,
 `Fields []CXTypeSignatureIndex`, and `FileName`, `FileLine` and
 `FileColumn`, the position of a declared type name, used while compiling.
 The same type is reused as the parameter list of a function or operator and
@@ -188,7 +188,7 @@ as a package's globals.
 A function body is a flat `[]CXExpression`. There are no nested blocks.
 Scopes, branches and loops become jumps over this list.
 
-`ast.CXExpression` (`t3-ast/cxexpression_def.go`) has three fields.
+`ast.CXExpression` (`t3-cx-core-ast/cxexpression_def.go`) has three fields.
 
 | Field | Type | Meaning |
 | --- | --- | --- |
@@ -196,7 +196,7 @@ Scopes, branches and loops become jumps over this list.
 | `Index` | `int` | Index into `CXAtomicOps` for `CX_ATOMIC_OPERATOR`, the slot in `CxIrState.CXLineMng` for `CX_LINE` |
 | `ExpressionType` | `CXEXPR_TYPE` | `CXEXPR_UNUSED` (0), `CXEXPR_METHOD_CALL` (1), `CXEXPR_STRUCT_LITERAL` (2), `CXEXPR_ARRAY_LITERAL` (3), `CXEXPR_SCOPE_NEW` (4), `CXEXPR_SCOPE_DEL` (5) |
 
-`CXOPERATION_TYPE` (`t3-ast/ast_cxoperation.go`) also defines `UNUSED`
+`CXOPERATION_TYPE` (`t3-cx-core-ast/ast_cxoperation.go`) also defines `UNUSED`
 (0) and `CX_ARGUMENT` (2), which no expression uses. `ExpressionType`
 only matters while compiling. `CXEXPR_SCOPE_NEW` and `CXEXPR_SCOPE_DEL`
 open and close a symbol scope in `FunctionDeclaration`.
@@ -204,7 +204,7 @@ open and close a symbol scope in `FunctionDeclaration`.
 ### Line markers
 
 A `CX_LINE` expression points at an `ast.CXLine`
-(`t3-ast/cxline_def.go`) with `FileName`, `LineNumber`, `LineColumn` and
+(`t3-cx-core-ast/cxline_def.go`) with `FileName`, `LineNumber`, `LineColumn` and
 `LineStr`. `ast.CXLineExpressionMake` creates them. The parser puts one before each
 statement, and error messages use the nearest preceding marker. The VM
 skips them, but they take a slot in `Expressions`, so jump distances
@@ -213,7 +213,7 @@ count them.
 ### Atomic operators
 
 A `CX_ATOMIC_OPERATOR` expression points at an `ast.CXAtomicOperator`
-(`t3-ast/cxatomicoperator_def.go`).
+(`t3-cx-core-ast/cxatomicoperator_def.go`).
 
 | Field | Type | Meaning |
 | --- | --- | --- |
@@ -287,7 +287,7 @@ used for many operands. A type signature can point at one.
 
 ### CXTypeSignature
 
-`ast.CXTypeSignature` (`t3-ast/cxtypesignature_def.go`) has `Index`,
+`ast.CXTypeSignature` (`t3-cx-core-ast/cxtypesignature_def.go`) has `Index`,
 `Name`, `Offset`, `Type`, `Package`, `PassBy`
 (`constants.PASSBY_VALUE` 0 or `PASSBY_REFERENCE` 1), `Deref`, `Meta`
 and `ArgDetails`. `Type` is a `CXTypeSignatureType`, and `Meta` depends
@@ -319,7 +319,7 @@ a struct field access, a slice of structs or a function value, becomes
 
 ### CXArgument
 
-`ast.CXArgument` (`t3-ast/cxargument_def.go`) is the general operand. The
+`ast.CXArgument` (`t3-cx-core-ast/cxargument_def.go`) is the general operand. The
 fields the VM reads are
 
 * `Type` and `PointerTargetType`, both `types.Code`,
@@ -337,12 +337,12 @@ fields the VM reads are
 * `Inputs` and `Outputs` for a function value,
 * `StructType` and `PassBy`.
 
-`ast.FinalOffsetGet` (`t3-ast/mem_offset.go`) turns an operand and a frame
+`ast.FinalOffsetGet` (`t3-cx-core-ast/mem_offset.go`) turns an operand and a frame
 pointer into an absolute address in `Memory`, applying the dereferences.
 
 ### Type codes
 
-`types.Code` (`t0-types/types.go`) numbers the base types. `UNUSED` 0,
+`types.Code` (`t0-cx-core-valuetypes/types.go`) numbers the base types. `UNUSED` 0,
 `BOOL` 1, `I8` 2, `I16` 3, `I32` 4, `I64` 5, `UI8` 6, `UI16` 7, `UI32` 8,
 `UI64` 9, `F32` 10, `F64` 11, `POINTER` 12, `STR` 13, `ARRAY` 14,
 `SLICE` 15, `STRUCT` 16, `FUNC` 17, `AFF` 18, `UNDEFINED` 19,
@@ -379,10 +379,10 @@ run, so the heap grows without a Go allocation (D42). `Stack.StartsAt` stays 0.
   literal and global to the data segment at compile time, grows
   `Data.Size` and moves `Heap.StartsAt` to `Data.StartsAt + Data.Size`.
   A literal's `Offset` is absolute.
-* Heap. `ast.SequenceAllocate` (`t3-ast/ast_memory.go`) allocates objects.
+* Heap. `ast.SequenceAllocate` (`t3-cx-core-ast/ast_memory.go`) allocates objects.
   `Heap.Pointer` is relative to `Heap.StartsAt`, and the first
   `NULL_HEAP_ADDRESS_OFFSET` bytes are the `nil` address. Each object has
-  a header of `types.OBJECT_HEADER_SIZE` bytes (`t0-types/types_object.go`),
+  a header of `types.OBJECT_HEADER_SIZE` bytes (`t0-cx-core-valuetypes/types_object.go`),
   a 1 byte GC mark, a forwarding address and the object size.
 
 `FinalOffsetGet` tells a frame offset from an absolute one by value. An
@@ -392,15 +392,15 @@ used as it is.
 ### Pointer size
 
 `types.Pointer` is `uint32` and `types.POINTER_SIZE` is 4 in the default
-build (`t0-types/types_ptr32.go`). With `-tags ptr64` it is `uint64` and 8
-(`t0-types/types_ptr64.go`). The pointer size changes the size of every
+build (`t0-cx-core-valuetypes/types_ptr32.go`). With `-tags ptr64` it is `uint64` and 8
+(`t0-cx-core-valuetypes/types_ptr64.go`). The pointer size changes the size of every
 pointer, string, slice and array header, the object header, and with them
 every offset after such an operand. `make check` runs the tests in both
 builds.
 
 ## How the VM runs an expression
 
-`ast.CXCall` (`t3-ast/cxcall_def.go`) is a frame with `Operator`
+`ast.CXCall` (`t3-cx-core-ast/cxcall_def.go`) is a frame with `Operator`
 (`*CXFunction`), `Line` and `FramePointer`. `CXCall.Call` runs
 `Operator.Expressions[Line]`.
 
@@ -522,7 +522,7 @@ per-expression native copies.
 `ast.CXProgramSerialize(prgrm, includeMemory, codec)`,
 `ast.Deserialize(b, codec)`, `ast.SerializedHeaderCheck(b)` and
 `ast.SerializedSizesOf(prgrm, includeMemory, wholeMemory)` are in
-`t3-ast/serialize.go`.
+`t3-cx-core-ast/serialize.go`.
 
 * A serialized program is a snapshot of the arenas and managers of a
   compiled program. `Deserialize` gives back a program that lowers and runs
@@ -533,7 +533,7 @@ per-expression native copies.
   nonzero byte. Without it `Deserialize` makes zeroed memory of the same
   size, so literals in the data segment read as zero.
 * With a non-nil `ast.SerializeCodec`, such as a `*lz4codec.Codec`
-  (`t0-lz4codec`), the memory always goes
+  (`t0-cx-core-compression`), the memory always goes
   in and the result is one LZ4 block from `Codec.Compress`. The block does
   not store the original length, so `Codec.Decompress` relies on the limits
   set in `lz4codec.Config`. `Deserialize` must be given a codec when the
@@ -623,7 +623,7 @@ stack entry writes the index of its function.
 
 `CXProgramSerialize` fails when one of the managers no compile stage fills
 yet, such as `CXFunctionMng`, holds an object. `TestSerializeFieldCounts`
-in `t3-ast` fails when a type the serializer writes gains a field.
+in `t3-cx-core-ast` fails when a type the serializer writes gains a field.
 
 ### Language version and pointer size
 
@@ -631,7 +631,7 @@ in `t3-ast` fails when a type the serializer writes gains a field.
 builds anything, and returns an error unless the format, the pointer size
 and the language version are this cx's. The language version is the
 integer `yymmddnnnn` of `constants.LanguageVersionCurrent`
-(`t1-constants/constants.go`), and `constants.LanguageVersionValid` checks
+(`t1-cx-core-opcodetable/constants.go`), and `constants.LanguageVersionValid` checks
 it. The versions are listed in the
 [Language versions](../LanguageGuide.md#language-versions) section of the
 language guide, and the rule is item 9 of
@@ -712,7 +712,7 @@ it was built with (D42).
 
 This document does not list the opcodes. The list is
 `constants.OpcodeLifecycleTable` in
-[t1-constants/opcodes.go](../t1-constants/opcodes.go), mirrored in
+[t1-cx-core-opcodetable/opcodes.go](../t1-cx-core-opcodetable/opcodes.go), mirrored in
 [opcodes.csv](opcodes.csv). Each row is an `OpcodeLifecycle` with
 `Number`, `Name`, `VersionAdded`, `VersionDeprecated` and
 `VersionReassignable`. The numbering and lifecycle rules are items 7 and
@@ -723,10 +723,10 @@ This document does not list the opcodes. The list is
   and the `START_OF_*` and `END_OF_*` markers bound ranges and are not
   opcodes.
 * Every live opcode has a row in `constants.OpcodeDefinitionTable`
-  ([t1-constants/opcodes_definitions.go](../t1-constants/opcodes_definitions.go))
+  ([t1-cx-core-opcodetable/opcodes_definitions.go](../t1-cx-core-opcodetable/opcodes_definitions.go))
   with its handler, signature and typed operator form. `make
   generate-opcodes` runs t2-cx-core-opcodegen, which writes the signature,
-  operator and name tables of `t1-constants/opcodes_signatures_gen.go` and
+  operator and name tables of `t1-cx-core-opcodetable/opcodes_signatures_gen.go` and
   the opcode switch: `CoreOpcodeDispatch` in t5-cx-runtime-core, with the
   `nocxos` and `noregexp` groups in their own files, and `CxfxOpcodeDispatch`
   in t6-cxfx under the `cxfx` tag. Each case calls the handler directly,
@@ -750,9 +750,9 @@ This document does not list the opcodes. The list is
   and no name, so no program calls it by name, and the loop runs it. The system library functions have
   their own numbers in `constants.LibraryFunctionLifecycleTable` and compile
   to `LibraryCall`. `constants.LibraryFunctionDefinitionTable` in
-  t1-constants/libraries_definitions.go gives each live one its handler, vm
+  t1-cx-core-opcodetable/libraries_definitions.go gives each live one its handler, vm
   form and signature (decision D96). t2-cx-core-opcodegen writes the library
-  signature tables of `t1-constants/libraries_signatures_gen.go` and one
+  signature tables of `t1-cx-core-opcodetable/libraries_signatures_gen.go` and one
   switch per library in the package of its handlers, under that package's
   build tag, `LibraryProcessDispatch` in t5-cxos. The functions of the cipher, net and file libraries are opcodes
   instead, 796 to 875 in `OpcodeGroupCipher`, `OpcodeGroupNet` and

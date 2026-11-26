@@ -4,9 +4,9 @@ import (
 	"slices"
 	"strings"
 
-	cxpackages "github.com/skycoin/skycoin-cx/t0-packages"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-syspackages"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // ImportScopedName is one name of import (a, b) "pkg", at its position.
@@ -154,7 +154,7 @@ func importScopedMember(prgrm *ast.CXProgram, source *ast.CXPackage, name string
 	if importScopedGlobal(prgrm, source, name) {
 		return true
 	}
-	if !cxpackages.PackageDefault(prgrm.CXProgramNameText(source.Name)) {
+	if !syspackages.PackageDefault(prgrm.CXProgramNameText(source.Name)) {
 		return false
 	}
 	if _, found := prgrm.CXProgramNativeFind(&ast.NativeNames, source.Name, stringpool.StringGidNil, name); found {
@@ -178,7 +178,7 @@ func importScopedMembers(prgrm *ast.CXProgram, source *ast.CXPackage) []stringpo
 		names = append(names, prgrm.CXTypeSignatureFromArrayGet(fieldIdx).Name)
 	}
 	sourceText := prgrm.CXProgramNameText(source.Name)
-	if cxpackages.PackageDefault(sourceText) {
+	if syspackages.PackageDefault(sourceText) {
 		for _, index := range []*ast.NativeNameIndex{&ast.NativeNames, &ConstNames} {
 			for _, entry := range index.NativeNameIndexPackage(sourceText) {
 				names = append(names, prgrm.CXProgramNameIntern(entry.NativeNameEntryText[len(sourceText)+1:]))

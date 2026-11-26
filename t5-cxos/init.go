@@ -3,8 +3,8 @@
 package cxos
 
 import (
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-opcodes" // thin: only LibraryLink; registration API, keep
 )
 
@@ -16,5 +16,5 @@ func PackageRegister(prgrm *ast.CXProgram) {
 
 // LibraryProcessRegister links the process library, os.Run.
 func LibraryProcessRegister(prgrm *ast.CXProgram) {
-	opcodes.LibraryLink(constants.LibraryNumberProcess, LibraryProcessDispatch)
+	opcodes.LibraryLink(opcodetable.LibraryNumberProcess, LibraryProcessDispatch)
 }

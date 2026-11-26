@@ -3,9 +3,9 @@ package opcodes
 import (
 	"strconv"
 
-	// GCREACH: t3-ast owns the heap and the GC roots. This file reads and writes values
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. This file reads and writes values
 	// and allocates nothing, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 func OpBoolPrint(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {

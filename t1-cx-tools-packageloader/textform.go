@@ -5,18 +5,18 @@ import (
 	"strconv"
 	"strings"
 
-	lz4codec "github.com/skycoin/skycoin-cx/t0-lz4codec"
-	"github.com/skycoin/skycoin-cx/t0-textsections"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-compression"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-textsections"
 )
 
 // The database stores a File, Package and PackageList in the CX text form of
-// t0-textsections, LZ4 compressed (skycoin-cx#509).
+// t0-cx-core-textsections, LZ4 compressed (skycoin-cx#509).
 
 // textFormEncode returns sections as an LZ4 block of their text form.
 func textFormEncode(sections []textsections.TextSection) ([]byte, error) {
 	text := textsections.TextSectionsWrite(nil, sections)
-	var codec lz4codec.Codec
-	if err := codec.Init(lz4codec.Config{MaxInput: len(text), MaxOutput: len(text)}); err != nil {
+	var codec compression.Codec
+	if err := codec.Init(compression.Config{MaxInput: len(text), MaxOutput: len(text)}); err != nil {
 		return nil, err
 	}
 	defer codec.Close()
@@ -78,8 +78,8 @@ func textFormUnquote(text string) (string, error) {
 
 // textFormText returns the text form in an LZ4 block textFormEncode wrote.
 func textFormText(block []byte) ([]byte, error) {
-	var codec lz4codec.Codec
-	if err := codec.Init(lz4codec.Config{MaxInput: 1, MaxOutput: lz4codec.MaxRatio*len(block) + 64}); err != nil {
+	var codec compression.Codec
+	if err := codec.Init(compression.Config{MaxInput: 1, MaxOutput: compression.MaxRatio*len(block) + 64}); err != nil {
 		return nil, err
 	}
 	defer codec.Close()

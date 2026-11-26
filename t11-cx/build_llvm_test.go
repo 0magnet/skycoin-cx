@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	llvm "github.com/skycoin/skycoin-cx/t3-cx-compiler-llvm"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
@@ -58,18 +58,18 @@ func llvmTestClang(t *testing.T) string {
 }
 
 // llvmTestValues are the operands each scalar opcode is run on.
-func llvmTestValues(code types.Code) []uint64 {
+func llvmTestValues(code valuetypes.Code) []uint64 {
 	bits := uint64(8 * llvmTestSize(code))
 	switch code {
-	case types.BOOL:
+	case valuetypes.BOOL:
 		return []uint64{0, 1}
-	case types.I8, types.I16, types.I32, types.I64:
+	case valuetypes.I8, valuetypes.I16, valuetypes.I32, valuetypes.I64:
 		min := uint64(1) << (bits - 1)
 		return []uint64{0, 1, ^uint64(0), 7, ^uint64(6), 3, min, min - 1, bits - 1, bits, bits + 1}
-	case types.UI8, types.UI16, types.UI32, types.UI64:
+	case valuetypes.UI8, valuetypes.UI16, valuetypes.UI32, valuetypes.UI64:
 		max := ^uint64(0) >> (64 - bits)
 		return []uint64{0, 1, 2, 7, max, max - 1, bits - 1, bits}
-	case types.F32:
+	case valuetypes.F32:
 		var list []uint64
 		for _, v := range []float32{0, float32(math.Copysign(0, -1)), 1.5, -2.25, 3, 100.75, float32(math.NaN()), float32(math.Inf(1)), float32(math.Inf(-1)), 1e30, 1e-7} {
 			list = append(list, uint64(math.Float32bits(v)))
@@ -83,13 +83,13 @@ func llvmTestValues(code types.Code) []uint64 {
 	return list
 }
 
-func llvmTestSize(code types.Code) uint32 {
+func llvmTestSize(code valuetypes.Code) uint32 {
 	switch code {
-	case types.BOOL, types.I8, types.UI8:
+	case valuetypes.BOOL, valuetypes.I8, valuetypes.UI8:
 		return 1
-	case types.I16, types.UI16:
+	case valuetypes.I16, valuetypes.UI16:
 		return 2
-	case types.I32, types.UI32, types.F32:
+	case valuetypes.I32, valuetypes.UI32, valuetypes.F32:
 		return 4
 	}
 	return 8
@@ -100,19 +100,19 @@ func llvmTestSize(code types.Code) uint32 {
 // integer it converts to.
 func llvmTestSkip(fact llvm.OpcodeFact, a, b uint64) bool {
 	code := fact.OpcodeFactType
-	float := code == types.F32 || code == types.F64
-	if !float && code != types.BOOL && fact.OpcodeFactInputs == 2 && (fact.OpcodeFactOperation == "div" || fact.OpcodeFactOperation == "mod") {
+	float := code == valuetypes.F32 || code == valuetypes.F64
+	if !float && code != valuetypes.BOOL && fact.OpcodeFactInputs == 2 && (fact.OpcodeFactOperation == "div" || fact.OpcodeFactOperation == "mod") {
 		return b&(^uint64(0)>>(64-8*llvmTestSize(code))) == 0
 	}
 	result := fact.OpcodeFactResult
-	if !float || fact.OpcodeFactOperation != result.Name() || result == types.F32 || result == types.F64 {
+	if !float || fact.OpcodeFactOperation != result.Name() || result == valuetypes.F32 || result == valuetypes.F64 {
 		return false
 	}
 	v := math.Float64frombits(a)
-	if code == types.F32 {
+	if code == valuetypes.F32 {
 		v = float64(math.Float32frombits(uint32(a)))
 	}
-	signed := result == types.I8 || result == types.I16 || result == types.I32 || result == types.I64
+	signed := result == valuetypes.I8 || result == valuetypes.I16 || result == valuetypes.I32 || result == valuetypes.I64
 	bits := 8 * llvmTestSize(result)
 	low, high := 0.0, math.Ldexp(1, int(bits))
 	if signed {
@@ -130,8 +130,8 @@ func llvmTestImage(readOnly bool) *ir.Image {
 	image := &ir.Image{ImageStackSize: stack, ImageDataStart: stack, ImageEntryInit: ir.ImageFuncNone}
 	data := make([]byte, 16)
 	result := uint32(stack)
-	offsets := map[types.Code][]uint32{}
-	for code := types.BOOL; code <= types.F64; code++ {
+	offsets := map[valuetypes.Code][]uint32{}
+	for code := valuetypes.BOOL; code <= valuetypes.F64; code++ {
 		values := llvmTestValues(code)
 		for _, v := range values {
 			offsets[code] = append(offsets[code], stack+uint32(len(data)))
@@ -165,7 +165,7 @@ func llvmTestImage(readOnly bool) *ir.Image {
 				code = append(code, textOf(fmt.Sprintf("%s %d %d: ", fact.OpcodeFactName, i, j)))
 				in := ir.Instr{InstrOpcode: op, InstrA: offsets[fact.OpcodeFactType][i], InstrB: offsets[fact.OpcodeFactType][j], InstrC: result}
 				code = append(code, in)
-				if fact.OpcodeFactResult != types.UNDEFINED {
+				if fact.OpcodeFactResult != valuetypes.UNDEFINED {
 					code = append(code, ir.Instr{InstrOpcode: ir.OpcodePrintValue, InstrA: result, InstrM: uint32(fact.OpcodeFactResult), InstrN: 'v'})
 					code = append(code, textOf("\n"))
 				}

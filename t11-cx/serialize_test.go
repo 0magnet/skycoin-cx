@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 )
@@ -97,7 +97,7 @@ func TestSerializeHeaderMismatch(t *testing.T) {
 		want   string
 	}{
 		{8, 1, "format 1"},
-		{12, uint32(16 - types.PointerSize), "byte pointers"},
+		{12, uint32(16 - valuetypes.PointerSize), "byte pointers"},
 		{16, 1, "language version"},
 	}
 	for _, tc := range cases {

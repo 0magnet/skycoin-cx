@@ -13,12 +13,12 @@ check-gcreach` fails when a new one appears without it. See #485.
 
 The heap is the part of `CXProgram.Memory` after the stack and the data
 segment, described by `CXProgram.Heap` (`HeapSegmentStruct` in
-t3-ast/ast_cxprogram.go). Objects are allocated by bumping `Heap.Pointer`.
+t3-cx-core-ast/ast_cxprogram.go). Objects are allocated by bumping `Heap.Pointer`.
 
 `gc.GarbageCollectorCollect` in t2-cx-runtime-gc is a mark and compact
 collector. It marks every object reachable from the roots, gives each live
 object a new address, rewrites the references it recorded while marking, and
-slides the objects down. It imports t0-types and t1-constants only.
+slides the objects down. It imports t0-cx-core-valuetypes and t1-cx-core-opcodetable only.
 
 ### Interface
 
@@ -40,12 +40,12 @@ pointers, slices and strs. A nil `*Type` holds none, so values without
 references cost nothing to walk.
 
 The collector sees no CX IR, no `CXProgram`, no call stack and no opcode.
-t3-ast builds the root table: `gcGlobalRoots` and `gcFrameRoots` in
-t3-ast/gc_type.go turn the globals and each function's `ListOfSlots` and
+t3-cx-core-ast builds the root table: `gcGlobalRoots` and `gcFrameRoots` in
+t3-cx-core-ast/gc_type.go turn the globals and each function's `ListOfSlots` and
 `ListOfPointers` into `Root`s, cached in `Heap.Types`.
 `GarbageCollectorPrepare` builds them for the globals and every function
 before the run. `make
-check-gcreach` fails when any package but t3-ast imports t2-cx-runtime-gc.
+check-gcreach` fails when any package but t3-cx-core-ast imports t2-cx-runtime-gc.
 
 ### The tick
 
@@ -58,7 +58,7 @@ The old loop ticks after every step, one expression, in `runLoop` and
 `runSysInitFunc` (t4-execute/execute.go). Between two steps every root is in a
 global or a frame slot, so no Go code holds a heap address.
 
-- `GarbageCollectorCheck` (t3-ast/gc_tick.go) reports `Heap.Pressure >
+- `GarbageCollectorCheck` (t3-cx-core-ast/gc_tick.go) reports `Heap.Pressure >
   Heap.PressureLimit`, two loads and a compare.
 - `GarbageCollectorTrigger` builds the root table from the globals and the
   live frames, runs the collector, resizes the heap to keep between
@@ -143,7 +143,7 @@ the check stays two loads so `TestRunVmAllocs` stays 0.
 
 ## Which packages are GC free
 
-| Package | Imports t3-ast | Reaches the GC |
+| Package | Imports t3-cx-core-ast | Reaches the GC |
 | --- | --- | --- |
 | t2-cx-runtime-ir, the IR base | no | no |
 | t3-cx-runtime-vm, the vm executor | no | no. The machine has no heap |
@@ -154,7 +154,7 @@ the check stays two loads so `TestRunVmAllocs` stays 0.
 | t5-cx-runtime-core, the executor | yes | through the old loop |
 
 `make check-gcreach` fails when t2-cx-runtime-ir or t3-cx-runtime-vm imports
-t3-ast or t2-cx-runtime-gc.
+t3-cx-core-ast or t2-cx-runtime-gc.
 
 ## Reach list
 
@@ -164,12 +164,12 @@ Lines are as of this document. Regenerate them with `./check-gcreach.sh -l`.
 
 - t4-execute/execute.go:46 to :47 the tick in `runLoop`, :78 to :79 in
   `runSysInitFunc`
-- t3-ast/gc_tick.go:14 `GarbageCollectorCheck`, :26 and :29
+- t3-cx-core-ast/gc_tick.go:14 `GarbageCollectorCheck`, :26 and :29
   `GarbageCollectorPrepare` building the roots before the run, :50 to :63
   `GarbageCollectorTrigger` building the root table and calling the
   collector, :78 and :85 the heap resize after it
 
-### Imports of t3-ast by the interpreter and the IR base
+### Imports of t3-cx-core-ast by the interpreter and the IR base
 
 - t4-cx-compiler-lower/lower.go:20, lower_printf.go:12. Reads only
 - t4-execute/execute.go:11, callback.go:9
@@ -183,17 +183,17 @@ Lines are as of this document. Regenerate them with `./check-gcreach.sh -l`.
 
 ### Allocation, which adds to the pressure
 
-- t3-ast/ast_memory.go `EnsureMinimumHeapSize` starts the pressure, :93
+- t3-cx-core-ast/ast_memory.go `EnsureMinimumHeapSize` starts the pressure, :93
   to :94 `memoryReserveTake` and :120 to :127 `ProgramMemoryRelease` hand
   the collector scratch between programs, :176 to :179 `SequenceAllocate` grows
   the heap and adds to it, :196 `StrAllocate`, :208 `StrAllocateAt`, :218
   `StrBytesAllocateAt`
-- t3-ast/ast_cxvalue.go:219 `CXValue.StrSet`, used by the system library
+- t3-cx-core-ast/ast_cxvalue.go:219 `CXValue.StrSet`, used by the system library
   opcodes, :227 `StrBytesSet` and :235 `StrConcatSet`, the path of every
   other opcode that writes a str
-- t3-ast/mem_escape.go:57 `EscapedAllocate`, and its caller
-  t3-ast/ast_cxcall.go:96 in `wipeDeclarationMemory`
-- t3-ast/mem_slice.go:104 `SliceResizeEx`, :152 `SliceResize`, :271
+- t3-cx-core-ast/mem_escape.go:57 `EscapedAllocate`, and its caller
+  t3-cx-core-ast/ast_cxcall.go:96 in `wipeDeclarationMemory`
+- t3-cx-core-ast/mem_slice.go:104 `SliceResizeEx`, :152 `SliceResize`, :271
   `SliceWrite`
 - t4-execute/execute.go:97 `feedOSArgs`
 - t4-opcodes/op_aff.go, 27 lines in `queryParam`, `QueryExpressions`,
@@ -210,10 +210,10 @@ They are not marked one by one.
 
 ### GC root tables
 
-- t3-ast/cxfunction_def.go:48 `ListOfPointers` and :57 `ListOfSlots`
+- t3-cx-core-ast/cxfunction_def.go:48 `ListOfPointers` and :57 `ListOfSlots`
 - t4-actions/gcroot.go:31 adds to `ListOfSlots`, t4-actions/functions.go:1223
   to :1308 reads and adds to `ListOfPointers`
-- t3-ast/serialize.go:736 to :751 writes and :807 to :831 reads both tables
+- t3-cx-core-ast/serialize.go:736 to :751 writes and :807 to :831 reads both tables
 
 ## Before and after
 
@@ -225,21 +225,21 @@ wired now, so the change can be reviewed as one structure against another.
 This part describes the structure that PR #488 documented, where the
 allocator ran the collector itself.
 
-- `SequenceAllocate` (t3-ast/ast_memory.go:65) called `MarkAndCompact`
-  (t3-ast/garbage_collector.go:14) at line 78 whenever a request did not fit
+- `SequenceAllocate` (t3-cx-core-ast/ast_memory.go:65) called `MarkAndCompact`
+  (t3-cx-core-ast/garbage_collector.go:14) at line 78 whenever a request did not fit
   in `Heap.Size`, and then grew or shrank the heap.
 - Every opcode that allocated could therefore move every heap object while Go
   code in the middle of that opcode held addresses.
-- `StrAllocateAt` (t3-ast/ast_memory.go:141) protected one such address by
+- `StrAllocateAt` (t3-cx-core-ast/ast_memory.go:141) protected one such address by
   storing it in `Heap.Pinned` at line 142, and nothing else was protected.
-- t0-types held a function variable `Allocator` (t0-types/types.go:149), which
+- t0-cx-core-valuetypes held a function variable `Allocator` (t0-cx-core-valuetypes/types.go:149), which
   t11-cx/main.go:94 and t6-cx-core-run/main.go:27 set to `ast.SequenceAllocate`,
   so the lowest tier reached the collector through a hook.
 - `MarkAndCompact` took the whole `*CXProgram`. It read the globals through
-  `gcGlobalRoots` (t3-ast/gc_type.go:276), walked `CallStack` and each
-  function's `ListOfSlots` and `ListOfPointers` (t3-ast/cxfunction_def.go:57
-  and :48) through `gcFrameRoots` (t3-ast/gc_type.go:241), and kept its
-  scratch memory in `HeapSegmentStruct` (t3-ast/ast_cxprogram.go:31).
+  `gcGlobalRoots` (t3-cx-core-ast/gc_type.go:276), walked `CallStack` and each
+  function's `ListOfSlots` and `ListOfPointers` (t3-cx-core-ast/cxfunction_def.go:57
+  and :48) through `gcFrameRoots` (t3-cx-core-ast/gc_type.go:241), and kept its
+  scratch memory in `HeapSegmentStruct` (t3-cx-core-ast/ast_cxprogram.go:31).
 - The old loop (t4-execute), t4-opcodes, t5-cxos, t4-regexp, t4-cxnet, t6-cxfx
   and t5-cx-runtime-core all reached the collector through allocation. The vm
   (t3-cx-runtime-vm) and the IR base (t2-cx-runtime-ir) did not.
@@ -255,13 +255,13 @@ t5-cx-runtime-core
    |
 t4-execute (old loop) --> t4-opcodes, t5-*, t6-cxfx
    |                          |
-   +--------------------------+--> t3-ast
+   +--------------------------+--> t3-cx-core-ast
                                      SequenceAllocate --> MarkAndCompact(*CXProgram)
                                                         |
                                       gcGlobalRoots, gcFrameRoots, CallStack
                                       ListOfSlots, ListOfPointers
                                       Heap.Types, Heap.Pinned, Heap.Visited ...
-t0-types: Allocator hook --> SequenceAllocate (through the function variable)
+t0-cx-core-valuetypes: Allocator hook --> SequenceAllocate (through the function variable)
 ```
 
 ### After
@@ -269,30 +269,30 @@ t0-types: Allocator hook --> SequenceAllocate (through the function variable)
 This part describes the structure of this change, where the main loop runs
 the collector between steps.
 
-- `SequenceAllocate` (t3-ast/ast_memory.go:74) never collects. It grows the heap at
+- `SequenceAllocate` (t3-cx-core-ast/ast_memory.go:74) never collects. It grows the heap at
   line 84 when a request does not fit, adds the bytes to `Heap.Pressure` at
   line 87, and panics with `HEAP_EXHAUSTED_ERROR` past `MAX_HEAP_SIZE`.
 - `runLoop` (t4-execute/execute.go:27) calls `GarbageCollectorCheck` after
   every step at line 46, and `runSysInitFunc` (t4-execute/execute.go:56) does
   the same at line 78. The loop that `Callback` nests inside a native opcode
   does not tick, because `gcTick` at line 31 is false there.
-- `GarbageCollectorCheck` (t3-ast/gc_tick.go:13) compares `Heap.Pressure` with
+- `GarbageCollectorCheck` (t3-cx-core-ast/gc_tick.go:13) compares `Heap.Pressure` with
   `Heap.PressureLimit`, which costs two loads and a compare.
-- `GarbageCollectorTrigger` (t3-ast/gc_tick.go:23) builds a `RootTable` from
-  `gcGlobalRoots` (t3-ast/gc_type.go:232) and, for each live call, the call's
-  `FramePointer` and `gcFrameRoots` (t3-ast/gc_type.go:197). It then calls the
+- `GarbageCollectorTrigger` (t3-cx-core-ast/gc_tick.go:23) builds a `RootTable` from
+  `gcGlobalRoots` (t3-cx-core-ast/gc_type.go:232) and, for each live call, the call's
+  `FramePointer` and `gcFrameRoots` (t3-cx-core-ast/gc_type.go:197). It then calls the
   collector and resizes the heap with `heapFreeRatioKeep`
-  (t3-ast/gc_tick.go:48).
+  (t3-cx-core-ast/gc_tick.go:48).
 - `GarbageCollectorCollect` (t2-cx-runtime-gc/gc.go:108) receives the memory,
   the heap bounds, the `RootTable` (t2-cx-runtime-gc/gc.go:68) and its own
-  `State` (t2-cx-runtime-gc/gc.go:82). It imports only t0-types and
-  t1-constants and sees no CX IR, no `CXProgram` and no call stack.
+  `State` (t2-cx-runtime-gc/gc.go:82). It imports only t0-cx-core-valuetypes and
+  t1-cx-core-opcodetable and sees no CX IR, no `CXProgram` and no call stack.
 - `Heap.Pinned`, the `types.Allocator` hook, `types.Write_obj`,
   `types.Write_str`, `types.AllocWrite_obj_data` and
   `types.AllocWrite_str_data` are removed. The unused `DisplaceReferences` is
   removed with the old collector file.
-- Only t3-ast may import t2-cx-runtime-gc. The old loop, t4-opcodes, t5-cxos,
-  t4-regexp, t4-cxnet and t6-cxfx still allocate through t3-ast, which adds to
+- Only t3-cx-core-ast may import t2-cx-runtime-gc. The old loop, t4-opcodes, t5-cxos,
+  t4-regexp, t4-cxnet and t6-cxfx still allocate through t3-cx-core-ast, which adds to
   the pressure but never collects. The vm and the IR base still reach nothing,
   and `make check-gcreach` enforces both rules.
 
@@ -309,13 +309,13 @@ t4-execute: runLoop step, then GarbageCollectorCheck / GarbageCollectorTrigger
    |    \
    |     t4-opcodes, t5-*, t6-cxfx: allocate, add to Heap.Pressure
    |          |
-   +----------+--> t3-ast: SequenceAllocate (grows, counts), gc_type.go (root
+   +----------+--> t3-cx-core-ast: SequenceAllocate (grows, counts), gc_type.go (root
                    table), gc_tick.go (check, trigger, heap resize)
                       |
                       v  memory, heap bounds, RootTable, State
                  t2-cx-runtime-gc: GarbageCollectorCollect
                       |
-                 t0-types, t1-constants
+                 t0-cx-core-valuetypes, t1-cx-core-opcodetable
 ```
 
 ### Measured cost of the tick
@@ -356,7 +356,7 @@ This part gives the cost of the change as measured on the base commit
   growth they wrote past the end of memory. `-heap-initial 0 test-regexp.cx`
   failed with `index out of range` and now runs. They are gone, with the
   `types.Allocator` hook they called. `regexp.Compile` and the two cxfx
-  callers allocate through t3-ast with the current `prgrm.Memory`.
+  callers allocate through t3-cx-core-ast with the current `prgrm.Memory`.
 - `Callback` no longer lets a collection run inside the native opcode that
   called it.
 
@@ -389,15 +389,15 @@ references and keep the tick to collect cycles. The lead decides.
 `make check-gcreach` runs [check-gcreach.sh](../check-gcreach.sh) as part of
 `make check`. It fails when
 
-- t2-cx-runtime-ir or t3-cx-runtime-vm imports t3-ast or t2-cx-runtime-gc,
-- a package other than t3-ast imports t2-cx-runtime-gc, or
+- t2-cx-runtime-ir or t3-cx-runtime-vm imports t3-cx-core-ast or t2-cx-runtime-gc,
+- a package other than t3-cx-core-ast imports t2-cx-runtime-gc, or
 - a reach has no comment containing `GCREACH:` directly above it or in the
   doc comment of its function.
 
-A reach is an import of t3-ast in t4-execute, t5-cx-runtime-core,
+A reach is an import of t3-cx-core-ast in t4-execute, t5-cx-runtime-core,
 t4-cx-compiler-lower or t4-opcodes, a call of `GarbageCollectorCheck`,
 `GarbageCollectorTrigger`, `GarbageCollectorCollect`, `SequenceAllocate`,
 `StrAllocate`, `StrAllocateAt`, `StrBytesAllocateAt`, `EscapedAllocate`, `SliceResizeEx`,
 `MemoryResize`, `gcFrameRoots` or `gcGlobalRoots`, or a use of `ListOfSlots`,
 `ListOfPointers` or `Heap.Pressure`, `PressureLimit`, `Types`, `Roots` and
-`Collector`. The collector package and t3-ast/gc_type.go are not scanned.
+`Collector`. The collector package and t3-cx-core-ast/gc_type.go are not scanned.

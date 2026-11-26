@@ -4,10 +4,10 @@ import (
 	"io"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	// GCREACH: t3-ast owns the heap and the GC roots. This file allocates strs, which
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. This file allocates strs, which
 	// adds to the GC pressure, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // OpReadStdin returns the next line of the program's input without its line
@@ -20,7 +20,7 @@ func OpReadStdin(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 		var err error
 		text, err = prgrm.ProgramStdin.ReadString('\n')
 		if err != nil && err != io.EOF {
-			panic(types.CXInternalError)
+			panic(valuetypes.CXInternalError)
 		}
 	}
 

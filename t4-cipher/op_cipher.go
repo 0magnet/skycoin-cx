@@ -5,10 +5,10 @@ package cipher
 import (
 	"hash"
 
-	"github.com/skycoin/skycoin-cx/t0-cxhash"
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-digest"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t1-cipherstate"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin/src/cipher"
 )
 
@@ -19,7 +19,7 @@ type HashTable struct {
 	HashTableHashes [cipherstate.HashStateCountMax]hash.Hash
 	// HashTableDigestScratch receives HashStateSum, so the sum
 	// allocates nothing.
-	HashTableDigestScratch [cxhash.CxHashSize]byte
+	HashTableDigestScratch [digest.CxHashSize]byte
 }
 
 // VIOLATION: state outside State. Owner: t4-cipher; moves to a per program state with the cxfx tables, see D45.
@@ -29,7 +29,7 @@ var cipherHashTable HashTable
 func cipherHashTablePrepare() {
 	for handle := range cipherHashTable.HashTableHashes {
 		if cipherHashTable.HashTableHashes[handle] == nil {
-			cipherHashTable.HashTableHashes[handle] = cxhash.CxHashNew()
+			cipherHashTable.HashTableHashes[handle] = digest.CxHashNew()
 		}
 	}
 }
@@ -51,7 +51,7 @@ func cipherBytesView(prgrm *ast.CXProgram, value *ast.CXValue) []byte {
 // GCREACH: allocates the output byte slice, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
 func cipherBytesOutput(prgrm *ast.CXProgram, output *ast.CXValue, content []byte) {
-	slice := ast.SliceResizeEx(prgrm, 0, types.IntToPtrCast(len(content)), 1)
+	slice := ast.SliceResizeEx(prgrm, 0, valuetypes.IntToPtrCast(len(content)), 1)
 	copy(ast.SliceElementsGet(prgrm, slice, 1), content)
 	output.PtrSet(prgrm, slice)
 }
@@ -81,7 +81,7 @@ func SignatureVerify(hashView []byte, signatureView []byte, pubKeyView []byte) b
 
 // OpCipherHashOfBytes is cipher.HashOfBytes, the digest of a []ui8.
 func OpCipherHashOfBytes(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	digest := cxhash.CxHashOfBytes(cipherBytesView(prgrm, &inputs[0]))
+	digest := digest.CxHashOfBytes(cipherBytesView(prgrm, &inputs[0]))
 	cipherBytesOutput(prgrm, &outputs[0], digest[:])
 }
 

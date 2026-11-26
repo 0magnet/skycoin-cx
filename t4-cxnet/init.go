@@ -2,7 +2,7 @@ package cxnet
 
 import (
 	"github.com/skycoin/skycoin-cx/t1-netbatch"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // PackageRegister adds the net package to prgrm. The functions of sys/net

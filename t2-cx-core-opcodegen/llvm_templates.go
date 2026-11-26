@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 )
 
 // llvmTemplate returns the LLVM IR an opcode of the LLVM target compiles to
@@ -23,7 +23,7 @@ func llvmTemplate(row llvmRow) string {
 	if operation == "print" {
 		return ""
 	}
-	if operand == types.BOOL {
+	if operand == valuetypes.BOOL {
 		switch operation {
 		case "not":
 			return "{t1} = icmp eq i8 {a}, 0\n{r} = zext i1 {t1} to i8"
@@ -35,7 +35,7 @@ func llvmTemplate(row llvmRow) string {
 		}
 		return ""
 	}
-	if operand == types.F32 || operand == types.F64 {
+	if operand == valuetypes.F32 || operand == valuetypes.F64 {
 		switch operation {
 		case "add", "sub", "mul", "div":
 			return "{r} = f" + operation + " {T} {a}, {b}"
@@ -51,7 +51,7 @@ func llvmTemplate(row llvmRow) string {
 		// infinity and signed zero cases differ from frem and llvm.maximum.
 		return ""
 	}
-	signed := operand == types.I8 || operand == types.I16 || operand == types.I32 || operand == types.I64
+	signed := operand == valuetypes.I8 || operand == valuetypes.I16 || operand == valuetypes.I32 || operand == valuetypes.I64
 	switch operation {
 	case "add", "sub", "mul":
 		return "{r} = " + operation + " {T} {a}, {b}"
@@ -100,14 +100,14 @@ func llvmTemplate(row llvmRow) string {
 }
 
 // llvmConversionTemplate converts a value of type from to type to.
-func llvmConversionTemplate(from, to types.Code) string {
-	float := func(code types.Code) bool { return code == types.F32 || code == types.F64 }
-	signed := func(code types.Code) bool {
-		return code == types.I8 || code == types.I16 || code == types.I32 || code == types.I64
+func llvmConversionTemplate(from, to valuetypes.Code) string {
+	float := func(code valuetypes.Code) bool { return code == valuetypes.F32 || code == valuetypes.F64 }
+	signed := func(code valuetypes.Code) bool {
+		return code == valuetypes.I8 || code == valuetypes.I16 || code == valuetypes.I32 || code == valuetypes.I64
 	}
 	switch {
 	case float(from) && float(to):
-		if from == types.F32 {
+		if from == valuetypes.F32 {
 			return "{r} = fpext float {a} to double"
 		}
 		return "{r} = fptrunc double {a} to float"

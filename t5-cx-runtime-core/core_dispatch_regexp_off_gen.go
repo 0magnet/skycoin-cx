@@ -5,12 +5,12 @@
 package core
 
 import (
-	// GCREACH: t3-ast owns the heap. The switch hands the operands to the
+	// GCREACH: t3-cx-core-ast owns the heap. The switch hands the operands to the
 	// handlers and allocates nothing, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
-// coreOpcodeDispatchRegexp reports false, the build tags leave out constants.OpcodeGroupRegexp.
+// coreOpcodeDispatchRegexp reports false, the build tags leave out opcodetable.OpcodeGroupRegexp.
 func coreOpcodeDispatchRegexp(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, outputs []ast.CXValue) bool {
 	return false
 }

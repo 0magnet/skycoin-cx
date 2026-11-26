@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	cxparsing "github.com/skycoin/skycoin-cx/t9-cxparsing"
 )

@@ -119,7 +119,7 @@ therefore uses, by the `tinygo` build tag:
   local and no part of it may be a symlink, except the last one for a
   remove. A symlink made between the check and the call is not caught,
   which `os.Root` catches;
-* a portable BLAKE3 in `t0-cxhash`, which a Go test checks against
+* a portable BLAKE3 in `t0-cx-core-digest`, which a Go test checks against
   `lukechampine.com/blake3`;
 * a path comparison with symlinks resolved in place of `os.SameFile`;
 * no CPU profile rate.

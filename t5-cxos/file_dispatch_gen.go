@@ -5,10 +5,10 @@
 package cxos
 
 import (
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
-// FileOpcodeDispatch runs the opcode code of constants.OpcodeGroupFile on its operands
+// FileOpcodeDispatch runs the opcode code of opcodetable.OpcodeGroupFile on its operands
 // and reports false for any other opcode.
 func FileOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, outputs []ast.CXValue) bool {
 	switch code {

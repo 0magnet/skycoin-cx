@@ -3,10 +3,10 @@ package actions
 import (
 	"sort"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // StructDeclare takes a name of a struct and a slice of fields representing
@@ -47,7 +47,7 @@ func StructDeclare(prgrm *ast.CXProgram, structName string, structFields []*ast.
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureRelease(gid), phase 4 #331.
 	// Now a dropped object, site S1208.
 	strct.Fields = nil
-	var structSize types.Pointer
+	var structSize valuetypes.Pointer
 	for _, field := range structFields {
 		fieldSize, fits := declarationArgSize(field)
 		if !fits || !declarationSizeSumFits(structSize, fieldSize) {
@@ -70,7 +70,7 @@ func StructDeclare(prgrm *ast.CXProgram, structName string, structFields []*ast.
 // or nil for no struct or one behind a pointer, slice or array (issue-233).
 func declareStructArgValueStruct(arg *ast.CXArgument) *ast.CXStruct {
 	for _, decl := range arg.DeclarationSpecifiers {
-		if decl == constants.DeclarationPointer || decl == constants.DeclarationSlice || decl == constants.DeclarationArray {
+		if decl == opcodetable.DeclarationPointer || decl == opcodetable.DeclarationSlice || decl == opcodetable.DeclarationArray {
 			return nil
 		}
 	}

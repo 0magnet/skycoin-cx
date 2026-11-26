@@ -3,10 +3,10 @@ package execute
 import (
 	"os"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	// GCREACH: t3-ast owns the heap and the GC roots. Callback runs a nested old loop
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. Callback runs a nested old loop
 	// inside a native opcode, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // Callback runs the function gid names with inputs written to its frame in a
@@ -24,7 +24,7 @@ func Callback(cxprogram *ast.CXProgram, gid ast.CXFunctionGid, inputs [][]byte) 
 	newFP := newCall.FramePointer
 
 	// wiping next mem frame (removing garbage)
-	for c := types.Pointer(0); c < fn.Size; c++ {
+	for c := valuetypes.Pointer(0); c < fn.Size; c++ {
 		cxprogram.Memory[newFP+c] = 0
 	}
 
@@ -33,7 +33,7 @@ func Callback(cxprogram *ast.CXProgram, gid ast.CXFunctionGid, inputs [][]byte) 
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S1247.
 		newCallOperatorInputTypeSig := cxprogram.CXTypeSignatureFromArrayGet(newCallOperatorInputs[i])
-		types.SliceByteWrite(cxprogram.Memory, ast.FinalOffsetGet(cxprogram, newFP, nil, newCallOperatorInputTypeSig), inp)
+		valuetypes.SliceByteWrite(cxprogram.Memory, ast.FinalOffsetGet(cxprogram, newFP, nil, newCallOperatorInputTypeSig), inp)
 	}
 
 	var maxOps = 0
@@ -45,7 +45,7 @@ func Callback(cxprogram *ast.CXProgram, gid ast.CXFunctionGid, inputs [][]byte) 
 	err := runLoop(cxprogram, true, maxOps, previousCall, &values.CallbackValuesInputs, &values.CallbackValuesOutputs)
 	cxprogram.ProgramCallbackDepth--
 	if err != nil {
-		os.Exit(types.CXInternalError)
+		os.Exit(valuetypes.CXInternalError)
 	}
 
 	cxprogram.CallCounter = previousCall

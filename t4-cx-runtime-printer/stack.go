@@ -4,9 +4,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // printerStackValueBadIndex is printed for a value whose index is out of range.
@@ -18,7 +18,7 @@ var printerStackHeader = []byte("\n===Callstack===\n")
 // printerStackValueLine appends "\tfile:line : name() : value\n" for the
 // value of argTypeSig in the frame at fp. A value whose index is bad, often
 // the one that failed, prints as a placeholder instead of panicking again.
-func printerStackValueLine(dst []byte, prgrm *ast.CXProgram, fp types.Pointer, argTypeSig *ast.CXTypeSignature, name []byte) []byte {
+func printerStackValueLine(dst []byte, prgrm *ast.CXProgram, fp valuetypes.Pointer, argTypeSig *ast.CXTypeSignature, name []byte) []byte {
 	fileName, fileLine := ast.CXArgumentDebugFileLine(prgrm, argTypeSig.ArgDetails)
 	dst = append(dst, '\t')
 	dst = append(dst, fileName...)
@@ -110,7 +110,7 @@ func StackPrint(cxprogram *ast.CXProgram) {
 	// we're going backwards in the stack
 	fp := cxprogram.Stack.Pointer
 
-	for c := cxprogram.CallCounter; c != types.InvalidPointer; c-- {
+	for c := cxprogram.CallCounter; c != valuetypes.InvalidPointer; c-- {
 		op := cxprogram.CxIrState.CXFunctionMng.CXFunctionGet(cxprogram.CallStack[c].Operator)
 		fp -= op.Size
 		opName := cxprogram.CXProgramNameBytes(op.Name)

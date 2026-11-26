@@ -9,15 +9,15 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	filelog "github.com/skycoin/skycoin-cx/t0-cx-runtime-filelog"
-	types "github.com/skycoin/skycoin-cx/t0-types"
 	opcodes "github.com/skycoin/skycoin-cx/t4-opcodes" // thin: only AssertFailed; no depth gain
 
-	constants "github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	profiling "github.com/skycoin/skycoin-cx/t1-profiling"
 	"github.com/skycoin/skycoin-cx/t10-cx-tools-repl" // thin: only Repl, TargetFunction; only user of cxrepl, could merge it here, max tier 11 to 10
-	globals "github.com/skycoin/skycoin-cx/t2-globals"
-	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	actions "github.com/skycoin/skycoin-cx/t4-actions"
 	printer "github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"             // thin: only MakeProgram, RegisterPackages; no depth gain
@@ -62,19 +62,19 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 		source, err := io.ReadAll(file)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
-			profiling.CleanupAndExit(types.CXCompilationError)
+			profiling.CleanupAndExit(valuetypes.CXCompilationError)
 		}
 		sources[i] = string(source)
 	}
 
 	// Setting what function to start in if using the REPL.
-	repl.TargetFunction = constants.MainFunction
+	repl.TargetFunction = opcodetable.MainFunction
 
 	if err := compileSourceStrings(fileNames, sources); err != nil {
 		if err != cxparsing.ErrCompilation {
 			fmt.Fprintln(os.Stdout, "error:", err)
 		}
-		profiling.CleanupAndExit(types.CXCompilationError)
+		profiling.CleanupAndExit(valuetypes.CXCompilationError)
 	}
 
 	return true
@@ -99,7 +99,7 @@ func compileSourceStrings(fileNames []string, sources []string) error {
 
 	actions.LineNo = 0
 
-	if globals.FoundCompileErrors {
+	if environment.FoundCompileErrors {
 		printer.CompileErrorsPrint(actions.AST)
 		return cxparsing.ErrCompilation
 	}
@@ -184,14 +184,14 @@ func printProgramAST(options cxCmdFlags, cxArgs []string, sourceCode []*os.File)
 	actions.AST.ProgramPrint()
 
 	if opcodes.AssertFailed() {
-		os.Exit(types.CXAssert)
+		os.Exit(valuetypes.CXAssert)
 	}
 }
 
 // Used for the -heap-initial, -heap-max and -stack-size flags.
 // This function parses, for example, "1M" to 1048576 (the corresponding number of bytes)
 // Possible suffixes are: G or g (gigabytes), M or m (megabytes), K or k (kilobytes)
-func parseMemoryString(s string) types.Pointer {
+func parseMemoryString(s string) valuetypes.Pointer {
 	suffix := s[len(s)-1]
 	_, notSuffix := strconv.ParseFloat(string(suffix), 64)
 
@@ -201,29 +201,29 @@ func parseMemoryString(s string) types.Pointer {
 
 		if err != nil {
 			// malformed size
-			return types.InvalidPointer
+			return valuetypes.InvalidPointer
 		}
 
-		return types.I64ToPtrCast(num)
+		return valuetypes.I64ToPtrCast(num)
 	} else {
 		// then we have a suffix
 		num, err := strconv.ParseFloat(s[:len(s)-1], 64)
 
 		if err != nil {
 			// malformed size
-			return types.InvalidPointer
+			return valuetypes.InvalidPointer
 		}
 
 		// The user can use suffixes to give as input gigabytes, megabytes or kilobytes.
 		switch suffix {
 		case 'G', 'g':
-			return types.F64ToPtrCast(num * 1073741824)
+			return valuetypes.F64ToPtrCast(num * 1073741824)
 		case 'M', 'm':
-			return types.F64ToPtrCast(num * 1048576)
+			return valuetypes.F64ToPtrCast(num * 1048576)
 		case 'K', 'k':
-			return types.F64ToPtrCast(num * 1024)
+			return valuetypes.F64ToPtrCast(num * 1024)
 		default:
-			return types.InvalidPointer
+			return valuetypes.InvalidPointer
 		}
 	}
 }
@@ -251,9 +251,9 @@ func CXPathSet(options cxCmdFlags) error {
 		}
 		cxPath = filepath.Join(home, "cx")
 	}
-	globals.BINPATH = filepath.Join(cxPath, "bin/")
-	globals.PKGPATH = filepath.Join(cxPath, "pkg/")
-	globals.SRCPATH = filepath.Join(cxPath, "src/")
+	environment.BINPATH = filepath.Join(cxPath, "bin/")
+	environment.PKGPATH = filepath.Join(cxPath, "pkg/")
+	environment.SRCPATH = filepath.Join(cxPath, "src/")
 	return nil
 }
 

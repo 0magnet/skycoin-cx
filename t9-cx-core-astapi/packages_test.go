@@ -1,0 +1,43 @@
+package astapi_test
+
+import (
+	"testing"
+
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
+	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: tests use only MakeProgram, RegisterPackages; tests only, moving these tests up lets astapi drop to t5
+	"github.com/skycoin/skycoin-cx/t9-cx-core-astapi"
+)
+
+func TestASTAPI_Packages(t *testing.T) {
+	var cxprogram *ast.CXProgram
+	// The native packages are registered before main.
+	var nativePkgs int
+	t.Run("make program", func(t *testing.T) {
+		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
+		// Now a constructor call, site S1613.
+		cxprogram = cxinit.ProgramMake()
+		cxinit.PackagesRegister(cxprogram)
+		nativePkgs = len(cxprogram.Packages)
+	})
+
+	t.Run("add empty package", func(t *testing.T) {
+		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
+		// Now an arena insert, site S1614.
+		err := astapi.EmptyPackageAdd(cxprogram, "main")
+		if err != nil {
+			t.Errorf("want no error, got %v", err)
+		}
+	})
+
+	t.Run("get packages name lists", func(t *testing.T) {
+		list := astapi.PackagesNameListGet(cxprogram)
+		wantLen := nativePkgs + 1
+		if len(list) != wantLen {
+			t.Errorf("got len(list)=%v, want %v", len(list), wantLen)
+		}
+	})
+
+	t.Run("print program", func(t *testing.T) {
+		cxprogram.ProgramPrint()
+	})
+}

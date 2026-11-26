@@ -10,12 +10,12 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-cxhash"
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-digest"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
-	"github.com/skycoin/skycoin-cx/t3-ast"
 	llvm "github.com/skycoin/skycoin-cx/t3-cx-compiler-llvm"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
@@ -40,7 +40,7 @@ var buildLlvmStops = [llvm.StopCount]vm.Stop{
 
 // buildLlvmOptions gives the emitted code the exit codes and messages of vm.
 func buildLlvmOptions() llvm.Options {
-	options := llvm.Options{AssertCode: types.CXAssert}
+	options := llvm.Options{AssertCode: valuetypes.CXAssert}
 	for stop, vmStop := range buildLlvmStops {
 		code := vm.StopExitCodes[vmStop]
 		options.StopCodes[stop] = code
@@ -73,20 +73,20 @@ func buildLlvm(options buildOptions) int {
 	if code := core.OperationRefused(prgrm); code != 0 {
 		// The program is refused before it runs, as cx refuses it, so its
 		// code needs no native form.
-		llvmOptions.RefusalLine, llvmOptions.RefusalCode = core.OperationRefusalLine(prgrm, code), types.CXRuntimeLibraryDisabled
+		llvmOptions.RefusalLine, llvmOptions.RefusalCode = core.OperationRefusalLine(prgrm, code), valuetypes.CXRuntimeLibraryDisabled
 		image, outside = ir.Image{ImageEntryInit: ir.ImageFuncNone, ImageEntryMain: ir.ImageFuncNone}, ""
 	}
 	if outside != "" {
 		fmt.Fprintf(os.Stderr, "cx build: cannot run on vm: %s\n", outside)
-		return types.CXRuntimeNotImplemented
+		return valuetypes.CXRuntimeNotImplemented
 	}
-	if tinygoLink && image.ImageOperationsEnabled.OpcodeSetLibraryAny(constants.LibraryNumberNet) {
+	if tinygoLink && image.ImageOperationsEnabled.OpcodeSetLibraryAny(opcodetable.LibraryNumberNet) {
 		return buildFail("the program uses the net library, which --llvm-linker=tinygo leaves out")
 	}
 	module, stats, err := llvm.Emit(&image, llvmOptions)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "cx build: cannot build for llvm: %v\n", err)
-		return types.CXRuntimeNotImplemented
+		return valuetypes.CXRuntimeNotImplemented
 	}
 	if options.buildOptionsStats {
 		buildLlvmStatsPrint(stats)
@@ -96,7 +96,7 @@ func buildLlvm(options buildOptions) int {
 		if err := os.WriteFile(output, module, 0o644); err != nil {
 			return buildFail(err.Error())
 		}
-		return types.CXSuccess
+		return valuetypes.CXSuccess
 	}
 	modulePath := strings.TrimSuffix(output, ".exe") + buildLlvmExtension
 	if err := os.WriteFile(modulePath, module, 0o644); err != nil {
@@ -160,7 +160,7 @@ func buildLlvmNative(modulePath string, output string, debug bool) int {
 	if err := command.Run(); err != nil {
 		return buildFail(fmt.Sprintf("%s: %v", clang, err))
 	}
-	return types.CXSuccess
+	return valuetypes.CXSuccess
 }
 
 // buildLlvmStatsPrint lists each scalar opcode of the module by how it was
@@ -202,7 +202,7 @@ func buildLlvmRuntime(clang string, directory string) (string, error) {
 	if err != nil {
 		return source, nil
 	}
-	hash := cxhash.CxHashOfBytes(append(append([]byte(clang), 0), llvm.RuntimeC...))
+	hash := digest.CxHashOfBytes(append(append([]byte(clang), 0), llvm.RuntimeC...))
 	object := filepath.Join(cache, "cx", "llvm-runtime-"+hex.EncodeToString(hash[:8])+".o")
 	if _, err := os.Stat(object); err == nil {
 		return object, nil

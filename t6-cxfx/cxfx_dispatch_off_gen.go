@@ -5,10 +5,10 @@
 package cxfx
 
 import (
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
-// CxfxOpcodeDispatch reports false, the build tags leave out constants.OpcodeGroupCxfx.
+// CxfxOpcodeDispatch reports false, the build tags leave out opcodetable.OpcodeGroupCxfx.
 func CxfxOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, outputs []ast.CXValue) bool {
 	return false
 }

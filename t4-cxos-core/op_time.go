@@ -5,7 +5,7 @@ package cxoscore
 import (
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 func makeTimestamp() int64 {

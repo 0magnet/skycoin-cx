@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/skycoin/skycoin-cx/t0-cx-core-textsections"
 	"github.com/skycoin/skycoin-cx/t0-cx-tools-packagestore" // thin: only Add; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-textsections"
 	"golang.org/x/crypto/blake2b"
 )
 

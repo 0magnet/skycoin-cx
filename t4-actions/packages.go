@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	cxpackages "github.com/skycoin/skycoin-cx/t0-packages" // thin: only CheckImport, GuiPackage, IsDefaultPackage; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-syspackages" // thin: only CheckImport, GuiPackage, IsDefaultPackage; no depth gain
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // PackageDeclare() switches the current package in the program.
@@ -54,11 +54,11 @@ func ImportDeclareAt(prgrm *ast.CXProgram, impName string, currentFile ast.Sourc
 		panic(err)
 	}
 
-	if err := cxpackages.ImportCheck(impName); err != nil {
+	if err := syspackages.ImportCheck(impName); err != nil {
 		prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeMessage, currentFile, lineNo, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(err.Error())})
 		return
 	}
-	if name, found := strings.CutPrefix(impName, cxpackages.SysPrefix); found && cxpackages.GuiPackage(name) && !cxpackages.GuiBuild {
+	if name, found := strings.CutPrefix(impName, syspackages.SysPrefix); found && syspackages.GuiPackage(name) && !syspackages.GuiBuild {
 		prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeImportGuiBuildMissing, currentFile, lineNo, ast.CompileErrorOperands{prgrm.CXProgramCompileErrorText(impName)})
 		return
 	}
@@ -101,7 +101,7 @@ func ImportDeclareAt(prgrm *ast.CXProgram, impName string, currentFile ast.Sourc
 	// All packages are read during the first pass of the compilation.  So
 	// if we get here during the 2nd pass, it's either a core package or
 	// something is panic-level wrong.
-	if cxpackages.PackageDefault(ident) {
+	if syspackages.PackageDefault(ident) {
 		// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 		// Now a constructor call, site S1090.
 		imp := ast.PackageMake(identGid)

@@ -3,8 +3,8 @@ package main
 import (
 	"testing"
 
-	types "github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 )
@@ -21,7 +21,7 @@ func TestNativeFunctionHost(t *testing.T) {
 		if code != nativeHostCode {
 			return nil
 		}
-		return &ast.CXNativeFunction{AtomicOPCode: code, Inputs: []*ast.CXArgument{ast.Param(types.I32)}, Outputs: []*ast.CXArgument{ast.Param(types.I32)}}
+		return &ast.CXNativeFunction{AtomicOPCode: code, Inputs: []*ast.CXArgument{ast.Param(valuetypes.I32)}, Outputs: []*ast.CXArgument{ast.Param(valuetypes.I32)}}
 	}
 	defer func() { ast.NativeFunctionHost = nil }()
 	if !ast.NativeLinked(nativeHostCode) || ast.NativeLinked(nativeHostCode+1) {

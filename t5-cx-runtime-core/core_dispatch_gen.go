@@ -3,15 +3,15 @@
 package core
 
 import (
-	// GCREACH: t3-ast owns the heap. The switch hands the operands to the
+	// GCREACH: t3-cx-core-ast owns the heap. The switch hands the operands to the
 	// handlers and allocates nothing, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	printer "github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
 	opcodes "github.com/skycoin/skycoin-cx/t4-opcodes"
 )
 
 // CoreOpcodeDispatch runs opcode code of the core on its operands, the
-// handler of its row of constants.OpcodeDefinitionTable, and reports false for
+// handler of its row of opcodetable.OpcodeDefinitionTable, and reports false for
 // an opcode the core does not link (decision D21).
 func CoreOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, outputs []ast.CXValue) bool {
 	switch code {

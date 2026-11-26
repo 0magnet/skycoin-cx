@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t1-netbatch"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core" // thin: only ExecutorAuto; no depth gain
 )
@@ -188,22 +188,22 @@ func command(arg, name string) bool {
 // operations the --enable list names, or the problem with it. An entry is a
 // library name, which enables every operation of the library, or one
 // operation, cipher.HashStateNew (decision D119).
-func librariesEnabledParse(list string) (enabled [constants.LibraryCount]bool, operations constants.OpcodeSet, problem string) {
+func librariesEnabledParse(list string) (enabled [opcodetable.LibraryCount]bool, operations opcodetable.OpcodeSet, problem string) {
 	for _, name := range strings.Split(list, ",") {
 		name = strings.TrimSpace(name)
 		if name == "" {
 			continue
 		}
-		if library, found := constants.LibraryByName(name); found {
+		if library, found := opcodetable.LibraryByName(name); found {
 			enabled[library.LibraryNumber] = true
 			continue
 		}
-		if code, found := constants.LibraryOperationByName(name); found {
+		if code, found := opcodetable.LibraryOperationByName(name); found {
 			operations.OpcodeSetAdd(code)
 			continue
 		}
 		var names []string
-		for _, known := range constants.LibraryTable {
+		for _, known := range opcodetable.LibraryTable {
 			names = append(names, known.LibraryName)
 		}
 		return enabled, operations, fmt.Sprintf("unknown library or operation %q in --enable, the libraries are %s, and an operation is a library and a function, as cipher.HashStateNew", name, strings.Join(names, ", "))

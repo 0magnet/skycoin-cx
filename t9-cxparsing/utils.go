@@ -13,12 +13,12 @@ import (
 	"strings"
 
 	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
-	cxpackages "github.com/skycoin/skycoin-cx/t0-packages" // thin: only IsBuiltinImport; no depth gain
-	types "github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-syspackages" // thin: only IsBuiltinImport; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	profiling "github.com/skycoin/skycoin-cx/t1-profiling" // thin: only CleanupAndExit, StartProfile, StopProfile; no depth gain
+	"github.com/skycoin/skycoin-cx/t2-cx-core-environment" // thin: only FoundCompileErrors, SRCPATH; no depth gain
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	globals "github.com/skycoin/skycoin-cx/t2-globals" // thin: only FoundCompileErrors, SRCPATH; no depth gain
-	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	actions "github.com/skycoin/skycoin-cx/t4-actions"
 	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing" // thin: only CurrentFile, Parse, Program; no depth gain
 )
@@ -192,8 +192,8 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 				if match := preliminaryImportName.FindSubmatchIndex(line); match != nil {
 					pkgName := string(line[match[len(match)-2]:match[len(match)-1]])
 					// Checking if `pkgName` already exists and if it's not a standard library package.
-					if _, err := cxpartialparsing.Program.PackageGet(preliminaryImportIdent(cxpartialparsing.Program, pkgName)); err != nil && !cxpackages.ImportBuiltin(pkgName) && !cxpartialparsing.Program.CXProgramImportFailed(preliminaryImportIdent(cxpartialparsing.Program, pkgName)) {
-						dir := filepath.Join(globals.SRCPATH, pkgName)
+					if _, err := cxpartialparsing.Program.PackageGet(preliminaryImportIdent(cxpartialparsing.Program, pkgName)); err != nil && !syspackages.ImportBuiltin(pkgName) && !cxpartialparsing.Program.CXProgramImportFailed(preliminaryImportIdent(cxpartialparsing.Program, pkgName)) {
+						dir := filepath.Join(environment.SRCPATH, pkgName)
 						_, sourceCode, fileNames, err := sourceargs.Parse([]string{dir}, false)
 						if err != nil {
 							// The column is the opening quote of the path.
@@ -299,7 +299,7 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 					if _, err := prePkg.GlobalGet(actions.AST, actions.AST.CXProgramNameIntern(match[len(match)-1])); err != nil {
 						// then it hasn't been added
 						_, arg := ast.ArgumentMake(actions.AST, actions.AST.CXProgramNameIntern(match[len(match)-1]), ast.SourceFileGidNil, 0)
-						arg.Offset = types.InvalidPointer
+						arg.Offset = valuetypes.InvalidPointer
 						arg.Package = ast.CXPackageIndex(prePkg.Index)
 						argIdx := ast.CXArgumentIndex(arg.Index)
 
@@ -417,7 +417,7 @@ func preliminaryImportPath(path string) string {
 			return filepath.ToSlash(rel)
 		}
 	}
-	if root, err := filepath.Abs(filepath.Dir(globals.SRCPATH)); err == nil {
+	if root, err := filepath.Abs(filepath.Dir(environment.SRCPATH)); err == nil {
 		if rel, err := filepath.Rel(root, path); err == nil && filepath.IsLocal(rel) {
 			return "$CXPATH/" + filepath.ToSlash(rel)
 		}

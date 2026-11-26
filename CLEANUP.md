@@ -31,18 +31,18 @@ Counts are files, not rows.
 | Repo | Path | Files | Action | Now in | Reason |
 |---|---|---:|---|---|---|
 | cx | `cx/assert/` | 1 | removed (#107) | `t4-assert` | Nothing imports it |
-| cx | `cx/ast/` | 32 | keep | `t3-ast` | AST, memory model, serializer and GC |
-| cx | `cx/constants/` | 2 | keep | `t1-constants` | Opcode, type and exit code constants |
-| cx | `cx/globals/` | 3 | keep | `t2-globals` | Compiler wide flags and counters, a source of the shared process state |
+| cx | `cx/ast/` | 32 | keep | `t3-cx-core-ast` | AST, memory model, serializer and GC |
+| cx | `cx/constants/` | 2 | keep | `t1-cx-core-opcodetable` | Opcode, type and exit code constants |
+| cx | `cx/globals/` | 3 | keep | `t2-cx-core-environment` | Compiler wide flags and counters, a source of the shared process state |
 | cx | `cx/init/` | 1 | keep | `t7-init` | Builds an empty program and registers the stdlib |
-| cx | `cx/types/` | 5 | keep | `t0-types` | Leaf type codes and pointer size, imported by everything |
+| cx | `cx/types/` | 5 | keep | `t0-cx-core-valuetypes` | Leaf type codes and pointer size, imported by everything |
 | cx | `cx/util/` | 1 | keep | `t1-cx-runtime-sandbox`, `t0-cx-compiler-sourceargs`, `t0-cx-runtime-filelog` | Split by subject |
 
 ## Compiler
 
 | Repo | Path | Files | Action | Now in | Reason |
 |---|---|---:|---|---|---|
-| cx | `cx/astapi/` | 10 | keep | `t9-astapi` | Programmatic AST construction, used by the generator and tests |
+| cx | `cx/astapi/` | 10 | keep | `t9-cx-core-astapi` | Programmatic AST construction, used by the generator and tests |
 | cx | `cx/generator/` | 2 | keep | `t10-cx-tools-programgenerator` | Random program generator for the serializer tests |
 | cx | `cxparser/actions/` | 16 | keep | `t4-actions` | Semantic actions called from the grammars |
 | cx | `cxparser/cxparsing/` | 3 | keep | `t9-cxparsing` | Driver for the parse passes, gained SourceStringsParse |
@@ -60,7 +60,7 @@ Counts are files, not rows.
 
 | Repo | Path | Files | Action | Now in | Reason |
 |---|---|---:|---|---|---|
-| cx | `cx/packages/` | 1 | keep | `t0-packages` | Registry of built in package names |
+| cx | `cx/packages/` | 1 | keep | `t0-cx-core-syspackages` | Registry of built in package names |
 | cx | `cx/packages/cipher/` | 3 | keep | `t4-cipher` | CX cipher package, on by default now |
 | cx | `cx/packages/cxfx/` | 15 | keep | `t6-cxfx` | GL, GLFW, OpenAL and gltext bindings behind the cxfx tag (cgo) |
 | cx | `cx/packages/cxos/` | 7 | keep | `t5-cxos` | CX os, json, time and profile packages, on by default now |

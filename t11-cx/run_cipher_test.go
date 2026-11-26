@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-cxhash"
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-digest"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t4-execute"
@@ -117,7 +117,7 @@ func runCipherPrograms(tb testing.TB) []runBenchProgram {
 // it to run.
 func runCipherCompile(tb testing.TB, p runBenchProgram) *ast.CXProgram {
 	compileRunProgram(tb, p)
-	actions.AST.ProgramLibrariesEnabled[constants.LibraryNumberCipher] = true
+	actions.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberCipher] = true
 	core.LibrariesEnabledResolve(actions.AST)
 	execute.RunPrepare(actions.AST)
 	return actions.AST
@@ -151,7 +151,7 @@ func TestRunCipherAllocs(t *testing.T) {
 
 	pubKey := cipher.MustPubKeyFromHex(runCipherPubKeyHex)
 	signature := cipher.MustSigFromHex(runCipherSignatureHex)
-	digest := cipher.SHA256(cxhash.CxHashOfBytes([]byte("abc")))
+	digest := cipher.SHA256(digest.CxHashOfBytes([]byte("abc")))
 	skycoinVerifyAllocs := testing.AllocsPerRun(10, func() {
 		if cipher.VerifyPubKeySignedHash(pubKey, signature, digest) != nil {
 			t.Fatal("the Skycoin signature does not verify")
@@ -215,7 +215,7 @@ func TestRunVmCipherAllocs(t *testing.T) {
 	defer debug.SetGCPercent(debug.SetGCPercent(-1))
 	initProgram()
 	compileRunProgram(t, runBenchProgram{name: "cipher", source: runCipherHashStateVmSource})
-	actions.AST.ProgramLibrariesEnabled[constants.LibraryNumberCipher] = true
+	actions.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberCipher] = true
 	core.LibrariesEnabledResolve(actions.AST)
 	image, _, outside := core.ExecutorLower(actions.AST)
 	if outside != "" {

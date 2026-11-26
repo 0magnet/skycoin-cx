@@ -3,8 +3,8 @@
 package regexp
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types" // thin: only StrRead, STR, Write_str; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes" // thin: only StrRead, STR, Write_str; no depth gain
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // PackageRegister adds the regexp package and its Regexp struct to prgrm. The
@@ -24,7 +24,7 @@ func PackageRegister(prgrm *ast.CXProgram) {
 	// Now a constructor call, site S1413.
 	regexpStrct := ast.StructMake(prgrm.CXProgramNameIntern("Regexp"))
 	_, regexpArg := ast.ArgumentMake(prgrm, prgrm.CXProgramNameIntern("exp"), ast.SourceFileGidNil, 0)
-	regexpArg.TypeSet(types.STR).PackageSet(regexpPkg)
+	regexpArg.TypeSet(valuetypes.STR).PackageSet(regexpPkg)
 	regexpStrct.FieldAdd(prgrm, regexpArg)
 	regexpPkg.StructAdd(prgrm, regexpStrct)
 }

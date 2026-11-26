@@ -5,8 +5,8 @@
 package ir
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 )
 
 // Instr is one instruction, a fixed 32 byte record. A, B and C are operand
@@ -64,7 +64,7 @@ type Local struct {
 	LocalSize     uint32
 	LocalName     uint32
 	LocalTypeName uint32
-	LocalType     types.Code
+	LocalType     valuetypes.Code
 }
 
 // Span is the byte range [SpanStart, SpanEnd) of absolute addresses.
@@ -117,7 +117,7 @@ type Image struct {
 	// ImageOperationsEnabled holds the library opcodes the run may call, as
 	// CXProgram.ProgramOperationsEnabled. The loader refuses an image that
 	// uses one outside it, so no instruction checks it (decision D119).
-	ImageOperationsEnabled constants.OpcodeSet
+	ImageOperationsEnabled opcodetable.OpcodeSet
 }
 
 // ImageDataEnd returns the first byte after the data segment, where the
@@ -141,7 +141,7 @@ const ImageFuncNone = ^uint32(0)
 
 // ImageCallDepthMax is the deepest call nesting an image may reach, the size
 // of the fixed frame array of a machine.
-const ImageCallDepthMax = uint32(constants.CallStackSize)
+const ImageCallDepthMax = uint32(opcodetable.CallStackSize)
 
 // LineAt returns the line of pc in function, false when it has none.
 func LineAt(image *Image, function uint32, pc uint32) (Line, bool) {
@@ -161,7 +161,7 @@ func LineAt(image *Image, function uint32, pc uint32) (Line, bool) {
 
 // Opcode is an image opcode. The numbers are dense and grouped by family so
 // a switch over them compiles to a jump table. They are not the language
-// opcode numbers of t1-constants, which are sparse, fixed for serialized
+// opcode numbers of t1-cx-core-opcodetable, which are sparse, fixed for serialized
 // programs and have no number for moves, calls or returns. Opcodes exist only
 // inside an image and are renumbered freely.
 //

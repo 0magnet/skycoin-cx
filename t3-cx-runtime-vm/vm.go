@@ -8,8 +8,8 @@ package vm
 import (
 	"strconv"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
 
@@ -48,23 +48,23 @@ const stopSlow = StopCount
 // StopExitCodes is the process exit code of each Stop, the code the old loop
 // exits with for the same failure. Read only.
 var StopExitCodes = [StopCount]int32{
-	StopReturn:         types.CXSuccess,
-	StopOutputFull:     types.CXSuccess,
-	StopTestFailed:     types.CXSuccess,
-	StopDivideByZero:   types.CXRuntimeError,
-	StopStackOverflow:  types.CXRuntimeStackOverflowError,
-	StopOpcodeInvalid:  types.CXRuntimeNotImplemented,
-	StopIndexNegative:  types.CXRuntimeInvalidCast,
-	StopAddressInvalid: types.CXRuntimeError,
+	StopReturn:         valuetypes.CXSuccess,
+	StopOutputFull:     valuetypes.CXSuccess,
+	StopTestFailed:     valuetypes.CXSuccess,
+	StopDivideByZero:   valuetypes.CXRuntimeError,
+	StopStackOverflow:  valuetypes.CXRuntimeStackOverflowError,
+	StopOpcodeInvalid:  valuetypes.CXRuntimeNotImplemented,
+	StopIndexNegative:  valuetypes.CXRuntimeInvalidCast,
+	StopAddressInvalid: valuetypes.CXRuntimeError,
 }
 
 // StopMessages is what vm prints after the error string for each error
 // stop, the value the panic of the old loop carried. Read only.
 var StopMessages = [StopCount]string{
 	StopDivideByZero:   "runtime error: integer divide by zero",
-	StopStackOverflow:  constants.StackOverflowError,
+	StopStackOverflow:  opcodetable.StackOverflowError,
 	StopOpcodeInvalid:  "invalid image opcode",
-	StopIndexNegative:  strconv.Itoa(types.CXRuntimeInvalidCast),
+	StopIndexNegative:  strconv.Itoa(valuetypes.CXRuntimeInvalidCast),
 	StopAddressInvalid: "address outside the stack and data segment",
 }
 
@@ -89,7 +89,7 @@ const MachineOutputMin = 512
 const machinePrintMax = 336
 
 // machinePointerSize is the size of a pointer in memory.
-const machinePointerSize = uint32(types.PointerSize)
+const machinePointerSize = uint32(valuetypes.PointerSize)
 
 // Machine runs one image. MachineFrames[:MachineDepth] are the callers of
 // MachineFunction. After a stop, MachineFunction, MachinePc,
@@ -181,18 +181,18 @@ func (machine *Machine) TestMessage() []byte {
 // one outside memory.
 func memoryStr(mem []byte, address uint32) []byte {
 	size := uint64(len(mem))
-	if uint64(address)+uint64(types.PointerSize) > size {
+	if uint64(address)+uint64(valuetypes.PointerSize) > size {
 		return nil
 	}
-	object := uint64(types.PtrRead(mem, types.Pointer(address)))
-	if object == 0 || object+uint64(types.ObjectHeaderSize) > size {
+	object := uint64(valuetypes.PtrRead(mem, valuetypes.Pointer(address)))
+	if object == 0 || object+uint64(valuetypes.ObjectHeaderSize) > size {
 		return nil
 	}
-	objectSize := uint64(types.ObjectSizeRead(mem, types.Pointer(object)))
-	if objectSize < uint64(types.ObjectHeaderSize) || object+objectSize > size {
+	objectSize := uint64(valuetypes.ObjectSizeRead(mem, valuetypes.Pointer(object)))
+	if objectSize < uint64(valuetypes.ObjectHeaderSize) || object+objectSize > size {
 		return nil
 	}
-	return mem[object+uint64(types.ObjectHeaderSize) : object+objectSize]
+	return mem[object+uint64(valuetypes.ObjectHeaderSize) : object+objectSize]
 }
 
 // stopAt saves where the loop stopped. pc is one past the instruction, and

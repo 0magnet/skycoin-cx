@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 var (

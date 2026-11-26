@@ -1,9 +1,9 @@
 package actions
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // declarationSpecifierFound determines if an argument has certain declaration specifier.
@@ -32,7 +32,7 @@ func derefOpFound(arg *ast.CXArgument, spec int) bool {
 // for them. The caller takes the argument or releases it. A str
 // literal points to itself, storage being the zero value of a variable,
 // whose pointer stays nil.
-func PrimaryWrite(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, storage bool) *ast.CXArgument {
+func PrimaryWrite(prgrm *ast.CXProgram, typeCode valuetypes.Code, byts []byte, storage bool) *ast.CXArgument {
 	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		panic(err)
@@ -42,15 +42,15 @@ func PrimaryWrite(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, storag
 	arg.TypeSet(typeCode)
 	arg.Package = ast.CXPackageIndex(pkg.Index)
 
-	size := types.IntToPtrCast(len(byts))
+	size := valuetypes.IntToPtrCast(len(byts))
 
 	arg.Size = typeCode.Size()
 	arg.Offset = prgrm.Data.Size + prgrm.Data.StartsAt
 
-	if arg.Type == types.STR {
-		arg.Size = types.PointerSize
+	if arg.Type == valuetypes.STR {
+		arg.Size = valuetypes.PointerSize
 		if !storage {
-			types.PtrWrite(byts, 0, arg.Offset)
+			valuetypes.PtrWrite(byts, 0, arg.Offset)
 		}
 	}
 
@@ -60,19 +60,19 @@ func PrimaryWrite(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, storag
 	// we'll start appending the bytes to prgrm.Memory.
 	// After compilation, we calculate how many bytes we need to add to have a heap segment
 	// equal to `minHeapSize()` that is allocated after the data segment.
-	memSize := types.IntToPtrCast(len(prgrm.Memory))
+	memSize := valuetypes.IntToPtrCast(len(prgrm.Memory))
 	if (size + prgrm.Data.Size + prgrm.Data.StartsAt) > memSize {
-		var i types.Pointer
+		var i valuetypes.Pointer
 		// First we need to fill the remaining free bytes in
 		// the current `prgrm.Memory` slice.
-		for i = types.Pointer(0); i < memSize-(prgrm.Data.Size+prgrm.Data.StartsAt); i++ {
+		for i = valuetypes.Pointer(0); i < memSize-(prgrm.Data.Size+prgrm.Data.StartsAt); i++ {
 			prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+i] = byts[i]
 		}
 		// Then we append the bytes that didn't fit.
 		prgrm.Memory = append(prgrm.Memory, byts[i:]...)
 	} else {
 		for i, byt := range byts {
-			prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+types.IntToPtrCast(i)] = byt
+			prgrm.Memory[prgrm.Data.Size+prgrm.Data.StartsAt+valuetypes.IntToPtrCast(i)] = byt
 		}
 	}
 	prgrm.Data.Size += size
@@ -82,7 +82,7 @@ func PrimaryWrite(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, storag
 }
 
 // PrimaryWrite writes those bytes to prgrm.Data and returns a []CXExpression.
-func PrimaryExpressionsWrite(prgrm *ast.CXProgram, typeCode types.Code, byts []byte, sliceTyped bool) []ast.CXExpression {
+func PrimaryExpressionsWrite(prgrm *ast.CXProgram, typeCode valuetypes.Code, byts []byte, sliceTyped bool) []ast.CXExpression {
 	pkg, err := prgrm.CurrentPackageGet()
 	if err != nil {
 		panic(err)
@@ -120,7 +120,7 @@ func primaryIdentifierExpressions(prgrm *ast.CXProgram, identGid stringpool.Stri
 	}
 
 	_, arg := ast.ArgumentMake(prgrm, identGid, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
-	arg.TypeSet(types.IDENTIFIER)
+	arg.TypeSet(valuetypes.IDENTIFIER)
 	arg.Package = ast.CXPackageIndex(pkg.Index)
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
@@ -155,7 +155,7 @@ func ArgsAllBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 		// Now an arena getter, site S1085.
 		input := prgrm.CXTypeSignatureFromArrayGet(inputIdx)
 
-		var inpType types.Code
+		var inpType valuetypes.Code
 
 		var inp *ast.CXArgument
 		if input.Type == ast.TypeCXArgumentDeprecate {
@@ -164,7 +164,7 @@ func ArgsAllBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 			inp = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(input.Meta))
 
 			inpType = inp.Type
-			if inp.Type == types.POINTER {
+			if inp.Type == valuetypes.POINTER {
 				inpType = inp.PointerTargetType
 			}
 		} else {
@@ -172,7 +172,7 @@ func ArgsAllBasicTypes(prgrm *ast.CXProgram, expr *ast.CXExpression) bool {
 		}
 
 		// TODO: Check why STR is considered as basic type.
-		if !inpType.Primitive() && inpType != types.STR {
+		if !inpType.Primitive() && inpType != valuetypes.STR {
 			return false
 		}
 	}

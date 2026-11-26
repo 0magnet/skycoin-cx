@@ -3,7 +3,7 @@ package actions
 import (
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 )
 
 func TestConstantsHaveTheirOwnCodes(t *testing.T) {
@@ -17,11 +17,11 @@ func TestConstantsHaveTheirOwnCodes(t *testing.T) {
 		names[code] = name
 	}
 	want := map[string]int32{
-		"cx.SUCCESS":                  types.CXSuccess,
-		"cx.ASSERT":                   types.CXAssert,
-		"cx.RUNTIME_INVALID_ARGUMENT": types.CXRuntimeInvalidArgument,
-		"cx.RUNTIME_NOT_IMPLEMENTED":  types.CXRuntimeNotImplemented,
-		"cx.POINTER_SIZE":             types.PtrToI32Cast(types.PointerSize),
+		"cx.SUCCESS":                  valuetypes.CXSuccess,
+		"cx.ASSERT":                   valuetypes.CXAssert,
+		"cx.RUNTIME_INVALID_ARGUMENT": valuetypes.CXRuntimeInvalidArgument,
+		"cx.RUNTIME_NOT_IMPLEMENTED":  valuetypes.CXRuntimeNotImplemented,
+		"cx.POINTER_SIZE":             valuetypes.PtrToI32Cast(valuetypes.PointerSize),
 	}
 	for name, value := range want {
 		entry, ok := ConstNames.NativeNameIndexText(name)
@@ -30,7 +30,7 @@ func TestConstantsHaveTheirOwnCodes(t *testing.T) {
 			t.Errorf("%s is not registered", name)
 			continue
 		}
-		if got := types.I32Read(Constants[code].Value, 0); got != value {
+		if got := valuetypes.I32Read(Constants[code].Value, 0); got != value {
 			t.Errorf("%s = %d, want %d", name, got, value)
 		}
 	}

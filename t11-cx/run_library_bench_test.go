@@ -3,8 +3,8 @@ package main
 import (
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t4-execute"
@@ -36,7 +36,7 @@ func main() {
 // libraries enabled.
 func runLibraryCallLoopCompile(tb testing.TB) {
 	compileRunProgram(tb, runBenchProgram{name: "library-loop", source: runLibraryCallLoopSource})
-	for _, library := range []int{constants.LibraryNumberFile, constants.LibraryNumberNet, constants.LibraryNumberCipher} {
+	for _, library := range []int{opcodetable.LibraryNumberFile, opcodetable.LibraryNumberNet, opcodetable.LibraryNumberCipher} {
 		actions.AST.ProgramLibrariesEnabled[library] = true
 	}
 	core.LibrariesEnabledResolve(actions.AST)
@@ -68,7 +68,7 @@ func BenchmarkRunLibraryCall(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			if code := core.ExecutorVmRunMachine(actions.AST, machine); code != types.CXSuccess {
+			if code := core.ExecutorVmRunMachine(actions.AST, machine); code != valuetypes.CXSuccess {
 				b.Fatalf("code %d", code)
 			}
 		}

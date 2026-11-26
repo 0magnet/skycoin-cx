@@ -7,8 +7,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 )
@@ -30,17 +30,17 @@ func coreImageRun() int32 {
 	file, problem := coreImageFileRead()
 	if problem != "" {
 		coreImageWrite(os.Stderr, "cx-core-image: "+problem+"\n")
-		return types.CXCompilationError
+		return valuetypes.CXCompilationError
 	}
 	image, fileProblem := ir.ImageFileDecode(file)
 	if fileProblem != ir.ImageFileProblemNone {
 		coreImageWrite(os.Stderr, "cx-core-image: "+ir.ImageFileProblemMessages[fileProblem]+"\n")
-		return types.CXCompilationError
+		return valuetypes.CXCompilationError
 	}
 	for _, unlinked := range coreImageLibrariesUnlinked {
 		if coreImageOpcodesEnabled(&image.ImageOperationsEnabled, unlinked.coreImageLibraryOpcodeFirst, unlinked.coreImageLibraryOpcodeLast) {
-			coreImageWrite(os.Stderr, "cx-core-image: the image enables the "+constants.LibraryTable[unlinked.coreImageLibraryNumber-1].LibraryName+" library, which cx-core-image does not link\n")
-			return types.CXRuntimeLibraryDisabled
+			coreImageWrite(os.Stderr, "cx-core-image: the image enables the "+opcodetable.LibraryTable[unlinked.coreImageLibraryNumber-1].LibraryName+" library, which cx-core-image does not link\n")
+			return valuetypes.CXRuntimeLibraryDisabled
 		}
 	}
 	return coreImageMachineRun(vm.MachineNew(&image, coreImageOutputSize))
@@ -52,18 +52,18 @@ func coreImageMachineRun(machine *vm.Machine) int32 {
 	image := machine.MachineImage
 	framePointer := uint32(0)
 	if image.ImageEntryInit != ir.ImageFuncNone {
-		if code := coreImageEntryRun(machine, image.ImageEntryInit, 0); code != types.CXSuccess {
+		if code := coreImageEntryRun(machine, image.ImageEntryInit, 0); code != valuetypes.CXSuccess {
 			return code
 		}
 		framePointer = image.ImageFuncs[image.ImageEntryInit].FuncFrameSize
 	}
-	if code := coreImageEntryRun(machine, image.ImageEntryMain, framePointer); code != types.CXSuccess {
+	if code := coreImageEntryRun(machine, image.ImageEntryMain, framePointer); code != valuetypes.CXSuccess {
 		return code
 	}
 	if machine.MachineTestFailures > 0 {
-		return types.CXAssert
+		return valuetypes.CXAssert
 	}
-	return types.CXSuccess
+	return valuetypes.CXSuccess
 }
 
 // coreImageEntryRun runs one entry, draining the output at every stop. An
@@ -75,7 +75,7 @@ func coreImageEntryRun(machine *vm.Machine, entry uint32, framePointer uint32) i
 		coreImageOutputFlush(machine)
 		switch {
 		case stop == vm.StopReturn:
-			return types.CXSuccess
+			return valuetypes.CXSuccess
 		case stop == vm.StopTestFailed:
 			coreImageTestFailurePrint(machine)
 		case !vm.Resumable(stop):
@@ -124,9 +124,9 @@ func coreImageTestFailurePrint(machine *vm.Machine) {
 // prints it, see docs/LlvmTarget.md.
 func coreImageErrorPrint(machine *vm.Machine, stop vm.Stop) {
 	fileName, lineNumber := coreImageStopLine(machine)
-	errorString, found := constants.ErrorStrings[int(vm.StopExitCodes[stop])]
+	errorString, found := opcodetable.ErrorStrings[int(vm.StopExitCodes[stop])]
 	if !found {
-		errorString = constants.ErrorStrings[types.CXRuntimeError]
+		errorString = opcodetable.ErrorStrings[valuetypes.CXRuntimeError]
 	}
 	coreImageWrite(os.Stdout, "error: "+fileName+":"+lineNumber+", "+errorString+", "+vm.StopMessages[stop]+"\n")
 }
@@ -141,15 +141,15 @@ type coreImageLibrary struct {
 // coreImageLibrariesUnlinked are the system libraries whose opcodes the vm
 // of this command leaves out, as it builds with the cxcore tag and no
 // cxcorelibrary tag. Cipher runs inside the vm and needs no tag. The ranges
-// keep the opcode tables of t1-constants, 36 KB, out of a microcontroller.
+// keep the opcode tables of t1-cx-core-opcodetable, 36 KB, out of a microcontroller.
 var coreImageLibrariesUnlinked = [...]coreImageLibrary{
-	{constants.LibraryNumberFile, constants.OpcodeFileGetWorkingDirectory, constants.OpcodeFileRemove},
-	{constants.LibraryNumberNet, constants.OpcodeNetUpdate, constants.OpcodeNetUDPPeerResolve},
+	{opcodetable.LibraryNumberFile, opcodetable.OpcodeFileGetWorkingDirectory, opcodetable.OpcodeFileRemove},
+	{opcodetable.LibraryNumberNet, opcodetable.OpcodeNetUpdate, opcodetable.OpcodeNetUDPPeerResolve},
 }
 
 // coreImageOpcodesEnabled reports whether set holds an opcode from first to
 // last.
-func coreImageOpcodesEnabled(set *constants.OpcodeSet, first int, last int) bool {
+func coreImageOpcodesEnabled(set *opcodetable.OpcodeSet, first int, last int) bool {
 	for code := first; code <= last; code++ {
 		if set.OpcodeSetContains(code) {
 			return true

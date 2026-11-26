@@ -5,7 +5,7 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t1-cipherstate"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
@@ -909,7 +909,7 @@ func (machine *Machine) slow() Stop {
 	case ir.OpcodeFileClose, ir.OpcodeFileSeek, ir.OpcodeFileSync:
 		fileOpcodeRun(in.InstrOpcode, mem, machine.MachineStackPointer)
 	case ir.OpcodePrintValue:
-		machine.MachineOutput = printValue(machine.MachineOutput, mem, a, types.Code(in.InstrM), byte(in.InstrN))
+		machine.MachineOutput = printValue(machine.MachineOutput, mem, a, valuetypes.Code(in.InstrM), byte(in.InstrN))
 	case ir.OpcodeTestEqual:
 		if !bytes.Equal(mem[a:a+in.InstrN], mem[b:b+in.InstrM]) {
 			machine.MachineTestFailures++
@@ -1003,32 +1003,32 @@ func (machine *Machine) printFull(out []byte, cursor int) Stop {
 // printValue appends the value of type typ at a in the printf verb, as
 // buildString in t4-opcodes formats it. The lowering only emits the verb and
 // type pairs handled here.
-func printValue(out []byte, mem []byte, a uint32, typ types.Code, verb byte) []byte {
+func printValue(out []byte, mem []byte, a uint32, typ valuetypes.Code, verb byte) []byte {
 	switch typ {
-	case types.BOOL:
+	case valuetypes.BOOL:
 		return strconv.AppendBool(out, rBool(mem, a))
-	case types.I8:
+	case valuetypes.I8:
 		return strconv.AppendInt(out, int64(rI8(mem, a)), 10)
-	case types.I16:
+	case valuetypes.I16:
 		return strconv.AppendInt(out, int64(rI16(mem, a)), 10)
-	case types.I32:
+	case valuetypes.I32:
 		return strconv.AppendInt(out, int64(rI32(mem, a)), 10)
-	case types.I64:
+	case valuetypes.I64:
 		return strconv.AppendInt(out, rI64(mem, a), 10)
-	case types.UI8:
+	case valuetypes.UI8:
 		return strconv.AppendUint(out, uint64(rUI8(mem, a)), 10)
-	case types.UI16:
+	case valuetypes.UI16:
 		return strconv.AppendUint(out, uint64(rUI16(mem, a)), 10)
-	case types.UI32:
+	case valuetypes.UI32:
 		return strconv.AppendUint(out, uint64(rUI32(mem, a)), 10)
-	case types.UI64:
+	case valuetypes.UI64:
 		return strconv.AppendUint(out, rUI64(mem, a), 10)
-	case types.F32:
+	case valuetypes.F32:
 		if verb == 'f' {
 			return strconv.AppendFloat(out, float64(rF32(mem, a)), 'f', 7, 32)
 		}
 		return strconv.AppendFloat(out, float64(rF32(mem, a)), 'g', -1, 32)
-	case types.F64:
+	case valuetypes.F64:
 		if verb == 'f' {
 			return strconv.AppendFloat(out, rF64(mem, a), 'f', 16, 64)
 		}

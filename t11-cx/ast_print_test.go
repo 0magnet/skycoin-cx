@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	types "github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 )
 
 // astPrintRun is one -ast run of a program.
@@ -56,11 +56,11 @@ func TestAstPrintsEveryProgram(t *testing.T) {
 	for i, program := range programs {
 		first, second := runs[i][0], runs[i][1]
 		switch {
-		case bytes.Contains(first.stderr, []byte("goroutine ")) || first.exitCode != types.CXSuccess && first.exitCode != types.CXCompilationError:
+		case bytes.Contains(first.stderr, []byte("goroutine ")) || first.exitCode != valuetypes.CXSuccess && first.exitCode != valuetypes.CXCompilationError:
 			t.Errorf("-ast %s: exit code %d, stderr %q", program, first.exitCode, lowerCompareClip(first.stderr))
 		case first.exitCode != second.exitCode || !bytes.Equal(first.stdout, second.stdout):
 			t.Errorf("-ast %s: two runs print differently, exit codes %d and %d", program, first.exitCode, second.exitCode)
-		case first.exitCode == types.CXSuccess:
+		case first.exitCode == valuetypes.CXSuccess:
 			printed++
 		}
 	}

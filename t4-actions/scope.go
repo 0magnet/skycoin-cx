@@ -4,7 +4,7 @@ import (
 	"math"
 
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // DefineNewScope marks the first and last non CXOperationTypeLine expressions of a block

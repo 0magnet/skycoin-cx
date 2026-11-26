@@ -3,13 +3,13 @@ package lower
 import (
 	"fmt"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
-	// GCREACH: t3-ast owns the heap and the GC roots. Lowering rejects heap operands,
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. Lowering rejects heap operands,
 	// so vm code never reaches the GC, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // printfStep is one piece of a printf: constant text, or the value of input
@@ -89,15 +89,15 @@ func (s *state) printfFormat(signatureIndex ast.CXTypeSignatureIndex) ([]byte, R
 	if _, reason := s.placeStatic(place{placeOffset: p.placeOffset, placeSize: machinePointerSize}); reason != ReasonNone {
 		return nil, ReasonPrintfFormat
 	}
-	object := uint64(types.PtrRead(prgrm.Memory, types.Pointer(p.placeOffset)))
-	if object < uint64(s.stateDataStart) || object+uint64(types.ObjectHeaderSize) > uint64(s.stateDataEnd) {
+	object := uint64(valuetypes.PtrRead(prgrm.Memory, valuetypes.Pointer(p.placeOffset)))
+	if object < uint64(s.stateDataStart) || object+uint64(valuetypes.ObjectHeaderSize) > uint64(s.stateDataEnd) {
 		return nil, ReasonPrintfFormat
 	}
-	objectSize := uint64(types.ObjectSizeRead(prgrm.Memory, types.Pointer(object)))
-	if objectSize < uint64(types.ObjectHeaderSize) || object+objectSize > uint64(s.stateDataEnd) {
+	objectSize := uint64(valuetypes.ObjectSizeRead(prgrm.Memory, valuetypes.Pointer(object)))
+	if objectSize < uint64(valuetypes.ObjectHeaderSize) || object+objectSize > uint64(s.stateDataEnd) {
 		return nil, ReasonPrintfFormat
 	}
-	return prgrm.Memory[object+uint64(types.ObjectHeaderSize) : object+objectSize], ReasonNone
+	return prgrm.Memory[object+uint64(valuetypes.ObjectHeaderSize) : object+objectSize], ReasonNone
 }
 
 // printfSteps walks format as buildString does and returns the pieces to
@@ -171,7 +171,7 @@ func (s *state) printfSteps(format []byte, inputs []ast.CXTypeSignatureIndex) ([
 // prints nothing for that verb and type.
 func (s *state) printfVerb(verb byte, signatureIndex ast.CXTypeSignatureIndex) (printfStep, bool, ReasonCode) {
 	typ := s.printfType(signatureIndex)
-	value := func(typ types.Code, verb byte) (printfStep, bool, ReasonCode) {
+	value := func(typ valuetypes.Code, verb byte) (printfStep, bool, ReasonCode) {
 		return printfStep{
 			printfStepInstr: ir.Instr{InstrOpcode: ir.OpcodePrintValue, InstrM: uint32(typ), InstrN: uint32(verb)},
 			printfStepSize:  pointerToUint32(typ.Size()),
@@ -185,30 +185,30 @@ func (s *state) printfVerb(verb byte, signatureIndex ast.CXTypeSignatureIndex) (
 	}
 	switch verb {
 	case 's':
-		if typ != types.STR {
+		if typ != valuetypes.STR {
 			return printfStep{}, false, ReasonPrintfFormat
 		}
 		return str(ir.PrintStrModeRaw)
 	case 'd':
 		switch typ {
-		case types.I8, types.I16, types.I32, types.I64, types.UI8, types.UI16, types.UI32, types.UI64:
+		case valuetypes.I8, valuetypes.I16, valuetypes.I32, valuetypes.I64, valuetypes.UI8, valuetypes.UI16, valuetypes.UI32, valuetypes.UI64:
 			return value(typ, 'd')
 		}
 		return printfStep{}, false, ReasonNone
 	case 'f':
 		switch typ {
-		case types.F32, types.F64:
+		case valuetypes.F32, valuetypes.F64:
 			return value(typ, 'f')
 		}
 		return printfStep{}, false, ReasonNone
 	case 'b':
-		return value(types.BOOL, 'b')
+		return value(valuetypes.BOOL, 'b')
 	case 'v':
 		printable, reason := s.printfPrintableType(signatureIndex)
 		if reason != ReasonNone {
 			return printfStep{}, false, reason
 		}
-		if printable == types.STR {
+		if printable == valuetypes.STR {
 			return str(ir.PrintStrModeRaw)
 		}
 		return value(printable, 'v')
@@ -217,13 +217,13 @@ func (s *state) printfVerb(verb byte, signatureIndex ast.CXTypeSignatureIndex) (
 }
 
 // printfType is the CXValue.Type builtInOperatorRun gives an input.
-func (s *state) printfType(signatureIndex ast.CXTypeSignatureIndex) types.Code {
+func (s *state) printfType(signatureIndex ast.CXTypeSignatureIndex) valuetypes.Code {
 	signature := s.stateProgram.CXTypeSignatureFromArrayGet(signatureIndex)
 	if signature.Type != ast.TypeCXArgumentDeprecate {
 		return signature.TypeGet(s.stateProgram)
 	}
 	arg := s.stateProgram.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta))
-	if arg.Type == types.POINTER {
+	if arg.Type == valuetypes.POINTER {
 		return arg.PointerTargetType
 	}
 	return arg.Type
@@ -232,16 +232,16 @@ func (s *state) printfType(signatureIndex ast.CXTypeSignatureIndex) types.Code {
 // printfPrintableType returns the type PrintableValueAppend prints with
 // appendAtomic, the only case of %v the machine prints. Whole arrays and
 // structs, pointers and addresses stay outside.
-func (s *state) printfPrintableType(signatureIndex ast.CXTypeSignatureIndex) (types.Code, ReasonCode) {
+func (s *state) printfPrintableType(signatureIndex ast.CXTypeSignatureIndex) (valuetypes.Code, ReasonCode) {
 	prgrm := s.stateProgram
 	signature := prgrm.CXTypeSignatureFromArrayGet(signatureIndex)
-	var typ types.Code
+	var typ valuetypes.Code
 	switch signature.Type {
 	case ast.TypeAtomic:
-		if signature.PassBy == constants.PassByReference {
+		if signature.PassBy == opcodetable.PassByReference {
 			return 0, ReasonPrintfFormat
 		}
-		typ = types.Code(signature.Meta)
+		typ = valuetypes.Code(signature.Meta)
 	case ast.TypeCXArgumentDeprecate:
 		element := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(signature.Meta)).AssignmentElementGet(prgrm)
 		var reason ReasonCode
@@ -253,7 +253,7 @@ func (s *state) printfPrintableType(signatureIndex ast.CXTypeSignatureIndex) (ty
 		if signature.Type == ast.TypePointerArrayAtomic && !signature.Deref || len(details.Indexes) != len(details.Lengths) {
 			return 0, ReasonPrintfFormat
 		}
-		typ = types.Code(details.Meta)
+		typ = valuetypes.Code(details.Meta)
 	case ast.TypeStruct, ast.TypePointerStruct:
 		fields := prgrm.CXTypeSignatureStructFromArrayGet(signature.Meta).Fields
 		if signature.Type == ast.TypePointerStruct && !signature.Deref || len(fields) == 0 {
@@ -267,8 +267,8 @@ func (s *state) printfPrintableType(signatureIndex ast.CXTypeSignatureIndex) (ty
 		return 0, ReasonPrintfFormat
 	}
 	switch typ {
-	case types.BOOL, types.STR, types.I8, types.I16, types.I32, types.I64,
-		types.UI8, types.UI16, types.UI32, types.UI64, types.F32, types.F64:
+	case valuetypes.BOOL, valuetypes.STR, valuetypes.I8, valuetypes.I16, valuetypes.I32, valuetypes.I64,
+		valuetypes.UI8, valuetypes.UI16, valuetypes.UI32, valuetypes.UI64, valuetypes.F32, valuetypes.F64:
 		return typ, ReasonNone
 	}
 	return 0, ReasonPrintfFormat
@@ -276,11 +276,11 @@ func (s *state) printfPrintableType(signatureIndex ast.CXTypeSignatureIndex) (ty
 
 // printfElementType returns the type argValueAt prints element with when
 // that is a single value.
-func printfElementType(element *ast.CXArgument) (types.Code, ReasonCode) {
+func printfElementType(element *ast.CXArgument) (valuetypes.Code, ReasonCode) {
 	typ := element.Type
 	if element.PointerTyped() {
 		for _, operation := range element.DereferenceOperations {
-			if operation == constants.DerefPointer {
+			if operation == opcodetable.DerefPointer {
 				typ = element.PointerTargetType
 				break
 			}

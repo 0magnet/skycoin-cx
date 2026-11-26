@@ -7,11 +7,11 @@ import (
 	"testing"
 
 	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
-	cxpackages "github.com/skycoin/skycoin-cx/t0-packages" // thin: tests use only IsDefaultPackage; no depth gain
-	constants "github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-syspackages" // thin: tests use only IsDefaultPackage; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: tests use only LoadCXProgram; no depth gain
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	actions "github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t5-cx-tools-packagefiles" // thin: tests use only GetImportFiles; no depth gain
 	declaration_extractor "github.com/skycoin/skycoin-cx/t6-declextractor"
@@ -374,7 +374,7 @@ func TestTypeChecker_ParseImports(t *testing.T) {
 						panic(err)
 					}
 
-					if cxpackages.PackageDefault(actions.AST.CXProgramNameText(pkg.Name)) {
+					if syspackages.PackageDefault(actions.AST.CXProgramNameText(pkg.Name)) {
 						continue
 					}
 
@@ -740,7 +740,7 @@ func TestTypeChecker_ParseStructs(t *testing.T) {
 						t.Log(err)
 					}
 
-					if cxpackages.PackageDefault(actions.AST.CXProgramNameText(pkg.Name)) {
+					if syspackages.PackageDefault(actions.AST.CXProgramNameText(pkg.Name)) {
 						continue
 					}
 
@@ -1242,7 +1242,7 @@ func TestTypeChecker_ParseAllDeclarations(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				if cxpackages.PackageDefault(actions.AST.CXProgramNameText(gotPkg.Name)) {
+				if syspackages.PackageDefault(actions.AST.CXProgramNameText(gotPkg.Name)) {
 					continue
 				}
 
@@ -1396,7 +1396,7 @@ func getFormattedParam(prgrm *ast.CXProgram, paramTypeSigIdxs []ast.CXTypeSignat
 
 			// If it's a literal, just override the name with LiteralPlaceholder.
 			if paramTypeSig.Name == stringpool.StringGidNil {
-				name = constants.LiteralPlaceholder
+				name = opcodetable.LiteralPlaceholder
 			}
 
 			// TODO: Check if external pkg and pkg name shown are correct

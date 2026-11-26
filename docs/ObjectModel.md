@@ -1,6 +1,6 @@
 # Object model of the CX IR
 
-This is the standard for how the compiler IR in `t3-ast` and the packages
+This is the standard for how the compiler IR in `t3-cx-core-ast` and the packages
 around it hold their objects. Every IR object type has a definition, a
 manager that owns every object of that type, and a generational index that
 names one object. One struct, `CxIrState`, owns every manager.
@@ -63,9 +63,9 @@ Not managed, with the reason.
   every expression in a reused scratch slice. It is not part of the IR. Its
   pointer fields `TypeSignature` and `Expr` become Gids in the Gid phase of
   the objects they point at.
-* `DereferenceStruct` (`t3-ast/mem_offset.go`) lives on the stack of
+* `DereferenceStruct` (`t3-cx-core-ast/mem_offset.go`) lives on the stack of
   `FinalOffsetGet` only.
-* The serializer (`t3-ast/serialize.go`) writes the managers and arenas as
+* The serializer (`t3-cx-core-ast/serialize.go`) writes the managers and arenas as
   bytes and reads them back slot for slot, so it holds no objects.
 * `CXArgumentSlice`, `CXArgumentStruct` and `CXArgumentPointer` were
   unused and were removed with the Def files.
@@ -386,7 +386,7 @@ such code.
 
 ## CxIrState, the single owner
 
-`CxIrState` (`t3-ast/cxirstate.go`) holds one manager of each type and is
+`CxIrState` (`t3-cx-core-ast/cxirstate.go`) holds one manager of each type and is
 the only owner of every IR object.
 
 ```go
@@ -432,7 +432,7 @@ type CxIrStateManagerLen struct {
   parse, may hold it for that call.
 * The program's runtime data, `Memory`, the segments and the call stack,
   stays in `CXProgram`. Its arena slices become the managers.
-* The opcode and library function tables are constant data in t1-constants
+* The opcode and library function tables are constant data in t1-cx-core-opcodetable
   (decisions D21 and D96). `ast.OpcodeDispatch` and `ast.LibraryDispatches`,
   which say which switches a binary links, are
   package state today. Moving them into
@@ -496,7 +496,7 @@ the pool's own index, which `StringPoolFreeze` drops, read text.
 
 ### Source files
 
-`SourceFileMng` (`t3-ast`, #413) holds the path of every source file once,
+`SourceFileMng` (`t3-cx-core-ast`, #413) holds the path of every source file once,
 as a `StringGid`. Like the string pool it is written by hand, because a
 file is never released. `SourceFileGid` has the Gid layout with type tag
 `0x10`, every slot keeps `GidGenerationFirst`, and `SourceFileGidNil` is no
@@ -799,6 +799,6 @@ generated parser sites mapped to their grammar through the `//line`
 directives. The call counts agree with the codebase-memory call graph, for
 example 30 `ArgumentMake` callers, 34 `CXTypeSignatureInArrayAdd` callers,
 19 `CXArgInArrayAdd` callers and 90 `CXArgFromArrayGet` callers. GC here
-means Go's garbage collector. `t3-ast/garbage_collector.go` collects the CX
+means Go's garbage collector. `t3-cx-core-ast/garbage_collector.go` collects the CX
 heap in `CXProgram.Memory`, which holds no IR objects.
 

@@ -1,11 +1,11 @@
 package actions
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	objmodel "github.com/skycoin/skycoin-cx/t1-cx-core-objmodel"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 func globalInitializerResolve(prgrm *ast.CXProgram, initializer []ast.CXExpression, glblIdx ast.CXTypeSignatureIndex) {
@@ -22,7 +22,7 @@ func globalInitializerResolve(prgrm *ast.CXProgram, initializer []ast.CXExpressi
 		prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
 
 		prgrm.CXAtomicOps[initializerExpressionIdx].OutputAdd(prgrm, glblIdx)
-		opIdx := prgrm.NativeFunctionInArrayAdd(ast.NativeFunctionOf(prgrm, constants.OpIdentity))
+		opIdx := prgrm.NativeFunctionInArrayAdd(ast.NativeFunctionOf(prgrm, opcodetable.OpIdentity))
 		prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
 
 		//add intialization statements, to array
@@ -87,9 +87,9 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	totalSize := declaration_specifiers.Size
 	for _, decl := range declaration_specifiers.DeclarationSpecifiers {
 		switch decl {
-		case constants.DeclarationPointer, constants.DeclarationSlice:
-			totalSize = types.PointerSize
-		case constants.DeclarationArray:
+		case opcodetable.DeclarationPointer, opcodetable.DeclarationSlice:
+			totalSize = valuetypes.PointerSize
+		case opcodetable.DeclarationArray:
 			totalSize = declaration_specifiers.ArraySize()
 		}
 	}
@@ -109,13 +109,13 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 		// if offset is not valid, assign new offset
 		// The offset and pass-by of the new data, zero when the offset is valid.
-		var glblArgOffset types.Pointer
+		var glblArgOffset valuetypes.Pointer
 		var glblArgPassBy int
 		if !glbl.Offset.Valid() {
 			var glblArg *ast.CXArgument
 			if declaration_specifiers.SliceTyped() { // TODO:PTR move branch in WritePrimary
 				glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type,
-					make([]byte, types.PointerSize), true)
+					make([]byte, valuetypes.PointerSize), true)
 			} else {
 				glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type,
 					make([]byte, totalSize), true)
@@ -268,7 +268,7 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// then it hasn't been defined
 		var glblArg *ast.CXArgument
 		if declaration_specifiers.SliceTyped() { // TODO:PTR move branch in WritePrimary
-			glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type, make([]byte, types.PointerSize), true)
+			glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type, make([]byte, valuetypes.PointerSize), true)
 		} else {
 			glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type, make([]byte, totalSize), true)
 		}
@@ -319,7 +319,7 @@ func localInitializationResolve(prgrm *ast.CXProgram, pkg *ast.CXPackage, initia
 		// with the declared variable
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S1231.
-		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpIdentity))
+		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcodetable.OpIdentity))
 		cxExprAtomicOpIdx := expr.Index
 		prgrm.CXAtomicOps[cxExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
@@ -510,7 +510,7 @@ func GlobalRedeclarationCheck(prgrm *ast.CXProgram, declarator *ast.CXArgument) 
 // of a literal or types.UNDEFINED, and the positions of its start and of the
 // token after it.
 type GlobalValue struct {
-	GlobalValueType        types.Code
+	GlobalValueType        valuetypes.Code
 	GlobalValueStartLine   int
 	GlobalValueStartColumn int
 	GlobalValueEndLine     int
@@ -528,7 +528,7 @@ func GlobalsDeclare(prgrm *ast.CXProgram, names []*ast.CXArgument, spec *ast.CXA
 		count = len(passOneValues)
 	}
 	// A literal is one value, which only a call of several results is not.
-	if initialized && count == 1 && len(names) > 1 && (passOneValues == nil || spec != nil || passOneValues[0].GlobalValueType == types.UNDEFINED) {
+	if initialized && count == 1 && len(names) > 1 && (passOneValues == nil || spec != nil || passOneValues[0].GlobalValueType == valuetypes.UNDEFINED) {
 		globalsDeclareResults(prgrm, names, spec, values, passOneValues)
 		return
 	}
@@ -540,7 +540,7 @@ func GlobalsDeclare(prgrm *ast.CXProgram, names []*ast.CXArgument, spec *ast.CXA
 			// The names are invalid, so their uses report nothing more.
 			for _, name := range names {
 				if !GlobalRedeclarationCheck(prgrm, name) {
-					GlobalInPackageDeclare(prgrm, nil, name, DeclarationSpecifiersBasic(prgrm, types.INVALID), nil, false)
+					GlobalInPackageDeclare(prgrm, nil, name, DeclarationSpecifiersBasic(prgrm, valuetypes.INVALID), nil, false)
 				}
 			}
 			return
@@ -553,7 +553,7 @@ func GlobalsDeclare(prgrm *ast.CXProgram, names []*ast.CXArgument, spec *ast.CXA
 		}
 		if nameSpec == nil && passOneValues != nil {
 			code := passOneValues[i].GlobalValueType
-			if code == types.UNDEFINED {
+			if code == valuetypes.UNDEFINED {
 				if !GlobalRedeclarationCheck(prgrm, name) {
 					globalDeferredAdd(prgrm, name, passOneValues[i], 0, 0)
 				}
@@ -566,7 +566,7 @@ func GlobalsDeclare(prgrm *ast.CXProgram, names []*ast.CXArgument, spec *ast.CXA
 				file, line, column := ast.CXArgumentDebugPosition(prgrm, name.ArgDetails)
 				prgrm.CXProgramCompileErrorAddPosition(ast.CompileErrorCodeGlobalTypeUnknown, file, line, column, ast.CompileErrorOperands{int64(name.Name)})
 				// Its uses report nothing more.
-				nameSpec = DeclarationSpecifiersBasic(prgrm, types.INVALID)
+				nameSpec = DeclarationSpecifiersBasic(prgrm, valuetypes.INVALID)
 			} else {
 				if !GlobalRedeclarationCheck(prgrm, name) && initialized && values[i] != nil {
 					globalInitializerResolve(prgrm, values[i], glbl.Index)
@@ -708,7 +708,7 @@ func globalPlaceholderAdd(prgrm *ast.CXProgram, pkg *ast.CXPackage, declarator *
 	if arg.ArgDetails != ast.CXArgumentDebugGidNil {
 		prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet(arg.ArgDetails).FileColumn = column
 	}
-	arg.Offset = types.InvalidPointer
+	arg.Offset = valuetypes.InvalidPointer
 	arg.Package = ast.CXPackageIndex(pkg.Index)
 	pkg.GlobalAdd(prgrm, ast.CXArgumentIndex(arg.Index))
 }

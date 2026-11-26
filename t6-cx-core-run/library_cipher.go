@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-cipher"
 )
 

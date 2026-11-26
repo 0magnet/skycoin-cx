@@ -5,10 +5,10 @@
 package cxos
 
 import (
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
-// FileOpcodeDispatch reports false, the build tags leave out constants.OpcodeGroupFile.
+// FileOpcodeDispatch reports false, the build tags leave out opcodetable.OpcodeGroupFile.
 func FileOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, outputs []ast.CXValue) bool {
 	return false
 }

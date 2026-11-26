@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t2-globals"            // thin: only FoundCompileErrors; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-ast"                // thin: only InREPL, ProgramMemoryRelease, SourceFileGidNil; no depth gain
-	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer" // thin: only CompileErrorsPrint, RuntimeErrorPrint; no depth gain
-	"github.com/skycoin/skycoin-cx/t4-execute"            // thin: only RunCompiled; no depth gain
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"        // thin: only MakeProgram, RegisterPackages; no depth gain
+	"github.com/skycoin/skycoin-cx/t2-cx-core-environment" // thin: only FoundCompileErrors; no depth gain
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"         // thin: only InREPL, ProgramMemoryRelease, SourceFileGidNil; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"  // thin: only CompileErrorsPrint, RuntimeErrorPrint; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-execute"             // thin: only RunCompiled; no depth gain
+	cxinit "github.com/skycoin/skycoin-cx/t7-init"         // thin: only MakeProgram, RegisterPackages; no depth gain
 
 	"github.com/skycoin/skycoin-cx/t4-actions"                               // thin: only AST, LineNo; no depth gain
 	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing"     // thin: only CurrentFile, Parse, Program; no depth gain
@@ -79,7 +79,7 @@ func unsafeEval(code string) (out string) {
 	// Eval code has no file, and a file Gid of an earlier program is stale.
 	actions.CurrentFile = ast.SourceFileGidNil
 	cxpartialparsing.CurrentFile = ast.SourceFileGidNil
-	globals.FoundCompileErrors = false
+	environment.FoundCompileErrors = false
 
 	// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
@@ -95,7 +95,7 @@ func unsafeEval(code string) (out string) {
 	lexer = cxparsingcompletor.LexerNew(bytes.NewBufferString(code))
 	parseErrors += cxparsingcompletor.Parse(lexer)
 	printer.CompileErrorsPrint(actions.AST)
-	if parseErrors > 0 || globals.FoundCompileErrors {
+	if parseErrors > 0 || environment.FoundCompileErrors {
 		restore()
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0003 S0004.
@@ -109,7 +109,7 @@ func unsafeEval(code string) (out string) {
 		return fmt.Sprintf("%s", err)
 	}
 	// SysInitFunctionAdd records initialization cycles and global type errors (#519).
-	if globals.FoundCompileErrors {
+	if environment.FoundCompileErrors {
 		printer.CompileErrorsPrint(actions.AST)
 		restore()
 		actions.AST = cxinit.ProgramMake()

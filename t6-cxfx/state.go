@@ -11,8 +11,8 @@ import (
 	"github.com/skycoin/gltext"
 
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // The sizes of the handle tables. A program that creates more than a table
@@ -234,18 +234,18 @@ func cxfxTextNulTerminated(text []byte) *uint8 {
 
 // cxfxCallbackInputsI32 writes value as input index of an event callback.
 func cxfxCallbackInputsI32(index int, value int32) {
-	types.I32Write(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
+	valuetypes.I32Write(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
 	cxfxState.CxfxCallbackInputs[index] = cxfxState.CxfxCallbackInputBytes[index][:4]
 }
 
 // cxfxCallbackInputsI64 writes value as input index of an event callback.
 func cxfxCallbackInputsI64(index int, value int64) {
-	types.I64Write(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
+	valuetypes.I64Write(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
 	cxfxState.CxfxCallbackInputs[index] = cxfxState.CxfxCallbackInputBytes[index][:8]
 }
 
 // cxfxCallbackInputsF64 writes value as input index of an event callback.
 func cxfxCallbackInputsF64(index int, value float64) {
-	types.F64Write(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
+	valuetypes.F64Write(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
 	cxfxState.CxfxCallbackInputs[index] = cxfxState.CxfxCallbackInputBytes[index][:8]
 }

@@ -3,8 +3,8 @@ package ir
 import (
 	"encoding/binary"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 )
 
 // ImageFileMagic starts every image file, see docs/Microcontrollers.md.
@@ -69,7 +69,7 @@ func ImageFileEncode(image *Image) []byte {
 		file = binary.LittleEndian.AppendUint32(file, span.SpanStart)
 		file = binary.LittleEndian.AppendUint32(file, span.SpanEnd)
 	}
-	file = binary.LittleEndian.AppendUint32(file, constants.OpcodeSetWordCount)
+	file = binary.LittleEndian.AppendUint32(file, opcodetable.OpcodeSetWordCount)
 	for _, word := range image.ImageOperationsEnabled {
 		file = binary.LittleEndian.AppendUint64(file, word)
 	}
@@ -236,14 +236,14 @@ func ImageFileDecode(file []byte) (Image, ImageFileProblem) {
 		local := &image.ImageLocals[i]
 		local.LocalOffset, local.LocalSize = reader.uint32Read(), reader.uint32Read()
 		local.LocalName, local.LocalTypeName = reader.uint32Read(), reader.uint32Read()
-		local.LocalType = types.Code(int32(reader.uint32Read()))
+		local.LocalType = valuetypes.Code(int32(reader.uint32Read()))
 	}
 	image.ImageLocalNames = reader.stringsRead()
 	image.ImageReadOnly = make([]Span, reader.countRead(8))
 	for i := range image.ImageReadOnly {
 		image.ImageReadOnly[i] = Span{SpanStart: reader.uint32Read(), SpanEnd: reader.uint32Read()}
 	}
-	if wordCount := reader.uint32Read(); !reader.imageFileReaderShort && wordCount != constants.OpcodeSetWordCount {
+	if wordCount := reader.uint32Read(); !reader.imageFileReaderShort && wordCount != opcodetable.OpcodeSetWordCount {
 		return Image{}, ImageFileProblemVersion
 	}
 	for i := range image.ImageOperationsEnabled {

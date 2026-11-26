@@ -12,74 +12,74 @@
 # path) or cxfx (open in t6-cxfx, which only the build with the cxfx tag has,
 # checked by ./check-strhot.sh -tags cxfx, #432).
 STRHOT-001 I removed t1-cx-core-objmodel/gid.go GidCheck not on the run path at dfcc46ab
-STRHOT-002 E open t3-ast/cxargumentdebug_mng.go *CXArgumentDebugMng.CXArgumentDebugGet
-STRHOT-003 E open t3-ast/cxargument_mng.go *CXArgumentMng.CXArgumentGet
-STRHOT-004 E open t3-ast/cxline_mng.go *CXLineMng.CXLineGet
-STRHOT-005 E open t3-ast/cxtypesignaturearray_mng.go *CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet
-STRHOT-006 E open t3-ast/cxtypesignature_mng.go *CXTypeSignatureMng.CXTypeSignatureGet
-STRHOT-007 E open t3-ast/cxtypesignaturestruct_mng.go *CXTypeSignature_StructMng.CXTypeSignature_StructGet
-STRHOT-008 O removed t0-types/types_string.go AllocWrite_str_data not on the run path at dfcc46ab
-STRHOT-009 B removed t0-types/types_string.go Read_str_data deleted, only the affordance opcodes used it, D5 #500
-STRHOT-010 O removed t0-types/types_string.go Write_str not on the run path at dfcc46ab
-STRHOT-011 B open t0-types/types_string.go StrRead O fixed, boundary opcodes only
+STRHOT-002 E open t3-cx-core-ast/cxargumentdebug_mng.go *CXArgumentDebugMng.CXArgumentDebugGet
+STRHOT-003 E open t3-cx-core-ast/cxargument_mng.go *CXArgumentMng.CXArgumentGet
+STRHOT-004 E open t3-cx-core-ast/cxline_mng.go *CXLineMng.CXLineGet
+STRHOT-005 E open t3-cx-core-ast/cxtypesignaturearray_mng.go *CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet
+STRHOT-006 E open t3-cx-core-ast/cxtypesignature_mng.go *CXTypeSignatureMng.CXTypeSignatureGet
+STRHOT-007 E open t3-cx-core-ast/cxtypesignaturestruct_mng.go *CXTypeSignature_StructMng.CXTypeSignature_StructGet
+STRHOT-008 O removed t0-cx-core-valuetypes/types_string.go AllocWrite_str_data not on the run path at dfcc46ab
+STRHOT-009 B removed t0-cx-core-valuetypes/types_string.go Read_str_data deleted, only the affordance opcodes used it, D5 #500
+STRHOT-010 O removed t0-cx-core-valuetypes/types_string.go Write_str not on the run path at dfcc46ab
+STRHOT-011 B open t0-cx-core-valuetypes/types_string.go StrRead O fixed, boundary opcodes only
 STRHOT-012 O removed t0-util/file.go CXOpenFile not on the run path at dfcc46ab
 STRHOT-013 O removed t0-util/file.go CXCreateFile not on the run path at dfcc46ab
 STRHOT-014 O removed t0-util/file.go CXReadFile not on the run path at dfcc46ab
 STRHOT-015 O removed t0-util/file.go cxPath not on the run path at dfcc46ab
 STRHOT-016 B open t1-profiling/profiling.go CPUProfileStartOnFile
-STRHOT-017 O removed t3-ast/ast_cxfunction.go *CXFunction.InputAdd not on the run path at dfcc46ab
-STRHOT-018 O removed t3-ast/ast_cxfunction.go *CXFunction.OutputAdd not on the run path at dfcc46ab
-STRHOT-019 O removed t3-ast/ast_cxfunction.go *CXFunction.LocalVariableNameAdd not on the run path at dfcc46ab
-STRHOT-020 E removed t3-ast/ast_cxpackage.go *CXPackage.FunctionGet not on the run path since op_aff.go was deleted, D5 #500
-STRHOT-021 O removed t3-ast/ast_cxpackage.go *CXPackage.StructGet not on the run path at dfcc46ab
-STRHOT-022 O removed t3-ast/ast_cxprogram.go *CXProgram.PackageAdd not on the run path at dfcc46ab
-STRHOT-023 O removed t3-ast/ast_cxprogram.go *CXProgram.NativeFunctionInArrayAdd not on the run path at dfcc46ab
-STRHOT-024 O removed t3-ast/ast_cxprogram.go *CXProgram.PackageGet not on the run path at dfcc46ab
-STRHOT-025 O removed t3-ast/ast_cxprogram.go *CXProgram.FunctionGet not on the run path at dfcc46ab
-STRHOT-026 O removed t3-ast/ast_cxstruct.go *CXStruct.FieldGet not on the run path at dfcc46ab
-STRHOT-027 O removed t3-ast/ast_cxstruct.go *CXStruct.FieldTypeSignatureAdd not on the run path at dfcc46ab
-STRHOT-028 O removed t3-ast/ast_cxstruct.go *CXStruct.FieldGlobalsCXAtomicOpsAdd not on the run path at dfcc46ab
-STRHOT-029 B open t3-ast/ast_cxvalue.go *CXValue.StrGet O fixed, boundary opcodes only
-STRHOT-030 B open t3-ast/ast_cxvalue.go *CXValue.StrSet O fixed, boundary opcodes only
-STRHOT-031 O removed t3-ast/error.go CompilationError not on the run path at dfcc46ab
-STRHOT-032 O removed t3-ast/serialized_cx_program_skyencoder.go EncodeSerializedCXProgramToBuffer not on the run path at dfcc46ab
-STRHOT-033 O removed t3-ast/serialized_cx_program_skyencoder.go DecodeSerializedCXProgram not on the run path at dfcc46ab
-STRHOT-034 O removed t3-ast/serialize.go serializeString not on the run path at dfcc46ab
-STRHOT-035 O removed t3-ast/serialize.go indexPackage not on the run path at dfcc46ab
-STRHOT-036 O removed t3-ast/serialize.go indexStruct not on the run path at dfcc46ab
-STRHOT-037 O removed t3-ast/serialize.go indexFunction not on the run path at dfcc46ab
-STRHOT-038 O removed t3-ast/serialize.go serializeArgument not on the run path at dfcc46ab
-STRHOT-039 O removed t3-ast/serialize.go serializeExpression not on the run path at dfcc46ab
-STRHOT-040 O removed t3-ast/serialize.go serializeCall not on the run path at dfcc46ab
-STRHOT-041 O removed t3-ast/serialize.go serializeStructArguments not on the run path at dfcc46ab
-STRHOT-042 O removed t3-ast/serialize.go serializeFunctionArguments not on the run path at dfcc46ab
-STRHOT-043 O removed t3-ast/serialize.go serializePackageName not on the run path at dfcc46ab
-STRHOT-044 O removed t3-ast/serialize.go serializeStructName not on the run path at dfcc46ab
-STRHOT-045 O removed t3-ast/serialize.go serializeFunctionName not on the run path at dfcc46ab
-STRHOT-046 O removed t3-ast/serialize.go serializePackageGlobals not on the run path at dfcc46ab
-STRHOT-047 O removed t3-ast/serialize.go serializePackageImports not on the run path at dfcc46ab
-STRHOT-048 O removed t3-ast/serialize.go serializeStructPackage not on the run path at dfcc46ab
-STRHOT-049 O removed t3-ast/serialize.go serializeFunctionPackage not on the run path at dfcc46ab
-STRHOT-050 O removed t3-ast/serialize.go serializePackageIntegers not on the run path at dfcc46ab
-STRHOT-051 O removed t3-ast/serialize.go serializeFunctionIntegers not on the run path at dfcc46ab
-STRHOT-052 O removed t3-ast/serialize.go initSerialization not on the run path at dfcc46ab
-STRHOT-053 O removed t3-ast/serialize.go serializeProgram not on the run path at dfcc46ab
-STRHOT-054 O removed t3-ast/serialize.go serializeCXProgramElements not on the run path at dfcc46ab
-STRHOT-055 O removed t3-ast/serialize.go deserializeString not on the run path at dfcc46ab
-STRHOT-056 O removed t3-ast/serialize.go deserializePackages not on the run path at dfcc46ab
-STRHOT-057 O removed t3-ast/serialize.go deserializeStruct not on the run path at dfcc46ab
-STRHOT-058 O removed t3-ast/serialize.go deserializeArgument not on the run path at dfcc46ab
-STRHOT-059 O removed t3-ast/serialize.go deserializeOperator not on the run path at dfcc46ab
-STRHOT-060 O removed t3-ast/serialize.go deserializePackageImport not on the run path at dfcc46ab
-STRHOT-061 O removed t3-ast/serialize.go deserializeExpressionFunction not on the run path at dfcc46ab
-STRHOT-062 O removed t3-ast/serialize.go deserializeExpression not on the run path at dfcc46ab
-STRHOT-063 B open t3-ast/serialize.go deserializeFunction
-STRHOT-064 O removed t3-ast/serialize.go initDeserialization not on the run path at dfcc46ab
-STRHOT-065 O removed t3-ast/serialize.go deserializeVersion not on the run path at dfcc46ab
-STRHOT-066 O removed t3-ast/serialize.go packagesByName not on the run path at dfcc46ab
-STRHOT-067 O removed t3-ast/serialize.go structsByName not on the run path at dfcc46ab
-STRHOT-068 O removed t3-ast/serialize.go functionsByName not on the run path at dfcc46ab
-STRHOT-069 O removed t3-ast/serialize.go importsByName not on the run path at dfcc46ab
+STRHOT-017 O removed t3-cx-core-ast/ast_cxfunction.go *CXFunction.InputAdd not on the run path at dfcc46ab
+STRHOT-018 O removed t3-cx-core-ast/ast_cxfunction.go *CXFunction.OutputAdd not on the run path at dfcc46ab
+STRHOT-019 O removed t3-cx-core-ast/ast_cxfunction.go *CXFunction.LocalVariableNameAdd not on the run path at dfcc46ab
+STRHOT-020 E removed t3-cx-core-ast/ast_cxpackage.go *CXPackage.FunctionGet not on the run path since op_aff.go was deleted, D5 #500
+STRHOT-021 O removed t3-cx-core-ast/ast_cxpackage.go *CXPackage.StructGet not on the run path at dfcc46ab
+STRHOT-022 O removed t3-cx-core-ast/ast_cxprogram.go *CXProgram.PackageAdd not on the run path at dfcc46ab
+STRHOT-023 O removed t3-cx-core-ast/ast_cxprogram.go *CXProgram.NativeFunctionInArrayAdd not on the run path at dfcc46ab
+STRHOT-024 O removed t3-cx-core-ast/ast_cxprogram.go *CXProgram.PackageGet not on the run path at dfcc46ab
+STRHOT-025 O removed t3-cx-core-ast/ast_cxprogram.go *CXProgram.FunctionGet not on the run path at dfcc46ab
+STRHOT-026 O removed t3-cx-core-ast/ast_cxstruct.go *CXStruct.FieldGet not on the run path at dfcc46ab
+STRHOT-027 O removed t3-cx-core-ast/ast_cxstruct.go *CXStruct.FieldTypeSignatureAdd not on the run path at dfcc46ab
+STRHOT-028 O removed t3-cx-core-ast/ast_cxstruct.go *CXStruct.FieldGlobalsCXAtomicOpsAdd not on the run path at dfcc46ab
+STRHOT-029 B open t3-cx-core-ast/ast_cxvalue.go *CXValue.StrGet O fixed, boundary opcodes only
+STRHOT-030 B open t3-cx-core-ast/ast_cxvalue.go *CXValue.StrSet O fixed, boundary opcodes only
+STRHOT-031 O removed t3-cx-core-ast/error.go CompilationError not on the run path at dfcc46ab
+STRHOT-032 O removed t3-cx-core-ast/serialized_cx_program_skyencoder.go EncodeSerializedCXProgramToBuffer not on the run path at dfcc46ab
+STRHOT-033 O removed t3-cx-core-ast/serialized_cx_program_skyencoder.go DecodeSerializedCXProgram not on the run path at dfcc46ab
+STRHOT-034 O removed t3-cx-core-ast/serialize.go serializeString not on the run path at dfcc46ab
+STRHOT-035 O removed t3-cx-core-ast/serialize.go indexPackage not on the run path at dfcc46ab
+STRHOT-036 O removed t3-cx-core-ast/serialize.go indexStruct not on the run path at dfcc46ab
+STRHOT-037 O removed t3-cx-core-ast/serialize.go indexFunction not on the run path at dfcc46ab
+STRHOT-038 O removed t3-cx-core-ast/serialize.go serializeArgument not on the run path at dfcc46ab
+STRHOT-039 O removed t3-cx-core-ast/serialize.go serializeExpression not on the run path at dfcc46ab
+STRHOT-040 O removed t3-cx-core-ast/serialize.go serializeCall not on the run path at dfcc46ab
+STRHOT-041 O removed t3-cx-core-ast/serialize.go serializeStructArguments not on the run path at dfcc46ab
+STRHOT-042 O removed t3-cx-core-ast/serialize.go serializeFunctionArguments not on the run path at dfcc46ab
+STRHOT-043 O removed t3-cx-core-ast/serialize.go serializePackageName not on the run path at dfcc46ab
+STRHOT-044 O removed t3-cx-core-ast/serialize.go serializeStructName not on the run path at dfcc46ab
+STRHOT-045 O removed t3-cx-core-ast/serialize.go serializeFunctionName not on the run path at dfcc46ab
+STRHOT-046 O removed t3-cx-core-ast/serialize.go serializePackageGlobals not on the run path at dfcc46ab
+STRHOT-047 O removed t3-cx-core-ast/serialize.go serializePackageImports not on the run path at dfcc46ab
+STRHOT-048 O removed t3-cx-core-ast/serialize.go serializeStructPackage not on the run path at dfcc46ab
+STRHOT-049 O removed t3-cx-core-ast/serialize.go serializeFunctionPackage not on the run path at dfcc46ab
+STRHOT-050 O removed t3-cx-core-ast/serialize.go serializePackageIntegers not on the run path at dfcc46ab
+STRHOT-051 O removed t3-cx-core-ast/serialize.go serializeFunctionIntegers not on the run path at dfcc46ab
+STRHOT-052 O removed t3-cx-core-ast/serialize.go initSerialization not on the run path at dfcc46ab
+STRHOT-053 O removed t3-cx-core-ast/serialize.go serializeProgram not on the run path at dfcc46ab
+STRHOT-054 O removed t3-cx-core-ast/serialize.go serializeCXProgramElements not on the run path at dfcc46ab
+STRHOT-055 O removed t3-cx-core-ast/serialize.go deserializeString not on the run path at dfcc46ab
+STRHOT-056 O removed t3-cx-core-ast/serialize.go deserializePackages not on the run path at dfcc46ab
+STRHOT-057 O removed t3-cx-core-ast/serialize.go deserializeStruct not on the run path at dfcc46ab
+STRHOT-058 O removed t3-cx-core-ast/serialize.go deserializeArgument not on the run path at dfcc46ab
+STRHOT-059 O removed t3-cx-core-ast/serialize.go deserializeOperator not on the run path at dfcc46ab
+STRHOT-060 O removed t3-cx-core-ast/serialize.go deserializePackageImport not on the run path at dfcc46ab
+STRHOT-061 O removed t3-cx-core-ast/serialize.go deserializeExpressionFunction not on the run path at dfcc46ab
+STRHOT-062 O removed t3-cx-core-ast/serialize.go deserializeExpression not on the run path at dfcc46ab
+STRHOT-063 B open t3-cx-core-ast/serialize.go deserializeFunction
+STRHOT-064 O removed t3-cx-core-ast/serialize.go initDeserialization not on the run path at dfcc46ab
+STRHOT-065 O removed t3-cx-core-ast/serialize.go deserializeVersion not on the run path at dfcc46ab
+STRHOT-066 O removed t3-cx-core-ast/serialize.go packagesByName not on the run path at dfcc46ab
+STRHOT-067 O removed t3-cx-core-ast/serialize.go structsByName not on the run path at dfcc46ab
+STRHOT-068 O removed t3-cx-core-ast/serialize.go functionsByName not on the run path at dfcc46ab
+STRHOT-069 O removed t3-cx-core-ast/serialize.go importsByName not on the run path at dfcc46ab
 STRHOT-070 B removed t4-opcodes/op_aff.go GetInferActions op_aff.go deleted by decision D5, #500
 STRHOT-071 B removed t4-opcodes/op_aff.go OpAffPrint op_aff.go deleted by decision D5, #500
 STRHOT-072 B removed t4-opcodes/op_aff.go queryParam op_aff.go deleted by decision D5, #500
@@ -224,58 +224,58 @@ STRHOT-210 O removed t6-cxfx/op_opengl.go OpGlGetShaderInfoLog handles and byte 
 STRHOT-211 O removed t6-cxfx/op_opengl.go OpGlGetUniformLocation handles and byte views, #432
 STRHOT-212 O removed t6-cxfx/op_opengl.go OpGlShaderSource handles and byte views, #432
 STRHOT-213 O removed t6-cxfx/utils.go OpGlfwFuncI32I32 handles and byte views, #432
-STRHOT-214 P removed t0-types/types.go Code.Name not on the run path at dfcc46ab
-STRHOT-215 P removed t3-ast/tostring.go valueAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
-STRHOT-216 P removed t3-ast/tostring.go elementsAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
-STRHOT-217 P removed t3-ast/tostring.go structAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
-STRHOT-218 P removed t3-ast/tostring.go typeSignatureAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
-STRHOT-219 P removed t3-ast/tostring.go printSeparator not on the run path at dfcc46ab
-STRHOT-220 P removed t3-ast/tostring.go readAtomic appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
-STRHOT-221 P removed t3-ast/tostring.go argValueAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
-STRHOT-222 P removed t3-ast/tostring.go GetPrintableValue appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
+STRHOT-214 P removed t0-cx-core-valuetypes/types.go Code.Name not on the run path at dfcc46ab
+STRHOT-215 P removed t3-cx-core-ast/tostring.go valueAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
+STRHOT-216 P removed t3-cx-core-ast/tostring.go elementsAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
+STRHOT-217 P removed t3-cx-core-ast/tostring.go structAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
+STRHOT-218 P removed t3-cx-core-ast/tostring.go typeSignatureAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
+STRHOT-219 P removed t3-cx-core-ast/tostring.go printSeparator not on the run path at dfcc46ab
+STRHOT-220 P removed t3-cx-core-ast/tostring.go readAtomic appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
+STRHOT-221 P removed t3-cx-core-ast/tostring.go argValueAt appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
+STRHOT-222 P removed t3-cx-core-ast/tostring.go GetPrintableValue appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
 STRHOT-223 E open t0-cx-core-assert/assert.go PreconditionTrue
 STRHOT-224 E open t0-cx-core-assert/assert.go InvariantTrue
 STRHOT-225 E open t0-cx-core-assert/assert.go assertCrash
-STRHOT-226 E removed t0-lz4codec/codec.go *Codec.Compress not on the run path at dfcc46ab
-STRHOT-227 E removed t0-lz4codec/codec.go *Codec.Decompress not on the run path at dfcc46ab
+STRHOT-226 E removed t0-cx-core-compression/codec.go *Codec.Compress not on the run path at dfcc46ab
+STRHOT-227 E removed t0-cx-core-compression/codec.go *Codec.Decompress not on the run path at dfcc46ab
 STRHOT-228 E open t1-cx-core-objmodel/gid.go GidCompose
-STRHOT-229 P removed t3-ast/ast_cxargument.go CXArgumentDebugFileLine returns the file name as a view of the string pool, #412
-STRHOT-230 P removed t3-ast/ast_cxatomicoperator.go *CXAtomicOperator.OperatorNameGet not on the run path, the stack dump reads OperatorNameBytesGet, #412
-STRHOT-231 E open t3-ast/ast_cxprogram.go *CXProgram.PackageFromArrayGet
-STRHOT-232 E removed t3-ast/ast_cxprogram.go *CXProgram.GetFunctionFromArray deleted, functions are read by Gid through CXFunctionGet, #352
-STRHOT-233 E open t3-ast/ast_cxprogram.go *CXProgram.CXLineGet
-STRHOT-234 E open t3-ast/ast_cxprogram.go *CXProgram.CXArgGet
-STRHOT-235 E open t3-ast/ast_cxprogram.go *CXProgram.CXAtomicOpGet
-STRHOT-236 E open t3-ast/ast_cxprogram.go *CXProgram.CXTypeSignatureFromArrayGet
-STRHOT-237 E open t3-ast/ast_cxprogram.go *CXProgram.CXTypeSignatureArrayFromArrayGet
-STRHOT-238 E open t3-ast/ast_cxprogram.go *CXProgram.CXTypeSignatureStructFromArrayGet
-STRHOT-239 E open t3-ast/ast_cxprogram.go *CXProgram.OperationGet
-STRHOT-240 E open t3-ast/ast_cxprogram.go *CXProgram.PreviousCXLineGet
-STRHOT-241 E removed t3-ast/ast_memory.go SequenceAllocate not on the run path at dfcc46ab
-STRHOT-242 E open t3-ast/cxargumentdebug_mng.go *CXArgumentDebugMng.CXArgumentDebugMngInit
-STRHOT-243 E removed t3-ast/cxargumentdebug_mng.go *CXArgumentDebugMng.CXArgumentDebugAlloc not on the run path at dfcc46ab
-STRHOT-244 E open t3-ast/cxargument_mng.go *CXArgumentMng.CXArgumentMngInit
-STRHOT-245 E removed t3-ast/cxargument_mng.go *CXArgumentMng.CXArgumentAlloc not on the run path at dfcc46ab
-STRHOT-246 E open t3-ast/cxatomicoperator_mng.go *CXAtomicOperatorMng.CXAtomicOperatorMngInit
-STRHOT-247 E open t3-ast/cxcall_mng.go *CXCallMng.CXCallMngInit
-STRHOT-248 E open t3-ast/cxexpression_mng.go *CXExpressionMng.CXExpressionMngInit
-STRHOT-249 E open t3-ast/cxfunction_mng.go *CXFunctionMng.CXFunctionMngInit
-STRHOT-250 E open t3-ast/cxline_mng.go *CXLineMng.CXLineMngInit
-STRHOT-251 E removed t3-ast/cxline_mng.go *CXLineMng.CXLineAlloc not on the run path at dfcc46ab
-STRHOT-252 E open t3-ast/cxnativefunction_mng.go *CXNativeFunctionMng.CXNativeFunctionMngInit
-STRHOT-253 E open t3-ast/cxpackage_mng.go *CXPackageMng.CXPackageMngInit
-STRHOT-254 E open t3-ast/cxprogram_mng.go *CXProgramMng.CXProgramMngInit
-STRHOT-255 E open t3-ast/cxstruct_mng.go *CXStructMng.CXStructMngInit
-STRHOT-256 E open t3-ast/cxtypesignaturearray_mng.go *CXTypeSignature_ArrayMng.CXTypeSignature_ArrayMngInit
-STRHOT-257 E removed t3-ast/cxtypesignaturearray_mng.go *CXTypeSignature_ArrayMng.CXTypeSignature_ArrayAlloc not on the run path at dfcc46ab
-STRHOT-258 E open t3-ast/cxtypesignature_mng.go *CXTypeSignatureMng.CXTypeSignatureMngInit
-STRHOT-259 E removed t3-ast/cxtypesignature_mng.go *CXTypeSignatureMng.CXTypeSignatureAlloc not on the run path at dfcc46ab
-STRHOT-260 E open t3-ast/cxtypesignaturestruct_mng.go *CXTypeSignature_StructMng.CXTypeSignature_StructMngInit
-STRHOT-261 E removed t3-ast/cxtypesignaturestruct_mng.go *CXTypeSignature_StructMng.CXTypeSignature_StructAlloc not on the run path at dfcc46ab
-STRHOT-262 E removed t3-ast/error.go ErrorHeader not on the run path at dfcc46ab
-STRHOT-263 E removed t3-ast/error.go ErrorString not on the run path at dfcc46ab
-STRHOT-264 E removed t3-ast/error.go RuntimeErrorInfo not on the run path at dfcc46ab
-STRHOT-265 B open t3-ast/serialize.go Deserialize
+STRHOT-229 P removed t3-cx-core-ast/ast_cxargument.go CXArgumentDebugFileLine returns the file name as a view of the string pool, #412
+STRHOT-230 P removed t3-cx-core-ast/ast_cxatomicoperator.go *CXAtomicOperator.OperatorNameGet not on the run path, the stack dump reads OperatorNameBytesGet, #412
+STRHOT-231 E open t3-cx-core-ast/ast_cxprogram.go *CXProgram.PackageFromArrayGet
+STRHOT-232 E removed t3-cx-core-ast/ast_cxprogram.go *CXProgram.GetFunctionFromArray deleted, functions are read by Gid through CXFunctionGet, #352
+STRHOT-233 E open t3-cx-core-ast/ast_cxprogram.go *CXProgram.CXLineGet
+STRHOT-234 E open t3-cx-core-ast/ast_cxprogram.go *CXProgram.CXArgGet
+STRHOT-235 E open t3-cx-core-ast/ast_cxprogram.go *CXProgram.CXAtomicOpGet
+STRHOT-236 E open t3-cx-core-ast/ast_cxprogram.go *CXProgram.CXTypeSignatureFromArrayGet
+STRHOT-237 E open t3-cx-core-ast/ast_cxprogram.go *CXProgram.CXTypeSignatureArrayFromArrayGet
+STRHOT-238 E open t3-cx-core-ast/ast_cxprogram.go *CXProgram.CXTypeSignatureStructFromArrayGet
+STRHOT-239 E open t3-cx-core-ast/ast_cxprogram.go *CXProgram.OperationGet
+STRHOT-240 E open t3-cx-core-ast/ast_cxprogram.go *CXProgram.PreviousCXLineGet
+STRHOT-241 E removed t3-cx-core-ast/ast_memory.go SequenceAllocate not on the run path at dfcc46ab
+STRHOT-242 E open t3-cx-core-ast/cxargumentdebug_mng.go *CXArgumentDebugMng.CXArgumentDebugMngInit
+STRHOT-243 E removed t3-cx-core-ast/cxargumentdebug_mng.go *CXArgumentDebugMng.CXArgumentDebugAlloc not on the run path at dfcc46ab
+STRHOT-244 E open t3-cx-core-ast/cxargument_mng.go *CXArgumentMng.CXArgumentMngInit
+STRHOT-245 E removed t3-cx-core-ast/cxargument_mng.go *CXArgumentMng.CXArgumentAlloc not on the run path at dfcc46ab
+STRHOT-246 E open t3-cx-core-ast/cxatomicoperator_mng.go *CXAtomicOperatorMng.CXAtomicOperatorMngInit
+STRHOT-247 E open t3-cx-core-ast/cxcall_mng.go *CXCallMng.CXCallMngInit
+STRHOT-248 E open t3-cx-core-ast/cxexpression_mng.go *CXExpressionMng.CXExpressionMngInit
+STRHOT-249 E open t3-cx-core-ast/cxfunction_mng.go *CXFunctionMng.CXFunctionMngInit
+STRHOT-250 E open t3-cx-core-ast/cxline_mng.go *CXLineMng.CXLineMngInit
+STRHOT-251 E removed t3-cx-core-ast/cxline_mng.go *CXLineMng.CXLineAlloc not on the run path at dfcc46ab
+STRHOT-252 E open t3-cx-core-ast/cxnativefunction_mng.go *CXNativeFunctionMng.CXNativeFunctionMngInit
+STRHOT-253 E open t3-cx-core-ast/cxpackage_mng.go *CXPackageMng.CXPackageMngInit
+STRHOT-254 E open t3-cx-core-ast/cxprogram_mng.go *CXProgramMng.CXProgramMngInit
+STRHOT-255 E open t3-cx-core-ast/cxstruct_mng.go *CXStructMng.CXStructMngInit
+STRHOT-256 E open t3-cx-core-ast/cxtypesignaturearray_mng.go *CXTypeSignature_ArrayMng.CXTypeSignature_ArrayMngInit
+STRHOT-257 E removed t3-cx-core-ast/cxtypesignaturearray_mng.go *CXTypeSignature_ArrayMng.CXTypeSignature_ArrayAlloc not on the run path at dfcc46ab
+STRHOT-258 E open t3-cx-core-ast/cxtypesignature_mng.go *CXTypeSignatureMng.CXTypeSignatureMngInit
+STRHOT-259 E removed t3-cx-core-ast/cxtypesignature_mng.go *CXTypeSignatureMng.CXTypeSignatureAlloc not on the run path at dfcc46ab
+STRHOT-260 E open t3-cx-core-ast/cxtypesignaturestruct_mng.go *CXTypeSignature_StructMng.CXTypeSignature_StructMngInit
+STRHOT-261 E removed t3-cx-core-ast/cxtypesignaturestruct_mng.go *CXTypeSignature_StructMng.CXTypeSignature_StructAlloc not on the run path at dfcc46ab
+STRHOT-262 E removed t3-cx-core-ast/error.go ErrorHeader not on the run path at dfcc46ab
+STRHOT-263 E removed t3-cx-core-ast/error.go ErrorString not on the run path at dfcc46ab
+STRHOT-264 E removed t3-cx-core-ast/error.go RuntimeErrorInfo not on the run path at dfcc46ab
+STRHOT-265 B open t3-cx-core-ast/serialize.go Deserialize
 STRHOT-266 P removed t4-cx-runtime-printer/stack.go printerStackValueHeader folded into printerStackValueLine, which appends bytes
 STRHOT-267 P removed t4-cx-runtime-printer/stack.go StackPrint appends names viewed from the string pool and the built-in name tables, #412
 STRHOT-268 B open t1-cx-runtime-sandbox/file_error.go fileErrorFromFileSystemError
@@ -289,43 +289,43 @@ STRHOT-275 B open t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolFind
 STRHOT-276 B open t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolInit
 STRHOT-277 B open t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolIntern
 STRHOT-278 B open t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolText
-STRHOT-279 P removed t3-ast/ast_cxtype_signature.go *CXTypeSignature.TypeStringGet not on the run path, printing appends with ValueTypeNameAppend, #412
-STRHOT-280 P removed t3-ast/ast_cxtype_signature.go *CXTypeSignature.ValueTypeNameGet not on the run path, printing appends with ValueTypeNameAppend, #412
-STRHOT-281 B open t3-ast/ast_memory.go StrAllocate O fixed, boundary opcodes only
-STRHOT-282 B open t3-ast/ast_memory.go StrAllocateAt O fixed, boundary opcodes only
-STRHOT-283 B removed t3-ast/ast_names.go *CXProgram.CXProgramNameFind not on the run path since op_aff.go was deleted, D5 #500
-STRHOT-284 B open t3-ast/ast_names.go *CXProgram.CXProgramNameText
-STRHOT-285 E open t3-ast/ast_names.go *CXProgram.CXProgramSourceFileText
-STRHOT-286 B removed t3-ast/libraries.go *CXFunction.BuiltInName not on the run path since op_aff.go was deleted, D5 #500
-STRHOT-287 E open t3-ast/libraries.go libraryCall
-STRHOT-288 E open t3-ast/libraries.go RuntimeLibraryDisabledMessage
-STRHOT-289 B open t3-ast/serialize_codec.go deserializeUint8
-STRHOT-290 B open t3-ast/serialize_codec.go *serializeDecoder.serializeDecoderBool
-STRHOT-291 E open t3-ast/serialize_codec.go *serializeDecoder.serializeDecoderFailf
-STRHOT-292 B open t3-ast/serialize_codec.go *serializeDecoder.serializeDecoderIntRange
-STRHOT-293 B open t3-ast/serialize_codec.go *serializeDecoder.serializeDecoderIntValue
-STRHOT-294 B open t3-ast/serialize_codec.go *serializeDecoder.serializeDecoderLength
-STRHOT-295 B open t3-ast/serialize_codec.go *serializeDecoder.serializeDecoderPointer
-STRHOT-296 B open t3-ast/serialize_codec.go *serializeDecoder.serializeDecoderSection
-STRHOT-297 B open t3-ast/serialize_codec.go *serializeDecoder.serializeDecoderUint32
-STRHOT-298 B open t3-ast/serialize.go deserializeArguments
-STRHOT-299 B open t3-ast/serialize.go deserializeCallStack
-STRHOT-300 B open t3-ast/serialize.go deserializeExpressions
-STRHOT-301 B open t3-ast/serialize.go deserializeLibraries
-STRHOT-302 B open t3-ast/serialize.go deserializeManager
-STRHOT-303 B open t3-ast/serialize.go deserializeMemory
-STRHOT-304 B open t3-ast/serialize.go deserializeProgramFields
-STRHOT-305 B open t3-ast/serialize.go deserializeStringGid
-STRHOT-306 B open t3-ast/serialize.go deserializeStrings
-STRHOT-307 B open t3-ast/serialize.go deserializeStructReference
-STRHOT-308 B open t3-ast/serialize.go deserializeTypeSignatures
-STRHOT-309 B removed t3-ast/serialize.go encodeCXProgram appends a constant only, not an operation
-STRHOT-310 B open t3-ast/serialize.go SerializedHeaderCheck
-STRHOT-311 E open t3-ast/serialize.go serializeStructReference
-STRHOT-312 E open t3-ast/serialize.go serializeUnusedManagersCheck
-STRHOT-313 E open t3-ast/sourcefilemng.go *SourceFileMng.SourceFilePath
-STRHOT-314 P removed t3-ast/tostring.go printPointer appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
-STRHOT-315 P removed t3-ast/tostring.go printStructPointer appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
+STRHOT-279 P removed t3-cx-core-ast/ast_cxtype_signature.go *CXTypeSignature.TypeStringGet not on the run path, printing appends with ValueTypeNameAppend, #412
+STRHOT-280 P removed t3-cx-core-ast/ast_cxtype_signature.go *CXTypeSignature.ValueTypeNameGet not on the run path, printing appends with ValueTypeNameAppend, #412
+STRHOT-281 B open t3-cx-core-ast/ast_memory.go StrAllocate O fixed, boundary opcodes only
+STRHOT-282 B open t3-cx-core-ast/ast_memory.go StrAllocateAt O fixed, boundary opcodes only
+STRHOT-283 B removed t3-cx-core-ast/ast_names.go *CXProgram.CXProgramNameFind not on the run path since op_aff.go was deleted, D5 #500
+STRHOT-284 B open t3-cx-core-ast/ast_names.go *CXProgram.CXProgramNameText
+STRHOT-285 E open t3-cx-core-ast/ast_names.go *CXProgram.CXProgramSourceFileText
+STRHOT-286 B removed t3-cx-core-ast/libraries.go *CXFunction.BuiltInName not on the run path since op_aff.go was deleted, D5 #500
+STRHOT-287 E open t3-cx-core-ast/libraries.go libraryCall
+STRHOT-288 E open t3-cx-core-ast/libraries.go RuntimeLibraryDisabledMessage
+STRHOT-289 B open t3-cx-core-ast/serialize_codec.go deserializeUint8
+STRHOT-290 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderBool
+STRHOT-291 E open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderFailf
+STRHOT-292 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderIntRange
+STRHOT-293 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderIntValue
+STRHOT-294 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderLength
+STRHOT-295 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderPointer
+STRHOT-296 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderSection
+STRHOT-297 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderUint32
+STRHOT-298 B open t3-cx-core-ast/serialize.go deserializeArguments
+STRHOT-299 B open t3-cx-core-ast/serialize.go deserializeCallStack
+STRHOT-300 B open t3-cx-core-ast/serialize.go deserializeExpressions
+STRHOT-301 B open t3-cx-core-ast/serialize.go deserializeLibraries
+STRHOT-302 B open t3-cx-core-ast/serialize.go deserializeManager
+STRHOT-303 B open t3-cx-core-ast/serialize.go deserializeMemory
+STRHOT-304 B open t3-cx-core-ast/serialize.go deserializeProgramFields
+STRHOT-305 B open t3-cx-core-ast/serialize.go deserializeStringGid
+STRHOT-306 B open t3-cx-core-ast/serialize.go deserializeStrings
+STRHOT-307 B open t3-cx-core-ast/serialize.go deserializeStructReference
+STRHOT-308 B open t3-cx-core-ast/serialize.go deserializeTypeSignatures
+STRHOT-309 B removed t3-cx-core-ast/serialize.go encodeCXProgram appends a constant only, not an operation
+STRHOT-310 B open t3-cx-core-ast/serialize.go SerializedHeaderCheck
+STRHOT-311 E open t3-cx-core-ast/serialize.go serializeStructReference
+STRHOT-312 E open t3-cx-core-ast/serialize.go serializeUnusedManagersCheck
+STRHOT-313 E open t3-cx-core-ast/sourcefilemng.go *SourceFileMng.SourceFilePath
+STRHOT-314 P removed t3-cx-core-ast/tostring.go printPointer appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
+STRHOT-315 P removed t3-cx-core-ast/tostring.go printStructPointer appends bytes to the format buffer, PrintableValueAppend in print_value.go, #407
 STRHOT-316 E removed t4-opcodes/libraries.go opLibraryCall removed with the opcode registration (D21)
 STRHOT-317 B removed t4-opcodes/op_aff.go affFunction op_aff.go deleted by decision D5, #500
 STRHOT-318 O removed t4-opcodes/op_str.go OpStrBytesOfString fixed, byte views of CX memory and the format buffer
@@ -361,7 +361,7 @@ STRHOT-347 B open t1-netbatch/socket.go netTCPDialRun
 STRHOT-348 B open t1-netbatch/replay.go netPayloadQuote
 STRHOT-349 B open t1-cx-runtime-sandbox/path.go FileOpenReadWrite
 STRHOT-350 B open t1-cx-runtime-sandbox/path.go FileRemove
-STRHOT-351 B open t3-ast/serialize.go deserializeOpcodeSet
-STRHOT-352 E open t3-ast/cxfunction_mng.go *CXFunctionMng.CXFunctionGet
-STRHOT-353 B open t3-ast/serialize.go deserializeFunctions
+STRHOT-351 B open t3-cx-core-ast/serialize.go deserializeOpcodeSet
+STRHOT-352 E open t3-cx-core-ast/cxfunction_mng.go *CXFunctionMng.CXFunctionGet
+STRHOT-353 B open t3-cx-core-ast/serialize.go deserializeFunctions
 STRHOT-354 B open t1-cx-runtime-sandbox/root.go rootFileOpen

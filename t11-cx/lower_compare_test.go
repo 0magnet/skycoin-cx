@@ -18,10 +18,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	lower "github.com/skycoin/skycoin-cx/t4-cx-compiler-lower"
@@ -151,7 +151,7 @@ func TestLowerCompare(t *testing.T) {
 		switch {
 		case last.Stage == lowerCompareStageMismatch:
 			mismatch = last.Mismatch
-		case last.Stage == lowerCompareStageLowered && last.VmCode == types.CXSuccess && o.timedOut:
+		case last.Stage == lowerCompareStageLowered && last.VmCode == valuetypes.CXSuccess && o.timedOut:
 			mismatch = "the child timed out"
 		}
 		if mismatch != "" {
@@ -161,7 +161,7 @@ func TestLowerCompare(t *testing.T) {
 		}
 		matched++
 		matchedNames = append(matchedNames, name)
-		if last.VmCode != types.CXSuccess {
+		if last.VmCode != valuetypes.CXSuccess {
 			stopped++
 			t.Logf("%s: vm exits with code %d", name, last.VmCode)
 		}
@@ -337,7 +337,7 @@ func lowerCompareChild(t *testing.T, program string) {
 				Reason:   lower.ReasonNames[failure.FailureReason],
 			}
 			if failure.FailureReason == lower.ReasonOpcodeOutsideSubset {
-				row, _ := constants.OpcodeLifecycleLiveByNumber(int(failure.FailureOpcode))
+				row, _ := opcodetable.OpcodeLifecycleLiveByNumber(int(failure.FailureOpcode))
 				entry.Opcode = row.Name
 			}
 			result.Failures = append(result.Failures, entry)
@@ -353,7 +353,7 @@ func lowerCompareChild(t *testing.T, program string) {
 	// does not enable, before either loop runs (D119).
 	core.LibrariesEnabledResolve(actions.AST)
 	if core.OperationRefused(actions.AST) != 0 {
-		lowerCompareEmit(t, lowerCompareResult{Stage: lowerCompareStageLowered, VmCode: types.CXRuntimeLibraryDisabled})
+		lowerCompareEmit(t, lowerCompareResult{Stage: lowerCompareStageLowered, VmCode: valuetypes.CXRuntimeLibraryDisabled})
 		return
 	}
 
@@ -374,7 +374,7 @@ func lowerCompareChild(t *testing.T, program string) {
 		os.Exit(1)
 	}
 	lowerCompareEmit(t, lowerCompareResult{Stage: lowerCompareStageLowered, VmCode: vmCode})
-	if vmCode != types.CXSuccess && vmCode != types.CXAssert {
+	if vmCode != valuetypes.CXSuccess && vmCode != valuetypes.CXAssert {
 		// The error print copied the vm state into the program, and the
 		// runs of cx compare the output.
 		return

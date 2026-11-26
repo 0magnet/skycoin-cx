@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // ErrorHeader returns "error: file:line", the start of an error.
@@ -37,9 +37,9 @@ func RuntimeErrorPrint(prgrm *ast.CXProgram) int {
 
 // printerHeapBytes returns the bytes of the CX string at heapOffset, nil
 // for the empty string, as types.ObjectRead reads them.
-func printerHeapBytes(prgrm *ast.CXProgram, heapOffset types.Pointer) []byte {
+func printerHeapBytes(prgrm *ast.CXProgram, heapOffset valuetypes.Pointer) []byte {
 	if heapOffset != 0 && heapOffset.Valid() {
-		return types.ObjectPayloadRead(prgrm.Memory, heapOffset)
+		return valuetypes.ObjectPayloadRead(prgrm.Memory, heapOffset)
 	}
 	return nil
 }

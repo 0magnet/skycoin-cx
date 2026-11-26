@@ -27,7 +27,7 @@ what differs from form to form and is no result of the program: the Go
 stack of a crash, with its addresses, the refusal of vm for a program that
 does not lower, and the messages of `cx build` and of the core.
 
-Every hash is the hash of CX, `cxhash.CxHashOfBytes` in `t0-cxhash`, which
+Every hash is the hash of CX, `cxhash.CxHashOfBytes` in `t0-cx-core-digest`, which
 the cipher library hashes with too. It is BLAKE3-256, BLAKE3 with a 256 bit
 output (decision D23). The file names its hash in the format section, so a
 file written with another hash is refused, not misread. Format 1 files were
@@ -39,7 +39,7 @@ changed every hash and no output.
 [tests/execution-records.txt](../tests/execution-records.txt) is text. Each
 section is a header line in brackets naming the section and its columns,
 then one entry per line, and a blank line before the next header. Lines
-starting with `#` are comments. `t0-textsections` reads and writes this
+starting with `#` are comments. `t0-cx-core-textsections` reads and writes this
 form, for the package loader too (#509). A program is named by its cx arguments
 relative to `tests/`, its flags and files, and the name is the last column
 because it may hold spaces.

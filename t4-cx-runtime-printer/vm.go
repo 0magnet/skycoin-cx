@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
-	"github.com/skycoin/skycoin-cx/t2-globals"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 )
 
@@ -54,15 +54,15 @@ func VmErrorPrint(prgrm *ast.CXProgram, machine *vm.Machine, stop vm.Stop) {
 	for i := uint32(0); i < depth; i++ {
 		frame := &machine.MachineFrames[i]
 		prgrm.CallStack[i].Operator = prgrm.CXProgramFunctionSlotGid(frame.FrameFunction)
-		prgrm.CallStack[i].FramePointer = types.Pointer(frame.FramePointer)
+		prgrm.CallStack[i].FramePointer = valuetypes.Pointer(frame.FramePointer)
 	}
 	prgrm.CallStack[depth].Operator = prgrm.CXProgramFunctionSlotGid(machine.MachineFunction)
-	prgrm.CallStack[depth].FramePointer = types.Pointer(machine.MachineFramePointer)
-	prgrm.CallCounter = types.Pointer(depth)
-	prgrm.Stack.Pointer = types.Pointer(machine.MachineStackPointer)
+	prgrm.CallStack[depth].FramePointer = valuetypes.Pointer(machine.MachineFramePointer)
+	prgrm.CallCounter = valuetypes.Pointer(depth)
+	prgrm.Stack.Pointer = valuetypes.Pointer(machine.MachineStackPointer)
 	StackPrint(prgrm)
 
-	if globals.DebugGolangStackTrace {
+	if environment.DebugGolangStackTrace {
 		debug.PrintStack()
 	}
 }

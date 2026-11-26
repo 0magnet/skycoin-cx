@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
-	// GCREACH: t3-ast owns the heap and the GC roots. ExecutorRun runs vm, which has no
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. ExecutorRun runs vm, which has no
 	// heap, or the old loop, which collects, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	lower "github.com/skycoin/skycoin-cx/t4-cx-compiler-lower"
 	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
@@ -54,10 +54,10 @@ func ExecutorLower(prgrm *ast.CXProgram) (image ir.Image, failures []lower.Failu
 func executorFailureDescribe(prgrm *ast.CXProgram, failure lower.Failure) string {
 	description := lower.ReasonNames[failure.FailureReason]
 	if failure.FailureReason == lower.ReasonOperationRefused {
-		return description + ", " + constants.LibraryOperationName(int(failure.FailureOpcode))
+		return description + ", " + opcodetable.LibraryOperationName(int(failure.FailureOpcode))
 	}
 	if failure.FailureReason == lower.ReasonOpcodeOutsideSubset {
-		if row, found := constants.OpcodeLifecycleLiveByNumber(int(failure.FailureOpcode)); found {
+		if row, found := opcodetable.OpcodeLifecycleLiveByNumber(int(failure.FailureOpcode)); found {
 			description += " " + row.Name
 		}
 	}
@@ -79,18 +79,18 @@ func ExecutorVmRunMachine(prgrm *ast.CXProgram, machine *vm.Machine) int32 {
 	machine.Reset()
 	framePointer := uint32(0)
 	if image.ImageEntryInit != ir.ImageFuncNone {
-		if code := executorVmRunEntry(prgrm, machine, image.ImageEntryInit, 0); code != types.CXSuccess {
+		if code := executorVmRunEntry(prgrm, machine, image.ImageEntryInit, 0); code != valuetypes.CXSuccess {
 			return code
 		}
 		framePointer = image.ImageFuncs[image.ImageEntryInit].FuncFrameSize
 	}
-	if code := executorVmRunEntry(prgrm, machine, image.ImageEntryMain, framePointer); code != types.CXSuccess {
+	if code := executorVmRunEntry(prgrm, machine, image.ImageEntryMain, framePointer); code != valuetypes.CXSuccess {
 		return code
 	}
 	if machine.MachineTestFailures > 0 {
-		return types.CXAssert
+		return valuetypes.CXAssert
 	}
-	return types.CXSuccess
+	return valuetypes.CXSuccess
 }
 
 // executorVmRunEntry runs one entry function, serving the resumable stops.
@@ -100,7 +100,7 @@ func executorVmRunEntry(prgrm *ast.CXProgram, machine *vm.Machine, entry uint32,
 		executorOutputFlush(machine)
 		switch {
 		case stop == vm.StopReturn:
-			return types.CXSuccess
+			return valuetypes.CXSuccess
 		case stop == vm.StopTestFailed:
 			printer.VmTestFailurePrint(machine)
 		case !vm.Resumable(stop):
@@ -125,9 +125,9 @@ func executorOutputFlush(machine *vm.Machine) {
 // ExecutorMemoryLimitsClamp keeps the heap and stack sizes below
 // constants.EscapeOffsetFlag, after the flags of cx have set them.
 func ExecutorMemoryLimitsClamp() {
-	constants.MaxHeapSize = min(constants.MaxHeapSize, constants.EscapeOffsetFlag/2)
-	constants.HeapSizeInit = min(constants.HeapSizeInit, constants.MaxHeapSize)
-	constants.StackSize = min(constants.StackSize, constants.EscapeOffsetFlag/4)
+	opcodetable.MaxHeapSize = min(opcodetable.MaxHeapSize, opcodetable.EscapeOffsetFlag/2)
+	opcodetable.HeapSizeInit = min(opcodetable.HeapSizeInit, opcodetable.MaxHeapSize)
+	opcodetable.StackSize = min(opcodetable.StackSize, opcodetable.EscapeOffsetFlag/4)
 }
 
 // ExecutorRun runs the compiled or deserialized prgrm with executor, one of
@@ -137,12 +137,12 @@ func ExecutorRun(prgrm *ast.CXProgram, executor string, cxArgs []string) int32 {
 	LibrariesEnabledResolve(prgrm)
 	if code := OperationRefused(prgrm); code != 0 {
 		fmt.Println(OperationRefusalLine(prgrm, code))
-		return types.CXRuntimeLibraryDisabled
+		return valuetypes.CXRuntimeLibraryDisabled
 	}
-	if LibrariesActive(prgrm)[constants.LibraryNumberNet] {
+	if LibrariesActive(prgrm)[opcodetable.LibraryNumberNet] {
 		if err := executorNetRunStart(); err != nil {
-			fmt.Fprintf(os.Stderr, "library %s: %s\n", constants.LibraryNameOf(constants.LibraryNumberNet), err)
-			return types.CXInternalError
+			fmt.Fprintf(os.Stderr, "library %s: %s\n", opcodetable.LibraryNameOf(opcodetable.LibraryNumberNet), err)
+			return valuetypes.CXInternalError
 		}
 	}
 	prgrm.CxIrState.CxIrStateManagerGrowBoundary()
@@ -155,7 +155,7 @@ func ExecutorRun(prgrm *ast.CXProgram, executor string, cxArgs []string) int32 {
 			return ExecutorVmRun(prgrm, &image)
 		case executor == ExecutorVm:
 			fmt.Fprintf(os.Stderr, "cannot run on vm: %s\n", outside)
-			return types.CXRuntimeNotImplemented
+			return valuetypes.CXRuntimeNotImplemented
 		}
 	}
 
@@ -167,7 +167,7 @@ func ExecutorRun(prgrm *ast.CXProgram, executor string, cxArgs []string) int32 {
 		return int32(printer.RuntimeErrorPrint(prgrm))
 	}
 	if opcodes.AssertFailed() {
-		return types.CXAssert
+		return valuetypes.CXAssert
 	}
-	return types.CXSuccess
+	return valuetypes.CXSuccess
 }

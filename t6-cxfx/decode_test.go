@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 )
 
 // decodeTestFile writes data to a file in a temporary directory and opens it.
@@ -40,11 +40,11 @@ func TestDecodeHdr(t *testing.T) {
 	}
 	want := []float32{1, 0.5, 0.25, 0, 0, 0}
 	for i, value := range want {
-		if got := types.F32Read(data, types.Pointer(i*4)); got != value {
+		if got := valuetypes.F32Read(data, valuetypes.Pointer(i*4)); got != value {
 			t.Errorf("channel %d is %v, want %v", i, got, value)
 		}
 	}
-	if got := types.F32Read(data, 3*3*4); got != 4.0/256 {
+	if got := valuetypes.F32Read(data, 3*3*4); got != 4.0/256 {
 		t.Errorf("the second row starts at %v", got)
 	}
 	for _, bad := range []string{

@@ -4,11 +4,11 @@ import (
 	"bytes"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-floatparse"
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	// GCREACH: t3-ast owns the heap and the GC roots. This file allocates strs, which
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. This file allocates strs, which
 	// adds to the GC pressure, see docs/GarbageCollector.md.
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // The str opcodes read strs as views into program memory and write new strs
@@ -17,7 +17,7 @@ import (
 func OpStrToI8(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0, ok := parseDecimalInt(inputs[0].StrBytesGet(prgrm), 8)
 	if !ok {
-		panic(types.CXRuntimeError)
+		panic(valuetypes.CXRuntimeError)
 	}
 	outputs[0].I8Set(prgrm, int8(outV0))
 }
@@ -25,7 +25,7 @@ func OpStrToI8(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue
 func OpStrToI16(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0, ok := parseDecimalInt(inputs[0].StrBytesGet(prgrm), 16)
 	if !ok {
-		panic(types.CXRuntimeError)
+		panic(valuetypes.CXRuntimeError)
 	}
 	outputs[0].I16Set(prgrm, int16(outV0))
 }
@@ -33,7 +33,7 @@ func OpStrToI16(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 func OpStrToI32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0, ok := parseDecimalInt(inputs[0].StrBytesGet(prgrm), 32)
 	if !ok {
-		panic(types.CXRuntimeError)
+		panic(valuetypes.CXRuntimeError)
 	}
 	outputs[0].I32Set(prgrm, int32(outV0))
 }
@@ -41,7 +41,7 @@ func OpStrToI32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 func OpStrToI64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0, ok := parseDecimalInt(inputs[0].StrBytesGet(prgrm), 64)
 	if !ok {
-		panic(types.CXRuntimeError)
+		panic(valuetypes.CXRuntimeError)
 	}
 	outputs[0].I64Set(prgrm, outV0)
 }
@@ -49,7 +49,7 @@ func OpStrToI64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 func OpStrToUI8(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0, ok := parseDecimalUint(inputs[0].StrBytesGet(prgrm), 8)
 	if !ok {
-		panic(types.CXRuntimeError)
+		panic(valuetypes.CXRuntimeError)
 	}
 	outputs[0].UI8Set(prgrm, uint8(outV0))
 }
@@ -57,7 +57,7 @@ func OpStrToUI8(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 func OpStrToUI16(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0, ok := parseDecimalUint(inputs[0].StrBytesGet(prgrm), 16)
 	if !ok {
-		panic(types.CXRuntimeError)
+		panic(valuetypes.CXRuntimeError)
 	}
 	outputs[0].UI16Set(prgrm, uint16(outV0))
 }
@@ -65,7 +65,7 @@ func OpStrToUI16(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 func OpStrToUI32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0, ok := parseDecimalUint(inputs[0].StrBytesGet(prgrm), 32)
 	if !ok {
-		panic(types.CXRuntimeError)
+		panic(valuetypes.CXRuntimeError)
 	}
 	outputs[0].UI32Set(prgrm, uint32(outV0))
 }
@@ -73,7 +73,7 @@ func OpStrToUI32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 func OpStrToUI64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0, ok := parseDecimalUint(inputs[0].StrBytesGet(prgrm), 64)
 	if !ok {
-		panic(types.CXRuntimeError)
+		panic(valuetypes.CXRuntimeError)
 	}
 	outputs[0].UI64Set(prgrm, outV0)
 }
@@ -81,7 +81,7 @@ func OpStrToUI64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 func OpStrToF32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0, result := floatparse.FloatParseBytes(inputs[0].StrBytesGet(prgrm), 32)
 	if result != floatparse.FloatParseResultOK {
-		panic(types.CXRuntimeError)
+		panic(valuetypes.CXRuntimeError)
 	}
 	outputs[0].F32Set(prgrm, float32(outV0))
 }
@@ -89,7 +89,7 @@ func OpStrToF32(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 func OpStrToF64(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	outV0, result := floatparse.FloatParseBytes(inputs[0].StrBytesGet(prgrm), 64)
 	if result != floatparse.FloatParseResultOK {
-		panic(types.CXRuntimeError)
+		panic(valuetypes.CXRuntimeError)
 	}
 	outputs[0].F64Set(prgrm, float64(outV0))
 }
@@ -108,7 +108,7 @@ func OpStrSubstr(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	begin := inputs[1].I32Get(prgrm)
 	end := inputs[2].I32Get(prgrm)
 	if begin < 0 || end < begin || int(end) > len(str) {
-		panic(types.CXRuntimeSliceIndexOutOfRange)
+		panic(valuetypes.CXRuntimeSliceIndexOutOfRange)
 	}
 	outputs[0].StrBytesSet(prgrm, str[begin:end])
 }
@@ -147,13 +147,13 @@ func OpStrByteLength(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 // see docs/GarbageCollector.md.
 func OpStrBytesOfString(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	str := inputs[0].StrBytesGet(prgrm)
-	count := types.IntToPtrCast(len(str))
+	count := valuetypes.IntToPtrCast(len(str))
 	if count == 0 {
 		outputs[0].PtrSet(prgrm, 0)
 		return
 	}
 	if count > ast.SliceElementLimit(prgrm, 1) {
-		ast.HeapOutOfMemory(prgrm, uint64(types.ObjectHeaderSize+constants.SliceHeaderSize)+uint64(count))
+		ast.HeapOutOfMemory(prgrm, uint64(valuetypes.ObjectHeaderSize+opcodetable.SliceHeaderSize)+uint64(count))
 	}
 	slice := ast.SliceResizeEx(prgrm, 0, count, 1)
 	copy(ast.SliceElementsGet(prgrm, slice, 1), str)

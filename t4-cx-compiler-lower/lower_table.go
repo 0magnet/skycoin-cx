@@ -2,7 +2,7 @@ package lower
 
 import (
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
 
@@ -327,7 +327,7 @@ const opcodeTableSize = 1024
 // violation of this file.
 func opcodeTableBuild(table *opcodeTable) {
 	for _, entry := range opcodeEntries {
-		row, found := constants.OpcodeLifecycleLiveByName(entry.opcodeEntryName)
+		row, found := opcodetable.OpcodeLifecycleLiveByName(entry.opcodeEntryName)
 		assert.InvariantTrue(found, "lower: opcode "+entry.opcodeEntryName+" is not live")
 		assert.InvariantTrue(row.Number > 0 && row.Number < opcodeTableSize, "lower: opcode "+entry.opcodeEntryName+" outside the table")
 		table[row.Number] = entry

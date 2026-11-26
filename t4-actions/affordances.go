@@ -1,9 +1,9 @@
 package actions
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // AffordanceClauseParsed is one clause of an aff literal as the parser
@@ -46,7 +46,7 @@ func AffordanceLiteral(prgrm *ast.CXProgram, clauses []AffordanceClauseParsed, l
 	}
 	literal.AffordanceLiteralOffset = prgrm.Data.StartsAt + prgrm.Data.Size
 	prgrm.CXProgramAffordanceLiteralAdd(literal)
-	return PrimaryExpressionsWrite(prgrm, types.AFF, make([]byte, types.AffSize), false)
+	return PrimaryExpressionsWrite(prgrm, valuetypes.AFF, make([]byte, valuetypes.AffSize), false)
 }
 
 // AffordanceLiteralsResolve writes the value of each aff literal compiled
@@ -179,7 +179,7 @@ func affordanceFunctionVariable(prgrm *ast.CXProgram, fn *ast.CXFunction, name s
 		}
 	}
 	variable = -1
-	var offset types.Pointer
+	var offset valuetypes.Pointer
 	for e := range fn.Expressions {
 		if fn.Expressions[e].Type != ast.CXOperationTypeAtomicOperator {
 			continue

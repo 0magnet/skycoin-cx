@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
 
@@ -33,7 +33,7 @@ var RuntimeC []byte
 // RuntimeFileName is the name the runtime source is written under.
 const RuntimeFileName = "cx_runtime.c"
 
-const pointerSize = uint32(types.PointerSize)
+const pointerSize = uint32(valuetypes.PointerSize)
 
 // Stop is a run time check of the emitted code that ends the run.
 type Stop uint8
@@ -283,35 +283,35 @@ func zeroValue(size uint32) string {
 }
 
 // typeLlvm is the LLVM type of a scalar type code, i8 for a bool.
-func typeLlvm(code types.Code) string {
+func typeLlvm(code valuetypes.Code) string {
 	switch code {
-	case types.F32:
+	case valuetypes.F32:
 		return "float"
-	case types.F64:
+	case valuetypes.F64:
 		return "double"
 	}
 	return valueType(typeSize(code))
 }
 
-func typeSize(code types.Code) uint32 {
+func typeSize(code valuetypes.Code) uint32 {
 	switch code {
-	case types.BOOL, types.I8, types.UI8:
+	case valuetypes.BOOL, valuetypes.I8, valuetypes.UI8:
 		return 1
-	case types.I16, types.UI16:
+	case valuetypes.I16, valuetypes.UI16:
 		return 2
-	case types.I32, types.UI32, types.F32:
+	case valuetypes.I32, valuetypes.UI32, valuetypes.F32:
 		return 4
-	case types.I64, types.UI64, types.F64:
+	case valuetypes.I64, valuetypes.UI64, valuetypes.F64:
 		return 8
 	}
 	return 0
 }
 
-func typeSigned(code types.Code) bool {
-	return code == types.I8 || code == types.I16 || code == types.I32 || code == types.I64
+func typeSigned(code valuetypes.Code) bool {
+	return code == valuetypes.I8 || code == valuetypes.I16 || code == valuetypes.I32 || code == valuetypes.I64
 }
 
-func typeFloat(code types.Code) bool { return code == types.F32 || code == types.F64 }
+func typeFloat(code valuetypes.Code) bool { return code == valuetypes.F32 || code == valuetypes.F64 }
 
 func (e *emitter) returnType(fn *ir.Func) string {
 	if len(fn.FuncOutputs) == 0 {
@@ -376,7 +376,7 @@ func accesses(in *ir.Instr) []access {
 	case ir.OpcodeAddressPointer:
 		return []access{{0, 4, false}, {2, pointerSize, false}}
 	case ir.OpcodePrintValue:
-		return []access{{0, typeSize(types.Code(m)), false}}
+		return []access{{0, typeSize(valuetypes.Code(m)), false}}
 	case ir.OpcodePrintStr:
 		return []access{{0, pointerSize, false}}
 	}
@@ -388,7 +388,7 @@ func accesses(in *ir.Instr) []access {
 	if fact.OpcodeFactInputs == 2 {
 		list = append(list, access{1, typeSize(fact.OpcodeFactType), false})
 	}
-	if fact.OpcodeFactResult != types.UNDEFINED {
+	if fact.OpcodeFactResult != valuetypes.UNDEFINED {
 		list = append(list, access{2, typeSize(fact.OpcodeFactResult), false})
 	}
 	return list
@@ -999,7 +999,7 @@ func (e *emitter) instrRuntime(pc uint32, in *ir.Instr) error {
 		e.check(bad, StopAddressInvalid, pc)
 		return nil
 	case ir.OpcodePrintValue:
-		code := types.Code(in.InstrM)
+		code := valuetypes.Code(in.InstrM)
 		size := typeSize(code)
 		if size == 0 {
 			return fmt.Errorf("printvalue of type code %d", code)
@@ -1069,7 +1069,7 @@ func (e *emitter) instrScalar(pc uint32, in *ir.Instr, fact *OpcodeFact) error {
 		params = append(params, "ptr")
 		args = append(args, "ptr "+e.str(e.stopText(pc, StopDivideByZero)))
 	}
-	if fact.OpcodeFactResult == types.UNDEFINED {
+	if fact.OpcodeFactResult == valuetypes.UNDEFINED {
 		e.declare(name, fmt.Sprintf("declare void @%s(%s) nounwind", name, strings.Join(params, ", ")))
 		e.line("call void @%s(%s)", name, strings.Join(args, ", "))
 		return nil
@@ -1177,11 +1177,11 @@ func (e *emitter) constant(offset uint32, inFrame bool, typ string, size uint32)
 // extension is the attribute that widens a value of code passed to or
 // returned from C, as the C calling conventions of the targets want a
 // small integer widened by the caller.
-func extension(code types.Code) string {
+func extension(code valuetypes.Code) string {
 	switch code {
-	case types.I8, types.I16:
+	case valuetypes.I8, valuetypes.I16:
 		return " signext"
-	case types.BOOL, types.UI8, types.UI16:
+	case valuetypes.BOOL, valuetypes.UI8, valuetypes.UI16:
 		return " zeroext"
 	}
 	return ""
@@ -1196,7 +1196,7 @@ var llvmIntrinsics = []string{"llvm.abs", "llvm.smax", "llvm.smin", "llvm.umax",
 func (e *emitter) expand(fact *OpcodeFact, a, b, r string, pc uint32) {
 	operandType := typeLlvm(fact.OpcodeFactType)
 	bits := 8 * typeSize(fact.OpcodeFactType)
-	floatSuffix := map[types.Code]string{types.F32: "f32", types.F64: "f64"}[fact.OpcodeFactType]
+	floatSuffix := map[valuetypes.Code]string{valuetypes.F32: "f32", valuetypes.F64: "f64"}[fact.OpcodeFactType]
 	pairs := []string{"{a}", a, "{b}", b, "{r}", r, "{T}", operandType, "{R}", typeLlvm(fact.OpcodeFactResult), "{F}", floatSuffix,
 		"{W1}", strconv.Itoa(int(bits) - 1), "{W}", strconv.Itoa(int(bits))}
 	for i := 1; i <= 9; i++ {

@@ -5,9 +5,9 @@ import (
 	"sort"
 	"strconv"
 
-	cxpackages "github.com/skycoin/skycoin-cx/t0-packages"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-syspackages"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // printerCompileErrorFormat is the text of one compile error code. In
@@ -29,7 +29,7 @@ var printerCompileErrorFormats = [ast.CompileErrorCodeEnd - ast.CompileErrorCode
 	ast.CompileErrorCodeAssignOutputlessOperator - ast.CompileErrorCodeNil:        {Format: "%H trying to use an outputless operator in an assignment\n"},
 	ast.CompileErrorCodeAssignSymbolType - ast.CompileErrorCodeNil:                {Format: "%H trying to assign argument of type '%s' to symbol '%s' of type '%s'\n"},
 	ast.CompileErrorCodeAssignValueType - ast.CompileErrorCodeNil:                 {Format: "%H cannot assign value of type '%s' to identifier '%s' of type '%s'\n"},
-	ast.CompileErrorCodeBuiltinPackageNotImported - ast.CompileErrorCodeNil:       {Format: "%H built-in package %s is used without importing it, add import \"" + cxpackages.SysPrefix + "%s\"\n"},
+	ast.CompileErrorCodeBuiltinPackageNotImported - ast.CompileErrorCodeNil:       {Format: "%H built-in package %s is used without importing it, add import \"" + syspackages.SysPrefix + "%s\"\n"},
 	ast.CompileErrorCodeFunctionInputType - ast.CompileErrorCodeNil:               {Format: "%H function '%s' expected input argument of type '%s'; '%s' was provided\n"},
 	ast.CompileErrorCodeFunctionMissing - ast.CompileErrorCodeNil:                 {Format: "%H function '%s' does not exist\n"},
 	ast.CompileErrorCodeFunctionReceiverType - ast.CompileErrorCodeNil:            {Format: "%H function '%s' expected receiving variable of type '%s'; '%s' was provided\n"},
@@ -45,7 +45,7 @@ var printerCompileErrorFormats = [ast.CompileErrorCodeEnd - ast.CompileErrorCode
 	ast.CompileErrorCodeNoFields - ast.CompileErrorCodeNil:                        {Format: "%H '%s' has no fields\n"},
 	ast.CompileErrorCodeNoPackageDefined - ast.CompileErrorCodeNil:                {Format: "%H no package clause\n"},
 	ast.CompileErrorCodeOpcodeRenamed - ast.CompileErrorCodeNil:                   {Format: "%H %s was renamed to %s in language version %d\n"},
-	ast.CompileErrorCodeOpcodeRenamedImport - ast.CompileErrorCodeNil:             {Format: "%H %s was renamed to %s in language version %d, import \"" + cxpackages.SysPrefix + "%s\"\n"},
+	ast.CompileErrorCodeOpcodeRenamedImport - ast.CompileErrorCodeNil:             {Format: "%H %s was renamed to %s in language version %d, import \"" + syspackages.SysPrefix + "%s\"\n"},
 	ast.CompileErrorCodeOperatorArgumentTypes - ast.CompileErrorCodeNil:           {Format: "%H invalid argument types for '%s' operator\n"},
 	ast.CompileErrorCodeOperatorInputCount - ast.CompileErrorCodeNil:              {Format: "%H operator '%s' expects %d input/s, but %d input argument%~ provided\n"},
 	ast.CompileErrorCodeOperatorOutputCount - ast.CompileErrorCodeNil:             {Format: "%H operator '%s' expects to return %d output/s, but %d receiving argument/s were provided\n"},

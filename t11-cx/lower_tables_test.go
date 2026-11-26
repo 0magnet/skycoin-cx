@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	lower "github.com/skycoin/skycoin-cx/t4-cx-compiler-lower"
@@ -61,7 +61,7 @@ func main() {
 		t.Fatalf("no function %s", name)
 		return nil
 	}
-	check := func(function, name string, size uint32, code types.Code, typeName string) {
+	check := func(function, name string, size uint32, code valuetypes.Code, typeName string) {
 		local, found := locals(function)[name]
 		switch {
 		case !found:
@@ -71,12 +71,12 @@ func main() {
 				local.LocalSize, local.LocalType, image.ImageLocalNames[local.LocalTypeName], size, code, typeName)
 		}
 	}
-	check("add", "a", 4, types.I32, "i32")
-	check("add", "b", 4, types.I32, "i32")
-	check("add", "c", 4, types.I32, "i32")
-	check("main", "x", 4, types.I32, "i32")
-	check("main", "p", 8, types.UNDEFINED, "point")
-	check("main", "q", uint32(types.PointerSize), types.UNDEFINED, "*i32")
+	check("add", "a", 4, valuetypes.I32, "i32")
+	check("add", "b", 4, valuetypes.I32, "i32")
+	check("add", "c", 4, valuetypes.I32, "i32")
+	check("main", "x", 4, valuetypes.I32, "i32")
+	check("main", "p", 8, valuetypes.UNDEFINED, "point")
+	check("main", "q", uint32(valuetypes.PointerSize), valuetypes.UNDEFINED, "*i32")
 
 	readOnly := func(value uint32) bool {
 		for _, span := range image.ImageReadOnly {

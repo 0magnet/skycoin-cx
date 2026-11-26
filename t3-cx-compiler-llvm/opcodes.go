@@ -1,7 +1,7 @@
 package llvm
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 )
 
@@ -15,9 +15,9 @@ import (
 type OpcodeFact struct {
 	OpcodeFactName      string
 	OpcodeFactOperation string
-	OpcodeFactType      types.Code
+	OpcodeFactType      valuetypes.Code
 	OpcodeFactInputs    uint8
-	OpcodeFactResult    types.Code
+	OpcodeFactResult    valuetypes.Code
 	OpcodeFactTemplate  string
 }
 

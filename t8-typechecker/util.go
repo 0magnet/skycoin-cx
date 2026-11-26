@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"unicode"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: only File; no depth gain
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 )
 
@@ -28,7 +28,7 @@ func ParameterDeclarationParse(prgrm *ast.CXProgram, parameterString []byte, pkg
 
 	// Set the declarator or the name of the param
 	_, declarator := ast.ArgumentMake(prgrm, stringpool.StringGidNil, fileName, lineno)
-	declarator.TypeSet(types.UNDEFINED)
+	declarator.TypeSet(valuetypes.UNDEFINED)
 	declarator.Package = ast.CXPackageIndex(pkg.Index)
 	declarator.Name = prgrm.CxIrState.StringPool.StringPoolIntern(parameterDeclarationTokens[1])
 
@@ -111,12 +111,12 @@ func DeclarationSpecifierParse(prgrm *ast.CXProgram, declarationSpecifierByte []
 			}
 
 			// Parsed right to left, so each length goes in front: outermost first.
-			newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{types.Pointer(byteToInt)}, constants.DeclarationArray)
+			newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []valuetypes.Pointer{valuetypes.Pointer(byteToInt)}, opcodetable.DeclarationArray)
 			return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 		}
 
 		// Slices
-		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DeclarationSlice)
+		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []valuetypes.Pointer{0}, opcodetable.DeclarationSlice)
 		return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 	}
 
@@ -124,7 +124,7 @@ func DeclarationSpecifierParse(prgrm *ast.CXProgram, declarationSpecifierByte []
 	if lastByte == '*' {
 		newLastIdx := bytes.LastIndex(declarationSpecifierByte, []byte("*"))
 		newDeclarationSpecifierByte := declarationSpecifierByte[:newLastIdx]
-		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []types.Pointer{0}, constants.DeclarationPointer)
+		newDeclarationSpecifierArg := actions.DeclarationSpecifiers(declarationSpecifier, []valuetypes.Pointer{0}, opcodetable.DeclarationPointer)
 		return DeclarationSpecifierParse(prgrm, newDeclarationSpecifierByte, fileName, lineno, newDeclarationSpecifierArg)
 
 	}

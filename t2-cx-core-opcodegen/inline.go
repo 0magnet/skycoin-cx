@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 )
 
 // inlineImports are the packages an inline call may name, by the name it
@@ -28,7 +28,7 @@ func goFunctionInline(function string) bool {
 // inlineCase returns the body of the case of row, whose GoFunction is an inline
 // call: each %N becomes the read of input N at its offset, and the value of
 // the call is written to the one output when the row has one.
-func inlineCase(row constants.OpcodeDefinition, call string) (string, error) {
+func inlineCase(row opcodetable.OpcodeDefinition, call string) (string, error) {
 	inputs := strings.Fields(row.Inputs)
 	outputs := strings.Fields(row.Outputs)
 	var b strings.Builder
@@ -45,14 +45,14 @@ func inlineCase(row constants.OpcodeDefinition, call string) (string, error) {
 		if _, err := fmt.Sscan(call[i+1:j], &index); err != nil || index >= len(inputs) || inlineReadTypes[inputs[index]] == "" {
 			return "", fmt.Errorf("definition %q: inline operand %q is not an atomic input", row.Name, call[i:j])
 		}
-		fmt.Fprintf(&b, "types.%sRead(prgrm.Memory, inputs[%d].Offset)", inlineReadTypes[inputs[index]], index)
+		fmt.Fprintf(&b, "valuetypes.%sRead(prgrm.Memory, inputs[%d].Offset)", inlineReadTypes[inputs[index]], index)
 		i = j - 1
 	}
 	switch {
 	case len(outputs) == 0:
 		return b.String(), nil
 	case len(outputs) == 1 && inlineReadTypes[outputs[0]] != "":
-		return fmt.Sprintf("types.%sWrite(prgrm.Memory, outputs[0].Offset, %s)", inlineReadTypes[outputs[0]], b.String()), nil
+		return fmt.Sprintf("valuetypes.%sWrite(prgrm.Memory, outputs[0].Offset, %s)", inlineReadTypes[outputs[0]], b.String()), nil
 	}
 	return "", fmt.Errorf("definition %q: an inline call writes at most one atomic output", row.Name)
 }

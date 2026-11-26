@@ -1,10 +1,10 @@
 package actions
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
 // assignStructLiteralFields converts a struct literal to a series of struct field assignments.
@@ -74,12 +74,12 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 				prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).Indexes = toExpressionOutput.Indexes
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S1637.
-				prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).DereferenceOperations = append(prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).DereferenceOperations, constants.DerefArray)
+				prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).DereferenceOperations = append(prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).DereferenceOperations, opcodetable.DerefArray)
 			}
 
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1638.
-			prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).DereferenceOperations = append(prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).DereferenceOperations, constants.DerefField)
+			prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).DereferenceOperations = append(prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).DereferenceOperations, opcodetable.DerefField)
 		} else {
 			panic("type is not type cx argument deprecate\n\n")
 		}
@@ -133,16 +133,16 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 
 	// If the last expression in `fromExprs` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
-	if !declarationSpecifierFound(lastFromExpressionOutputArg.AssignmentElementGet(prgrm), constants.DeclarationPointer) {
+	if !declarationSpecifierFound(lastFromExpressionOutputArg.AssignmentElementGet(prgrm), opcodetable.DeclarationPointer) {
 		return assignStructLiteralFields(prgrm, toExprs, fromExprs, toExpressionOutputTypeSig.Name)
 	} else {
 		// And we also need an auxiliary variable to point to,
 		// otherwise we'd be trying to assign the fields to a nil value.
 		outField := lastFromExpressionOutputArg
-		auxName := temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
+		auxName := temporaryVariableNameGenerate(prgrm, opcodetable.LocalPrefix)
 		_, aux := ast.ArgumentMake(prgrm, auxName, lastFromCXLine.FileName, lastFromCXLine.LineNumber)
 		aux.TypeSet(outField.Type)
-		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, constants.DeclarationPointer)
+		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, opcodetable.DeclarationPointer)
 		aux.StructType = outField.StructType
 		aux.Size = outField.Size
 		aux.PreviouslyDeclared = true
@@ -170,7 +170,7 @@ func StructLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, f
 		assignExprCXLine := ast.CXLineExpressionMake(prgrm, lastFromCXLine.FileName, lastFromCXLine.LineNumber, lastFromCXLine.LineStr)
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0529.
-		assignExpr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpIdentity))
+		assignExpr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcodetable.OpIdentity))
 		assignExpressionIdx := assignExpr.Index
 
 		prgrm.CXAtomicOps[assignExpressionIdx].Package = lastFromExpression.Package
@@ -229,7 +229,7 @@ func ArrayLiteralAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fr
 		expressionOutput.Name = toExpressionOutput.Name
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1640.
-		prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).DereferenceOperations = append(prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).DereferenceOperations, constants.DerefArray)
+		prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).DereferenceOperations = append(prgrm.CXArgGet(ast.CXArgumentIndex(expressionOutputIdx)).DereferenceOperations, opcodetable.DerefArray)
 	}
 
 	return fromExprs
@@ -279,7 +279,7 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 			// Now an arena getter, site S0537.
 			fromExpressionInputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(fromExpressionInputTypeSig.Meta))
 
-			_, sym := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LocalPrefix), CurrentFile, LineNo)
+			_, sym := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, opcodetable.LocalPrefix), CurrentFile, LineNo)
 			sym.TypeSet(fromExpressionInputArg.Type)
 			sym.Package = ast.CXPackageIndex(pkg.Index)
 			sym.PreviouslyDeclared = true
@@ -287,7 +287,7 @@ func ShortAssignment(prgrm *ast.CXProgram, expr *ast.CXExpression, exprCXLine *a
 			typeSigIdx = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, sym)
 		} else if fromExpressionInputTypeSig.Type == ast.TypeAtomic || fromExpressionInputTypeSig.Type == ast.TypePointerAtomic {
 			_, newTypeSig := prgrm.CXTypeSignatureCopyAlloc(fromExpressionInputTypeSig)
-			newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
+			newTypeSig.Name = temporaryVariableNameGenerate(prgrm, opcodetable.LocalPrefix)
 			newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 			typeSigIdx = newTypeSig.Index
 		} else {
@@ -336,7 +336,7 @@ func getOutputTypeAt(prgrm *ast.CXProgram, expr *ast.CXExpression, index int) *a
 		// Now an arena getter, site S0547.
 		expressionOperatorOutputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(expressionOperatorOutputTypeSig.Meta))
 
-		if expressionOperatorOutputArg.Type != types.UNDEFINED {
+		if expressionOperatorOutputArg.Type != valuetypes.UNDEFINED {
 			return expressionOperatorOutputTypeSig
 		}
 	} else {
@@ -407,12 +407,12 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			sym.TypeSet(fromExpressionOutputArg.Type)
 			if len(fromExpressionOutputArg.Fields) > 0 {
 				// x := f().y, which ShortDeclarationComplete types from the field.
-				sym.Type, sym.Size = types.IDENTIFIER, types.IDENTIFIER.Size()
-			} else if fromExpressionOutputArg.Type == types.STRUCT && fromExpressionOutputArg.StructType != nil {
+				sym.Type, sym.Size = valuetypes.IDENTIFIER, valuetypes.IDENTIFIER.Size()
+			} else if fromExpressionOutputArg.Type == valuetypes.STRUCT && fromExpressionOutputArg.StructType != nil {
 				// A struct literal value.
-				shortDeclarationStructTypeSet(sym, types.STRUCT, fromExpressionOutputArg.StructType)
+				shortDeclarationStructTypeSet(sym, valuetypes.STRUCT, fromExpressionOutputArg.StructType)
 				sym.Size = fromExpressionOutputArg.Size
-				if fromExpressionOutputArg.PassBy == constants.PassByReference {
+				if fromExpressionOutputArg.PassBy == opcodetable.PassByReference {
 					// &T{...}
 					shortDeclarationPointerSet(sym)
 				}
@@ -421,7 +421,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			sym.PreviouslyDeclared = true
 
 			typeSigIdx = ast.CXTypeSignatureOfCXArgAlloc(prgrm, sym)
-		} else if t, ok := shortDeclarationPointerType(prgrm, fromExpressionOutputTypeSig); ok && fromExpressionOutputTypeSig.PassBy == constants.PassByReference {
+		} else if t, ok := shortDeclarationPointerType(prgrm, fromExpressionOutputTypeSig); ok && fromExpressionOutputTypeSig.PassBy == opcodetable.PassByReference {
 			// x := &p of a pointer p is a pointer to a pointer.
 			_, sym = ast.ArgumentMake(prgrm, toExpressionOutputTypeSig.Name, CurrentFile, LineNo)
 			sym.Type, sym.PointerTargetType, sym.Size, sym.StructType = t.typeCode, t.pointerTargetType, t.size, t.structType
@@ -457,10 +457,10 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 
 			_, sym = ast.ArgumentMake(prgrm, toExpressionOutputTypeSig.Name, CurrentFile, LineNo)
 			sym.TypeSet(outType)
-			if outType == types.UNDEFINED && shortDeclarationOperatorChained(prgrm, fromExprs) {
+			if outType == valuetypes.UNDEFINED && shortDeclarationOperatorChained(prgrm, fromExprs) {
 				// x := a + b + c, which ShortDeclarationComplete types from the
 				// operand a + b once that has its type.
-				sym.Type, sym.Size = types.IDENTIFIER, types.IDENTIFIER.Size()
+				sym.Type, sym.Size = valuetypes.IDENTIFIER, valuetypes.IDENTIFIER.Size()
 			}
 
 			if fromExprs[lastFromExpressionIdx].TypeArrayLiteral() {
@@ -486,11 +486,11 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 				argumentTypeCopy(sym, outTypeArg)
 			} else if outTypeIsSlice && len(outTypeArg.Lengths) > 1 {
 				// A nested slice literal, [][]i32{{1}}, keeps every dimension.
-				sym.Lengths = append([]types.Pointer(nil), outTypeArg.Lengths...)
+				sym.Lengths = append([]valuetypes.Pointer(nil), outTypeArg.Lengths...)
 				sym.DeclarationSpecifiers = append([]int(nil), outTypeArg.DeclarationSpecifiers...)
 			} else if outTypeIsSlice {
-				sym.Lengths = append([]types.Pointer{0}, sym.Lengths...)
-				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, constants.DeclarationSlice)
+				sym.Lengths = append([]valuetypes.Pointer{0}, sym.Lengths...)
+				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, opcodetable.DeclarationSlice)
 			} else if ast.CXArgumentTypeArrayAtomic(outTypeArg) || ast.CXArgumentTypePointerArrayAtomic(outTypeArg) {
 				sym.Lengths = outTypeArg.Lengths
 				sym.DeclarationSpecifiers = append([]int(nil), outTypeArg.DeclarationSpecifiers...)
@@ -500,7 +500,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 				sym.Lengths = outTypeArg.Lengths
 				sym.DeclarationSpecifiers = append([]int(nil), outTypeArg.DeclarationSpecifiers...)
 			}
-			if !resultTyped && outType == types.STRUCT && outTypeArg.StructType != nil {
+			if !resultTyped && outType == valuetypes.STRUCT && outTypeArg.StructType != nil {
 				sym.StructType = outTypeArg.StructType
 				sym.Size = outTypeArg.StructType.StructSizeGet(prgrm)
 			}
@@ -538,8 +538,8 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 	prgrm.CXAtomicOps[expressionIdx].OutputAdd(prgrm, typeSigIdx)
 
 	// The type an atomic output gives its receivers is zero.
-	var symType, symPointerTargetType types.Code
-	var symSize types.Pointer
+	var symType, symPointerTargetType valuetypes.Code
+	var symSize valuetypes.Pointer
 	if sym != nil {
 		symType = sym.Type
 		symPointerTargetType = sym.PointerTargetType
@@ -599,7 +599,7 @@ func assignmentResolve(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 	}
 
 	if fromExpressionOperator == nil {
-		opIdx := prgrm.NativeFunctionInArrayAdd(ast.NativeFunctionOf(prgrm, constants.OpIdentity))
+		opIdx := prgrm.NativeFunctionInArrayAdd(ast.NativeFunctionOf(prgrm, opcodetable.OpIdentity))
 		prgrm.CXAtomicOps[fromExpressionIdx].Operator = opIdx
 
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
@@ -640,23 +640,23 @@ func assignmentResolve(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 		} else if fromExpressionOutputTypeSig.Type == ast.TypeAtomic {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1650.
-			prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Size = types.Code(fromExpressionOutputTypeSig.Meta).Size()
+			prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Size = valuetypes.Code(fromExpressionOutputTypeSig.Meta).Size()
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1651.
-			prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = types.Code(fromExpressionOutputTypeSig.Meta)
+			prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = valuetypes.Code(fromExpressionOutputTypeSig.Meta)
 		} else if fromExpressionOutputTypeSig.Type == ast.TypePointerAtomic {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1652.
-			prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Size = types.Code(fromExpressionOutputTypeSig.Meta).Size()
+			prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Size = valuetypes.Code(fromExpressionOutputTypeSig.Meta).Size()
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1653.
-			prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = types.POINTER
+			prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = valuetypes.POINTER
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1654.
-			prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).PointerTargetType = types.Code(fromExpressionOutputTypeSig.Meta)
+			prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).PointerTargetType = valuetypes.Code(fromExpressionOutputTypeSig.Meta)
 		} else if fromExpressionOutputTypeSig.Type == ast.TypeSliceAtomic {
 			// f()[i] on a slice result reads an element.
-			eltType := types.Code(prgrm.CXTypeSignatureArrayFromArrayGet(fromExpressionOutputTypeSig.Meta).Meta)
+			eltType := valuetypes.Code(prgrm.CXTypeSignatureArrayFromArrayGet(fromExpressionOutputTypeSig.Meta).Meta)
 			prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Size = eltType.Size()
 			prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = eltType
 		} else {
@@ -689,7 +689,7 @@ func assignmentResolve(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 
 				if fromExpressionOperator.BuiltIn() {
 					// only assigning as if the operator had only one output defined
-					if fromExpressionOperator.AtomicOPCode != constants.OpIdentity {
+					if fromExpressionOperator.AtomicOPCode != opcodetable.OpIdentity {
 						// it's a short variable declaration
 						// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 						// Now an arena getter, site S1655.
@@ -729,34 +729,34 @@ func assignmentResolve(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				}
 			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TypeAtomic {
 				// only assigning as if the operator had only one output defined
-				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OpIdentity {
+				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != opcodetable.OpIdentity {
 					// it's a short variable declaration
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1665.
-					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
+					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = valuetypes.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				} else {
 					// we'll delegate multiple-value returns to the 'expression' grammar rule
 					// only assigning as if the operator had only one output defined
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1666.
-					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
+					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = valuetypes.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				}
 			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TypePointerAtomic {
 				// only assigning as if the operator had only one output defined
-				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OpIdentity {
+				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != opcodetable.OpIdentity {
 					// it's a short variable declaration
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1667.
-					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
+					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = valuetypes.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				} else {
 					// we'll delegate multiple-value returns to the 'expression' grammar rule
 					// only assigning as if the operator had only one output defined
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1668.
-					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = types.POINTER
+					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = valuetypes.POINTER
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1669.
-					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).PointerTargetType = types.Code(fromExpressionOperatorOutputTypeSig.Meta)
+					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).PointerTargetType = valuetypes.Code(fromExpressionOperatorOutputTypeSig.Meta)
 				}
 			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TypeSliceAtomic {
 				// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
@@ -764,11 +764,11 @@ func assignmentResolve(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(fromExpressionOperatorOutputTypeSig.Meta)
 
 				// only assigning as if the operator had only one output defined
-				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OpIdentity {
+				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != opcodetable.OpIdentity {
 					// it's a short variable declaration
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1670.
-					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = types.Code(sliceDetails.Meta)
+					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = valuetypes.Code(sliceDetails.Meta)
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1671.
 					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Lengths = sliceDetails.Lengths
@@ -777,7 +777,7 @@ func assignmentResolve(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 					// only assigning as if the operator had only one output defined
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1672.
-					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = types.Code(sliceDetails.Meta)
+					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = valuetypes.Code(sliceDetails.Meta)
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1673.
 					prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Lengths = sliceDetails.Lengths
@@ -786,7 +786,7 @@ func assignmentResolve(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				// it's a short variable declaration
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S1674.
-				prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = types.STRUCT
+				prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)).Type = valuetypes.STRUCT
 			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TypePointerStruct {
 				assignmentPointerStructTarget(prgrm, prgrm.CXArgGet(ast.CXArgumentIndex(toExpressionOutputIdx)), fromExpressionOperatorOutputTypeSig)
 			} else if !typeSignatureCollection(fromExpressionOperatorOutputTypeSig) {
@@ -802,7 +802,7 @@ func assignmentResolve(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				// Now an arena getter, site S0589.
 				fromCXAtomicOpOperatorOutput := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(fromExpressionOperatorOutputTypeSig.Meta))
 				// only assigning as if the operator had only one output defined
-				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OpIdentity {
+				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != opcodetable.OpIdentity {
 					// it's a short variable declaration
 					toExpressionOutputTypeSig.Meta = int(fromCXAtomicOpOperatorOutput.Type)
 				} else {
@@ -812,7 +812,7 @@ func assignmentResolve(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				}
 			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TypeAtomic {
 				// only assigning as if the operator had only one output defined
-				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OpIdentity {
+				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != opcodetable.OpIdentity {
 					// it's a short variable declaration
 					toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
 				} else {
@@ -822,7 +822,7 @@ func assignmentResolve(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				}
 			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TypePointerAtomic {
 				// only assigning as if the operator had only one output defined
-				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OpIdentity {
+				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != opcodetable.OpIdentity {
 					// it's a short variable declaration
 					toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
 				} else {
@@ -901,7 +901,7 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 		file, line := ast.CXArgumentDebugFileGidLine(prgrm, target.ArgDetails)
 		_, declarator := ast.ArgumentMake(prgrm, target.Name, file, line)
 		placeholder := declarationSpecifiersPlaceholder(prgrm, file, line)
-		placeholder.Type = types.INVALID
+		placeholder.Type = valuetypes.INVALID
 		return append(LocalDeclare(prgrm, declarator, placeholder, nil, false), fromExprs...)
 	}
 
@@ -922,52 +922,52 @@ func Assignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assignOp strin
 	case ">>=":
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0594.
-		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpBitshr))
+		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcodetable.OpBitshr))
 		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "<<=":
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0595.
-		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpBitshl))
+		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcodetable.OpBitshl))
 		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "+=":
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0596.
-		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpAdd))
+		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcodetable.OpAdd))
 		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "-=":
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0597.
-		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpSub))
+		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcodetable.OpSub))
 		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "*=":
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0598.
-		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpMul))
+		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcodetable.OpMul))
 		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "/=":
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0599.
-		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpDiv))
+		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcodetable.OpDiv))
 		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "%=":
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0600.
-		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpMod))
+		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcodetable.OpMod))
 		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "&=":
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0601.
-		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpBitand))
+		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcodetable.OpBitand))
 		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "^=":
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0602.
-		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpBitxor))
+		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcodetable.OpBitxor))
 		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	case "|=":
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S0603.
-		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpBitor))
+		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, opcodetable.OpBitor))
 		return ShortAssignment(prgrm, expr, exprCXLine, toExprs, fromExprs, pkg)
 	}
 
@@ -1059,7 +1059,7 @@ func AssignmentStatement(prgrm *ast.CXProgram, toExprs []ast.CXExpression, assig
 // MultipleValueName returns a new name for the variable that holds one value
 // of a multiple assignment.
 func MultipleValueName(prgrm *ast.CXProgram) stringpool.StringGid {
-	return temporaryVariableNameGenerate(prgrm, constants.MultipleValuePrefix)
+	return temporaryVariableNameGenerate(prgrm, opcodetable.MultipleValuePrefix)
 }
 
 // MultipleValueRead returns the expressions that read the variable name.
@@ -1130,10 +1130,10 @@ func multipleAssignmentMethodCall(prgrm *ast.CXProgram, targets [][]ast.CXExpres
 // assignmentPointerStructTarget types the target of x = f() where f returns
 // the *T of sig.
 func assignmentPointerStructTarget(prgrm *ast.CXProgram, target *ast.CXArgument, sig *ast.CXTypeSignature) {
-	target.Type = types.POINTER
-	target.PointerTargetType = types.STRUCT
+	target.Type = valuetypes.POINTER
+	target.PointerTargetType = valuetypes.STRUCT
 	target.StructType = prgrm.CXTypeSignatureStructFromArrayGet(sig.Meta).StructType
-	target.Size = types.PointerSize
+	target.Size = valuetypes.PointerSize
 }
 
 // expressionsCount returns the number of expressions in exprs that are not
@@ -1172,7 +1172,7 @@ func shortDeclarationUntyped(prgrm *ast.CXProgram, toExprs []ast.CXExpression) b
 			return false
 		}
 		sig := prgrm.CXTypeSignatureFromArrayGet(outputs[0])
-		return sig.Type == ast.TypeCXArgumentDeprecate && prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta)).Type == types.IDENTIFIER
+		return sig.Type == ast.TypeCXArgumentDeprecate && prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta)).Type == valuetypes.IDENTIFIER
 	}
 	return false
 }
@@ -1181,7 +1181,7 @@ func shortDeclarationUntyped(prgrm *ast.CXProgram, toExprs []ast.CXExpression) b
 // declares x from, is a declared result of a function, with no indexes or
 // fields, whose whole type x takes.
 func shortDeclarationResultTyped(from ast.CXExpression, operator *ast.CXFunction, outArg *ast.CXArgument) bool {
-	if operator == nil || operator.BuiltIn() || from.TypeArrayLiteral() || outArg.Type == types.UNDEFINED {
+	if operator == nil || operator.BuiltIn() || from.TypeArrayLiteral() || outArg.Type == valuetypes.UNDEFINED {
 		return false
 	}
 	return len(outArg.Indexes) == 0 && len(outArg.Fields) == 0 && len(outArg.DereferenceOperations) == 0
@@ -1190,7 +1190,7 @@ func shortDeclarationResultTyped(from ast.CXExpression, operator *ast.CXFunction
 // argumentTypeCopy gives dst the type of src, with its own slices.
 func argumentTypeCopy(dst, src *ast.CXArgument) {
 	dst.Type, dst.PointerTargetType, dst.Size = src.Type, src.PointerTargetType, src.Size
-	dst.Lengths = append([]types.Pointer(nil), src.Lengths...)
+	dst.Lengths = append([]valuetypes.Pointer(nil), src.Lengths...)
 	dst.DeclarationSpecifiers = append([]int(nil), src.DeclarationSpecifiers...)
 	dst.StructType, dst.PassBy = src.StructType, src.PassBy
 }

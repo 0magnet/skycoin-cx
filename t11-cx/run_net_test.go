@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t1-netbatch"
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	"github.com/skycoin/skycoin-cx/t4-execute"
@@ -131,7 +131,7 @@ func TestRunNetAllocs(t *testing.T) {
 	var compiled []*ast.CXProgram
 	for i := 0; i <= runs; i++ {
 		compileRunProgram(t, runBenchProgram{name: "net", source: runNetSource})
-		actions.AST.ProgramLibrariesEnabled[constants.LibraryNumberNet] = true
+		actions.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberNet] = true
 		core.LibrariesEnabledResolve(actions.AST)
 		execute.RunPrepare(actions.AST)
 		compiled = append(compiled, actions.AST)
@@ -157,7 +157,7 @@ func TestRunVmNetAllocs(t *testing.T) {
 	initProgram()
 	peers := runNetPeers(t, 4)
 	compileRunProgram(t, runBenchProgram{name: "net", source: runNetSource})
-	actions.AST.ProgramLibrariesEnabled[constants.LibraryNumberNet] = true
+	actions.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberNet] = true
 	core.LibrariesEnabledResolve(actions.AST)
 	image, _, outside := core.ExecutorLower(actions.AST)
 	if outside != "" {

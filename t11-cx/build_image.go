@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	"github.com/skycoin/skycoin-cx/t4-actions"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
@@ -36,20 +36,20 @@ func buildImage(options buildOptions) int {
 	prgrm.CxIrState.StringPool.StringPoolFreeze()
 	if code := core.OperationRefused(prgrm); code != 0 {
 		fmt.Fprintf(os.Stderr, "cx build: %s\n", core.OperationRefusalLine(prgrm, code))
-		return types.CXRuntimeLibraryDisabled
+		return valuetypes.CXRuntimeLibraryDisabled
 	}
 	image, _, outside := core.ExecutorLower(prgrm)
 	if outside != "" {
 		fmt.Fprintf(os.Stderr, "cx build: cannot run on vm: %s\n", outside)
-		return types.CXRuntimeNotImplemented
+		return valuetypes.CXRuntimeNotImplemented
 	}
-	for _, library := range [...]int{constants.LibraryNumberFile, constants.LibraryNumberNet} {
+	for _, library := range [...]int{opcodetable.LibraryNumberFile, opcodetable.LibraryNumberNet} {
 		if image.ImageOperationsEnabled.OpcodeSetLibraryAny(library) {
-			return buildFail(fmt.Sprintf("the program uses the %s library, which cx-core-image does not link", constants.LibraryTable[library-1].LibraryName))
+			return buildFail(fmt.Sprintf("the program uses the %s library, which cx-core-image does not link", opcodetable.LibraryTable[library-1].LibraryName))
 		}
 	}
 	if err := os.WriteFile(options.buildOptionsOutput, ir.ImageFileEncode(&image), 0o644); err != nil {
 		return buildFail(err.Error())
 	}
-	return types.CXSuccess
+	return valuetypes.CXSuccess
 }

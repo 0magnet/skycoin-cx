@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t0-cx-tools-testrunner"
-	"github.com/skycoin/skycoin-cx/t0-types"
 )
 
 // compoundType is a type made of pointers, slices, arrays and structs, a
@@ -177,7 +177,7 @@ func runCompoundTypeTests(t *testrunner.TestRunner, workingDir string) {
 		want := strings.Repeat(typ.want+"\n", len(compoundCases))
 		path := filepath.Base(dir) + "/" + name
 		for _, executor := range []string{"auto", "old"} {
-			t.RunWant("--executor="+executor+" "+path, types.CXSuccess, fmt.Sprintf("values of %s as parameters, results, locals, globals, fields and elements, on %s", typ.name, executor), want)
+			t.RunWant("--executor="+executor+" "+path, valuetypes.CXSuccess, fmt.Sprintf("values of %s as parameters, results, locals, globals, fields and elements, on %s", typ.name, executor), want)
 		}
 	}
 }

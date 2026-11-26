@@ -11,10 +11,10 @@ import (
 	"runtime"
 	"strings"
 
-	types "github.com/skycoin/skycoin-cx/t0-types"
-	constants "github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
-	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	printer "github.com/skycoin/skycoin-cx/t4-cx-runtime-printer" // thin: only CompileErrorsRegister; no depth gain
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
@@ -26,10 +26,10 @@ var coreLibraryRegisters []func(prgrm *ast.CXProgram)
 
 // coreLibraryOpcodesLinked marks the libraries whose functions are opcodes
 // that this core links, by the same build tags (decision D119).
-var coreLibraryOpcodesLinked = [constants.LibraryCount]bool{
-	constants.LibraryNumberCipher: coreLibraryCipherLinked,
-	constants.LibraryNumberNet:    coreLibraryNetLinked,
-	constants.LibraryNumberFile:   coreLibraryFileLinked,
+var coreLibraryOpcodesLinked = [opcodetable.LibraryCount]bool{
+	opcodetable.LibraryNumberCipher: coreLibraryCipherLinked,
+	opcodetable.LibraryNumberNet:    coreLibraryNetLinked,
+	opcodetable.LibraryNumberFile:   coreLibraryFileLinked,
 }
 
 // coreOpcodeDispatch is the opcode switch of this core, the switch of
@@ -52,7 +52,7 @@ func coreRun(args []string) int32 {
 	program, args, problem := coreProgramLoad(args)
 	if problem != "" {
 		fmt.Fprintln(os.Stderr, "cx-core:", problem)
-		return types.CXCompilationError
+		return valuetypes.CXCompilationError
 	}
 
 	core.Register(core.ProgramMake(), coreLibraryRegisters...)
@@ -60,24 +60,24 @@ func coreRun(args []string) int32 {
 	prgrm, err := ast.Deserialize(program, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "cx-core: %s\n", err)
-		return types.CXCompilationError
+		return valuetypes.CXCompilationError
 	}
 	if missing := core.OpcodesMissing(prgrm); len(missing) > 0 {
 		fmt.Fprintf(os.Stderr, "cx-core: the program uses opcodes this core does not include: %s\n", strings.Join(missing, ", "))
-		return types.CXCompilationError
+		return valuetypes.CXCompilationError
 	}
 	core.LibrariesEnabledResolve(prgrm)
 	if missing := core.LibrariesMissing(prgrm, coreLibraryOpcodesLinked); len(missing) > 0 {
 		fmt.Fprintf(os.Stderr, "cx-core: the program enables system libraries this core does not link: %s\n", strings.Join(missing, ", "))
-		return types.CXCompilationError
+		return valuetypes.CXCompilationError
 	}
-	if core.LibrariesActive(prgrm)[constants.LibraryNumberFile] {
+	if core.LibrariesActive(prgrm)[opcodetable.LibraryNumberFile] {
 		// The file library resolves paths in the working directory, as cx
 		// does without --sandbox. The core has no flags to name another.
 		root, fileError := sandbox.RootOpen("")
 		if fileError != nil {
 			fmt.Fprintf(os.Stderr, "cx-core: cannot open the sandbox: %s\n", fileError.FileErrorMessage)
-			return types.CXCompilationError
+			return valuetypes.CXCompilationError
 		}
 		defer root.Close()
 		prgrm.ProgramSandboxRoot = root

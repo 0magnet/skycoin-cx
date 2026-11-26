@@ -5,10 +5,10 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t2-globals" // thin: only FoundCompileErrors, SRCPATH; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
+	"github.com/skycoin/skycoin-cx/t2-cx-core-environment" // thin: only FoundCompileErrors, SRCPATH; no depth gain
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 
 	"github.com/skycoin/skycoin-cx/t1-profiling" // thin: only CleanupAndExit, StartProfile, StopProfile; no depth gain
 	"github.com/skycoin/skycoin-cx/t4-actions"
@@ -70,13 +70,13 @@ func parseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
 	if osPkg, err := actions.AST.PackageGet(actions.AST.CxIrState.CxIrStateNameOs); err == nil {
 		if _, err := osPkg.GlobalGet(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs); err != nil {
 			_, arg0 := ast.ArgumentMake(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs, ast.SourceFileGidNil, -1)
-			arg0.TypeSet(types.UNDEFINED)
+			arg0.TypeSet(valuetypes.UNDEFINED)
 			arg0.Package = ast.CXPackageIndex(osPkg.Index)
 
 			_, arg1 := ast.ArgumentMake(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs, ast.SourceFileGidNil, -1)
-			arg1.TypeSet(types.STR)
-			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DeclarationBasic)
-			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DeclarationSlice)
+			arg1.TypeSet(valuetypes.STR)
+			arg1 = actions.DeclarationSpecifiers(arg1, []valuetypes.Pointer{0}, opcodetable.DeclarationBasic)
+			arg1 = actions.DeclarationSpecifiers(arg1, []valuetypes.Pointer{0}, opcodetable.DeclarationSlice)
 			actions.GlobalInPackageDeclare(actions.AST, osPkg, arg0, arg1, nil, false)
 		}
 	}
@@ -125,7 +125,7 @@ func parseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
 	actions.AffordanceLiteralsResolve(actions.AST)
 	actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
 
-	if globals.FoundCompileErrors || parseErrors > 0 {
+	if environment.FoundCompileErrors || parseErrors > 0 {
 		return ErrCompilation
 	}
 	return nil

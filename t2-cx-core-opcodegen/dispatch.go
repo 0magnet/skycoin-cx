@@ -6,13 +6,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t1-constants"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 )
 
 // dispatchGroup is one switch opcodegen writes, with the build tag of its
 // file and of the file that stands in for it without the tag.
 type dispatchGroup struct {
-	group      constants.OpcodeGroup
+	group      opcodetable.OpcodeGroup
 	path       string
 	pkg        string
 	function   string
@@ -23,12 +23,12 @@ type dispatchGroup struct {
 }
 
 var dispatchGroups = []dispatchGroup{
-	{constants.OpcodeGroupOsCore, "t5-cx-runtime-core/core_dispatch_oscore", "core", "coreOpcodeDispatchOsCore", "!nocxos", "nocxos", "github.com/skycoin/skycoin-cx/t4-cxos-core", "cxoscore"},
-	{constants.OpcodeGroupRegexp, "t5-cx-runtime-core/core_dispatch_regexp", "core", "coreOpcodeDispatchRegexp", "!noregexp", "noregexp", "github.com/skycoin/skycoin-cx/t4-regexp", "regexp"},
-	{constants.OpcodeGroupCxfx, "t6-cxfx/cxfx_dispatch", "cxfx", "CxfxOpcodeDispatch", "cxfx", "!cxfx", "", ""},
-	{constants.OpcodeGroupCipher, "t4-cipher/cipher_dispatch", "cipher", "CipherOpcodeDispatch", "!nocipher", "nocipher", "", ""},
-	{constants.OpcodeGroupNet, "t4-cxnet/net_dispatch", "cxnet", "NetOpcodeDispatch", "", "", "", ""},
-	{constants.OpcodeGroupFile, "t5-cxos/file_dispatch", "cxos", "FileOpcodeDispatch", "!nocxos", "nocxos", "", ""},
+	{opcodetable.OpcodeGroupOsCore, "t5-cx-runtime-core/core_dispatch_oscore", "core", "coreOpcodeDispatchOsCore", "!nocxos", "nocxos", "github.com/skycoin/skycoin-cx/t4-cxos-core", "cxoscore"},
+	{opcodetable.OpcodeGroupRegexp, "t5-cx-runtime-core/core_dispatch_regexp", "core", "coreOpcodeDispatchRegexp", "!noregexp", "noregexp", "github.com/skycoin/skycoin-cx/t4-regexp", "regexp"},
+	{opcodetable.OpcodeGroupCxfx, "t6-cxfx/cxfx_dispatch", "cxfx", "CxfxOpcodeDispatch", "cxfx", "!cxfx", "", ""},
+	{opcodetable.OpcodeGroupCipher, "t4-cipher/cipher_dispatch", "cipher", "CipherOpcodeDispatch", "!nocipher", "nocipher", "", ""},
+	{opcodetable.OpcodeGroupNet, "t4-cxnet/net_dispatch", "cxnet", "NetOpcodeDispatch", "", "", "", ""},
+	{opcodetable.OpcodeGroupFile, "t5-cxos/file_dispatch", "cxos", "FileOpcodeDispatch", "!nocxos", "nocxos", "", ""},
 }
 
 // coreImports are the handler packages of OpcodeGroupCore.
@@ -37,7 +37,7 @@ var coreImports = map[string]string{
 	"printer": "github.com/skycoin/skycoin-cx/t4-cx-runtime-printer",
 }
 
-const astImport = "\t// GCREACH: t3-ast owns the heap. The switch hands the operands to the\n\t// handlers and allocates nothing, see docs/GarbageCollector.md.\n\t\"github.com/skycoin/skycoin-cx/t3-ast\"\n"
+const astImport = "\t// GCREACH: t3-cx-core-ast owns the heap. The switch hands the operands to the\n\t// handlers and allocates nothing, see docs/GarbageCollector.md.\n\t\"github.com/skycoin/skycoin-cx/t3-cx-core-ast\"\n"
 
 const dispatchParameters = "(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, outputs []ast.CXValue) bool"
 
@@ -52,11 +52,11 @@ func (gen *generated) dispatchFiles() map[string][]byte {
 	for _, name := range []string{"opcodes", "printer"} {
 		fmt.Fprintf(&b, "\t%s %q\n", name, coreImports[name])
 	}
-	b.WriteString(")\n\n// CoreOpcodeDispatch runs opcode code of the core on its operands, the\n// handler of its row of constants.OpcodeDefinitionTable, and reports false for\n// an opcode the core does not link (decision D21).\n")
+	b.WriteString(")\n\n// CoreOpcodeDispatch runs opcode code of the core on its operands, the\n// handler of its row of opcodetable.OpcodeDefinitionTable, and reports false for\n// an opcode the core does not link (decision D21).\n")
 	b.WriteString("func CoreOpcodeDispatch" + dispatchParameters + " {\n\tswitch code {\n")
-	for _, row := range constants.OpcodeDefinitionTable {
+	for _, row := range opcodetable.OpcodeDefinitionTable {
 		pkg, function, _ := strings.Cut(row.GoFunction, ".")
-		if goFunctionPackages[pkg] == constants.OpcodeGroupCore && row.GoFunction != "" {
+		if goFunctionPackages[pkg] == opcodetable.OpcodeGroupCore && row.GoFunction != "" {
 			fmt.Fprintf(&b, "\tcase %d:\n\t\t%s.%s(prgrm, inputs, outputs)\n", row.Number, pkg, function)
 		}
 	}
@@ -76,9 +76,9 @@ func (gen *generated) dispatchFiles() map[string][]byte {
 }
 
 // groupNumbers returns the numbers of the handled opcodes of group.
-func (gen *generated) groupNumbers(group constants.OpcodeGroup) []string {
+func (gen *generated) groupNumbers(group opcodetable.OpcodeGroup) []string {
 	var numbers []string
-	for _, row := range constants.OpcodeDefinitionTable {
+	for _, row := range opcodetable.OpcodeDefinitionTable {
 		pkg, _, _ := strings.Cut(row.GoFunction, ".")
 		if row.GoFunction != "" && goFunctionPackages[pkg] == group {
 			numbers = append(numbers, fmt.Sprint(row.Number))
@@ -90,7 +90,7 @@ func (gen *generated) groupNumbers(group constants.OpcodeGroup) []string {
 func (gen *generated) dispatchGroupFile(group dispatchGroup) []byte {
 	var cases bytes.Buffer
 	used := map[string]bool{}
-	for _, row := range constants.OpcodeDefinitionTable {
+	for _, row := range opcodetable.OpcodeDefinitionTable {
 		pkg, function, _ := strings.Cut(row.GoFunction, ".")
 		if row.GoFunction == "" || goFunctionPackages[pkg] != group.group {
 			continue
@@ -127,18 +127,18 @@ func (gen *generated) dispatchGroupFile(group dispatchGroup) []byte {
 		b.WriteString("\n")
 	}
 	if used["types"] {
-		b.WriteString("\t\"github.com/skycoin/skycoin-cx/t0-types\"\n")
+		b.WriteString("\t\"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes\"\n")
 	}
 	if group.pkg == "core" {
 		b.WriteString(astImport)
 	} else {
-		b.WriteString("\t\"github.com/skycoin/skycoin-cx/t3-ast\"\n")
+		b.WriteString("\t\"github.com/skycoin/skycoin-cx/t3-cx-core-ast\"\n")
 	}
 	if group.importPath != "" {
 		fmt.Fprintf(&b, "\t%s %q\n", group.importName, group.importPath)
 	}
 	b.WriteString(")\n\n")
-	fmt.Fprintf(&b, "// %s runs the opcode code of constants.%s on its operands\n// and reports false for any other opcode.\n", group.function, groupNames[group.group])
+	fmt.Fprintf(&b, "// %s runs the opcode code of opcodetable.%s on its operands\n// and reports false for any other opcode.\n", group.function, groupNames[group.group])
 	fmt.Fprintf(&b, "func %s%s {\n\tswitch code {\n", group.function, dispatchParameters)
 	b.Write(cases.Bytes())
 	b.WriteString("\tdefault:\n\t\treturn false\n\t}\n\treturn true\n}\n")
@@ -151,10 +151,10 @@ func dispatchGroupOffFile(group dispatchGroup) []byte {
 	if group.pkg == "core" {
 		b.WriteString(astImport)
 	} else {
-		b.WriteString("\t\"github.com/skycoin/skycoin-cx/t3-ast\"\n")
+		b.WriteString("\t\"github.com/skycoin/skycoin-cx/t3-cx-core-ast\"\n")
 	}
 	b.WriteString(")\n\n")
-	fmt.Fprintf(&b, "// %s reports false, the build tags leave out constants.%s.\n", group.function, groupNames[group.group])
+	fmt.Fprintf(&b, "// %s reports false, the build tags leave out opcodetable.%s.\n", group.function, groupNames[group.group])
 	fmt.Fprintf(&b, "func %s%s {\n\treturn false\n}\n", group.function, dispatchParameters)
 	return b.Bytes()
 }
