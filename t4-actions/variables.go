@@ -29,7 +29,7 @@ func processGlobalInitializer(prgrm *ast.CXProgram, initializer []ast.CXExpressi
 		prgrm.SysInitExprs = append(prgrm.SysInitExprs, initializer...)
 	} else {
 		// then it's an expression
-		if initializer[len(initializer)-1].IsStructLiteral() {
+		if initializer[len(initializer)-1].TypeStructLiteral() {
 			// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 			// Now a heap literal, site S1211.
 			outputStruct := &ast.CXStruct{}
@@ -113,7 +113,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		var glblArgPassBy int
 		if !glbl.Offset.Valid() {
 			var glblArg *ast.CXArgument
-			if declaration_specifiers.IsSlice() { // TODO:PTR move branch in WritePrimary
+			if declaration_specifiers.SliceTyped() { // TODO:PTR move branch in WritePrimary
 				glblArg = WritePrimary(prgrm, declaration_specifiers.Type,
 					make([]byte, types.POINTER_SIZE), true)
 			} else {
@@ -125,7 +125,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			prgrm.ReleaseCXArgBuilder(glblArg)
 		}
 
-		if ast.IsTypeAtomic(declaration_specifiers) {
+		if ast.CXArgumentTypeAtomic(declaration_specifiers) {
 			glbl.Type = ast.TYPE_ATOMIC
 			glbl.Meta = int(declaration_specifiers.Type)
 			if !glbl.Offset.Valid() {
@@ -133,7 +133,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			}
 
 			glbl.PassBy = declaration_specifiers.PassBy
-		} else if ast.IsTypePointerAtomic(declaration_specifiers) {
+		} else if ast.CXArgumentTypePointerAtomic(declaration_specifiers) {
 			glbl.Type = ast.TYPE_POINTER_ATOMIC
 			glbl.Meta = int(declaration_specifiers.Type)
 			if !glbl.Offset.Valid() {
@@ -141,7 +141,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			}
 
 			glbl.PassBy = declaration_specifiers.PassBy
-		} else if ast.IsTypeArrayAtomic(declaration_specifiers) {
+		} else if ast.CXArgumentTypeArrayAtomic(declaration_specifiers) {
 			glbl.Type = ast.TYPE_ARRAY_ATOMIC
 
 			arrayGid := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayAlloc()
@@ -157,7 +157,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			if !glbl.Offset.Valid() {
 				glbl.Offset = glblArgOffset
 			}
-		} else if ast.IsTypePointerArrayAtomic(declaration_specifiers) {
+		} else if ast.CXArgumentTypePointerArrayAtomic(declaration_specifiers) {
 			glbl.Type = ast.TYPE_POINTER_ARRAY_ATOMIC
 
 			arrayGid := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayAlloc()
@@ -171,7 +171,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			if !glbl.Offset.Valid() {
 				glbl.Offset = glblArgOffset
 			}
-		} else if ast.IsTypeSliceAtomic(declaration_specifiers) {
+		} else if ast.CXArgumentTypeSliceAtomic(declaration_specifiers) {
 			// If slice atomic type, i.e. []i32, []f64, etc.
 
 			glbl.Type = ast.TYPE_SLICE_ATOMIC
@@ -187,7 +187,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			if !glbl.Offset.Valid() {
 				glbl.Offset = glblArgOffset
 			}
-		} else if ast.IsTypePointerSliceAtomic(declaration_specifiers) {
+		} else if ast.CXArgumentTypePointerSliceAtomic(declaration_specifiers) {
 			// If pointer slice atomic type, i.e. *[]i32, *[]f64, etc.
 
 			glbl.Type = ast.TYPE_POINTER_SLICE_ATOMIC
@@ -267,7 +267,7 @@ func DeclareGlobalInPackage(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	} else {
 		// then it hasn't been defined
 		var glblArg *ast.CXArgument
-		if declaration_specifiers.IsSlice() { // TODO:PTR move branch in WritePrimary
+		if declaration_specifiers.SliceTyped() { // TODO:PTR move branch in WritePrimary
 			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
 		} else {
 			glblArg = WritePrimary(prgrm, declaration_specifiers.Type, make([]byte, totalSize), true)

@@ -200,7 +200,7 @@ func Program(prgrm *ast.CXProgram) (ir.Image, []Failure) {
 			continue
 		}
 		image.ImageFuncNames[functionIndex] = prgrm.CXProgramNameText(fn.Name)
-		if fn.IsBuiltIn() {
+		if fn.BuiltIn() {
 			continue
 		}
 		if failure, failed := s.function(uint32(functionIndex), fn); failed {
@@ -279,7 +279,7 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 		switch {
 		case operator == nil:
 			code, reason = s.declaration(code, cxAtomicOp)
-		case operator.IsBuiltIn():
+		case operator.BuiltIn():
 			var fixup jumpFixup
 			var jump bool
 			code, fixup, jump, reason, failure.FailureOpcode = s.builtIn(code, line, cxAtomicOp, operator)
@@ -549,12 +549,12 @@ func (s *state) test(code []ir.Instr, inputs []ast.CXTypeSignatureIndex) ([]ir.I
 	first := prgrm.GetCXTypeSignatureFromArray(inputs[0])
 	switch first.Type {
 	case ast.TYPE_CXARGUMENT_DEPRECATE:
-		if prgrm.GetCXArgFromArray(ast.CXArgumentIndex(first.Meta)).IsString() {
+		if prgrm.GetCXArgFromArray(ast.CXArgumentIndex(first.Meta)).StringTyped() {
 			return code, ReasonOperandString
 		}
 	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
 		fields := prgrm.GetCXTypeSignatureStructFromArray(first.Meta).Fields
-		if len(fields) > 0 && prgrm.GetCXArgFromArray(fields[len(fields)-1]).IsString() {
+		if len(fields) > 0 && prgrm.GetCXArgFromArray(fields[len(fields)-1]).StringTyped() {
 			return code, ReasonOperandString
 		}
 	case ast.TYPE_ATOMIC, ast.TYPE_POINTER_ATOMIC, ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_SLICE_ATOMIC:
@@ -580,7 +580,7 @@ func (s *state) test(code []ir.Instr, inputs []ast.CXTypeSignatureIndex) ([]ir.I
 	return append(code, in), ReasonNone
 }
 
-// call lowers a call of a function, as processNonAtomicOperators and
+// call lowers a call of a function, as nonAtomicOperatorRun and
 // popStack do: wipe the callee frame, copy the inputs or their addresses,
 // call, then copy the outputs the caller receives. The addresses of the
 // outputs are computed after the call, as popStack computes them.
@@ -612,7 +612,7 @@ func (s *state) call(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator, callee *
 		}
 		var value operand
 		if byReference {
-			if signature.IsInnerReference(prgrm) {
+			if signature.InnerReference(prgrm) {
 				return code, ReasonOperandByReference
 			}
 			var in ir.Instr
@@ -822,14 +822,14 @@ func (s *state) placeOfSignature(code []ir.Instr, signatureIndex ast.CXTypeSigna
 		p := s.placeBase(signature.Offset, size)
 		return code, p, ReasonNone
 	case ast.TYPE_POINTER_ATOMIC:
-		if signature.IsDeref {
+		if signature.Deref {
 			return code, place{}, ReasonOperandIndexed
 		}
 		return code, s.placeBase(signature.Offset, size), ReasonNone
 	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC:
 		p := s.placeBase(signature.Offset, size)
 		if signature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
-			if !signature.IsDeref {
+			if !signature.Deref {
 				return code, p, ReasonNone
 			}
 			if code, reason = s.placeDeref(code, &p); reason != ReasonNone {
@@ -854,13 +854,13 @@ func (s *state) placeOfSignature(code []ir.Instr, signatureIndex ast.CXTypeSigna
 		}
 		return code, s.placeBase(signature.Offset, size), ReasonNone
 	case ast.TYPE_POINTER_SLICE_ATOMIC:
-		if signature.IsDeref {
+		if signature.Deref {
 			return code, place{}, ReasonOperandHeap
 		}
 		return code, s.placeBase(signature.Offset, size), ReasonNone
 	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
 		p := s.placeBase(signature.Offset, size)
-		if signature.Type == ast.TYPE_POINTER_STRUCT && signature.IsDeref {
+		if signature.Type == ast.TYPE_POINTER_STRUCT && signature.Deref {
 			if code, reason = s.placeDeref(code, &p); reason != ReasonNone {
 				return code, p, reason
 			}

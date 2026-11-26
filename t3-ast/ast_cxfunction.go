@@ -9,13 +9,13 @@ import (
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 )
 
-// IsBuiltIn determines if opcode is not 0
+// BuiltIn determines if opcode is not 0
 // True if the function is native to CX, e.g. int32.add()
-func (cxf CXFunction) IsBuiltIn() bool {
+func (cxf CXFunction) BuiltIn() bool {
 	return cxf.AtomicOPCode != 0
 }
 
-func (cxf CXFunction) IsAtomic() bool {
+func (cxf CXFunction) Atomic() bool {
 	return cxf.AtomicOPCode != 0
 }
 
@@ -151,7 +151,7 @@ func (fn *CXFunction) AddOutput(prgrm *CXProgram, param *CXArgument) *CXFunction
 	// An array output, or a pointer to one, stays a CXArgument, the call,
 	// return and assignment paths have no array signature case.
 	var newFieldIdx CXTypeSignatureIndex
-	if IsTypeArrayAtomic(param) || IsTypePointerArrayAtomic(param) {
+	if CXArgumentTypeArrayAtomic(param) || CXArgumentTypePointerArrayAtomic(param) {
 		newFieldIdx = AllocCXTypeSignatureOfCXArgDeprecate(prgrm, param)
 	} else {
 		newFieldIdx = AllocCXTypeSignatureOfCXArgBuilder(prgrm, param)
@@ -262,7 +262,7 @@ func (fn *CXFunction) AddLocalVariableName(name stringpool.StringGid) error {
 	return nil
 }
 
-func (fn *CXFunction) IsLocalVariable(name stringpool.StringGid) bool {
+func (fn *CXFunction) LocalVariableDeclared(name stringpool.StringGid) bool {
 	for _, localVar := range fn.LocalVariables {
 		if name == localVar {
 			return true

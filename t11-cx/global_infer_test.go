@@ -41,7 +41,7 @@ func TestGlobalInferredMatchesDeclared(t *testing.T) {
 
 // globalTypeDescription prints what the type of the global glbl is made of.
 func globalTypeDescription(prgrm *ast.CXProgram, glbl *ast.CXTypeSignature) string {
-	text := fmt.Sprintf("signature type %d pass by %d deref %v type %s size %d", glbl.Type, glbl.PassBy, glbl.IsDeref, ast.GetFormattedType(prgrm, glbl), glbl.GetSize(prgrm, false))
+	text := fmt.Sprintf("signature type %d pass by %d deref %v type %s size %d", glbl.Type, glbl.PassBy, glbl.Deref, ast.GetFormattedType(prgrm, glbl), glbl.GetSize(prgrm, false))
 	switch glbl.Type {
 	case ast.TYPE_ATOMIC, ast.TYPE_POINTER_ATOMIC:
 		text += fmt.Sprintf(" meta %d", glbl.Meta)

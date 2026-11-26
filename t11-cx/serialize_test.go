@@ -65,7 +65,7 @@ func TestSerializeDebugInfoSections(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	info, err := ast.SerializeDebugInfo(prgrm, true, false)
+	info, err := ast.SerializedSizesOf(prgrm, true, false)
 	if err != nil {
 		t.Fatal(err)
 	}

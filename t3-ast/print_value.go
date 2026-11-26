@@ -238,7 +238,7 @@ func appendAtomic(dst []byte, memory []byte, typ types.Code, offset types.Pointe
 // argument's field path, names at addr after its indexes and dereferences.
 func appendArgValueAt(dst []byte, prgrm *CXProgram, addr types.Pointer, elt *CXArgument) []byte {
 	typ := elt.Type
-	if elt.IsPointer() {
+	if elt.PointerTyped() {
 		for _, op := range elt.DereferenceOperations {
 			if op == constants.DEREF_POINTER {
 				typ = elt.PointerTargetType
@@ -294,7 +294,7 @@ func AppendPrintableValue(dst []byte, prgrm *CXProgram, fp types.Pointer, argTyp
 		}
 		return appendAtomic(dst, prgrm.Memory, types.Code(argTypeSig.Meta), GetFinalOffset(prgrm, fp, nil, argTypeSig))
 	case TYPE_POINTER_ATOMIC:
-		if argTypeSig.IsDeref {
+		if argTypeSig.Deref {
 			return appendAtomic(dst, prgrm.Memory, types.Code(argTypeSig.Meta), GetFinalOffset(prgrm, fp, nil, argTypeSig))
 		}
 		return appendPointerAt(dst, prgrm.Memory, GetFinalOffset(prgrm, fp, nil, argTypeSig))
@@ -309,7 +309,7 @@ func AppendPrintableValue(dst []byte, prgrm *CXProgram, fp types.Pointer, argTyp
 		}
 		addr := GetFinalOffset(prgrm, fp, nil, argTypeSig)
 		pointer := argTypeSig.Type == TYPE_POINTER_ARRAY_ATOMIC || argTypeSig.Type == TYPE_POINTER_SLICE_ATOMIC
-		if pointer && !argTypeSig.IsDeref {
+		if pointer && !argTypeSig.Deref {
 			return appendPointerAt(dst, prgrm.Memory, addr)
 		}
 		return appendValueAt(dst, prgrm, addr, eltType, eltType.Size(), nil, dims, len(dims) > 1)
@@ -318,7 +318,7 @@ func AppendPrintableValue(dst []byte, prgrm *CXProgram, fp types.Pointer, argTyp
 		// Now an arena getter, site S0496.
 		structDetails := prgrm.GetCXTypeSignatureStructFromArray(argTypeSig.Meta)
 		addr := GetFinalOffset(prgrm, fp, nil, argTypeSig)
-		if argTypeSig.Type == TYPE_POINTER_STRUCT && !argTypeSig.IsDeref && len(structDetails.Fields) == 0 {
+		if argTypeSig.Type == TYPE_POINTER_STRUCT && !argTypeSig.Deref && len(structDetails.Fields) == 0 {
 			return appendStructPointerAt(dst, prgrm, addr, structDetails.StructType)
 		}
 		if argTypeSig.Type == TYPE_STRUCT && argTypeSig.PassBy == constants.PASSBY_REFERENCE && len(structDetails.Fields) == 0 {

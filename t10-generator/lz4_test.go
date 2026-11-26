@@ -56,7 +56,7 @@ func TestCompression_LZ4ProgramGolden(t *testing.T) {
 	}
 }
 
-// SerializeDebugInfo used to read the section offsets out of the LZ4 output.
+// SerializedSizesOf used to read the section offsets out of the LZ4 output.
 // See #80.
 func TestSerializeDebugInfoCompressed(t *testing.T) {
 	c := newProgramCodec(t)
@@ -77,7 +77,7 @@ func TestSerializeDebugInfoCompressed(t *testing.T) {
 		t.Fatal("compressed serialization did not keep the memory")
 	}
 
-	info, err := cxast.SerializeDebugInfo(prgrm, false, true)
+	info, err := cxast.SerializedSizesOf(prgrm, false, true)
 	if err != nil {
 		t.Fatal(err)
 	}

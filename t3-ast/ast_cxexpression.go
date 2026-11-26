@@ -32,23 +32,23 @@ func (cxet CXEXPR_TYPE) String() string {
 	return [...]string{"Unused", "MethodCall", "StructLiteral", "ArrayLiteral", "FunctionCall", "StructLiteralField", "ShortDeclarationShared", "ShortDeclarationSharedLast"}[int(cxet)]
 }
 
-// IsMethodCall checks if expression type is method call
-func (cxe CXExpression) IsMethodCall() bool {
+// TypeMethodCall checks if expression type is method call
+func (cxe CXExpression) TypeMethodCall() bool {
 	return cxe.ExpressionType == CXEXPR_METHOD_CALL
 }
 
-// IsStructLiteral checks if expression type is struct literal
-func (cxe CXExpression) IsStructLiteral() bool {
+// TypeStructLiteral checks if expression type is struct literal
+func (cxe CXExpression) TypeStructLiteral() bool {
 	return cxe.ExpressionType == CXEXPR_STRUCT_LITERAL
 }
 
-// IsArrayLiteral checks if expression type is array literal
-func (cxe CXExpression) IsArrayLiteral() bool {
+// TypeArrayLiteral checks if expression type is array literal
+func (cxe CXExpression) TypeArrayLiteral() bool {
 	return cxe.ExpressionType == CXEXPR_ARRAY_LITERAL
 }
 
-// IsBreak checks if expression type is break
-func (cxe CXExpression) IsBreak(prgrm *CXProgram) bool {
+// BreakOperator checks if expression type is break
+func (cxe CXExpression) BreakOperator(prgrm *CXProgram) bool {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S0120.
 	expression, err := prgrm.GetCXAtomicOp(cxe.Index)
@@ -60,8 +60,8 @@ func (cxe CXExpression) IsBreak(prgrm *CXProgram) bool {
 	return expressionOperator != nil && expressionOperator.AtomicOPCode == constants.OP_BREAK
 }
 
-// IsContinue checks if expression type is continue
-func (cxe CXExpression) IsContinue(prgrm *CXProgram) bool {
+// ContinueOperator checks if expression type is continue
+func (cxe CXExpression) ContinueOperator(prgrm *CXProgram) bool {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S0122.
 	expression, err := prgrm.GetCXAtomicOp(cxe.Index)
@@ -73,8 +73,8 @@ func (cxe CXExpression) IsContinue(prgrm *CXProgram) bool {
 	return expressionOperator != nil && expressionOperator.AtomicOPCode == constants.OP_CONTINUE
 }
 
-// IsUndType checks if expression type is und type
-func (cxe CXExpression) IsUndType(prgrm *CXProgram) bool {
+// UndTyped checks if expression type is und type
+func (cxe CXExpression) UndTyped(prgrm *CXProgram) bool {
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S0124.
 	expression, err := prgrm.GetCXAtomicOp(cxe.Index)
@@ -83,7 +83,7 @@ func (cxe CXExpression) IsUndType(prgrm *CXProgram) bool {
 	}
 
 	expressionOperator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(expression.Operator)
-	return expressionOperator != nil && IsOperator(expressionOperator.AtomicOPCode)
+	return expressionOperator != nil && OpcodeOperator(expressionOperator.AtomicOPCode)
 
 }
 

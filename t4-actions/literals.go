@@ -95,7 +95,7 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 
 		exprCXLine, _ := prgrm.GetPreviousCXLine(exprs, i)
 
-		if expr.IsArrayLiteral() {
+		if expr.TypeArrayLiteral() {
 			expr.ExpressionType = ast.CXEXPR_UNUSED
 			if exprAtomicOpOperator == nil && len(exprAtomicOp.GetOutputs(prgrm)) == 0 {
 				// An element with no value, such as T{} in a []i32.
@@ -301,7 +301,7 @@ func sliceLiteralStructElements(prgrm *ast.CXProgram, strct *ast.CXStruct, exprs
 	var elements []ast.CXExpression
 	start := 0
 	for i := range exprs {
-		if exprs[i].Type == ast.CX_LINE || !exprs[i].IsArrayLiteral() {
+		if exprs[i].Type == ast.CX_LINE || !exprs[i].TypeArrayLiteral() {
 			continue
 		}
 		elements = append(elements, sliceLiteralStructElement(prgrm, strct, exprs[start:i+1], prefix)...)
@@ -717,7 +717,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 	result = append(result, *arrVarExprCXLine, *arrVarExpr)
 
 	for i := range exprs {
-		if exprs[i].Type != ast.CX_LINE && exprs[i].IsArrayLiteral() {
+		if exprs[i].Type != ast.CX_LINE && exprs[i].TypeArrayLiteral() {
 			outputlessValueCheck(prgrm, exprs[:i+1])
 		}
 	}
@@ -734,7 +734,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 		}
 		expressionOperator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(expression.Operator)
 
-		if expr.IsArrayLiteral() {
+		if expr.TypeArrayLiteral() {
 			expr.ExpressionType = ast.CXEXPR_UNUSED
 
 			_, sym := ast.MakeArgument(prgrm, symName, CurrentFile, LineNo)
@@ -938,7 +938,7 @@ func StructLiteralField(prgrm *ast.CXProgram, fieldName string, line int, column
 func structLiteralReference(value []ast.CXExpression) bool {
 	for i := range value {
 		if value[i].Type != ast.CX_LINE {
-			return value[i].IsStructLiteral()
+			return value[i].TypeStructLiteral()
 		}
 	}
 	return false
@@ -973,7 +973,7 @@ func structLiteralValue(prgrm *ast.CXProgram, strct *ast.CXStruct, name stringpo
 	result := []ast.CXExpression{*declCXLine, *decl}
 
 	for i := range writes {
-		if writes[i].Type != ast.CX_LINE && writes[i].IsStructLiteral() {
+		if writes[i].Type != ast.CX_LINE && writes[i].TypeStructLiteral() {
 			sig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[writes[i].Index].GetOutputs(prgrm)[0])
 			out := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(sig.Meta))
 			if out.Name == name {

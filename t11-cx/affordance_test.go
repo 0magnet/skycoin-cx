@@ -78,11 +78,11 @@ func TestAffordanceLiteralParse(t *testing.T) {
 			got := expected{kind: value.AffordanceValueKind}
 			switch value.AffordanceValueKind {
 			case ast.AffordanceKindMemory:
-				got.item = ast.AffordanceMemoryNames[value.AffordanceValueItem]
+				got.item = ast.AffordanceMemoryNames[value.AffordanceValueTarget]
 			case ast.AffordanceKindFunction, ast.AffordanceKindLocal:
-				got.item = prgrm.CXProgramNameText(prgrm.CXProgramFunctionSlotLive(int(value.AffordanceValueItem)).Name)
+				got.item = prgrm.CXProgramNameText(prgrm.CXProgramFunctionSlotLive(int(value.AffordanceValueTarget)).Name)
 			case ast.AffordanceKindStruct:
-				got.item = prgrm.CXProgramNameText(prgrm.CXStructs[value.AffordanceValueItem].Name)
+				got.item = prgrm.CXProgramNameText(prgrm.CXStructs[value.AffordanceValueTarget].Name)
 			}
 			if value.AffordanceValueVariable >= 0 {
 				got.variable = prgrm.CXProgramNameText(actions.StripNameNumber(prgrm, prgrm.GetCXTypeSignatureFromArray(value.AffordanceValueVariable).Name))
@@ -166,7 +166,7 @@ func TestAffordanceSerializeDeclarations(t *testing.T) {
 			if _, err := ast.Deserialize(b, nil); err == nil {
 				t.Fatal("Deserialize loaded a selection")
 			}
-			value.AffordanceValueItem = 1 << 20
+			value.AffordanceValueTarget = 1 << 20
 			if test.kind != ast.AffordanceKindPackage {
 				if _, ok := ast.SerializeAffordance(prgrm, value); ok {
 					t.Fatal("SerializeAffordance took an index outside the program")

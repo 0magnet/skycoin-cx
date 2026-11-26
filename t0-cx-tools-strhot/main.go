@@ -26,7 +26,7 @@ import (
 
 const modulePath = "github.com/skycoin/skycoin-cx"
 
-// runRoot is the run loop. Every function with the OpcodeHandler signature
+// runRoot is the run loop. Every function with the OpcodeGoFunction signature
 // is a root as well.
 const runRoot = modulePath + "/t4-execute.RunCxAst"
 
@@ -290,7 +290,7 @@ func shortName(obj *types.Func) string {
 }
 
 // opcodeGoFunctionSignature reports func(*CXProgram, []CXValue, []CXValue), the
-// OpcodeHandler type.
+// OpcodeGoFunction type.
 func opcodeGoFunctionSignature(sig *types.Signature) bool {
 	if sig.Recv() != nil || sig.Results().Len() != 0 || sig.Params().Len() != 3 {
 		return false

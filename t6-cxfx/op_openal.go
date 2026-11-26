@@ -46,7 +46,7 @@ func OpAlLoadWav(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	outputSlicePointer := outputs[8].Offset
 	outputSliceOffset := types.Read_ptr(prgrm.Memory, outputSlicePointer)
 	outputSliceOffset = ast.SliceResizeEx(prgrm, outputSliceOffset, types.Cast_int_to_ptr(len(data)), 1)
-	copy(ast.GetSliceData(prgrm, outputSliceOffset, 1), data)
+	copy(ast.SliceElementsGet(prgrm, outputSliceOffset, 1), data)
 	outputs[8].Set_ptr(prgrm, outputSliceOffset)
 }
 

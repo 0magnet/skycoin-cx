@@ -420,7 +420,7 @@ func appendArgsByType(cxprogram *cxast.CXProgram, argsList []*cxast.CXTypeSignat
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1581.
 		arg := cxprogram.GetCXArgFromArray(cxast.CXArgumentIndex(typeSig.Meta))
-		if arg.IsStruct() {
+		if arg.StructTyped() {
 			for _, fieldIdx := range arg.StructType.Fields {
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S1582.

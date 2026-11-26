@@ -18,13 +18,13 @@ type AffordanceKind int32
 const (
 	AffordanceKindProgram AffordanceKind = iota
 	// AffordanceKindMemory is mem(data), mem(stack) or mem(heap),
-	// AffordanceValueItem holds the AffordanceMemory.
+	// AffordanceValueTarget holds the AffordanceMemory.
 	AffordanceKindMemory
 	AffordanceKindPackage
 	AffordanceKindFunction
 	AffordanceKindStruct
 	// AffordanceKindGlobal and AffordanceKindLocal are var(name), a global
-	// or a variable of AffordanceValueItem, the function.
+	// or a variable of AffordanceValueTarget, the function.
 	AffordanceKindGlobal
 	AffordanceKindLocal
 	AffordanceKindCount
@@ -49,7 +49,7 @@ var AffordanceMemoryNames = [AffordanceMemoryCount]string{"data", "stack", "heap
 type AffordanceValue struct {
 	AffordanceValueKind     AffordanceKind
 	AffordanceValuePackage  CXPackageIndex
-	AffordanceValueItem     int32
+	AffordanceValueTarget   int32
 	AffordanceValueVariable CXTypeSignatureIndex
 }
 
@@ -57,7 +57,7 @@ type AffordanceValue struct {
 func AffordanceValueWrite(memory []byte, offset types.Pointer, value AffordanceValue) {
 	types.Write_i32(memory, offset, int32(value.AffordanceValueKind))
 	types.Write_i32(memory, offset+4, int32(value.AffordanceValuePackage))
-	types.Write_i32(memory, offset+8, value.AffordanceValueItem)
+	types.Write_i32(memory, offset+8, value.AffordanceValueTarget)
 	types.Write_i32(memory, offset+12, int32(value.AffordanceValueVariable))
 }
 
@@ -66,7 +66,7 @@ func AffordanceValueRead(memory []byte, offset types.Pointer) AffordanceValue {
 	return AffordanceValue{
 		AffordanceValueKind:     AffordanceKind(types.Read_i32(memory, offset)),
 		AffordanceValuePackage:  CXPackageIndex(types.Read_i32(memory, offset+4)),
-		AffordanceValueItem:     types.Read_i32(memory, offset+8),
+		AffordanceValueTarget:   types.Read_i32(memory, offset+8),
 		AffordanceValueVariable: CXTypeSignatureIndex(types.Read_i32(memory, offset+12)),
 	}
 }
@@ -136,7 +136,7 @@ func SerializeAffordance(prgrm *CXProgram, value AffordanceValue) ([]byte, bool)
 		return b, err == nil
 	case AffordanceKindMemory:
 		var first, last types.Pointer
-		switch AffordanceMemory(value.AffordanceValueItem) {
+		switch AffordanceMemory(value.AffordanceValueTarget) {
 		case AffordanceMemoryData:
 			first, last = prgrm.Data.StartsAt, prgrm.Data.StartsAt+prgrm.Data.Size
 		case AffordanceMemoryStack:
@@ -176,18 +176,18 @@ func SerializeAffordance(prgrm *CXProgram, value AffordanceValue) ([]byte, bool)
 			}
 		}
 	case AffordanceKindFunction:
-		if int(value.AffordanceValueItem) < 0 || int(value.AffordanceValueItem) >= prgrm.CXProgramFunctionSlotCount() {
+		if int(value.AffordanceValueTarget) < 0 || int(value.AffordanceValueTarget) >= prgrm.CXProgramFunctionSlotCount() {
 			return nil, false
 		}
-		fn := prgrm.CXProgramFunctionSlotLive(int(value.AffordanceValueItem))
+		fn := prgrm.CXProgramFunctionSlotLive(int(value.AffordanceValueTarget))
 		if fn == nil || serializeFunction(prgrm, &encoder, fn) != nil {
 			return nil, false
 		}
 	case AffordanceKindStruct:
-		if int(value.AffordanceValueItem) < 0 || int(value.AffordanceValueItem) >= len(prgrm.CXStructs) {
+		if int(value.AffordanceValueTarget) < 0 || int(value.AffordanceValueTarget) >= len(prgrm.CXStructs) {
 			return nil, false
 		}
-		serializeStruct(&encoder, &prgrm.CXStructs[value.AffordanceValueItem])
+		serializeStruct(&encoder, &prgrm.CXStructs[value.AffordanceValueTarget])
 	default:
 		return nil, false
 	}
@@ -214,7 +214,7 @@ func affordanceVariableBytes(prgrm *CXProgram, value AffordanceValue) ([]byte, b
 		found := false
 		for call := int(prgrm.CallCounter); call >= 0 && call < len(prgrm.CallStack); call-- {
 			operator := prgrm.CallStack[call].Operator
-			if operator != CXFunctionGidNil && CXFunctionGidSlot(operator) == uint32(value.AffordanceValueItem) {
+			if operator != CXFunctionGidNil && CXFunctionGidSlot(operator) == uint32(value.AffordanceValueTarget) {
 				framePointer = prgrm.CallStack[call].FramePointer
 				found = true
 				break
@@ -245,11 +245,11 @@ func CXTypeSignatureWhole(prgrm *CXProgram, sig *CXTypeSignature) bool {
 	case TYPE_ATOMIC, TYPE_SLICE_ATOMIC:
 		return sig.Type == TYPE_ATOMIC || len(prgrm.GetCXTypeSignatureArrayFromArray(sig.Meta).Indexes) == 0
 	case TYPE_POINTER_ATOMIC, TYPE_POINTER_SLICE_ATOMIC:
-		return !sig.IsDeref
+		return !sig.Deref
 	case TYPE_ARRAY_ATOMIC, TYPE_POINTER_ARRAY_ATOMIC:
-		return !sig.IsDeref && len(prgrm.GetCXTypeSignatureArrayFromArray(sig.Meta).Indexes) == 0
+		return !sig.Deref && len(prgrm.GetCXTypeSignatureArrayFromArray(sig.Meta).Indexes) == 0
 	case TYPE_STRUCT, TYPE_POINTER_STRUCT:
-		return !sig.IsDeref && len(prgrm.GetCXTypeSignatureStructFromArray(sig.Meta).Fields) == 0
+		return !sig.Deref && len(prgrm.GetCXTypeSignatureStructFromArray(sig.Meta).Fields) == 0
 	case TYPE_CXARGUMENT_DEPRECATE:
 		arg := prgrm.GetCXArgFromArray(CXArgumentIndex(sig.Meta))
 		return len(arg.Fields) == 0 && len(arg.Indexes) == 0 && len(arg.DereferenceOperations) == 0

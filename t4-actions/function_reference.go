@@ -12,7 +12,7 @@ import (
 // a function name is a compile error.
 func functionReferenceInputsResolve(prgrm *ast.CXProgram, expression *ast.CXAtomicOperator) {
 	operator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(expression.Operator)
-	if operator == nil || !operator.IsBuiltIn() || expression.Inputs == nil {
+	if operator == nil || !operator.BuiltIn() || expression.Inputs == nil {
 		return
 	}
 	expected := operator.GetInputs(prgrm)

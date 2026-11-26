@@ -11,18 +11,18 @@ import (
 
 type CXArgumentIndex int
 
-func (arg CXArgument) IsPointer() bool {
+func (arg CXArgument) PointerTyped() bool {
 	return arg.Type == types.POINTER
 }
 
-func (arg CXArgument) IsString() bool {
+func (arg CXArgument) StringTyped() bool {
 	return arg.PointerTargetType == types.STR || arg.Type == types.STR
 }
 
 // CXArgumentStringSlicePointer reports whether arg is a *[]str, which takes
 // an address as a *[]i32 does instead of the string path of a *str.
 func CXArgumentStringSlicePointer(arg *CXArgument) bool {
-	return arg.IsPointer() && arg.PointerTargetType == types.STR && arg.IsSlice()
+	return arg.PointerTyped() && arg.PointerTargetType == types.STR && arg.SliceTyped()
 }
 
 // CXArgumentTakesAddress reports whether assigning input to the output element
@@ -35,7 +35,7 @@ func CXArgumentTakesAddress(prgrm *CXProgram, out *CXArgument, input *CXTypeSign
 	if specs := out.DeclarationSpecifiers; len(specs) > 0 && specs[len(specs)-1] == constants.DECL_POINTER && len(out.DereferenceOperations) == 0 && CXTypeSignaturePassBy(prgrm, input) == constants.PASSBY_REFERENCE {
 		return true
 	}
-	return out.IsPointer() && out.PointerTargetType != types.STR && !CXTypeSignaturePointerValue(prgrm, input)
+	return out.PointerTyped() && out.PointerTargetType != types.STR && !CXTypeSignaturePointerValue(prgrm, input)
 }
 
 // CXTypeSignatureStructTakesAddress reports whether assigning input to the
@@ -45,7 +45,7 @@ func CXTypeSignatureStructTakesAddress(prgrm *CXProgram, out *CXTypeSignature, i
 		return true
 	}
 	// A field such as b.p is the pointer when it is last.
-	pointer := out.Type == TYPE_POINTER_STRUCT && !out.IsDeref
+	pointer := out.Type == TYPE_POINTER_STRUCT && !out.Deref
 	if fields := prgrm.GetCXTypeSignatureStructFromArray(out.Meta).Fields; len(fields) > 0 {
 		pointer = cxArgumentPointerField(prgrm.GetCXArgFromArray(fields[len(fields)-1]))
 	}
@@ -60,14 +60,14 @@ func CXTypeSignaturePointerValue(prgrm *CXProgram, sig *CXTypeSignature) bool {
 	}
 	switch sig.Type {
 	case TYPE_STRUCT, TYPE_POINTER_STRUCT:
-		// A field access such as b.p is decided by its last field. IsDeref of
+		// A field access such as b.p is decided by its last field. Deref of
 		// rb.p reads rb, not the field.
 		if fields := prgrm.GetCXTypeSignatureStructFromArray(sig.Meta).Fields; len(fields) > 0 {
 			return cxArgumentPointerField(prgrm.GetCXArgFromArray(fields[len(fields)-1]).GetAssignmentElement(prgrm))
 		}
-		return sig.Type == TYPE_POINTER_STRUCT && !sig.IsDeref
+		return sig.Type == TYPE_POINTER_STRUCT && !sig.Deref
 	}
-	if sig.IsDeref {
+	if sig.Deref {
 		return false
 	}
 	switch sig.Type {
@@ -75,7 +75,7 @@ func CXTypeSignaturePointerValue(prgrm *CXProgram, sig *CXTypeSignature) bool {
 		return true
 	case TYPE_CXARGUMENT_DEPRECATE:
 		elt := prgrm.GetCXArgFromArray(CXArgumentIndex(sig.Meta)).GetAssignmentElement(prgrm)
-		if elt.IsPointer() {
+		if elt.PointerTyped() {
 			return true
 		}
 		// A *i32 keeps the type i32 and ends its specifiers with the pointer. A
@@ -89,11 +89,11 @@ func CXTypeSignaturePointerValue(prgrm *CXProgram, sig *CXTypeSignature) bool {
 	return false
 }
 
-func (arg CXArgument) IsStruct() bool {
+func (arg CXArgument) StructTyped() bool {
 	return arg.StructType != nil
 }
 
-func (arg CXArgument) IsSlice() bool {
+func (arg CXArgument) SliceTyped() bool {
 	if arg.ArraySliceMixed() {
 		// An element of [][N]T, as a[i] is, is an array, and of [N][]T a slice.
 		return len(arg.Indexes) < len(arg.Lengths) && arg.Lengths[len(arg.Indexes)] == 0
@@ -305,11 +305,11 @@ func MakeGlobal(prgrm *CXProgram, name stringpool.StringGid, typeCode types.Code
 // ------------------------------------------------------------------------------------------
 //           Special functions to determine its type (atomic, array etomic, etc)
 
-func IsTypeAtomic(arg *CXArgument) bool {
+func CXArgumentTypeAtomic(arg *CXArgument) bool {
 	// TODO: implement including types.IDENTIFIER
-	// return (arg.Type.Primitive() || arg.Type == types.IDENTIFIER) && !arg.IsSlice() && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
+	// return (arg.Type.Primitive() || arg.Type == types.IDENTIFIER) && !arg.SliceTyped() && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
 
-	return arg.Type.Primitive() && !arg.IsSlice() && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
+	return arg.Type.Primitive() && !arg.SliceTyped() && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 0 || (len(arg.DeclarationSpecifiers) == 1 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC))
 }
 
 // declarationSpecifiersForm reports whether specs are base followed by one or
@@ -333,84 +333,84 @@ func declarationSpecifiersForm(specs []int, base int, dims int, pointer bool) bo
 	return true
 }
 
-func IsTypePointerAtomic(arg *CXArgument) bool {
-	return arg.Type.Primitive() && arg.PointerTargetType == 0 && arg.StructType == nil && !arg.IsSlice() && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_POINTER)
+func CXArgumentTypePointerAtomic(arg *CXArgument) bool {
+	return arg.Type.Primitive() && arg.PointerTargetType == 0 && arg.StructType == nil && !arg.SliceTyped() && len(arg.Lengths) == 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && (len(arg.DeclarationSpecifiers) == 2 && arg.DeclarationSpecifiers[0] == constants.DECL_BASIC && arg.DeclarationSpecifiers[1] == constants.DECL_POINTER)
 }
 
-func IsTypeArrayAtomic(arg *CXArgument) bool {
-	isThereDeclPointer := false
+func CXArgumentTypeArrayAtomic(arg *CXArgument) bool {
+	declPointerFound := false
 	for _, decl := range arg.DeclarationSpecifiers {
 		if decl == constants.DECL_POINTER {
-			isThereDeclPointer = true
+			declPointerFound = true
 		}
 	}
 
-	return !isThereDeclPointer && arg.Type.Primitive() && !arg.IsSlice() && len(arg.Lengths) > 0 && !slices.Contains(arg.Lengths, 0) && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && declarationSpecifiersForm(arg.DeclarationSpecifiers, constants.DECL_BASIC, constants.DECL_ARRAY, false)
+	return !declPointerFound && arg.Type.Primitive() && !arg.SliceTyped() && len(arg.Lengths) > 0 && !slices.Contains(arg.Lengths, 0) && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && declarationSpecifiersForm(arg.DeclarationSpecifiers, constants.DECL_BASIC, constants.DECL_ARRAY, false)
 }
 
-func IsTypePointerArrayAtomic(arg *CXArgument) bool {
-	isThereDeclPointer := false
+func CXArgumentTypePointerArrayAtomic(arg *CXArgument) bool {
+	declPointerFound := false
 	for _, decl := range arg.DeclarationSpecifiers {
 		if decl == constants.DECL_POINTER {
-			isThereDeclPointer = true
+			declPointerFound = true
 		}
 	}
 
-	return isThereDeclPointer && arg.Type.Primitive() && !arg.IsSlice() && len(arg.Lengths) > 0 && !slices.Contains(arg.Lengths, 0) && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && declarationSpecifiersForm(arg.DeclarationSpecifiers, constants.DECL_BASIC, constants.DECL_ARRAY, true)
+	return declPointerFound && arg.Type.Primitive() && !arg.SliceTyped() && len(arg.Lengths) > 0 && !slices.Contains(arg.Lengths, 0) && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && declarationSpecifiersForm(arg.DeclarationSpecifiers, constants.DECL_BASIC, constants.DECL_ARRAY, true)
 }
 
-func IsTypeSliceAtomic(arg *CXArgument) bool {
-	isThereDeclPointer := false
+func CXArgumentTypeSliceAtomic(arg *CXArgument) bool {
+	declPointerFound := false
 	for _, decl := range arg.DeclarationSpecifiers {
 		if decl == constants.DECL_POINTER {
-			isThereDeclPointer = true
+			declPointerFound = true
 		}
 	}
 
-	return !isThereDeclPointer && arg.Type.Primitive() && arg.IsSlice() && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && declarationSpecifiersForm(arg.DeclarationSpecifiers, constants.DECL_BASIC, constants.DECL_SLICE, false)
+	return !declPointerFound && arg.Type.Primitive() && arg.SliceTyped() && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && declarationSpecifiersForm(arg.DeclarationSpecifiers, constants.DECL_BASIC, constants.DECL_SLICE, false)
 }
 
-func IsTypePointerSliceAtomic(arg *CXArgument) bool {
-	isThereDeclPointer := false
+func CXArgumentTypePointerSliceAtomic(arg *CXArgument) bool {
+	declPointerFound := false
 	for _, decl := range arg.DeclarationSpecifiers {
 		if decl == constants.DECL_POINTER {
-			isThereDeclPointer = true
+			declPointerFound = true
 		}
 	}
 
-	return isThereDeclPointer && arg.Type.Primitive() && arg.IsSlice() && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && declarationSpecifiersForm(arg.DeclarationSpecifiers, constants.DECL_BASIC, constants.DECL_SLICE, true)
+	return declPointerFound && arg.Type.Primitive() && arg.SliceTyped() && len(arg.Lengths) > 0 && len(arg.Fields) == 0 && len(arg.DereferenceOperations) == 0 && declarationSpecifiersForm(arg.DeclarationSpecifiers, constants.DECL_BASIC, constants.DECL_SLICE, true)
 }
 
-func IsTypeStruct(arg *CXArgument) bool {
-	isThereDeclPointer := false
-	IsThereDeclSlice := false
+func CXArgumentTypeStruct(arg *CXArgument) bool {
+	declPointerFound := false
+	declSliceFound := false
 	for _, decl := range arg.DeclarationSpecifiers {
 		if decl == constants.DECL_POINTER {
-			isThereDeclPointer = true
+			declPointerFound = true
 		}
 
 		if decl == constants.DECL_SLICE {
-			IsThereDeclSlice = true
+			declSliceFound = true
 		}
 	}
 
-	return !isThereDeclPointer && !IsThereDeclSlice && !arg.IsSlice() && len(arg.Lengths) == 0 && arg.StructType != nil && len(arg.DeclarationSpecifiers) >= 1 && arg.DeclarationSpecifiers[0] == constants.DECL_STRUCT
+	return !declPointerFound && !declSliceFound && !arg.SliceTyped() && len(arg.Lengths) == 0 && arg.StructType != nil && len(arg.DeclarationSpecifiers) >= 1 && arg.DeclarationSpecifiers[0] == constants.DECL_STRUCT
 }
 
-func IsTypePointerStruct(arg *CXArgument) bool {
-	isThereDeclPointer := false
-	IsThereDeclSlice := false
+func CXArgumentTypePointerStruct(arg *CXArgument) bool {
+	declPointerFound := false
+	declSliceFound := false
 	for _, decl := range arg.DeclarationSpecifiers {
 		if decl == constants.DECL_POINTER {
-			isThereDeclPointer = true
+			declPointerFound = true
 		}
 
 		if decl == constants.DECL_SLICE {
-			IsThereDeclSlice = true
+			declSliceFound = true
 		}
 	}
 
-	return isThereDeclPointer && !IsThereDeclSlice && !arg.IsSlice() && len(arg.Lengths) == 0 && arg.StructType != nil && declarationSpecifiersForm(arg.DeclarationSpecifiers, constants.DECL_STRUCT, 0, true)
+	return declPointerFound && !declSliceFound && !arg.SliceTyped() && len(arg.Lengths) == 0 && arg.StructType != nil && declarationSpecifiersForm(arg.DeclarationSpecifiers, constants.DECL_STRUCT, 0, true)
 }
 
 // argumentDebugAlloc allocates the debug record of an argument in prgrm's
@@ -419,9 +419,9 @@ func argumentDebugAlloc(prgrm *CXProgram, fileName SourceFileGid, fileLine int) 
 	if prgrm == nil {
 		return CXArgumentDebugGidNil
 	}
-	manager := &prgrm.CxIrState.CXArgumentDebugMng
-	gid := manager.CXArgumentDebugAlloc()
-	details := manager.CXArgumentDebugGet(gid)
+	argumentDebugMng := &prgrm.CxIrState.CXArgumentDebugMng
+	gid := argumentDebugMng.CXArgumentDebugAlloc()
+	details := argumentDebugMng.CXArgumentDebugGet(gid)
 	details.FileName = fileName
 	details.FileLine = fileLine
 	details.FileColumn = prgrm.CXProgramCompileErrorColumn(fileName, fileLine)
@@ -442,7 +442,7 @@ func CXArgumentDebugFileLine(prgrm *CXProgram, gid CXArgumentDebugGid) ([]byte, 
 // cxArgumentPointerField reports whether the field access arg is a pointer,
 // also a *i32, which keeps the type i32 and ends its specifiers with it.
 func cxArgumentPointerField(arg *CXArgument) bool {
-	if arg.IsPointer() {
+	if arg.PointerTyped() {
 		return true
 	}
 	specs := arg.DeclarationSpecifiers

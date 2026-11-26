@@ -6,7 +6,7 @@ import (
 )
 
 type DereferenceStruct struct {
-	isPointer     bool
+	pointerTyped  bool
 	baseOffset    types.Pointer
 	sizeofElement types.Pointer
 	derefPointer  bool
@@ -233,7 +233,7 @@ func finalOffsetCompute(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, 
 		}
 		finalOffset = argTypeSig.Offset
 
-		if argTypeSig.IsDeref {
+		if argTypeSig.Deref {
 			finalOffset = types.Read_ptr(prgrm.Memory, finalOffset)
 		}
 
@@ -274,7 +274,7 @@ func finalOffsetCompute(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, 
 	} else if argTypeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
 		finalOffset = frameAddress(prgrm, fp, argTypeSig.Offset)
 
-		if argTypeSig.IsDeref {
+		if argTypeSig.Deref {
 			finalOffset = types.Read_ptr(prgrm.Memory, finalOffset)
 
 			// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
@@ -296,7 +296,7 @@ func finalOffsetCompute(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, 
 			}
 		}
 
-		if argTypeSig.IsDeref && finalOffset.Valid() && finalOffset >= prgrm.Heap.StartsAt {
+		if argTypeSig.Deref && finalOffset.Valid() && finalOffset >= prgrm.Heap.StartsAt {
 			// then it's an object
 			finalOffset += types.OBJECT_HEADER_SIZE
 		}
@@ -311,7 +311,7 @@ func finalOffsetCompute(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, 
 	} else if argTypeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
 		argTypeSigOffset := frameAddress(prgrm, fp, argTypeSig.Offset)
 
-		if argTypeSig.IsDeref {
+		if argTypeSig.Deref {
 			argTypeSigOffset = types.Read_ptr(prgrm.Memory, argTypeSigOffset)
 			if argTypeSigOffset.Valid() && argTypeSigOffset >= prgrm.Heap.StartsAt {
 				// p points to a slice variable in a heap object.
@@ -344,7 +344,7 @@ func finalOffsetCompute(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, 
 	} else if argTypeSig.Type == TYPE_POINTER_STRUCT {
 		argTypeSigOffset := frameAddress(prgrm, fp, argTypeSig.Offset)
 
-		if argTypeSig.IsDeref {
+		if argTypeSig.Deref {
 			argTypeSigOffset = types.Read_ptr(prgrm.Memory, argTypeSigOffset)
 			if argTypeSigOffset.Valid() && argTypeSigOffset >= prgrm.Heap.StartsAt {
 				// then it's an object
@@ -419,19 +419,19 @@ func finalOffsetSliceIndexes(prgrm *CXProgram, fp types.Pointer, offset types.Po
 
 		offset += offsetIndexFromI32(indexValue, fault) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
 
-		offsetSliceIndexCheck(IsValidSliceIndex(prgrm, baseOffset, offset, sizeToUse), fault)
+		offsetSliceIndexCheck(SliceIndexValid(prgrm, baseOffset, offset, sizeToUse), fault)
 	}
 	return offset
 }
 
 func CalculateDereference_Slice(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
-	if drfsStruct.isPointer && drfsStruct.finalOffset.Valid() && drfsStruct.finalOffset >= prgrm.Heap.StartsAt {
+	if drfsStruct.pointerTyped && drfsStruct.finalOffset.Valid() && drfsStruct.finalOffset >= prgrm.Heap.StartsAt {
 		// A slice behind a pointer into a heap object, as in (*s[i])[j] on a
 		// []*[]T, see PointerOfAddress.
 		drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
 	}
 	drfsStruct.sliceIndexed = true
-	drfsStruct.isPointer = false
+	drfsStruct.pointerTyped = false
 	drfsStruct.finalOffset = types.Read_ptr(prgrm.Memory, drfsStruct.finalOffset)
 	drfsStruct.baseOffset = drfsStruct.finalOffset
 
@@ -449,7 +449,7 @@ func CalculateDereference_Slice(prgrm *CXProgram, drfsStruct *DereferenceStruct)
 
 	drfsStruct.finalOffset += offsetIndexFromI32(indexValue, drfsStruct.fault) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
 
-	offsetSliceIndexCheck(IsValidSliceIndex(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, sizeToUse), drfsStruct.fault)
+	offsetSliceIndexCheck(SliceIndexValid(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, sizeToUse), drfsStruct.fault)
 
 	drfsStruct.idxCounter++
 }
@@ -490,11 +490,11 @@ func CalculateDereference_Array(prgrm *CXProgram, drfsStruct *DereferenceStruct)
 }
 
 func CalculateDereference_Pointer(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
-	if drfsStruct.isPointer && drfsStruct.finalOffset.Valid() && drfsStruct.finalOffset >= prgrm.Heap.StartsAt {
+	if drfsStruct.pointerTyped && drfsStruct.finalOffset.Valid() && drfsStruct.finalOffset >= prgrm.Heap.StartsAt {
 		// A pointer read from a heap object, as in **pp.
 		drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
 	}
-	drfsStruct.isPointer = true
+	drfsStruct.pointerTyped = true
 	drfsStruct.finalOffset = types.Read_ptr(prgrm.Memory, drfsStruct.finalOffset)
 	drfsStruct.derefPointer = true
 }
@@ -531,14 +531,14 @@ func calculateDereferencesCompute(prgrm *CXProgram, arg *CXArgument, finalOffset
 		}
 	}
 
-	if drfsStruct.finalOffset.Valid() && drfsStruct.finalOffset >= prgrm.Heap.StartsAt && drfsStruct.isPointer {
+	if drfsStruct.finalOffset.Valid() && drfsStruct.finalOffset >= prgrm.Heap.StartsAt && drfsStruct.pointerTyped {
 		// then it's an object
 		drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
 		// An element of a slice, as ps[i] is, is not the slice. The Lengths of
 		// an arg with fields, as in gp.s, are those of its last field.
-		if drfsStruct.arg.IsSlice() && !drfsStruct.sliceIndexed && len(drfsStruct.arg.Fields) == 0 {
+		if drfsStruct.arg.SliceTyped() && !drfsStruct.sliceIndexed && len(drfsStruct.arg.Fields) == 0 {
 			drfsStruct.finalOffset += constants.SLICE_HEADER_SIZE
-			offsetSliceIndexCheck(IsValidSliceIndex(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, drfsStruct.sizeofElement), drfsStruct.fault)
+			offsetSliceIndexCheck(SliceIndexValid(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, drfsStruct.sizeofElement), drfsStruct.fault)
 		}
 	}
 

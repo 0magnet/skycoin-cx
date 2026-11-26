@@ -166,10 +166,10 @@ func IterationExpressions(prgrm *ast.CXProgram,
 			continue
 		}
 		statementExpressionIdx := statementExpr.Index
-		if statementExpr.IsBreak(prgrm) {
+		if statementExpr.BreakOperator(prgrm) {
 			prgrm.CXAtomicOps[statementExpressionIdx].ThenLines = elseLines - i - 1
 			prgrm.CXAtomicOps[statementExpressionIdx].Operator = prgrm.AddNativeFunctionInArray(jmpFn)
-		} else if statementExpr.IsContinue(prgrm) {
+		} else if statementExpr.ContinueOperator(prgrm) {
 			prgrm.CXAtomicOps[statementExpressionIdx].ThenLines = len(statementExprs) - i - 1
 			prgrm.CXAtomicOps[statementExpressionIdx].Operator = prgrm.AddNativeFunctionInArray(jmpFn)
 		}
@@ -893,7 +893,7 @@ func UnaryExpression(prgrm *ast.CXProgram, op string, prevExprs []ast.CXExpressi
 			// exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, constants.DECL_DEREF)
 
 			// a pointer type that we want to get its value
-			lastPrevExpressionOutputTypeSig.IsDeref = true
+			lastPrevExpressionOutputTypeSig.Deref = true
 		case "&":
 			lastPrevExpressionOutputTypeSig.PassBy = constants.PASSBY_REFERENCE
 		case "!":
@@ -996,12 +996,12 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 		out.StructType = outParam.StructType
 		out.PreviouslyDeclared = true
 
-		if ast.IsTypeArrayAtomic(outParam) {
+		if ast.CXArgumentTypeArrayAtomic(outParam) {
 			// return [2]i32{1, 2} checks the literal against the whole result type.
 			out.Lengths = slices.Clone(outParam.Lengths)
 			out.DeclarationSpecifiers = slices.Clone(outParam.DeclarationSpecifiers)
 			typeSigIdx = ast.AllocCXTypeSignatureOfCXArgDeprecate(prgrm, out)
-		} else if ast.IsTypePointerArrayAtomic(outParam) {
+		} else if ast.CXArgumentTypePointerArrayAtomic(outParam) {
 			// The result takes its pointer specifiers from its declaration.
 			typeSigIdx = ast.AllocCXTypeSignatureOfCXArgDeprecate(prgrm, out)
 			pointerArrayOut = out
@@ -1090,7 +1090,7 @@ func AssociateReturnExpressions(prgrm *ast.CXProgram, idx int, retExprs []ast.CX
 			return append(lineExprs, *MakeCXLineExpressionCurrent(prgrm), lastExpr)
 		}
 		return retExprs
-	} else if lastExpr.IsArrayLiteral() && len(lastExpression.GetOutputs(prgrm)) > 0 {
+	} else if lastExpr.TypeArrayLiteral() && len(lastExpression.GetOutputs(prgrm)) > 0 {
 		// return [2]i32{1, 2} writes the literal to the result.
 		lastExpression.Outputs = nil
 		lastExpression.AddOutput(prgrm, typeSigIdx)

@@ -25,7 +25,7 @@ func assignStructLiteralFields(prgrm *ast.CXProgram, toExprs []ast.CXExpression,
 	}
 
 	for _, exprInfo := range fromExprs {
-		if exprInfo.Type == ast.CX_LINE || exprInfo.IsMethodCall() {
+		if exprInfo.Type == ast.CX_LINE || exprInfo.TypeMethodCall() {
 			continue
 		}
 		// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
@@ -443,7 +443,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 
 	} else {
 		outTypeSig := getOutputTypeAt(prgrm, &fromExprs[lastFromExpressionIdx], outputIndex)
-		if fromExprs[lastFromExpressionIdx].IsArrayLiteral() {
+		if fromExprs[lastFromExpressionIdx].TypeArrayLiteral() {
 			// The value of an array or slice literal has its type.
 			outTypeSig = prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetOutputs(prgrm)[0])
 		}
@@ -453,7 +453,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			// Now an arena getter, site S0564.
 			outTypeArg := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(outTypeSig.Meta))
 			outType := outTypeArg.Type
-			outTypeIsSlice := outTypeArg.IsSlice()
+			outTypeIsSlice := outTypeArg.SliceTyped()
 
 			_, sym = ast.MakeArgument(prgrm, toExpressionOutputTypeSig.Name, CurrentFile, LineNo)
 			sym.SetType(outType)
@@ -463,7 +463,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 				sym.Type, sym.Size = types.IDENTIFIER, types.IDENTIFIER.Size()
 			}
 
-			if fromExprs[lastFromExpressionIdx].IsArrayLiteral() {
+			if fromExprs[lastFromExpressionIdx].TypeArrayLiteral() {
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S0566.
 				fromExpressionInputTypeSig := prgrm.GetCXTypeSignatureFromArray(prgrm.CXAtomicOps[fromExpressionIdx].GetInputs(prgrm)[0])
@@ -480,7 +480,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 				sym.Size = fromCXAtomicOpInputs.Size
 				sym.Lengths = fromCXAtomicOpInputs.Lengths
 			}
-			resultTyped := shortDeclarationResultTyped(fromExprs[lastFromExpressionIdx], fromExpressionOperator, outTypeArg) || fromExprs[lastFromExpressionIdx].IsArrayLiteral() && literalTypeCompound(outTypeArg)
+			resultTyped := shortDeclarationResultTyped(fromExprs[lastFromExpressionIdx], fromExpressionOperator, outTypeArg) || fromExprs[lastFromExpressionIdx].TypeArrayLiteral() && literalTypeCompound(outTypeArg)
 			if resultTyped {
 				// A declared result, as *str, []*T or [N][]T, gives its whole type.
 				argumentTypeCopy(sym, outTypeArg)
@@ -491,7 +491,7 @@ func shortDeclarationAssignment(prgrm *ast.CXProgram, pkg *ast.CXPackage, toExpr
 			} else if outTypeIsSlice {
 				sym.Lengths = append([]types.Pointer{0}, sym.Lengths...)
 				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, constants.DECL_SLICE)
-			} else if ast.IsTypeArrayAtomic(outTypeArg) || ast.IsTypePointerArrayAtomic(outTypeArg) {
+			} else if ast.CXArgumentTypeArrayAtomic(outTypeArg) || ast.CXArgumentTypePointerArrayAtomic(outTypeArg) {
 				sym.Lengths = outTypeArg.Lengths
 				sym.DeclarationSpecifiers = append([]int(nil), outTypeArg.DeclarationSpecifiers...)
 				sym.PointerTargetType = outTypeArg.PointerTargetType
@@ -687,7 +687,7 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				// Now an arena getter, site S0586.
 				fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOperatorOutputTypeSig.Meta))
 
-				if fromExpressionOperator.IsBuiltIn() {
+				if fromExpressionOperator.BuiltIn() {
 					// only assigning as if the operator had only one output defined
 					if fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
 						// it's a short variable declaration
@@ -729,7 +729,7 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				}
 			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 				// only assigning as if the operator had only one output defined
-				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
 					// it's a short variable declaration
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1665.
@@ -743,7 +743,7 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				}
 			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				// only assigning as if the operator had only one output defined
-				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
 					// it's a short variable declaration
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1667.
@@ -764,7 +764,7 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				sliceDetails := prgrm.GetCXTypeSignatureArrayFromArray(fromExpressionOperatorOutputTypeSig.Meta)
 
 				// only assigning as if the operator had only one output defined
-				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
 					// it's a short variable declaration
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1670.
@@ -802,7 +802,7 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				// Now an arena getter, site S0589.
 				fromCXAtomicOpOperatorOutput := prgrm.GetCXArgFromArray(ast.CXArgumentIndex(fromExpressionOperatorOutputTypeSig.Meta))
 				// only assigning as if the operator had only one output defined
-				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
 					// it's a short variable declaration
 					toExpressionOutputTypeSig.Meta = int(fromCXAtomicOpOperatorOutput.Type)
 				} else {
@@ -812,7 +812,7 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				}
 			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
 				// only assigning as if the operator had only one output defined
-				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
 					// it's a short variable declaration
 					toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
 				} else {
@@ -822,7 +822,7 @@ func processAssignment(prgrm *ast.CXProgram, toExprs []ast.CXExpression, fromExp
 				}
 			} else if fromExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
 				// only assigning as if the operator had only one output defined
-				if fromExpressionOperator.IsBuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
+				if fromExpressionOperator.BuiltIn() && fromExpressionOperator.AtomicOPCode != constants.OP_IDENTITY {
 					// it's a short variable declaration
 					toExpressionOutputTypeSig.Meta = fromExpressionOperatorOutputTypeSig.Meta
 				} else {
@@ -1020,7 +1020,7 @@ func ShortDeclarationShare(prgrm *ast.CXProgram, targets [][]ast.CXExpression, e
 // methodCallFound reports whether exprs hold a method call.
 func methodCallFound(exprs []ast.CXExpression) bool {
 	for _, expr := range exprs {
-		if expr.IsMethodCall() {
+		if expr.TypeMethodCall() {
 			return true
 		}
 	}
@@ -1070,7 +1070,7 @@ func MultipleValueRead(prgrm *ast.CXProgram, name stringpool.StringGid) []ast.CX
 // MultipleAssignmentCall assigns the outputs of the call that ends value to
 // targets, as in a, b = f() and a, b := f().
 func MultipleAssignmentCall(prgrm *ast.CXProgram, targets [][]ast.CXExpression, assignOp string, value []ast.CXExpression) []ast.CXExpression {
-	if value[len(value)-1].Type != ast.CX_LINE && len(value) >= 2 && value[len(value)-2].IsMethodCall() {
+	if value[len(value)-1].Type != ast.CX_LINE && len(value) >= 2 && value[len(value)-2].TypeMethodCall() {
 		return multipleAssignmentMethodCall(prgrm, targets, assignOp, value)
 	}
 	callIdx := value[len(value)-1].Index
@@ -1156,7 +1156,7 @@ func shortDeclarationOperatorChained(prgrm *ast.CXProgram, exprs []ast.CXExpress
 		return false
 	}
 	operator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(prgrm.CXAtomicOps[exprs[len(exprs)-1].Index].Operator)
-	return operator != nil && ast.IsOperator(operator.AtomicOPCode)
+	return operator != nil && ast.OpcodeOperator(operator.AtomicOPCode)
 }
 
 // shortDeclarationUntyped reports whether the declaration of a :=, the first
@@ -1181,7 +1181,7 @@ func shortDeclarationUntyped(prgrm *ast.CXProgram, toExprs []ast.CXExpression) b
 // declares x from, is a declared result of a function, with no indexes or
 // fields, whose whole type x takes.
 func shortDeclarationResultTyped(from ast.CXExpression, operator *ast.CXFunction, outArg *ast.CXArgument) bool {
-	if operator == nil || operator.IsBuiltIn() || from.IsArrayLiteral() || outArg.Type == types.UNDEFINED {
+	if operator == nil || operator.BuiltIn() || from.TypeArrayLiteral() || outArg.Type == types.UNDEFINED {
 		return false
 	}
 	return len(outArg.Indexes) == 0 && len(outArg.Fields) == 0 && len(outArg.DereferenceOperations) == 0
@@ -1236,7 +1236,7 @@ func ShortDeclarationTargetsInvalid(prgrm *ast.CXProgram, targets [][]ast.CXExpr
 			continue
 		}
 		sig := prgrm.GetCXTypeSignatureFromArray(outputs[0])
-		if fn.IsLocalVariable(sig.Name) || functionParameterNamed(prgrm, fn, sig.Name) {
+		if fn.LocalVariableDeclared(sig.Name) || functionParameterNamed(prgrm, fn, sig.Name) {
 			continue
 		}
 		file, line := ast.CXArgumentDebugFileGidLine(prgrm, sig.ArgDetails)

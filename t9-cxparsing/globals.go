@@ -335,7 +335,7 @@ func globalSpecOfSignature(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) *ast.
 	case ast.TYPE_ATOMIC:
 		return globalSpecPointer(globalSpecBasic(prgrm, types.Code(sig.Meta)), reference)
 	case ast.TYPE_POINTER_ATOMIC:
-		return globalSpecPointer(globalSpecBasic(prgrm, types.Code(sig.Meta)), !sig.IsDeref)
+		return globalSpecPointer(globalSpecBasic(prgrm, types.Code(sig.Meta)), !sig.Deref)
 	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC:
 		array := prgrm.GetCXTypeSignatureArrayFromArray(sig.Meta)
 		spec := globalSpecBasic(prgrm, types.Code(array.Meta))
@@ -344,7 +344,7 @@ func globalSpecOfSignature(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) *ast.
 		}
 		spec = actions.DeclarationSpecifiers(spec, append([]types.Pointer(nil), array.Lengths[len(array.Indexes):]...), constants.DECL_ARRAY)
 		if sig.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
-			reference = !sig.IsDeref
+			reference = !sig.Deref
 		}
 		return globalSpecPointer(spec, reference)
 	case ast.TYPE_SLICE_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
@@ -357,7 +357,7 @@ func globalSpecOfSignature(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) *ast.
 			spec = actions.DeclarationSpecifiers(spec, []types.Pointer{0}, constants.DECL_SLICE)
 		}
 		if sig.Type == ast.TYPE_POINTER_SLICE_ATOMIC {
-			reference = !sig.IsDeref
+			reference = !sig.Deref
 		}
 		return globalSpecPointer(spec, reference)
 	case ast.TYPE_STRUCT, ast.TYPE_POINTER_STRUCT:
@@ -366,7 +366,7 @@ func globalSpecOfSignature(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) *ast.
 			return nil
 		}
 		if sig.Type == ast.TYPE_POINTER_STRUCT {
-			reference = !sig.IsDeref
+			reference = !sig.Deref
 		}
 		return globalSpecPointer(globalSpecStruct(prgrm, details.StructType), reference)
 	case ast.TYPE_CXARGUMENT_DEPRECATE:
@@ -664,7 +664,7 @@ func globalsInitializerReferences(prgrm *ast.CXProgram, pkg *ast.CXPackage, expr
 			})
 		}
 		references = append(references, globalsFunctionReferences(prgrm, op.Operator, functions)...)
-		if expr.IsMethodCall() {
+		if expr.TypeMethodCall() {
 			references = append(references, globalsFunctionReferences(prgrm, globalsMethodCalled(prgrm, pkg, op), functions)...)
 		}
 	}
@@ -718,7 +718,7 @@ func globalsMethodCalled(prgrm *ast.CXProgram, pkg *ast.CXPackage, op *ast.CXAto
 // calls, each through fnIdx.
 func globalsFunctionReferences(prgrm *ast.CXProgram, fnIdx ast.CXFunctionGid, functions map[ast.CXFunctionGid][]globalsInitializerReference) []globalsInitializerReference {
 	fn := prgrm.CxIrState.CxIrStateFunctionGetOrNil(fnIdx)
-	if fn == nil || fn.IsBuiltIn() {
+	if fn == nil || fn.BuiltIn() {
 		return nil
 	}
 	if references, found := functions[fnIdx]; found {
@@ -801,12 +801,12 @@ func globalsRecordNames(record ast.CompileErrorRecord, names ...stringpool.Strin
 // init function fn. Pass two made them locals of the function it was in.
 func globalsMethodResultsDeclare(prgrm *ast.CXProgram, fn *ast.CXFunction) {
 	for _, expr := range prgrm.SysInitExprs {
-		if !expr.IsMethodCall() {
+		if !expr.TypeMethodCall() {
 			continue
 		}
 		for _, output := range prgrm.CXAtomicOps[expr.Index].GetOutputs(prgrm) {
 			name := prgrm.GetCXTypeSignatureFromArray(output).Name
-			if strings.HasPrefix(prgrm.CXProgramNameText(name), constants.METHOD_RESULT_PREFIX) && !fn.IsLocalVariable(name) {
+			if strings.HasPrefix(prgrm.CXProgramNameText(name), constants.METHOD_RESULT_PREFIX) && !fn.LocalVariableDeclared(name) {
 				if err := fn.AddLocalVariableName(name); err != nil {
 					panic(err)
 				}
