@@ -11,29 +11,29 @@ import (
 // library, so no parser, no system library and no outside module can enter
 // the core.
 var coreImportsAllowed = map[string]bool{
-	"t0-cx-core-assert":      true,
-	"t0-cx-core-floatparse":  true,
-	"t0-cx-runtime-filelog":  true,
-	"t0-cx-core-syspackages": true,
-	"t0-cx-core-valuetypes":  true,
-	"t1-cipherstate":         true,
-	"t1-cx-core-opcodetable": true,
-	"t1-cx-core-objmodel":    true,
-	"t1-cx-runtime-sandbox":  true,
-	"t2-cx-core-stringpool":  true,
-	"t2-cx-runtime-gc":       true,
-	"t2-cx-runtime-ir":       true,
-	"t2-cx-core-environment": true,
-	"t3-cx-core-ast":         true,
-	"t3-cx-runtime-vm":       true,
-	"t4-cx-compiler-lower":   true,
-	"t4-execute":             true,
-	"t4-opcodes":             true,
-	"t4-cx-runtime-printer":  true,
-	"t4-cxos-core":           true,
-	"t4-regexp":              true,
-	"t5-cx-runtime-core":     true,
-	"t6-cx-core-run":         true,
+	"t0-cx-core-assert":         true,
+	"t0-cx-core-floatparse":     true,
+	"t0-cx-runtime-filelog":     true,
+	"t0-cx-core-syspackages":    true,
+	"t0-cx-core-valuetypes":     true,
+	"t1-cx-library-cipherstate": true,
+	"t1-cx-core-opcodetable":    true,
+	"t1-cx-core-objmodel":       true,
+	"t1-cx-runtime-sandbox":     true,
+	"t2-cx-core-stringpool":     true,
+	"t2-cx-runtime-gc":          true,
+	"t2-cx-runtime-ir":          true,
+	"t2-cx-core-environment":    true,
+	"t3-cx-core-ast":            true,
+	"t3-cx-runtime-vm":          true,
+	"t4-cx-compiler-lower":      true,
+	"t4-cx-runtime-interpreter": true,
+	"t4-cx-runtime-opcodes":     true,
+	"t4-cx-runtime-printer":     true,
+	"t4-cx-library-osopcodes":   true,
+	"t4-cx-library-regexp":      true,
+	"t5-cx-runtime-core":        true,
+	"t6-cx-core-run":            true,
 }
 
 // coreStandardDenied are packages of the Go standard library the core must not
@@ -44,9 +44,9 @@ var coreStandardDenied = map[string]bool{"net": true, "os/exec": true, "net/http
 // coreLibraryImports are the packages of this module each system library
 // adds to the core, by its build tag.
 var coreLibraryImports = map[string][]string{
-	"cxcorelibraryfile":    {"t0-cxfiles", "t1-profiling", "t5-cxos"},
-	"cxcorelibrarynet":     {"t0-cx-core-textsections", "t1-netbatch", "t4-cxnet"},
-	"cxcorelibraryprocess": {"t0-cxfiles", "t1-profiling", "t5-cxos"},
+	"cxcorelibraryfile":    {"t0-cx-library-filetable", "t1-cx-runtime-profiling", "t5-cx-library-fileopcodes"},
+	"cxcorelibrarynet":     {"t0-cx-core-textsections", "t1-cx-library-networkbatch", "t4-cx-library-netopcodes"},
+	"cxcorelibraryprocess": {"t0-cx-library-filetable", "t1-cx-runtime-profiling", "t5-cx-library-fileopcodes"},
 }
 
 // TestCoreImports fails when the transitive imports of the core, with the

@@ -8,7 +8,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
 
@@ -140,12 +140,12 @@ func runPrintAllocs(t *testing.T, p runBenchProgram) float64 {
 	var compiled []*ast.CXProgram
 	for i := 0; i <= runs; i++ {
 		compileRunProgram(t, p)
-		execute.RunPrepare(astbuild.AST)
+		interpreter.RunPrepare(astbuild.AST)
 		compiled = append(compiled, astbuild.AST)
 	}
 	next := 0
 	return testing.AllocsPerRun(runs, func() {
-		if err := execute.RunCompiled(compiled[next], 0, nil); err != nil {
+		if err := interpreter.RunCompiled(compiled[next], 0, nil); err != nil {
 			t.Fatal(err)
 		}
 		next++
@@ -199,9 +199,9 @@ func BenchmarkRunPrint(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				b.StopTimer()
 				compileRunProgram(b, p)
-				execute.RunPrepare(astbuild.AST)
+				interpreter.RunPrepare(astbuild.AST)
 				b.StartTimer()
-				if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
+				if err := interpreter.RunCompiled(astbuild.AST, 0, nil); err != nil {
 					b.Fatal(err)
 				}
 			}

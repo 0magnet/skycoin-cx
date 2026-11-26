@@ -7,7 +7,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter"
 )
 
 const runCallbackSource = `package main
@@ -38,14 +38,14 @@ func runCallbackFunction(t testing.TB, prgrm *ast.CXProgram, name string) *ast.C
 }
 
 // runCallbackPrepare compiles runCallbackSource and leaves main as the call
-// in progress at its first expression, as when an opcode of t6-cxfx calls
+// in progress at its first expression, as when an opcode of t6-cx-library-graphics calls
 // back.
 func runCallbackPrepare(t testing.TB) (*ast.CXProgram, *ast.CXFunction, [][]byte) {
 	compileRunProgram(t, runBenchProgram{name: "callback", source: runCallbackSource})
 	prgrm := astbuild.AST
-	execute.RunPrepare(prgrm)
+	interpreter.RunPrepare(prgrm)
 	mainFn := runCallbackFunction(t, prgrm, "main")
-	prgrm.CallStack[0] = execute.CallMake(prgrm, prgrm.CXProgramFunctionGid(mainFn))
+	prgrm.CallStack[0] = interpreter.CallMake(prgrm, prgrm.CXProgramFunctionGid(mainFn))
 	prgrm.CallCounter = 0
 	prgrm.Stack.Pointer = mainFn.Size
 	inputs := [][]byte{make([]byte, 4), make([]byte, 4)}
@@ -54,7 +54,7 @@ func runCallbackPrepare(t testing.TB) (*ast.CXProgram, *ast.CXFunction, [][]byte
 	return prgrm, runCallbackFunction(t, prgrm, "onEvent"), inputs
 }
 
-// TestRunCallbackAllocs fails when a Callback, the nested loop t6-cxfx runs
+// TestRunCallbackAllocs fails when a Callback, the nested loop t6-cx-library-graphics runs
 // for an event, allocates (#407, VMALLOC-021).
 func TestRunCallbackAllocs(t *testing.T) {
 	defer debug.SetGCPercent(debug.SetGCPercent(-1))
@@ -63,7 +63,7 @@ func TestRunCallbackAllocs(t *testing.T) {
 	prgrm, fn, inputs := runCallbackPrepare(t)
 	stackPointer := prgrm.Stack.Pointer
 	allocs := testing.AllocsPerRun(100, func() {
-		execute.Callback(prgrm, prgrm.CXProgramFunctionGid(fn), inputs)
+		interpreter.Callback(prgrm, prgrm.CXProgramFunctionGid(fn), inputs)
 	})
 	if allocs != 0 {
 		t.Errorf("%.0f allocations per callback, want 0", allocs)
@@ -81,6 +81,6 @@ func BenchmarkRunCallback(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		execute.Callback(prgrm, prgrm.CXProgramFunctionGid(fn), inputs)
+		interpreter.Callback(prgrm, prgrm.CXProgramFunctionGid(fn), inputs)
 	}
 }

@@ -28,7 +28,7 @@ const modulePath = "github.com/skycoin/skycoin-cx"
 
 // runRoot is the run loop. Every function with the OpcodeGoFunction signature
 // is a root as well.
-const runRoot = modulePath + "/t4-execute.RunCxAst"
+const runRoot = modulePath + "/t4-cx-runtime-interpreter.RunCxAst"
 
 // listedPackage is the part of `go list -json` the tool reads.
 type listedPackage struct {
@@ -100,7 +100,7 @@ func main() {
 	os.Exit(report(os.Stdout, functions, codes, mode))
 }
 
-// buildTagsCxfx reports a build with the cxfx tag, which adds t6-cxfx.
+// buildTagsCxfx reports a build with the cxfx tag, which adds t6-cx-library-graphics.
 func buildTagsCxfx(tags string) bool {
 	for _, tag := range strings.FieldsFunc(tags, func(r rune) bool { return r == ',' || r == ' ' }) {
 		if tag == "cxfx" {
@@ -110,7 +110,7 @@ func buildTagsCxfx(tags string) bool {
 	return false
 }
 
-// codesCxfxOpen makes the codes of t6-cxfx open, for a build that has it.
+// codesCxfxOpen makes the codes of t6-cx-library-graphics open, for a build that has it.
 func codesCxfxOpen(codes map[string]codeEntry) {
 	for code, entry := range codes {
 		entry.cxfx = false

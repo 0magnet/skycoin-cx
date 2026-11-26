@@ -13,7 +13,7 @@ See the README for the rule.
 
 * **t3-cx-core-ast/** the data structures representing a CX program, the memory
 model and the serializer. The root of the tree is the `CXProgram` struct.
-* **t4-opcodes/**, **t4-execute/** the runtime part of CX.
+* **t4-cx-runtime-opcodes/**, **t4-cx-runtime-interpreter/** the runtime part of CX.
 * **t5-cx-compiler-partialparsing/**, **t8-cx-compiler-fullparsing/**, **t9-cx-compiler-parsing/**
 the parser. It analyzes the source code and builds the tree above.
 * **t11-cx/** the cx binary.

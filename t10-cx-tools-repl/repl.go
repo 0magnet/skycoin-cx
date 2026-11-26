@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t2-cx-core-environment" // thin: only FoundCompileErrors; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"         // thin: only InREPL, ProgramMemoryRelease, SourceFileGidNil; no depth gain
-	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"  // thin: only CompileErrorsPrint, RuntimeErrorPrint; no depth gain
-	"github.com/skycoin/skycoin-cx/t4-execute"             // thin: only RunCompiled; no depth gain
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"         // thin: only MakeProgram, RegisterPackages; no depth gain
+	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"    // thin: only FoundCompileErrors; no depth gain
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"            // thin: only InREPL, ProgramMemoryRelease, SourceFileGidNil; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter" // thin: only RunCompiled; no depth gain
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"     // thin: only CompileErrorsPrint, RuntimeErrorPrint; no depth gain
+	"github.com/skycoin/skycoin-cx/t7-cx-runtime-libraries"   // thin: only MakeProgram, RegisterPackages; no depth gain
 
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"       // thin: only AST, LineNo; no depth gain
 	"github.com/skycoin/skycoin-cx/t5-cx-compiler-partialparsing" // thin: only CurrentFile, Parse, Program; no depth gain
@@ -84,8 +84,8 @@ func unsafeEval(code string) (out string) {
 	// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0001 S0002.
-	astbuild.AST = cxinit.ProgramMake()
-	cxinit.PackagesRegister(astbuild.AST)
+	astbuild.AST = libraries.ProgramMake()
+	libraries.PackagesRegister(astbuild.AST)
 	partialparsing.Program = astbuild.AST
 
 	parseErrors := partialparsing.Parse(code)
@@ -99,8 +99,8 @@ func unsafeEval(code string) (out string) {
 		restore()
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0003 S0004.
-		astbuild.AST = cxinit.ProgramMake()
-		cxinit.PackagesRegister(astbuild.AST)
+		astbuild.AST = libraries.ProgramMake()
+		libraries.PackagesRegister(astbuild.AST)
 		return parsing.ErrCompilation.Error()
 	}
 	err = parsing.SysInitFunctionAdd(astbuild.AST)
@@ -112,15 +112,15 @@ func unsafeEval(code string) (out string) {
 	if environment.FoundCompileErrors {
 		printer.CompileErrorsPrint(astbuild.AST)
 		restore()
-		astbuild.AST = cxinit.ProgramMake()
-		cxinit.PackagesRegister(astbuild.AST)
+		astbuild.AST = libraries.ProgramMake()
+		libraries.PackagesRegister(astbuild.AST)
 		return parsing.ErrCompilation.Error()
 	}
 
 	astbuild.AST.CxIrState.CxIrStateManagerGrowBoundary()
 	astbuild.AST.CxIrState.StringPool.StringPoolFreeze()
 	//err = actions.AST.RunCompiled(0, nil);
-	err = execute.RunCompiled(astbuild.AST, 0, nil)
+	err = interpreter.RunCompiled(astbuild.AST, 0, nil)
 	if astbuild.AST.RuntimeError.RuntimeErrorRecordRaised {
 		os.Exit(printer.RuntimeErrorPrint(astbuild.AST))
 	}
@@ -130,8 +130,8 @@ func unsafeEval(code string) (out string) {
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0005 S0006.
 		ast.ProgramMemoryRelease(astbuild.AST)
-		astbuild.AST = cxinit.ProgramMake()
-		cxinit.PackagesRegister(astbuild.AST)
+		astbuild.AST = libraries.ProgramMake()
+		libraries.PackagesRegister(astbuild.AST)
 		return fmt.Sprintf("%s", err)
 	}
 	//Tod: If error equals nill?
@@ -142,8 +142,8 @@ func unsafeEval(code string) (out string) {
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0007 S0008.
 	ast.ProgramMemoryRelease(astbuild.AST)
-	astbuild.AST = cxinit.ProgramMake()
-	cxinit.PackagesRegister(astbuild.AST)
+	astbuild.AST = libraries.ProgramMake()
+	libraries.PackagesRegister(astbuild.AST)
 	return out
 }
 
@@ -170,8 +170,8 @@ func Eval(code string) string {
 		// VIOLATION: init chaining. Init 7-8 again, a fresh program on REPL reset.
 		// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 		// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0009 S0010.
-		astbuild.AST = cxinit.ProgramMake()
-		cxinit.PackagesRegister(astbuild.AST)
+		astbuild.AST = libraries.ProgramMake()
+		libraries.PackagesRegister(astbuild.AST)
 		return "Timed out."
 	}
 }

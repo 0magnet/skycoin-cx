@@ -13,7 +13,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter"
 )
 
 // runHeapProgram is a heap heavy test program and the heap sizes it runs
@@ -46,7 +46,7 @@ func runHeapCompile(tb testing.TB, path string, initHeap valuetypes.Pointer, hea
 	opcodetable.HeapSizeInit, opcodetable.MaxHeapSize = initHeap, heapCap
 	defer func() { opcodetable.HeapSizeInit, opcodetable.MaxHeapSize = initSize, maxSize }()
 	compileRunProgram(tb, runBenchProgram{name: path, source: string(source)})
-	execute.RunPrepare(astbuild.AST)
+	interpreter.RunPrepare(astbuild.AST)
 }
 
 // TestRunHeapAllocs fails when a heap heavy program makes a Go allocation or
@@ -73,7 +73,7 @@ func TestRunHeapAllocs(t *testing.T) {
 			runtime.ReadMemStats(&before)
 			gcPercent := debug.SetGCPercent(-1)
 			allocs := testing.AllocsPerRun(runs, func() {
-				if err := execute.RunCompiled(compiled[next], 0, nil); err != nil {
+				if err := interpreter.RunCompiled(compiled[next], 0, nil); err != nil {
 					t.Fatal(err)
 				}
 				if compiled[next].RuntimeError.RuntimeErrorRecordRaised {
@@ -100,7 +100,7 @@ func TestRunHeapCapExceeded(t *testing.T) {
 	discardStdout(t)
 	const heapCap = 64 << 10
 	runHeapCompile(t, "test-heap-cap-exceeded.cx", opcodetable.HeapSizeInit, heapCap)
-	if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
+	if err := interpreter.RunCompiled(astbuild.AST, 0, nil); err != nil {
 		t.Fatal(err)
 	}
 	record := astbuild.AST.RuntimeError
@@ -172,11 +172,11 @@ func runHeapOutput(t *testing.T, path string, poison bool) string {
 	os.Stdout = out
 	defer func() { os.Stdout = stdout }()
 	compileRunProgram(t, runBenchProgram{name: path, source: source})
-	execute.RunPrepare(astbuild.AST)
+	interpreter.RunPrepare(astbuild.AST)
 	if poison && unsafe.SliceData(astbuild.AST.Memory) != reserved {
 		t.Fatalf("%s: RunPrepare did not take the released memory", path)
 	}
-	if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
+	if err := interpreter.RunCompiled(astbuild.AST, 0, nil); err != nil {
 		t.Fatal(err)
 	}
 	os.Stdout = stdout

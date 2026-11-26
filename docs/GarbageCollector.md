@@ -55,7 +55,7 @@ leaving `MIN_HEAP_FREE_RATIO` of it free. Past the heap cap it panics with
 `RuntimeOutOfMemory`, the runtime error `CX_RUNTIME_HEAP_EXHAUSTED_ERROR`.
 
 The old loop ticks after every step, one expression, in `runLoop` and
-`runSysInitFunc` (t4-execute/execute.go). Between two steps every root is in a
+`runSysInitFunc` (t4-cx-runtime-interpreter/execute.go). Between two steps every root is in a
 global or a frame slot, so no Go code holds a heap address.
 
 - `GarbageCollectorCheck` (t3-cx-core-ast/gc_tick.go) reports `Heap.Pressure >
@@ -149,8 +149,8 @@ the check stays two loads so `TestRunVmAllocs` stays 0.
 | t3-cx-runtime-vm, the vm executor | no | no. The machine has no heap |
 | t2-cx-runtime-gc, the collector | no | it is the collector |
 | t4-cx-compiler-lower | yes | no. It reads the program and rejects heap operands |
-| t4-execute, the old loop | yes | the tick, and allocation through its opcodes |
-| t4-opcodes | yes | allocation, in 17 of its 22 files |
+| t4-cx-runtime-interpreter, the old loop | yes | the tick, and allocation through its opcodes |
+| t4-cx-runtime-opcodes | yes | allocation, in 17 of its 22 files |
 | t5-cx-runtime-core, the executor | yes | through the old loop |
 
 `make check-gcreach` fails when t2-cx-runtime-ir or t3-cx-runtime-vm imports
@@ -162,7 +162,7 @@ Lines are as of this document. Regenerate them with `./check-gcreach.sh -l`.
 
 ### The tick and the collector
 
-- t4-execute/execute.go:46 to :47 the tick in `runLoop`, :78 to :79 in
+- t4-cx-runtime-interpreter/execute.go:46 to :47 the tick in `runLoop`, :78 to :79 in
   `runSysInitFunc`
 - t3-cx-core-ast/gc_tick.go:14 `GarbageCollectorCheck`, :26 and :29
   `GarbageCollectorPrepare` building the roots before the run, :50 to :63
@@ -172,13 +172,13 @@ Lines are as of this document. Regenerate them with `./check-gcreach.sh -l`.
 ### Imports of t3-cx-core-ast by the interpreter and the IR base
 
 - t4-cx-compiler-lower/lower.go:20, lower_printf.go:12. Reads only
-- t4-execute/execute.go:11, callback.go:9
+- t4-cx-runtime-interpreter/execute.go:11, callback.go:9
 - t5-cx-runtime-core/core.go:15, executor.go:12
-- t4-opcodes, allocating: op_aff.go:11, op_f32.go:10, op_f64.go:10,
+- t4-cx-runtime-opcodes, allocating: op_aff.go:11, op_f32.go:10, op_f64.go:10,
   op_fmt.go:11, op_i8.go:9, op_i16.go:9, op_i32.go:9, op_i64.go:9,
   op_serialize.go:8, op_slice.go:8, op_stdin.go:10, op_str.go:12,
   op_testing.go:10, op_ui8.go:10, op_ui16.go:10, op_ui32.go:9, op_ui64.go:9
-- t4-opcodes, not allocating: op_bool.go:8, op_format.go:8, op_misc.go:7,
+- t4-cx-runtime-opcodes, not allocating: op_bool.go:8, op_format.go:8, op_misc.go:7,
   opcodes.go:11, opcodes_init.go:8
 
 ### Allocation, which adds to the pressure
@@ -195,14 +195,14 @@ Lines are as of this document. Regenerate them with `./check-gcreach.sh -l`.
   t3-cx-core-ast/ast_cxcall.go:96 in `wipeDeclarationMemory`
 - t3-cx-core-ast/mem_slice.go:104 `SliceResizeEx`, :152 `SliceResize`, :271
   `SliceWrite`
-- t4-execute/execute.go:97 `feedOSArgs`
-- t4-opcodes/op_aff.go, 27 lines in `queryParam`, `QueryExpressions`,
+- t4-cx-runtime-interpreter/execute.go:97 `feedOSArgs`
+- t4-cx-runtime-opcodes/op_aff.go, 27 lines in `queryParam`, `QueryExpressions`,
   `getSignatureSlice`, `queryStructsInPackage`, `QueryFunction`,
   `QueryCaller`, `QueryProgram` and `OpAffQuery`
-- t4-opcodes/op_serialize.go:24 `OpSerialize`
-- t4-opcodes/op_str.go:159 `OpStrBytesOfString`
-- t4-regexp/op_regexp.go:32 `regexpCompile`
-- t6-cxfx/event.go:64, op_glfw_desktop.go:237, op_openal.go:47,
+- t4-cx-runtime-opcodes/op_serialize.go:24 `OpSerialize`
+- t4-cx-runtime-opcodes/op_str.go:159 `OpStrBytesOfString`
+- t4-cx-library-regexp/op_regexp.go:32 `regexpCompile`
+- t6-cx-library-graphics/event.go:64, op_glfw_desktop.go:237, op_openal.go:47,
   op_opengl.go:464
 
 Through these, every opcode that writes a str or grows a slice allocates.
@@ -240,7 +240,7 @@ allocator ran the collector itself.
   function's `ListOfSlots` and `ListOfPointers` (t3-cx-core-ast/cxfunction_def.go:57
   and :48) through `gcFrameRoots` (t3-cx-core-ast/gc_type.go:241), and kept its
   scratch memory in `HeapSegmentStruct` (t3-cx-core-ast/ast_cxprogram.go:31).
-- The old loop (t4-execute), t4-opcodes, t5-cxos, t4-regexp, t4-cxnet, t6-cxfx
+- The old loop (t4-cx-runtime-interpreter), t4-cx-runtime-opcodes, t5-cx-library-fileopcodes, t4-cx-library-regexp, t4-cx-library-netopcodes, t6-cx-library-graphics
   and t5-cx-runtime-core all reached the collector through allocation. The vm
   (t3-cx-runtime-vm) and the IR base (t2-cx-runtime-ir) did not.
 
@@ -253,7 +253,7 @@ t5-cx-runtime-core
    |                                           ^
    |             t3-cx-runtime-vm -------------+             (GC free)
    |
-t4-execute (old loop) --> t4-opcodes, t5-*, t6-cxfx
+t4-cx-runtime-interpreter (old loop) --> t4-cx-runtime-opcodes, t5-*, t6-cx-library-graphics
    |                          |
    +--------------------------+--> t3-cx-core-ast
                                      SequenceAllocate --> MarkAndCompact(*CXProgram)
@@ -272,8 +272,8 @@ the collector between steps.
 - `SequenceAllocate` (t3-cx-core-ast/ast_memory.go:74) never collects. It grows the heap at
   line 84 when a request does not fit, adds the bytes to `Heap.Pressure` at
   line 87, and panics with `HEAP_EXHAUSTED_ERROR` past `MAX_HEAP_SIZE`.
-- `runLoop` (t4-execute/execute.go:27) calls `GarbageCollectorCheck` after
-  every step at line 46, and `runSysInitFunc` (t4-execute/execute.go:56) does
+- `runLoop` (t4-cx-runtime-interpreter/execute.go:27) calls `GarbageCollectorCheck` after
+  every step at line 46, and `runSysInitFunc` (t4-cx-runtime-interpreter/execute.go:56) does
   the same at line 78. The loop that `Callback` nests inside a native opcode
   does not tick, because `gcTick` at line 31 is false there.
 - `GarbageCollectorCheck` (t3-cx-core-ast/gc_tick.go:13) compares `Heap.Pressure` with
@@ -291,8 +291,8 @@ the collector between steps.
   `types.Write_str`, `types.AllocWrite_obj_data` and
   `types.AllocWrite_str_data` are removed. The unused `DisplaceReferences` is
   removed with the old collector file.
-- Only t3-cx-core-ast may import t2-cx-runtime-gc. The old loop, t4-opcodes, t5-cxos,
-  t4-regexp, t4-cxnet and t6-cxfx still allocate through t3-cx-core-ast, which adds to
+- Only t3-cx-core-ast may import t2-cx-runtime-gc. The old loop, t4-cx-runtime-opcodes, t5-cx-library-fileopcodes,
+  t4-cx-library-regexp, t4-cx-library-netopcodes and t6-cx-library-graphics still allocate through t3-cx-core-ast, which adds to
   the pressure but never collects. The vm and the IR base still reach nothing,
   and `make check-gcreach` enforces both rules.
 
@@ -305,9 +305,9 @@ t5-cx-runtime-core
    |                                           ^
    |             t3-cx-runtime-vm -------------+             (GC free)
    |
-t4-execute: runLoop step, then GarbageCollectorCheck / GarbageCollectorTrigger
+t4-cx-runtime-interpreter: runLoop step, then GarbageCollectorCheck / GarbageCollectorTrigger
    |    \
-   |     t4-opcodes, t5-*, t6-cxfx: allocate, add to Heap.Pressure
+   |     t4-cx-runtime-opcodes, t5-*, t6-cx-library-graphics: allocate, add to Heap.Pressure
    |          |
    +----------+--> t3-cx-core-ast: SequenceAllocate (grows, counts), gc_type.go (root
                    table), gc_tick.go (check, trigger, heap resize)
@@ -394,8 +394,8 @@ references and keep the tick to collect cycles. The lead decides.
 - a reach has no comment containing `GCREACH:` directly above it or in the
   doc comment of its function.
 
-A reach is an import of t3-cx-core-ast in t4-execute, t5-cx-runtime-core,
-t4-cx-compiler-lower or t4-opcodes, a call of `GarbageCollectorCheck`,
+A reach is an import of t3-cx-core-ast in t4-cx-runtime-interpreter, t5-cx-runtime-core,
+t4-cx-compiler-lower or t4-cx-runtime-opcodes, a call of `GarbageCollectorCheck`,
 `GarbageCollectorTrigger`, `GarbageCollectorCollect`, `SequenceAllocate`,
 `StrAllocate`, `StrAllocateAt`, `StrBytesAllocateAt`, `EscapedAllocate`, `SliceResizeEx`,
 `MemoryResize`, `gcFrameRoots` or `gcGlobalRoots`, or a use of `ListOfSlots`,

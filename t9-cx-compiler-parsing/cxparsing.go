@@ -10,7 +10,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t2-cx-core-environment" // thin: only FoundCompileErrors, SRCPATH; no depth gain
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 
-	"github.com/skycoin/skycoin-cx/t1-profiling" // thin: only CleanupAndExit, StartProfile, StopProfile; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-cx-runtime-profiling" // thin: only CleanupAndExit, StartProfile, StopProfile; no depth gain
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"         // thin: only CompileErrorsPrint; no depth gain
 	"github.com/skycoin/skycoin-cx/t5-cx-compiler-partialparsing" // thin: only CurrentFile, Parse, Program; no depth gain

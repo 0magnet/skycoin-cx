@@ -6,8 +6,8 @@ import (
 	// GCREACH: t3-cx-core-ast owns the heap. The switch hands the operands to the
 	// handlers and allocates nothing, see docs/GarbageCollector.md.
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
+	opcodes "github.com/skycoin/skycoin-cx/t4-cx-runtime-opcodes"
 	printer "github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
-	opcodes "github.com/skycoin/skycoin-cx/t4-opcodes"
 )
 
 // CoreOpcodeDispatch runs opcode code of the core on its operands, the

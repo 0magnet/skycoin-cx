@@ -14,15 +14,15 @@ import (
 	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. core builds the program and
 	// allocates nothing, see docs/GarbageCollector.md.
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
+	"github.com/skycoin/skycoin-cx/t4-cx-library-regexp"
 	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
-	"github.com/skycoin/skycoin-cx/t4-regexp"
 )
 
 // Register adds the native packages of the core to prgrm, registers the
 // system libraries that libraryRegisters register and sets the opcode switch
-// to CoreOpcodeDispatch. It leaves out every other library (t5-cxos,
-// t4-cxnet, t4-cipher) and the opcodes that need a module outside the
-// standard library (t6-cxfx).
+// to CoreOpcodeDispatch. It leaves out every other library (t5-cx-library-fileopcodes,
+// t4-cx-library-netopcodes, t4-cx-library-cipher) and the opcodes that need a module outside the
+// standard library (t6-cx-library-graphics).
 func Register(prgrm *ast.CXProgram, libraryRegisters ...func(prgrm *ast.CXProgram)) {
 	ast.OpcodeDispatch = CoreOpcodeDispatch
 	printer.CompileErrorsRegister(prgrm)
@@ -46,7 +46,7 @@ func ProgramMake() *ast.CXProgram {
 }
 
 // OpcodeLinked reports whether the core runs opcode code: LibraryCall,
-// which the loop runs, or an opcode with a handler outside t6-cxfx that the
+// which the loop runs, or an opcode with a handler outside t6-cx-library-graphics that the
 // build tags link. The core is built with the tags of cx, so cx can ask.
 func OpcodeLinked(code int) bool {
 	if code == opcodetable.OpLibraryCall {

@@ -15,8 +15,8 @@ import (
 	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
 	"github.com/skycoin/skycoin-cx/t0-cx-core-syspackages" // thin: only IsBuiltinImport; no depth gain
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
-	profiling "github.com/skycoin/skycoin-cx/t1-profiling" // thin: only CleanupAndExit, StartProfile, StopProfile; no depth gain
-	"github.com/skycoin/skycoin-cx/t2-cx-core-environment" // thin: only FoundCompileErrors, SRCPATH; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-cx-runtime-profiling" // thin: only CleanupAndExit, StartProfile, StopProfile; no depth gain
+	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"  // thin: only FoundCompileErrors, SRCPATH; no depth gain
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"

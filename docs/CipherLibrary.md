@@ -71,7 +71,7 @@ are checked in `t0-cx-core-digest/cxhash_test.go` and `tests/test-cipher-library
 Signatures still sign a 32 byte digest, which is now a BLAKE3-256 digest.
 
 An incremental state is an `i32` handle into a fixed table of 64 states,
-`HashStateCountMax` in `t1-cipherstate`, which the old loop and the vm
+`HashStateCountMax` in `t1-cx-library-cipherstate`, which the old loop and the vm
 share. The table is made before the run
 and a state is reset when it is taken again, so a run allocates nothing for
 it. A handle out of range, released or never returned, and a 65th state
@@ -108,7 +108,7 @@ Measured on an Intel i7-3770S. The run is `BenchmarkRunCipher` in
 `t11-cx`, a run of the old loop divided by its 100 calls, which includes
 about 2000 ns per call of run start and loop, its `LoopWithoutCalls`. The
 Go call is `BenchmarkCxHashOfBytes` in `t0-cx-core-digest` and
-`BenchmarkCipherSignatureVerify` in `t4-cipher`.
+`BenchmarkCipherSignatureVerify` in `t4-cx-library-cipher`.
 
 | Call | Run, ns/call | Go call, ns/op | Go allocations per call |
 | --- | --- | --- | --- |

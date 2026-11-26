@@ -23,7 +23,7 @@ type printfStep struct {
 }
 
 // printf lowers a printf whose format is a str literal. The format is read
-// at lower time as buildString in t4-opcodes reads it, so the image holds
+// at lower time as buildString in t4-cx-runtime-opcodes reads it, so the image holds
 // constant text and one print per value.
 func (s *state) printf(code []ir.Instr, inputs []ast.CXTypeSignatureIndex, outputs []ast.CXTypeSignatureIndex) ([]ir.Instr, ReasonCode) {
 	if len(inputs) == 0 || len(outputs) != 0 {

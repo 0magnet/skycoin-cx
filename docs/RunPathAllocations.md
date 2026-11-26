@@ -53,7 +53,7 @@ loading programs one after another allocates and clears them once (D106).
   `net.Update`, `net.ReadyNext`, `net.Read` and `net.Write` with data on
   four loopback sockets, see [Networking.md](Networking.md).
 - `TestRunCallbackAllocs` requires 0 for a `Callback`, the nested loop
-  t6-cxfx runs for an event.
+  t6-cx-library-graphics runs for an event.
 
 ## Codes
 
@@ -81,7 +81,7 @@ allocates only when it fails, and is marked by its STRHOT E code instead
 | VMALLOC-015 | fixed | `PrintableValueAppend` and the stack dump of the debug opcode and of a runtime error append to the format buffer |
 | VMALLOC-016 | fixed | assert builds its text only when it fails |
 | VMALLOC-017 | open, boundary | regexp compile and find |
-| VMALLOC-018 | open, boundary | the file, process, profile and read opcodes, and the net functions that open a socket. `os.Sync` on vm allocates nothing, `TestFileHandleSyncAllocs` in t0-cxfiles. The net update, ready reads, reads and writes allocate nothing, see [Networking.md](Networking.md) |
+| VMALLOC-018 | open, boundary | the file, process, profile and read opcodes, and the net functions that open a socket. `os.Sync` on vm allocates nothing, `TestFileHandleSyncAllocs` in t0-cx-library-filetable. The net update, ready reads, reads and writes allocate nothing, see [Networking.md](Networking.md) |
 | VMALLOC-019 | open, boundary | `serialize` of a selection runs the encoder of the serialized form, compiler code, `ast.AffordanceSerialize`. The aff literal is resolved at compile time and an aff value is four i32, which move without a Go allocation (D5, #500) |
 | VMALLOC-020 | not heap | CXArgument stack temporaries, #408 |
 | VMALLOC-021 | fixed but nesting | `Callback` runs its nested loop on operand buffers `RunBuffersPrepare` sizes. A callback made inside a callback sizes a set for its depth once |
@@ -94,8 +94,8 @@ allocates only when it fails, and is marked by its STRHOT E code instead
 Measured with `go list` on the default build.
 
 ```
-t4-execute -> t3-cx-core-ast -> t2-cx-core-stringpool -> t1-cx-core-objmodel -> t0-cx-core-assert
-t4-opcodes -> t3-cx-core-ast, t3-cx-runtime-vm
+t4-cx-runtime-interpreter -> t3-cx-core-ast -> t2-cx-core-stringpool -> t1-cx-core-objmodel -> t0-cx-core-assert
+t4-cx-runtime-opcodes -> t3-cx-core-ast, t3-cx-runtime-vm
 t3-cx-runtime-vm -> t2-cx-runtime-ir -> t1-cx-core-opcodetable -> t0-cx-core-valuetypes
 ```
 

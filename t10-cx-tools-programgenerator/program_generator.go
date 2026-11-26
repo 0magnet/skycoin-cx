@@ -11,7 +11,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	cxinit "github.com/skycoin/skycoin-cx/t7-init"             // thin: only MakeProgram, RegisterPackages; no depth gain
+	"github.com/skycoin/skycoin-cx/t7-cx-runtime-libraries"    // thin: only MakeProgram, RegisterPackages; no depth gain
 	"github.com/skycoin/skycoin-cx/t8-cx-compiler-fullparsing" // thin: only InitCXCore; no depth gain
 	"github.com/skycoin/skycoin-cx/t9-cx-core-astapi"
 )
@@ -303,8 +303,8 @@ func SampleProgramGenerate(t *testing.T, withLiteral bool) *ast.CXProgram {
 	fullparsing.CXCoreInit()
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a constructor call, site S0046.
-	cxProgram = cxinit.ProgramMake()
-	cxinit.PackagesRegister(cxProgram)
+	cxProgram = libraries.ProgramMake()
+	libraries.PackagesRegister(cxProgram)
 
 	// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
 	// Now an arena insert, site S0047.

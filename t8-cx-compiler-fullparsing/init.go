@@ -2,10 +2,10 @@ package fullparsing
 
 import (
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	"github.com/skycoin/skycoin-cx/t4-cxnet"       // thin: only ConstantsInit; only for the InitCXCore helper, goes with the init move (A)
-	"github.com/skycoin/skycoin-cx/t5-cxos"        // thin: only ConstantsInit; only for the InitCXCore helper, goes with the init move (A)
-	"github.com/skycoin/skycoin-cx/t6-cxfx"        // thin: only ConstantsInit; only for the InitCXCore helper, goes with the init move (A)
-	cxinit "github.com/skycoin/skycoin-cx/t7-init" // thin: only MakeProgram, RegisterPackages; only for the InitCXCore helper, goes with the init move (A), tier 8 to 5
+	"github.com/skycoin/skycoin-cx/t4-cx-library-netopcodes"  // thin: only ConstantsInit; only for the InitCXCore helper, goes with the init move (A)
+	"github.com/skycoin/skycoin-cx/t5-cx-library-fileopcodes" // thin: only ConstantsInit; only for the InitCXCore helper, goes with the init move (A)
+	"github.com/skycoin/skycoin-cx/t6-cx-library-graphics"    // thin: only ConstantsInit; only for the InitCXCore helper, goes with the init move (A)
+	"github.com/skycoin/skycoin-cx/t7-cx-runtime-libraries"   // thin: only MakeProgram, RegisterPackages; only for the InitCXCore helper, goes with the init move (A), tier 8 to 5
 )
 
 // VIOLATION: state outside State. Owner: t8-cx-compiler-fullparsing; moves to CXNativeFunctionMng in phase 2.
@@ -16,14 +16,14 @@ var Initialized bool
 func CXCoreInit() {
 	if !Initialized {
 		astbuild.ConstantsInit()
-		cxos.ConstantsInit(astbuild.ConstI32Add)
-		cxnet.ConstantsInit(astbuild.ConstI32Add)
-		cxfx.ConstantsInit()
+		fileopcodes.ConstantsInit(astbuild.ConstI32Add)
+		netopcodes.ConstantsInit(astbuild.ConstI32Add)
+		graphics.ConstantsInit()
 		if astbuild.AST == nil {
 			// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 			// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1466 S1467.
-			astbuild.AST = cxinit.ProgramMake()
-			cxinit.PackagesRegister(astbuild.AST)
+			astbuild.AST = libraries.ProgramMake()
+			libraries.PackagesRegister(astbuild.AST)
 		}
 
 		Initialized = true

@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	"github.com/skycoin/skycoin-cx/t4-cipher"
+	"github.com/skycoin/skycoin-cx/t4-cx-library-cipher"
 )
 
 // coreLibraryCipherLinked says that the cipher library is linked into this

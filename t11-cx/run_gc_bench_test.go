@@ -8,7 +8,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
-	"github.com/skycoin/skycoin-cx/t4-execute"
+	"github.com/skycoin/skycoin-cx/t4-cx-runtime-interpreter"
 )
 
 // gcBenchPrograms are the GC tests BenchmarkRunGC runs as cxtest does, with
@@ -43,9 +43,9 @@ func BenchmarkRunGC(b *testing.B) {
 				b.StopTimer()
 				ast.ProgramMemoryRelease(astbuild.AST)
 				compileRunProgram(b, p)
-				execute.RunPrepare(astbuild.AST)
+				interpreter.RunPrepare(astbuild.AST)
 				b.StartTimer()
-				if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
+				if err := interpreter.RunCompiled(astbuild.AST, 0, nil); err != nil {
 					b.Fatal(err)
 				}
 			}

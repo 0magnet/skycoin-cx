@@ -32,7 +32,7 @@ The `cx` command (`t11-cx/main.go`) builds the program in this order.
 
 1. `actions.ConstantsInit`, `cxos.ConstantsInit` and `cxfx.ConstantsInit`
    fill the constant tables.
-2. `cxinit.ProgramMake` (`t7-init/init.go`) returns an empty
+2. `cxinit.ProgramMake` (`t7-cx-runtime-libraries/init.go`) returns an empty
    `*ast.CXProgram` and stores it in the package variable `actions.AST`.
    Every later stage writes into `actions.AST`.
 3. `cxinit.PackagesRegister` adds the native packages and registers the
@@ -52,7 +52,7 @@ The `cx` command (`t11-cx/main.go`) builds the program in this order.
    `*init` (`constants.SYS_INIT_FUNC`) to package `main`. Its body is
    `CXProgram.SysInitExpressions`, the global initializers collected by
    `actions.GlobalInPackageDeclare`.
-6. `execute.RunCompiled` (`t4-execute/execute.go`) calls
+6. `execute.RunCompiled` (`t4-cx-runtime-interpreter/execute.go`) calls
    `CXProgram.EnsureMinimumHeapSize`, runs `*init`, pushes `main` onto the
    call stack and runs it.
 
@@ -247,7 +247,7 @@ no outputs, and nested calls get temporaries named `*tmp_<n>`
 ### Jumps and labels
 
 All control flow uses four opcodes, each with handlers in
-`t4-opcodes/op_misc.go`.
+`t4-cx-runtime-opcodes/op_misc.go`.
 
 | Opcode | Number | Handler | Effect on `CXCall.Line` before the VM adds 1 |
 | --- | --- | --- | --- |
@@ -547,7 +547,7 @@ per-expression native copies.
   section. They add up to the length of the uncompressed bytes.
 
 The CX functions `serialize(aff) []ui8` and `deserialize([]ui8)`
-(`t4-opcodes/op_serialize.go`) serialize what an aff value selects, see
+(`t4-cx-runtime-opcodes/op_serialize.go`) serialize what an aff value selects, see
 [Affordances](#affordances), and check that bytes hold a program this cx
 can load. Bytes that do not are the runtime error
 `CX_RUNTIME_INVALID_ARGUMENT`. Both take a slice, so they run on the old
@@ -689,7 +689,7 @@ not fit the file or whose checksum fails is `FileErrorCodeContentInvalid`.
 
 `core.Register` registers the opcodes of the core, the built-in ones,
 `LibraryCall` and those of `sys/regexp`, `sys/time` and `os.Exit`
-(`t4-cxos-core`), and the system libraries the core links. A library is
+(`t4-cx-library-osopcodes`), and the system libraries the core links. A library is
 linked by the build tag `cxcorelibraryfile`, `cxcorelibrarynet`,
 `cxcorelibraryprocess` or `cxcorelibrarycipher`, whose file in `t6-cx-core-run` adds its register
 function and its opcode switch. Every core is also built with the tag
@@ -729,7 +729,7 @@ This document does not list the opcodes. The list is
   operator and name tables of `t1-cx-core-opcodetable/opcodes_signatures_gen.go` and
   the opcode switch: `CoreOpcodeDispatch` in t5-cx-runtime-core, with the
   `nocxos` and `noregexp` groups in their own files, and `CxfxOpcodeDispatch`
-  in t6-cxfx under the `cxfx` tag. Each case calls the handler directly,
+  in t6-cx-library-graphics under the `cxfx` tag. Each case calls the handler directly,
   or, for a row whose handler is a call such as
   `cxfx.gl.Clear(uint32(%0))`, makes that call inline with the operands read
   at their offsets, which the simple GL and GLFW calls do (#432).
@@ -754,7 +754,7 @@ This document does not list the opcodes. The list is
   form and signature (decision D96). t2-cx-core-opcodegen writes the library
   signature tables of `t1-cx-core-opcodetable/libraries_signatures_gen.go` and one
   switch per library in the package of its handlers, under that package's
-  build tag, `LibraryProcessDispatch` in t5-cxos. The functions of the cipher, net and file libraries are opcodes
+  build tag, `LibraryProcessDispatch` in t5-cx-library-fileopcodes. The functions of the cipher, net and file libraries are opcodes
   instead, 796 to 875 in `OpcodeGroupCipher`, `OpcodeGroupNet` and
   `OpcodeGroupFile`, which `cipher.CipherOpcodeDispatch`,
   `cxnet.NetOpcodeDispatch` and `cxos.FileOpcodeDispatch` run (D119).

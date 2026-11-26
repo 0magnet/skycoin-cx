@@ -10,7 +10,7 @@
 
 ## CX Libraries:
 
-* https://github.com/skycoin/cxfx [video game library, now built in as t6-cxfx, see `make build-gui`]
+* https://github.com/skycoin/cxfx [video game library, now built in as t6-cx-library-graphics, see `make build-gui`]
 * https://github.com/ReewassSquared/cxm [math library]
 * https://github.com/ReewassSquared/CXSL [general utilities library]
 * https://github.com/ReewassSquared/CXCIPHER [crypto library]

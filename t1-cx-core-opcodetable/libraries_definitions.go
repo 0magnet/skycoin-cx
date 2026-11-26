@@ -9,12 +9,12 @@ package opcodetable
 // cipher libraries are opcodes (decision D119).
 //
 // GoFunction is the Go function the switch of the old loop calls,
-// package.Function, with the package cxos (t5-cxos, left out by the nocxos
+// package.Function, with the package cxos (t5-cx-library-fileopcodes, left out by the nocxos
 // tag). Inputs and Outputs are spelled as in OpcodeDefinitionTable. Read
 // only.
 var LibraryFunctionDefinitionTable = [...]LibraryFunctionDefinition{
 	// library, number, name, handler, inputs, outputs
-	{LibraryNumberProcess, 1, "os.Run", "cxos.OpOsRun", "str i32 i32 str", "i32 i32 str"},
+	{LibraryNumberProcess, 1, "os.Run", "fileopcodes.OpOsRun", "str i32 i32 str", "i32 i32 str"},
 }
 
 // LibraryFunctionDefinition is one row of LibraryFunctionDefinitionTable.

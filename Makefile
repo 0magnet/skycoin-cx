@@ -138,7 +138,7 @@ vet: ## go vet with default and ptr64 tags, and gofmt
 	go vet -tags ptr64 ./t0-cx-core-valuetypes ./t3-cx-core-ast
 
 vet-gui: ## go vet with the cxfx tag (needs cgo and X11/GL/OpenAL headers)
-	go vet -tags cxfx ./t6-cxfx ./t7-init ./t11-cx
+	go vet -tags cxfx ./t6-cx-library-graphics ./t7-cx-runtime-libraries ./t11-cx
 
 test-gui: ## Build cx with cxfx and run the gui CX program tests, under xvfb-run when DISPLAY is unset (needs cgo, X11/GL/OpenAL headers and a GL driver)
 	go build -tags="$(TAGS) $(GUI_TAGS)" -o ./bin/cx-gui$(EXE) ./t11-cx
@@ -175,10 +175,10 @@ check-objmodel: ## Check the object model rules of docs/ObjectModel.md and that 
 check-gcreach: ## Check that the vm and IR base stay GC free and every other GC reach has a GCREACH comment, see docs/GarbageCollector.md
 	./check-gcreach.sh
 
-check-strhot: ## Check that every string operation on the run path of the old loop has a STRHOT code, see docs/StringsHotPath.md. Checks t6-cxfx too when the cxfx build compiles
+check-strhot: ## Check that every string operation on the run path of the old loop has a STRHOT code, see docs/StringsHotPath.md. Checks t6-cx-library-graphics too when the cxfx build compiles
 	./check-strhot.sh
 
-check-strhot-gui: ## check-strhot, failing when the cxfx build of t6-cxfx does not compile (needs cgo and X11/GL/OpenAL headers)
+check-strhot-gui: ## check-strhot, failing when the cxfx build of t6-cx-library-graphics does not compile (needs cgo and X11/GL/OpenAL headers)
 	CX_STRHOT_CXFX=1 ./check-strhot.sh
 
 check-names: ## Check the Go names against the Naming section of AGENTS.md, see names-allowlist.txt

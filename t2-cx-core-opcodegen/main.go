@@ -22,14 +22,14 @@ import (
 
 // goFunctionPackages maps the package of a GoFunction to its group.
 var goFunctionPackages = map[string]opcodetable.OpcodeGroup{
-	"opcodes":  opcodetable.OpcodeGroupCore,
-	"printer":  opcodetable.OpcodeGroupCore,
-	"cxoscore": opcodetable.OpcodeGroupOsCore,
-	"regexp":   opcodetable.OpcodeGroupRegexp,
-	"cxfx":     opcodetable.OpcodeGroupCxfx,
-	"cipher":   opcodetable.OpcodeGroupCipher,
-	"cxnet":    opcodetable.OpcodeGroupNet,
-	"cxos":     opcodetable.OpcodeGroupFile,
+	"opcodes":     opcodetable.OpcodeGroupCore,
+	"printer":     opcodetable.OpcodeGroupCore,
+	"osopcodes":   opcodetable.OpcodeGroupOsCore,
+	"regexp":      opcodetable.OpcodeGroupRegexp,
+	"graphics":    opcodetable.OpcodeGroupCxfx,
+	"cipher":      opcodetable.OpcodeGroupCipher,
+	"netopcodes":  opcodetable.OpcodeGroupNet,
+	"fileopcodes": opcodetable.OpcodeGroupFile,
 }
 
 // generated is everything opcodegen derives from the definition table.

@@ -138,7 +138,7 @@ func main() { global buffer
 Every step works on the entries and the sockets that have one, never on the
 open sockets as a whole, so the work of an update grows with the ready count
 and not with the number of sockets. `TestNetUpdateWorkGrowsWithReady` in
-`t1-netbatch` counts it, and `BenchmarkNetUpdate` times it. Measured on an
+`t1-cx-library-networkbatch` counts it, and `BenchmarkNetUpdate` times it. Measured on an
 Intel i7-3770S, the time of `net.Update` alone, in ns:
 
 | Sockets open | 1 ready | 16 ready | 64 ready |
@@ -149,7 +149,7 @@ Intel i7-3770S, the time of `net.Update` alone, in ns:
 
 ## The runtime
 
-The runtime is `t1-netbatch`, which needs no compiler. Each socket has one
+The runtime is `t1-cx-library-networkbatch`, which needs no compiler. Each socket has one
 reader goroutine, which Go's netpoller parks until data comes (epoll, kqueue
 or IOCP), and one writer goroutine. A reader reads into the socket's receive
 ring of 16 KiB and puts one event on the arrival channel, of 4096 events.
@@ -237,7 +237,7 @@ once per update (decision D51).
 
 `net.Update`, `net.ReadyCount`, `net.ReadyNext`, `net.Clock`, `net.Read`,
 `net.Write`, `net.UDPReadFrom` and `net.UDPWriteTo` make no Go allocation.
-`TestNetUpdateAllocs` in `t1-netbatch` requires 0 for an update with data on
+`TestNetUpdateAllocs` in `t1-cx-library-networkbatch` requires 0 for an update with data on
 four sockets, the reads and the writes, and `TestRunNetAllocs` and
 `TestRunVmNetAllocs` in `t11-cx` require 0 for a CX program that calls them
 on the old loop and on vm. Opening a socket allocates its buffers, its
@@ -260,7 +260,7 @@ functions take the host and the port apart.
 
 The native form of each function is a C function of the LLVM runtime,
 `cx_rt_net_update` and so on in `t3-cx-compiler-llvm/runtime.c.txt`, which
-runs the batches as t1-netbatch does. It polls the sockets with `poll`, and
+runs the batches as t1-cx-library-networkbatch does. It polls the sockets with `poll`, and
 with `WSAPoll` of Winsock on Windows, when the program calls `net.Update`,
 instead of reading them in goroutines, and it sends what a batch wrote at
 the next update. With `CX_NET_REPLAY` it reads the batches from the record

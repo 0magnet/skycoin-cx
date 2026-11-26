@@ -263,7 +263,7 @@ See [t0-cx-tools-benchmarks/README.md](t0-cx-tools-benchmarks/README.md).
   [#32](https://github.com/skycoin/skycoin-cx/issues/32)).
 - `t7-cxmobile` does not compile and no target builds it
   ([#35](https://github.com/skycoin/skycoin-cx/issues/35)). The mobile files of
-  t6-cxfx were removed in #432.
+  t6-cx-library-graphics were removed in #432.
 
 See the [open issues](https://github.com/skycoin/skycoin-cx/issues) for the
 rest, much of it the move to the object model, string pool and error types

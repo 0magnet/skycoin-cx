@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
-	"github.com/skycoin/skycoin-cx/t1-netbatch"
+	"github.com/skycoin/skycoin-cx/t1-cx-library-networkbatch"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core" // thin: only ExecutorAuto; no depth gain
 )
 
@@ -214,14 +214,14 @@ func librariesEnabledParse(list string) (enabled [opcodetable.LibraryCount]bool,
 // netModeSet sets where the net library takes its batches from, by
 // --net-record and --net-replay, and returns a problem when both are given.
 func netModeSet(options cxCmdFlags) string {
-	netbatch.NetRunMode, netbatch.NetRunRecordPath = netbatch.NetModeLive, ""
+	networkbatch.NetRunMode, networkbatch.NetRunRecordPath = networkbatch.NetModeLive, ""
 	switch {
 	case options.netRecord != "" && options.netReplay != "":
 		return "--net-record and --net-replay cannot both be given"
 	case options.netRecord != "":
-		netbatch.NetRunMode, netbatch.NetRunRecordPath = netbatch.NetModeRecord, options.netRecord
+		networkbatch.NetRunMode, networkbatch.NetRunRecordPath = networkbatch.NetModeRecord, options.netRecord
 	case options.netReplay != "":
-		netbatch.NetRunMode, netbatch.NetRunRecordPath = netbatch.NetModeReplay, options.netReplay
+		networkbatch.NetRunMode, networkbatch.NetRunRecordPath = networkbatch.NetModeReplay, options.netReplay
 	}
 	return ""
 }
