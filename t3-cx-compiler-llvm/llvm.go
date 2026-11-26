@@ -33,7 +33,7 @@ var RuntimeC []byte
 // RuntimeFileName is the name the runtime source is written under.
 const RuntimeFileName = "cx_runtime.c"
 
-const pointerSize = uint32(types.POINTER_SIZE)
+const pointerSize = uint32(types.PointerSize)
 
 // Stop is a run time check of the emitted code that ends the run.
 type Stop uint8

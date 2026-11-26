@@ -1,7 +1,7 @@
 package init
 
 import (
-	"github.com/skycoin/skycoin-cx/t1-constants" // thin: only CALLSTACK_SIZE, NULL_HEAP_ADDRESS_OFFSET, STACK_SIZE; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-constants" // thin: only CallStackSize, NullHeapAddressOffset, StackSize; no depth gain
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-cipher"               // thin: only PackageRegister, CipherOpcodeDispatch; registration list and opcode switch, keep
@@ -43,18 +43,18 @@ func ProgramMake() *ast.CXProgram {
 		CurrentPackage: -1,
 		// OBJMODEL: state.CXCallMng (manager storage) or []CXCallGid, phase 4 #366.
 		// Now a slice of objects, site S1463.
-		CallStack: make([]ast.CXCall, constants.CALLSTACK_SIZE),
-		Memory:    make([]byte, constants.STACK_SIZE+minHeapSize),
+		CallStack: make([]ast.CXCall, constants.CallStackSize),
+		Memory:    make([]byte, constants.StackSize+minHeapSize),
 		Stack: ast.StackSegmentStruct{
-			Size: constants.STACK_SIZE,
+			Size: constants.StackSize,
 		},
 		Data: ast.DataSegmentStruct{
-			StartsAt: constants.STACK_SIZE,
+			StartsAt: constants.StackSize,
 		},
 		Heap: ast.HeapSegmentStruct{
 			Size:    minHeapSize,
-			Max:     constants.MAX_HEAP_SIZE,
-			Pointer: constants.NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
+			Max:     constants.MaxHeapSize,
+			Pointer: constants.NullHeapAddressOffset, // We can start adding objects to the heap after the NULL (nil) bytes.
 		},
 		Version:   constants.LanguageVersionCurrent,
 		CxIrState: state,

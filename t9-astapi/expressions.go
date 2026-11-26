@@ -20,7 +20,7 @@ import (
 //	Functions
 //	    0.- Function: TestFunction (inputOne i32) (outputOne i16)
 //
-// We use FunctionNativeExpressionAdd(cxprogram, "TestFunction", cxconstants.OP_ADD).
+// We use FunctionNativeExpressionAdd(cxprogram, "TestFunction", cxconstants.OpAdd).
 // The Result will be:
 // 0.- Package: main
 //
@@ -108,7 +108,7 @@ func FunctionExpressionRemove(cxprogram *cxast.CXProgram, functionName string, e
 //	        0.- Expression: add()
 //	        1.- Expression: div()
 //
-// We use FunctionNativeExpressionAddAtLine(cxprogram, "TestFunction", cxconstants.OP_SUB, 1).
+// We use FunctionNativeExpressionAddAtLine(cxprogram, "TestFunction", cxconstants.OpSub, 1).
 // The Result will be:
 // 0.- Package: main
 //

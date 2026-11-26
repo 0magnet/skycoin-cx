@@ -17,11 +17,11 @@ func TestConstantsHaveTheirOwnCodes(t *testing.T) {
 		names[code] = name
 	}
 	want := map[string]int32{
-		"cx.SUCCESS":                  types.CX_SUCCESS,
-		"cx.ASSERT":                   types.CX_ASSERT,
-		"cx.RUNTIME_INVALID_ARGUMENT": types.CX_RUNTIME_INVALID_ARGUMENT,
-		"cx.RUNTIME_NOT_IMPLEMENTED":  types.CX_RUNTIME_NOT_IMPLEMENTED,
-		"cx.POINTER_SIZE":             types.Cast_ptr_to_i32(types.POINTER_SIZE),
+		"cx.SUCCESS":                  types.CXSuccess,
+		"cx.ASSERT":                   types.CXAssert,
+		"cx.RUNTIME_INVALID_ARGUMENT": types.CXRuntimeInvalidArgument,
+		"cx.RUNTIME_NOT_IMPLEMENTED":  types.CXRuntimeNotImplemented,
+		"cx.POINTER_SIZE":             types.PtrToI32Cast(types.PointerSize),
 	}
 	for name, value := range want {
 		entry, ok := ConstNames.NativeNameIndexText(name)
@@ -30,7 +30,7 @@ func TestConstantsHaveTheirOwnCodes(t *testing.T) {
 			t.Errorf("%s is not registered", name)
 			continue
 		}
-		if got := types.Read_i32(Constants[code].Value, 0); got != value {
+		if got := types.I32Read(Constants[code].Value, 0); got != value {
 			t.Errorf("%s = %d, want %d", name, got, value)
 		}
 	}

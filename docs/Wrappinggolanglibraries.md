@@ -18,8 +18,8 @@ outside the standard library is a system library instead, see
    `func(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)`.
    It reads its inputs and writes its outputs with the `CXValue` getters
    and setters. `OpRegexpCompile` in [t4-regexp/op_regexp.go](../t4-regexp/op_regexp.go)
-   reads a string with `inputs[0].Get_str(prgrm)` and writes its error
-   with `outputs[1].Set_str(prgrm, ...)`.
+   reads a string with `inputs[0].StrGet(prgrm)` and writes its error
+   with `outputs[1].StrSet(prgrm, ...)`.
 
 3. **Define each function.** Add a row to `constants.OpcodeDefinitionTable`
    in [t1-constants/opcodes_definitions.go](../t1-constants/opcodes_definitions.go)

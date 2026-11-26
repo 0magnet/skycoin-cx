@@ -5,24 +5,24 @@ import (
 	"github.com/skycoin/skycoin-cx/t1-constants"
 )
 
-// An escaped local has its frame slot offset with ESCAPE_OFFSET_FLAG set, and
+// An escaped local has its frame slot offset with EscapeOffsetFlag set, and
 // the slot holds its heap object. Every use copies the offset and reads through it.
 
 // OffsetEscaped reports whether offset is the offset of an escaped local.
 func OffsetEscaped(offset types.Pointer) bool {
-	return offset&constants.ESCAPE_OFFSET_FLAG != 0
+	return offset&constants.EscapeOffsetFlag != 0
 }
 
 // OffsetEscapedSlot returns the frame offset of the slot of an escaped local.
 func OffsetEscapedSlot(offset types.Pointer) types.Pointer {
-	return offset &^ constants.ESCAPE_OFFSET_FLAG
+	return offset &^ constants.EscapeOffsetFlag
 }
 
 // frameAddress returns the address of the variable at offset in the frame at
 // fp. An offset outside the stack is an address already.
 func frameAddress(prgrm *CXProgram, fp types.Pointer, offset types.Pointer) types.Pointer {
 	if OffsetEscaped(offset) {
-		return types.Read_ptr(prgrm.Memory, fp+OffsetEscapedSlot(offset)) + types.OBJECT_HEADER_SIZE
+		return types.PtrRead(prgrm.Memory, fp+OffsetEscapedSlot(offset)) + types.ObjectHeaderSize
 	}
 	if offset < prgrm.Stack.Size {
 		return offset + fp
@@ -41,9 +41,9 @@ func finalOffsetEscapedPointer(prgrm *CXProgram, fp types.Pointer, argTypeSig *C
 	if !argTypeSig.Deref {
 		return finalOffset
 	}
-	finalOffset = types.Read_ptr(prgrm.Memory, finalOffset)
+	finalOffset = types.PtrRead(prgrm.Memory, finalOffset)
 	if finalOffset.Valid() && finalOffset >= prgrm.Heap.StartsAt {
-		finalOffset += types.OBJECT_HEADER_SIZE
+		finalOffset += types.ObjectHeaderSize
 	}
 	return finalOffset
 }
@@ -53,25 +53,25 @@ func finalOffsetEscapedPointer(prgrm *CXProgram, fp types.Pointer, argTypeSig *C
 // GCREACH: allocates the object of an escaped local, which adds to
 // the GC pressure, see docs/GarbageCollector.md.
 func EscapedAllocate(prgrm *CXProgram, fp types.Pointer, offset types.Pointer, size types.Pointer) {
-	objectSize := types.OBJECT_HEADER_SIZE + size
+	objectSize := types.ObjectHeaderSize + size
 	object := SequenceAllocate(prgrm, objectSize)
-	header := types.Get_obj_header(prgrm.Memory, object)
+	header := types.ObjectHeaderGet(prgrm.Memory, object)
 	for c := range header {
 		header[c] = 0
 	}
-	types.Write_obj_size(prgrm.Memory, object, objectSize)
+	types.ObjectSizeWrite(prgrm.Memory, object, objectSize)
 	payload := types.ObjectPayloadGet(prgrm.Memory, object, size)
 	for c := range payload {
 		payload[c] = 0
 	}
-	types.Write_ptr(prgrm.Memory, fp+OffsetEscapedSlot(offset), object)
+	types.PtrWrite(prgrm.Memory, fp+OffsetEscapedSlot(offset), object)
 }
 
 // PointerOfAddress returns the pointer to the value at address. A pointer to
 // the heap is the address less the object header, which a dereference adds.
 func PointerOfAddress(prgrm *CXProgram, address types.Pointer) types.Pointer {
-	if address.Valid() && address >= prgrm.Heap.StartsAt+types.OBJECT_HEADER_SIZE {
-		return address - types.OBJECT_HEADER_SIZE
+	if address.Valid() && address >= prgrm.Heap.StartsAt+types.ObjectHeaderSize {
+		return address - types.ObjectHeaderSize
 	}
 	return address
 }
@@ -79,7 +79,7 @@ func PointerOfAddress(prgrm *CXProgram, address types.Pointer) types.Pointer {
 // escapedSize is the size of the heap object of an escaped local, the size
 // its frame slot would have had.
 func escapedSize(prgrm *CXProgram, sig *CXTypeSignature) types.Pointer {
-	if sig.Type == TYPE_CXARGUMENT_DEPRECATE {
+	if sig.Type == TypeCXArgumentDeprecate {
 		return ArgSizeGet(prgrm, prgrm.CXArgGet(CXArgumentIndex(sig.Meta)))
 	}
 	return sig.SizeGet(prgrm, true)

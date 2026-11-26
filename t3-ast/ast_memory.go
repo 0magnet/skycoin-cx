@@ -9,23 +9,23 @@ import (
 )
 
 // MinHeapSize is the initial heap of a program with the heap cap
-// MAX_HEAP_SIZE, see MinHeapSizeOf.
+// MaxHeapSize, see MinHeapSizeOf.
 func MinHeapSize() types.Pointer {
-	return MinHeapSizeOf(constants.MAX_HEAP_SIZE)
+	return MinHeapSizeOf(constants.MaxHeapSize)
 }
 
 // MinHeapSizeOf is the initial heap of a program with the heap cap heapCap:
-// INIT_HEAP_SIZE, at most heapCap and at least NULL_HEAP_ADDRESS_OFFSET,
+// HeapSizeInit, at most heapCap and at least NullHeapAddressOffset,
 // the bytes of nil.
 func MinHeapSizeOf(heapCap types.Pointer) types.Pointer {
-	return max(min(constants.INIT_HEAP_SIZE, heapCap), constants.NULL_HEAP_ADDRESS_OFFSET)
+	return max(min(constants.HeapSizeInit, heapCap), constants.NullHeapAddressOffset)
 }
 
-// HeapCap returns the heap cap of prgrm, Heap.Max, or MAX_HEAP_SIZE for a
+// HeapCap returns the heap cap of prgrm, Heap.Max, or MaxHeapSize for a
 // program that has none.
 func HeapCap(prgrm *CXProgram) types.Pointer {
 	if prgrm.Heap.Max == 0 {
-		return constants.MAX_HEAP_SIZE
+		return constants.MaxHeapSize
 	}
 	return prgrm.Heap.Max
 }
@@ -42,9 +42,9 @@ func (cxprogram *CXProgram) EnsureMinimumHeapSize() {
 		panic("ast: the memory of the program was released")
 	}
 	heap := &cxprogram.Heap
-	heap.Max = min(HeapCap(cxprogram), constants.ESCAPE_OFFSET_FLAG/2)
+	heap.Max = min(HeapCap(cxprogram), constants.EscapeOffsetFlag/2)
 	heapMemoryReserve(cxprogram)
-	currHeapSize := types.Cast_int_to_ptr(len(cxprogram.Memory)) - heap.StartsAt
+	currHeapSize := types.IntToPtrCast(len(cxprogram.Memory)) - heap.StartsAt
 	if minHeapSize := MinHeapSizeOf(heap.Max); currHeapSize < minHeapSize {
 		length := len(cxprogram.Memory)
 		cxprogram.Memory = cxprogram.Memory[:heap.StartsAt+minHeapSize]
@@ -61,8 +61,8 @@ func (cxprogram *CXProgram) EnsureMinimumHeapSize() {
 // the memory a released program left in the reserve when it is big enough.
 // The heap clears what it grows into, so the reserved bytes are not cleared.
 func heapMemoryReserve(prgrm *CXProgram) {
-	size := max(prgrm.Heap.StartsAt+HeapCap(prgrm), types.Cast_int_to_ptr(len(prgrm.Memory)))
-	if types.Cast_int_to_ptr(cap(prgrm.Memory)) < size {
+	size := max(prgrm.Heap.StartsAt+HeapCap(prgrm), types.IntToPtrCast(len(prgrm.Memory)))
+	if types.IntToPtrCast(cap(prgrm.Memory)) < size {
 		memory := memoryReserveTake(prgrm, size)
 		if memory == nil {
 			memory = make([]byte, 0, size)
@@ -95,7 +95,7 @@ func memoryReserveTake(prgrm *CXProgram, size types.Pointer) []byte {
 		reserve.memoryReserveCollector = gc.State{}
 	}
 	memory := reserve.memoryReserveMemory
-	if types.Cast_int_to_ptr(cap(memory)) < size {
+	if types.IntToPtrCast(cap(memory)) < size {
 		return nil
 	}
 	reserve.memoryReserveMemory = nil
@@ -144,7 +144,7 @@ func MemoryResize(prgrm *CXProgram, newMemSize types.Pointer, expand bool) {
 
 	end := prgrm.Heap.StartsAt + newMemSize
 	if expand {
-		if types.Cast_int_to_ptr(cap(prgrm.Memory)) < end {
+		if types.IntToPtrCast(cap(prgrm.Memory)) < end {
 			// A program that EnsureMinimumHeapSize did not size.
 			heapMemoryReserve(prgrm)
 		}
@@ -170,9 +170,9 @@ func SequenceAllocate(prgrm *CXProgram, size types.Pointer) types.Pointer {
 		if free > HeapCap(prgrm) || free < address {
 			HeapOutOfMemory(prgrm, uint64(size))
 		}
-		// Growing to leave MIN_HEAP_FREE_RATIO free keeps the next
+		// Growing to leave MinHeapFreeRatio free keeps the next
 		// allocations from growing it again before the next collection.
-		grown := max(free, types.Cast_f32_to_ptr(float32(free)/(1.0-constants.MIN_HEAP_FREE_RATIO)))
+		grown := max(free, types.F32ToPtrCast(float32(free)/(1.0-constants.MinHeapFreeRatio)))
 		MemoryResize(prgrm, grown, true)
 	}
 	prgrm.Heap.Pointer = free
@@ -192,10 +192,10 @@ func HeapOutOfMemory(prgrm *CXProgram, request uint64) {
 // see docs/GarbageCollector.md.
 // VIOLATION STRHOT-281: B, only the boundary opcodes use Go strings, #412.
 func StrAllocate(prgrm *CXProgram, text string) types.Pointer {
-	size := types.OBJECT_HEADER_SIZE + types.Cast_int_to_ptr(len(text))
+	size := types.ObjectHeaderSize + types.IntToPtrCast(len(text))
 	object := SequenceAllocate(prgrm, size)
-	types.Write_obj_size(prgrm.Memory, object, size)
-	copy(prgrm.Memory[object+types.OBJECT_HEADER_SIZE:object+size], text)
+	types.ObjectSizeWrite(prgrm.Memory, object, size)
+	copy(prgrm.Memory[object+types.ObjectHeaderSize:object+size], text)
 	return object
 }
 
@@ -205,7 +205,7 @@ func StrAllocate(prgrm *CXProgram, text string) types.Pointer {
 // see docs/GarbageCollector.md.
 // VIOLATION STRHOT-282: B, only the boundary opcodes use Go strings, #412.
 func StrAllocateAt(prgrm *CXProgram, address types.Pointer, text string) {
-	types.Write_ptr(prgrm.Memory, address, StrAllocate(prgrm, text))
+	types.PtrWrite(prgrm.Memory, address, StrAllocate(prgrm, text))
 }
 
 // StrBytesAllocateAt writes a new str object holding first followed by second
@@ -214,12 +214,12 @@ func StrAllocateAt(prgrm *CXProgram, address types.Pointer, text string) {
 // GCREACH: allocates through SequenceAllocate, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
 func StrBytesAllocateAt(prgrm *CXProgram, address types.Pointer, first []byte, second []byte) {
-	size := types.OBJECT_HEADER_SIZE + types.Cast_int_to_ptr(len(first)+len(second))
+	size := types.ObjectHeaderSize + types.IntToPtrCast(len(first)+len(second))
 	object := SequenceAllocate(prgrm, size)
-	types.Write_obj_size(prgrm.Memory, object, size)
-	payload := prgrm.Memory[object+types.OBJECT_HEADER_SIZE : object+size]
+	types.ObjectSizeWrite(prgrm.Memory, object, size)
+	payload := prgrm.Memory[object+types.ObjectHeaderSize : object+size]
 	copy(payload[copy(payload, first):], second)
-	types.Write_ptr(prgrm.Memory, address, object)
+	types.PtrWrite(prgrm.Memory, address, object)
 }
 
 // heapPressureLimit is the bytes the program may allocate before the next

@@ -13,12 +13,12 @@ func TestInlineCase(t *testing.T) {
 		want string
 	}{
 		{constants.OpcodeDefinition{Name: "gl.Clear", Inputs: "i32"}, "gl.Clear(uint32(%0))",
-			"gl.Clear(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))"},
+			"gl.Clear(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))"},
 		{constants.OpcodeDefinition{Name: "gl.End"}, "gl.End()", "gl.End()"},
 		{constants.OpcodeDefinition{Name: "glfw.ShouldClose", Inputs: "i32", Outputs: "bool"}, "cxfxWindowGet(%0).ShouldClose()",
-			"types.Write_bool(prgrm.Memory, outputs[0].Offset, cxfxWindowGet(types.Read_i32(prgrm.Memory, inputs[0].Offset)).ShouldClose())"},
+			"types.BoolWrite(prgrm.Memory, outputs[0].Offset, cxfxWindowGet(types.I32Read(prgrm.Memory, inputs[0].Offset)).ShouldClose())"},
 		{constants.OpcodeDefinition{Name: "gl.Uniform1f", Inputs: "i32 f32"}, "gl.Uniform1f(%0, %1)",
-			"gl.Uniform1f(types.Read_i32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset))"},
+			"gl.Uniform1f(types.I32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset))"},
 	} {
 		got, err := inlineCase(test.row, test.call)
 		if err != nil || got != test.want {

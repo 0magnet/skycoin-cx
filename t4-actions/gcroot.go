@@ -40,7 +40,7 @@ func gcRootAdd(fn *ast.CXFunction, offset types.Pointer, specs []int, typ types.
 // gcRootAddEscapeSlot adds the frame slot of an escaped local, which holds
 // its heap object, to fn.ListOfSlots.
 func gcRootAddEscapeSlot(fn *ast.CXFunction, offset types.Pointer) {
-	gcRootAdd(fn, offset, []int{constants.DECL_BASIC, constants.DECL_POINTER}, types.UNDEFINED, nil, nil)
+	gcRootAdd(fn, offset, []int{constants.DeclarationBasic, constants.DeclarationPointer}, types.UNDEFINED, nil, nil)
 }
 
 // gcPointerDepthLimit bounds the struct nesting gcValueReferences follows.
@@ -53,9 +53,9 @@ func gcValueReferences(prgrm *ast.CXProgram, specs []int, typ types.Code, strct 
 		return false
 	}
 	switch specs[len(specs)-1] {
-	case constants.DECL_POINTER, constants.DECL_SLICE:
+	case constants.DeclarationPointer, constants.DeclarationSlice:
 		return true
-	case constants.DECL_ARRAY:
+	case constants.DeclarationArray:
 		return gcValueReferences(prgrm, specs[:len(specs)-1], typ, strct, depth+1)
 	}
 	if strct == nil {

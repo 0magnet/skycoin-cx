@@ -62,7 +62,7 @@ func VmErrorPrint(prgrm *ast.CXProgram, machine *vm.Machine, stop vm.Stop) {
 	prgrm.Stack.Pointer = types.Pointer(machine.MachineStackPointer)
 	StackPrint(prgrm)
 
-	if globals.DBG_GOLANG_STACK_TRACE {
+	if globals.DebugGolangStackTrace {
 		debug.PrintStack()
 	}
 }

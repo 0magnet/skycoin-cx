@@ -43,7 +43,7 @@ func main() {
 			return core(prgrm, code, inputs, outputs)
 		}
 		calls++
-		outputs[0].Set_i32(prgrm, 2*inputs[0].Get_i32(prgrm))
+		outputs[0].I32Set(prgrm, 2*inputs[0].I32Get(prgrm))
 		return true
 	}
 	defer func() { ast.OpcodeDispatch = core }()

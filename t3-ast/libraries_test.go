@@ -28,7 +28,7 @@ func TestLibraryCallSandbox(t *testing.T) {
 		return true
 	}
 	prgrm.ProgramLibrariesEnabled[constants.LibraryNumberFile] = true
-	libraryCall(prgrm, &CXFunction{AtomicOPCode: constants.OP_LIBRARY_CALL, LibraryNumber: constants.LibraryNumberFile, LibraryFunctionNumber: 3}, nil, nil)
+	libraryCall(prgrm, &CXFunction{AtomicOPCode: constants.OpLibraryCall, LibraryNumber: constants.LibraryNumberFile, LibraryFunctionNumber: 3}, nil, nil)
 	if len(ran) != 1 || ran[0] != 3 {
 		t.Errorf("an enabled call ran functions %v, want [3]", ran)
 	}

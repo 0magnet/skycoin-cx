@@ -29,7 +29,7 @@ func buildTestCore(t *testing.T, dir string, libraries ...string) string {
 	t.Helper()
 	path := filepath.Join(dir, buildCoreFileName(libraries))
 	tags := []string{"cxcore"}
-	if types.POINTER_SIZE == 8 {
+	if types.PointerSize == 8 {
 		tags = append(tags, "ptr64")
 	}
 	for _, library := range libraries {
@@ -85,7 +85,7 @@ func TestBuildCoreRefuses(t *testing.T) {
 	dir := t.TempDir()
 	corePath := buildTestCore(t, dir)
 	run, stderr := buildTestProcess(t, corePath, nil, dir)
-	if run.exitCode != types.CX_COMPILATION_ERROR || !bytes.Contains(stderr, []byte("no CX program is appended")) {
+	if run.exitCode != types.CXCompilationError || !bytes.Contains(stderr, []byte("no CX program is appended")) {
 		t.Errorf("core alone: exit code %d, stderr %q", run.exitCode, stderr)
 	}
 
@@ -102,7 +102,7 @@ func TestBuildCoreRefuses(t *testing.T) {
 		output += ".exe"
 	}
 	build, stderr := buildTestProcess(t, executable, []string{"CX_TEST_RUN_MAIN=1"}, tests, buildCommand, "examples/hello-world.cx", "-o", output, "--core", corePath)
-	if build.exitCode != types.CX_SUCCESS {
+	if build.exitCode != types.CXSuccess {
 		t.Fatalf("cx build: exit code %d, stderr %q", build.exitCode, stderr)
 	}
 	built, err := os.ReadFile(output)
@@ -114,7 +114,7 @@ func TestBuildCoreRefuses(t *testing.T) {
 		t.Fatal(err)
 	}
 	run, stderr = buildTestProcess(t, output, nil, dir)
-	if run.exitCode != types.CX_COMPILATION_ERROR || !bytes.Contains(stderr, []byte("checksum")) {
+	if run.exitCode != types.CXCompilationError || !bytes.Contains(stderr, []byte("checksum")) {
 		t.Errorf("damaged program: exit code %d, stderr %q", run.exitCode, stderr)
 	}
 
@@ -122,11 +122,11 @@ func TestBuildCoreRefuses(t *testing.T) {
 	// may still hold it open, and writing it again fails with ETXTBSY.
 	output = filepath.Join(dir, "file-program"+filepath.Ext(output))
 	build, stderr = buildTestProcess(t, executable, []string{"CX_TEST_RUN_MAIN=1"}, tests, buildCommand, "--enable=file", "test-os-read-slice-grow.cx", "-o", output, "--core", corePath)
-	if build.exitCode != types.CX_SUCCESS {
+	if build.exitCode != types.CXSuccess {
 		t.Fatalf("file program on a given core: exit code %d, stderr %q", build.exitCode, stderr)
 	}
 	run, stderr = buildTestProcess(t, output, nil, dir)
-	if run.exitCode != types.CX_COMPILATION_ERROR || !bytes.Contains(stderr, []byte("does not link: file")) {
+	if run.exitCode != types.CXCompilationError || !bytes.Contains(stderr, []byte("does not link: file")) {
 		t.Errorf("file program on a core without file: exit code %d, stderr %q", run.exitCode, stderr)
 	}
 }
@@ -156,10 +156,10 @@ func TestBuildLibraries(t *testing.T) {
 		exitCode int
 		want     string
 	}{
-		{"--enable=file,net", true, types.CX_SUCCESS, "7\n"},
-		{"--enable=file,net,process", true, types.CX_SUCCESS, "7\n"},
-		{"--enable=process", false, types.CX_RUNTIME_LIBRARY_DISABLED, "library net is not enabled"},
-		{"--enable=", false, types.CX_RUNTIME_LIBRARY_DISABLED, "library net is not enabled"},
+		{"--enable=file,net", true, types.CXSuccess, "7\n"},
+		{"--enable=file,net,process", true, types.CXSuccess, "7\n"},
+		{"--enable=process", false, types.CXRuntimeLibraryDisabled, "library net is not enabled"},
+		{"--enable=", false, types.CXRuntimeLibraryDisabled, "library net is not enabled"},
 	}
 	for i, c := range cases {
 		output := filepath.Join(dir, fmt.Sprintf("program-%d", i))
@@ -167,7 +167,7 @@ func TestBuildLibraries(t *testing.T) {
 			output += ".exe"
 		}
 		build, stderr := buildTestProcess(t, executable, []string{"CX_TEST_RUN_MAIN=1"}, tests, buildCommand, c.enable, "test-library-call.cx", "-o", output, "--core", dir)
-		if build.exitCode != types.CX_SUCCESS {
+		if build.exitCode != types.CXSuccess {
 			t.Errorf("%s: cx build exit code %d, stderr %q", c.enable, build.exitCode, stderr)
 			continue
 		}

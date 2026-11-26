@@ -290,7 +290,7 @@ used for many operands. A type signature can point at one.
 `ast.CXTypeSignature` (`t3-ast/cxtypesignature_def.go`) has `Index`,
 `Name`, `Offset`, `Type`, `Package`, `PassBy`
 (`constants.PASSBY_VALUE` 0 or `PASSBY_REFERENCE` 1), `Deref`, `Meta`
-and `ArgDetails`. `Type` is a `CXTypeSignature_TYPE`, and `Meta` depends
+and `ArgDetails`. `Type` is a `CXTypeSignatureType`, and `Meta` depends
 on it.
 
 | `Type` | Value | `Meta` |
@@ -870,7 +870,7 @@ as `execute.RunCompiled` does.
 * A str print that does not fit the output keeps its place and stops with
   `StopOutputFull`, and the same instruction goes on after `Resume`.
 * `StopIndexNegative` is a negative index, `CX_RUNTIME_INVALID_CAST` as in
-  `types.Cast_i32_to_ptr`. `StopAddressInvalid` is a computed address or str
+  `types.I32ToPtrCast`. `StopAddressInvalid` is a computed address or str
   outside the stack and data segment, where the old loop would read the heap.
 * `StopDivideByZero` and `StopStackOverflow` end the run. `printer.VmErrorPrint` prints them as
   the old loop does, the line from `ir.LineAt` and the call stack by copying

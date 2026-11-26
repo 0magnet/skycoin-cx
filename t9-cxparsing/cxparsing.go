@@ -64,7 +64,7 @@ func parseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
 		actions.ImportScopedCheck(actions.AST, pkg)
 	}
 	/*
-		Adding global variables `OS_ARGS` to the `os` (operating system)
+		Adding global variables `OsArgs` to the `os` (operating system)
 		package.
 	*/
 	if osPkg, err := actions.AST.PackageGet(actions.AST.CxIrState.CxIrStateNameOs); err == nil {
@@ -75,8 +75,8 @@ func parseSourceStrings(sourceCodeStrings []string, fileNames []string) error {
 
 			_, arg1 := ast.ArgumentMake(actions.AST, actions.AST.CxIrState.CxIrStateNameOsArgs, ast.SourceFileGidNil, -1)
 			arg1.TypeSet(types.STR)
-			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_BASIC)
-			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DECL_SLICE)
+			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DeclarationBasic)
+			arg1 = actions.DeclarationSpecifiers(arg1, []types.Pointer{0}, constants.DeclarationSlice)
 			actions.GlobalInPackageDeclare(actions.AST, osPkg, arg0, arg1, nil, false)
 		}
 	}

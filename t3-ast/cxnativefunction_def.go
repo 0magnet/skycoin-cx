@@ -6,7 +6,7 @@ type CXNativeFunction struct {
 	AtomicOPCode int
 
 	// LibraryNumber and LibraryFunctionNumber name the system library function
-	// an AtomicOPCode of constants.OP_LIBRARY_CALL calls, and are 0 otherwise.
+	// an AtomicOPCode of constants.OpLibraryCall calls, and are 0 otherwise.
 	LibraryNumber         int
 	LibraryFunctionNumber int
 

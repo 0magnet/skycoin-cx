@@ -36,12 +36,12 @@ func buildImage(options buildOptions) int {
 	prgrm.CxIrState.StringPool.StringPoolFreeze()
 	if code := core.OperationRefused(prgrm); code != 0 {
 		fmt.Fprintf(os.Stderr, "cx build: %s\n", core.OperationRefusalLine(prgrm, code))
-		return types.CX_RUNTIME_LIBRARY_DISABLED
+		return types.CXRuntimeLibraryDisabled
 	}
 	image, _, outside := core.ExecutorLower(prgrm)
 	if outside != "" {
 		fmt.Fprintf(os.Stderr, "cx build: cannot run on vm: %s\n", outside)
-		return types.CX_RUNTIME_NOT_IMPLEMENTED
+		return types.CXRuntimeNotImplemented
 	}
 	for _, library := range [...]int{constants.LibraryNumberFile, constants.LibraryNumberNet} {
 		if image.ImageOperationsEnabled.OpcodeSetLibraryAny(library) {
@@ -51,5 +51,5 @@ func buildImage(options buildOptions) int {
 	if err := os.WriteFile(options.buildOptionsOutput, ir.ImageFileEncode(&image), 0o644); err != nil {
 		return buildFail(err.Error())
 	}
-	return types.CX_SUCCESS
+	return types.CXSuccess
 }

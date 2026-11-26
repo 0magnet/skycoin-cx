@@ -179,7 +179,7 @@ func TestRunVmPrintAllocs(t *testing.T) {
 	}
 	machine := vm.MachineNew(&image, core.ExecutorOutputSize)
 	allocs := testing.AllocsPerRun(3, func() {
-		if code := core.ExecutorVmRunMachine(actions.AST, machine); code != types.CX_SUCCESS {
+		if code := core.ExecutorVmRunMachine(actions.AST, machine); code != types.CXSuccess {
 			t.Fatalf("code %d", code)
 		}
 	})

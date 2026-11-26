@@ -91,16 +91,16 @@ func RandomExpressionsGenerate(prgrm *cxast.CXProgram, inputFn *cxast.CXFunction
 
 func OpcodeOperatorJump(opCode int) bool {
 	switch opCode {
-	case cxconstants.OP_JMP,
-		cxconstants.OP_ABS_JMP,
-		cxconstants.OP_JMP_EQ,
-		cxconstants.OP_JMP_UNEQ,
-		cxconstants.OP_JMP_GT,
-		cxconstants.OP_JMP_GTEQ,
-		cxconstants.OP_JMP_LT,
-		cxconstants.OP_JMP_LTEQ,
-		cxconstants.OP_JMP_ZERO,
-		cxconstants.OP_JMP_NOT_ZERO:
+	case cxconstants.OpJmp,
+		cxconstants.OpAbsJmp,
+		cxconstants.OpJmpEq,
+		cxconstants.OpJmpUneq,
+		cxconstants.OpJmpGt,
+		cxconstants.OpJmpGteq,
+		cxconstants.OpJmpLt,
+		cxconstants.OpJmpLteq,
+		cxconstants.OpJmpZero,
+		cxconstants.OpJmpNotZero:
 		return true
 	default:
 		return false
@@ -127,7 +127,7 @@ func sigType(prgrm *cxast.CXProgram, idx cxast.CXTypeSignatureIndex) types.Code 
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0028.
 	sig := prgrm.CXTypeSignatureFromArrayGet(idx)
-	if sig.Type == cxast.TYPE_CXARGUMENT_DEPRECATE {
+	if sig.Type == cxast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0029.
 		return prgrm.CXArgFromArrayGet(cxast.CXArgumentIndex(sig.Meta)).Type
@@ -146,7 +146,7 @@ func sigSize(prgrm *cxast.CXProgram, idx cxast.CXTypeSignatureIndex) types.Point
 // are buggy anyway.
 func opOutput(prgrm *cxast.CXProgram, fn *cxast.CXFunction, exprPos int) (cxast.CXTypeSignatureIndex, bool) {
 	expr := fn.Expressions[exprPos]
-	if expr.Type != cxast.CX_ATOMIC_OPERATOR {
+	if expr.Type != cxast.CXOperationTypeAtomicOperator {
 		return 0, false
 	}
 	operator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(getAtomicOp(prgrm, expr.Index).Operator)
@@ -213,7 +213,7 @@ func findArgOptions(prgrm *cxast.CXProgram, fn *cxast.CXFunction, argTypeToFind 
 	}
 
 	for _, expr := range fn.Expressions {
-		if expr.Type != cxast.CX_ATOMIC_OPERATOR {
+		if expr.Type != cxast.CXOperationTypeAtomicOperator {
 			continue
 		}
 		outputs := getAtomicOp(prgrm, expr.Index).OutputsGet(prgrm)
@@ -230,8 +230,8 @@ func getRandInp(prgrm *cxast.CXProgram, fnIdx cxast.CXFunctionGid, opCode int, a
 	options := findArgOptions(prgrm, prgrm.CxIrState.CXFunctionMng.CXFunctionGet(fnIdx), argType)
 
 	// if no options available or if operator is jump, add new i32_LT expression.
-	if len(options) == 0 || opCode == cxconstants.OP_JMP {
-		// TODO: improve process when there's OP_JMP
+	if len(options) == 0 || opCode == cxconstants.OpJmp {
+		// TODO: improve process when there's OpJmp
 		return addNewExpression(prgrm, fnIdx, nativeCode("i32.lt"))
 	}
 

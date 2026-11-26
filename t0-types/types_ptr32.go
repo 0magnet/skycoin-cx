@@ -4,61 +4,61 @@ package types
 
 type Pointer uint32
 
-const POINTER_SIZE = UI32_SIZE
-const InvalidPointer = Pointer(MAX_UINT32)
+const PointerSize = UI32Size
+const InvalidPointer = Pointer(MaxUint32)
 
-func Cast_ptr_to_int(value Pointer) int {
-	panicIf(int64(value) > int64(MAX_INT), CX_RUNTIME_INVALID_CAST)
+func PtrToIntCast(value Pointer) int {
+	panicIf(int64(value) > int64(MaxInt), CXRuntimeInvalidCast)
 	return int(value)
 }
 
-func Cast_ptr_to_i32(value Pointer) int32 {
-	panicIf(int64(value) > int64(MAX_INT32), CX_RUNTIME_INVALID_CAST)
+func PtrToI32Cast(value Pointer) int32 {
+	panicIf(int64(value) > int64(MaxInt32), CXRuntimeInvalidCast)
 	return int32(value)
 }
 
-func Cast_ptr_to_ui32(value Pointer) uint32 {
+func PtrToUI32Cast(value Pointer) uint32 {
 	return uint32(value)
 }
 
-func Cast_ptr_to_ui64(value Pointer) uint64 {
+func PtrToUI64Cast(value Pointer) uint64 {
 	return uint64(value)
 }
 
-func Cast_int_to_ptr(value int) Pointer {
-	panicIf(value < 0 || int64(value) > int64(InvalidPointer), CX_RUNTIME_INVALID_CAST)
+func IntToPtrCast(value int) Pointer {
+	panicIf(value < 0 || int64(value) > int64(InvalidPointer), CXRuntimeInvalidCast)
 	return Pointer(value)
 }
 
-func Cast_i32_to_ptr(value int32) Pointer {
-	panicIf(value < 0, CX_RUNTIME_INVALID_CAST)
+func I32ToPtrCast(value int32) Pointer {
+	panicIf(value < 0, CXRuntimeInvalidCast)
 	return Pointer(value)
 }
 
-func Cast_i64_to_ptr(value int64) Pointer {
-	panicIf(value < 0, CX_RUNTIME_INVALID_CAST)
+func I64ToPtrCast(value int64) Pointer {
+	panicIf(value < 0, CXRuntimeInvalidCast)
 	return Pointer(value)
 }
 
-func Cast_ui64_to_ptr(value uint64) Pointer {
-	panicIf(value > uint64(InvalidPointer), CX_RUNTIME_INVALID_CAST)
+func UI64ToPtrCast(value uint64) Pointer {
+	panicIf(value > uint64(InvalidPointer), CXRuntimeInvalidCast)
 	return Pointer(value)
 }
 
-func Cast_f32_to_ptr(value float32) Pointer {
-	panicIf(value < 0 || uint64(value) > uint64(InvalidPointer), CX_RUNTIME_INVALID_CAST)
+func F32ToPtrCast(value float32) Pointer {
+	panicIf(value < 0 || uint64(value) > uint64(InvalidPointer), CXRuntimeInvalidCast)
 	return Pointer(value)
 }
 
-func Cast_f64_to_ptr(value float64) Pointer {
-	panicIf(value < 0 || uint64(value) > uint64(InvalidPointer), CX_RUNTIME_INVALID_CAST)
+func F64ToPtrCast(value float64) Pointer {
+	panicIf(value < 0 || uint64(value) > uint64(InvalidPointer), CXRuntimeInvalidCast)
 	return Pointer(value)
 }
 
-func Read_ptr(memory []byte, offset Pointer) Pointer {
-	return Pointer(Read_ui32(memory, offset))
+func PtrRead(memory []byte, offset Pointer) Pointer {
+	return Pointer(UI32Read(memory, offset))
 }
 
-func Write_ptr(memory []byte, offset Pointer, value Pointer) {
-	Write_ui32(memory, offset, Cast_ptr_to_ui32(value))
+func PtrWrite(memory []byte, offset Pointer, value Pointer) {
+	UI32Write(memory, offset, PtrToUI32Cast(value))
 }

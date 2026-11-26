@@ -11,28 +11,28 @@ import (
 )
 
 const (
-	ACTION_RELEASE ActionType = 0 // TODO : break from glfw.Action
-	ACTION_PRESS              = 1
-	ACTION_REPEAT             = 2
-	ACTION_MOVE               = 3
+	ActionRelease ActionType = 0 // TODO : break from glfw.Action
+	ActionPress              = 1
+	ActionRepeat             = 2
+	ActionMove               = 3
 )
 
 const (
-	APP_NONE EventType = iota
-	APP_START
-	APP_STOP
-	APP_KEYBOARD
-	APP_MOUSE
-	APP_FOCUS_ON
-	APP_FOCUS_OFF
-	APP_FRAMEBUFFER_SIZE
-	APP_WINDOW_SIZE
-	APP_WINDOW_POSITION
-	APP_PAINT
-	APP_CURSOR_POS   // TODO : to deprecate
-	APP_MOUSE_BUTTON // TODO : to deprecate
-	// APP_EVENT_COUNT is one past the last event type.
-	APP_EVENT_COUNT
+	AppNone EventType = iota
+	AppStart
+	AppStop
+	AppKeyboard
+	AppMouse
+	AppFocusOn
+	AppFocusOff
+	AppFramebufferSize
+	AppWindowSize
+	AppWindowPosition
+	AppPaint
+	AppCursorPos   // TODO : to deprecate
+	AppMouseButton // TODO : to deprecate
+	// AppEventCount is one past the last event type.
+	AppEventCount
 )
 
 type ActionType uint32
@@ -52,8 +52,8 @@ type Event struct {
 // the window handle they pass. The compiler resolved the function, see #432.
 func cxfxAppCallbackSet(prgrm *ast.CXProgram, eventType EventType, inputs []ast.CXValue) {
 	cxfxState.CxfxAppCallbackTable[eventType] = Callback{
-		CallbackWindow:   inputs[0].Get_i32(prgrm),
-		CallbackFunction: ast.CXFunctionGid(inputs[1].Get_i64(prgrm)),
+		CallbackWindow:   inputs[0].I32Get(prgrm),
+		CallbackFunction: ast.CXFunctionGid(inputs[1].I64Get(prgrm)),
 		CallbackSet:      true,
 	}
 }
@@ -89,7 +89,7 @@ func EventPush(eventType EventType) {
 	// VIOLATION: created outside manager; phase 1.
 	event := Event{
 		eventType,
-		ACTION_RELEASE, // TODO : ACTION_NONE
+		ActionRelease, // TODO : ACTION_NONE
 		uint64(time.Now().UnixNano()),
 		0.0,
 		0.0,
@@ -107,28 +107,28 @@ func EventPush(eventType EventType) {
 
 func WindowSizeEventPush(width float64, height float64) {
 	index := eventCount
-	EventPush(APP_WINDOW_SIZE)
+	EventPush(AppWindowSize)
 	events[index].x = width
 	events[index].y = height
 }
 
 func WindowPositionEventPush(x float64, y float64) {
 	index := eventCount
-	EventPush(APP_WINDOW_POSITION)
+	EventPush(AppWindowPosition)
 	events[index].x = x
 	events[index].y = y
 }
 
 func FramebufferSizeEventPush(width float64, height float64) {
 	index := eventCount
-	EventPush(APP_FRAMEBUFFER_SIZE)
+	EventPush(AppFramebufferSize)
 	events[index].x = width
 	events[index].y = height
 }
 
 func KeyboardEventPush(action ActionType, key int32, scancode int64, mods int32) {
 	index := eventCount
-	EventPush(APP_KEYBOARD)
+	EventPush(AppKeyboard)
 	events[index].action = action
 	events[index].key = key
 	events[index].scancode = scancode
@@ -162,15 +162,15 @@ func PollEvents(prgrm *ast.CXProgram) {
 	for i := 0; i < eventCount; i++ {
 		e := &polled[i]
 		switch e.eventType {
-		case APP_START, APP_STOP:
+		case AppStart, AppStop:
 			cxfxAppCallbackCall(prgrm, e.eventType, 0)
-		case APP_KEYBOARD:
+		case AppKeyboard:
 			cxfxCallbackInputsI32(1, e.key)
 			cxfxCallbackInputsI32(2, int32(e.scancode))
 			cxfxCallbackInputsI32(3, int32(e.action))
 			cxfxCallbackInputsI32(4, e.mods)
 			cxfxAppCallbackCall(prgrm, e.eventType, 4)
-		case APP_MOUSE:
+		case AppMouse:
 			cxfxCallbackInputsI32(1, e.key)
 			cxfxCallbackInputsI64(2, e.scancode)
 			cxfxCallbackInputsI32(3, int32(e.action))
@@ -178,15 +178,15 @@ func PollEvents(prgrm *ast.CXProgram) {
 			cxfxCallbackInputsF64(5, e.x)
 			cxfxCallbackInputsF64(6, e.y)
 			cxfxAppCallbackCall(prgrm, e.eventType, 6)
-		case APP_FRAMEBUFFER_SIZE, APP_WINDOW_SIZE, APP_WINDOW_POSITION:
+		case AppFramebufferSize, AppWindowSize, AppWindowPosition:
 			cxfxCallbackInputsI32(1, int32(e.x)) // TODO : use float64 (deprecate int32)
 			cxfxCallbackInputsI32(2, int32(e.y)) // TODO : use float64 (deprecate int32)
 			cxfxAppCallbackCall(prgrm, e.eventType, 2)
-		case APP_CURSOR_POS: // TODO : to deprecate
+		case AppCursorPos: // TODO : to deprecate
 			cxfxCallbackInputsF64(1, e.x)
 			cxfxCallbackInputsF64(2, e.y)
 			cxfxAppCallbackCall(prgrm, e.eventType, 2)
-		case APP_MOUSE_BUTTON: // TODO to deprecate
+		case AppMouseButton: // TODO to deprecate
 			cxfxCallbackInputsI32(1, e.key)
 			cxfxCallbackInputsI32(2, int32(e.action))
 			cxfxCallbackInputsI32(3, e.mods)

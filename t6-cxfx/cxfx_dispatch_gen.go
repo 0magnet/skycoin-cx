@@ -41,11 +41,11 @@ func CxfxOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, ou
 	case 605:
 		OpGlAppend(prgrm, inputs, outputs)
 	case 606:
-		gl.MatrixMode(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.MatrixMode(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 607:
-		gl.Rotatef(types.Read_f32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset), types.Read_f32(prgrm.Memory, inputs[2].Offset), types.Read_f32(prgrm.Memory, inputs[3].Offset))
+		gl.Rotatef(types.F32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset), types.F32Read(prgrm.Memory, inputs[2].Offset), types.F32Read(prgrm.Memory, inputs[3].Offset))
 	case 608:
-		gl.Translatef(types.Read_f32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset), types.Read_f32(prgrm.Memory, inputs[2].Offset))
+		gl.Translatef(types.F32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset), types.F32Read(prgrm.Memory, inputs[2].Offset))
 	case 609:
 		gl.LoadIdentity()
 	case 610:
@@ -53,97 +53,97 @@ func CxfxOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, ou
 	case 611:
 		gl.PopMatrix()
 	case 612:
-		gl.EnableClientState(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.EnableClientState(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 613:
-		gl.Color3f(types.Read_f32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset), types.Read_f32(prgrm.Memory, inputs[2].Offset))
+		gl.Color3f(types.F32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset), types.F32Read(prgrm.Memory, inputs[2].Offset))
 	case 614:
-		gl.Color4f(types.Read_f32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset), types.Read_f32(prgrm.Memory, inputs[2].Offset), types.Read_f32(prgrm.Memory, inputs[3].Offset))
+		gl.Color4f(types.F32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset), types.F32Read(prgrm.Memory, inputs[2].Offset), types.F32Read(prgrm.Memory, inputs[3].Offset))
 	case 615:
-		gl.Begin(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.Begin(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 616:
 		gl.End()
 	case 617:
-		gl.Normal3f(types.Read_f32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset), types.Read_f32(prgrm.Memory, inputs[2].Offset))
+		gl.Normal3f(types.F32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset), types.F32Read(prgrm.Memory, inputs[2].Offset))
 	case 618:
-		gl.Vertex2f(types.Read_f32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset))
+		gl.Vertex2f(types.F32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset))
 	case 619:
-		gl.Vertex3f(types.Read_f32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset), types.Read_f32(prgrm.Memory, inputs[2].Offset))
+		gl.Vertex3f(types.F32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset), types.F32Read(prgrm.Memory, inputs[2].Offset))
 	case 620:
 		OpGlLightfv(prgrm, inputs, outputs)
 	case 621:
-		gl.Frustum(types.Read_f64(prgrm.Memory, inputs[0].Offset), types.Read_f64(prgrm.Memory, inputs[1].Offset), types.Read_f64(prgrm.Memory, inputs[2].Offset), types.Read_f64(prgrm.Memory, inputs[3].Offset), types.Read_f64(prgrm.Memory, inputs[4].Offset), types.Read_f64(prgrm.Memory, inputs[5].Offset))
+		gl.Frustum(types.F64Read(prgrm.Memory, inputs[0].Offset), types.F64Read(prgrm.Memory, inputs[1].Offset), types.F64Read(prgrm.Memory, inputs[2].Offset), types.F64Read(prgrm.Memory, inputs[3].Offset), types.F64Read(prgrm.Memory, inputs[4].Offset), types.F64Read(prgrm.Memory, inputs[5].Offset))
 	case 622:
-		gl.TexEnvi(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)), types.Read_i32(prgrm.Memory, inputs[2].Offset))
+		gl.TexEnvi(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)), types.I32Read(prgrm.Memory, inputs[2].Offset))
 	case 623:
-		gl.Ortho(types.Read_f64(prgrm.Memory, inputs[0].Offset), types.Read_f64(prgrm.Memory, inputs[1].Offset), types.Read_f64(prgrm.Memory, inputs[2].Offset), types.Read_f64(prgrm.Memory, inputs[3].Offset), types.Read_f64(prgrm.Memory, inputs[4].Offset), types.Read_f64(prgrm.Memory, inputs[5].Offset))
+		gl.Ortho(types.F64Read(prgrm.Memory, inputs[0].Offset), types.F64Read(prgrm.Memory, inputs[1].Offset), types.F64Read(prgrm.Memory, inputs[2].Offset), types.F64Read(prgrm.Memory, inputs[3].Offset), types.F64Read(prgrm.Memory, inputs[4].Offset), types.F64Read(prgrm.Memory, inputs[5].Offset))
 	case 624:
-		gl.Scalef(types.Read_f32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset), types.Read_f32(prgrm.Memory, inputs[2].Offset))
+		gl.Scalef(types.F32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset), types.F32Read(prgrm.Memory, inputs[2].Offset))
 	case 625:
-		gl.TexCoord2d(types.Read_f64(prgrm.Memory, inputs[0].Offset), types.Read_f64(prgrm.Memory, inputs[1].Offset))
+		gl.TexCoord2d(types.F64Read(prgrm.Memory, inputs[0].Offset), types.F64Read(prgrm.Memory, inputs[1].Offset))
 	case 626:
-		gl.TexCoord2f(types.Read_f32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset))
+		gl.TexCoord2f(types.F32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset))
 	case 627:
-		gl.CullFace(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.CullFace(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 628:
-		gl.FrontFace(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.FrontFace(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 629:
-		gl.Hint(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)))
+		gl.Hint(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)))
 	case 630:
-		gl.Scissor(types.Read_i32(prgrm.Memory, inputs[0].Offset), types.Read_i32(prgrm.Memory, inputs[1].Offset), types.Read_i32(prgrm.Memory, inputs[2].Offset), types.Read_i32(prgrm.Memory, inputs[3].Offset))
+		gl.Scissor(types.I32Read(prgrm.Memory, inputs[0].Offset), types.I32Read(prgrm.Memory, inputs[1].Offset), types.I32Read(prgrm.Memory, inputs[2].Offset), types.I32Read(prgrm.Memory, inputs[3].Offset))
 	case 631:
-		gl.TexParameteri(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)), types.Read_i32(prgrm.Memory, inputs[2].Offset))
+		gl.TexParameteri(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)), types.I32Read(prgrm.Memory, inputs[2].Offset))
 	case 632:
 		OpGlTexImage2D(prgrm, inputs, outputs)
 	case 633:
-		gl.Clear(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.Clear(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 634:
-		gl.ClearColor(types.Read_f32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset), types.Read_f32(prgrm.Memory, inputs[2].Offset), types.Read_f32(prgrm.Memory, inputs[3].Offset))
+		gl.ClearColor(types.F32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset), types.F32Read(prgrm.Memory, inputs[2].Offset), types.F32Read(prgrm.Memory, inputs[3].Offset))
 	case 635:
-		gl.ClearStencil(types.Read_i32(prgrm.Memory, inputs[0].Offset))
+		gl.ClearStencil(types.I32Read(prgrm.Memory, inputs[0].Offset))
 	case 636:
-		gl.ClearDepth(types.Read_f64(prgrm.Memory, inputs[0].Offset))
+		gl.ClearDepth(types.F64Read(prgrm.Memory, inputs[0].Offset))
 	case 637:
-		gl.StencilMask(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.StencilMask(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 638:
-		gl.ColorMask(types.Read_bool(prgrm.Memory, inputs[0].Offset), types.Read_bool(prgrm.Memory, inputs[1].Offset), types.Read_bool(prgrm.Memory, inputs[2].Offset), types.Read_bool(prgrm.Memory, inputs[3].Offset))
+		gl.ColorMask(types.BoolRead(prgrm.Memory, inputs[0].Offset), types.BoolRead(prgrm.Memory, inputs[1].Offset), types.BoolRead(prgrm.Memory, inputs[2].Offset), types.BoolRead(prgrm.Memory, inputs[3].Offset))
 	case 639:
-		gl.DepthMask(types.Read_bool(prgrm.Memory, inputs[0].Offset))
+		gl.DepthMask(types.BoolRead(prgrm.Memory, inputs[0].Offset))
 	case 640:
-		gl.Disable(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.Disable(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 641:
-		gl.Enable(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.Enable(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 642:
-		gl.BlendFunc(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)))
+		gl.BlendFunc(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)))
 	case 643:
-		gl.StencilFunc(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), types.Read_i32(prgrm.Memory, inputs[1].Offset), uint32(types.Read_i32(prgrm.Memory, inputs[2].Offset)))
+		gl.StencilFunc(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), types.I32Read(prgrm.Memory, inputs[1].Offset), uint32(types.I32Read(prgrm.Memory, inputs[2].Offset)))
 	case 644:
-		gl.StencilOp(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[2].Offset)))
+		gl.StencilOp(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[2].Offset)))
 	case 645:
-		gl.DepthFunc(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.DepthFunc(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 646:
-		types.Write_i32(prgrm.Memory, outputs[0].Offset, int32(gl.GetError()))
+		types.I32Write(prgrm.Memory, outputs[0].Offset, int32(gl.GetError()))
 	case 647:
 		OpGlGetTexLevelParameteriv(prgrm, inputs, outputs)
 	case 648:
-		gl.DepthRange(types.Read_f64(prgrm.Memory, inputs[0].Offset), types.Read_f64(prgrm.Memory, inputs[1].Offset))
+		gl.DepthRange(types.F64Read(prgrm.Memory, inputs[0].Offset), types.F64Read(prgrm.Memory, inputs[1].Offset))
 	case 649:
-		gl.Viewport(types.Read_i32(prgrm.Memory, inputs[0].Offset), types.Read_i32(prgrm.Memory, inputs[1].Offset), types.Read_i32(prgrm.Memory, inputs[2].Offset), types.Read_i32(prgrm.Memory, inputs[3].Offset))
+		gl.Viewport(types.I32Read(prgrm.Memory, inputs[0].Offset), types.I32Read(prgrm.Memory, inputs[1].Offset), types.I32Read(prgrm.Memory, inputs[2].Offset), types.I32Read(prgrm.Memory, inputs[3].Offset))
 	case 650:
-		gl.DrawArrays(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), types.Read_i32(prgrm.Memory, inputs[1].Offset), types.Read_i32(prgrm.Memory, inputs[2].Offset))
+		gl.DrawArrays(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), types.I32Read(prgrm.Memory, inputs[1].Offset), types.I32Read(prgrm.Memory, inputs[2].Offset))
 	case 651:
-		gl.DrawElements(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), types.Read_i32(prgrm.Memory, inputs[1].Offset), uint32(types.Read_i32(prgrm.Memory, inputs[2].Offset)), nil)
+		gl.DrawElements(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), types.I32Read(prgrm.Memory, inputs[1].Offset), uint32(types.I32Read(prgrm.Memory, inputs[2].Offset)), nil)
 	case 652:
-		gl.BindTexture(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)))
+		gl.BindTexture(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)))
 	case 653:
 		OpGlDeleteTextures(prgrm, inputs, outputs)
 	case 654:
 		OpGlGenTextures(prgrm, inputs, outputs)
 	case 655:
-		gl.ActiveTexture(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.ActiveTexture(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 656:
-		gl.BlendFuncSeparate(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[2].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[3].Offset)))
+		gl.BlendFuncSeparate(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[2].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[3].Offset)))
 	case 657:
-		gl.BindBuffer(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)))
+		gl.BindBuffer(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)))
 	case 658:
 		OpGlDeleteBuffers(prgrm, inputs, outputs)
 	case 659:
@@ -155,29 +155,29 @@ func CxfxOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, ou
 	case 662:
 		OpGlDrawBuffers(prgrm, inputs, outputs)
 	case 663:
-		gl.StencilOpSeparate(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[2].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[3].Offset)))
+		gl.StencilOpSeparate(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[2].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[3].Offset)))
 	case 664:
-		gl.StencilFuncSeparate(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)), types.Read_i32(prgrm.Memory, inputs[2].Offset), uint32(types.Read_i32(prgrm.Memory, inputs[3].Offset)))
+		gl.StencilFuncSeparate(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)), types.I32Read(prgrm.Memory, inputs[2].Offset), uint32(types.I32Read(prgrm.Memory, inputs[3].Offset)))
 	case 665:
-		gl.StencilMaskSeparate(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)))
+		gl.StencilMaskSeparate(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)))
 	case 666:
-		gl.AttachShader(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)))
+		gl.AttachShader(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)))
 	case 667:
 		OpGlBindAttribLocation(prgrm, inputs, outputs)
 	case 668:
-		gl.CompileShader(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.CompileShader(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 669:
-		types.Write_i32(prgrm.Memory, outputs[0].Offset, int32(gl.CreateProgram()))
+		types.I32Write(prgrm.Memory, outputs[0].Offset, int32(gl.CreateProgram()))
 	case 670:
-		types.Write_i32(prgrm.Memory, outputs[0].Offset, int32(gl.CreateShader(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))))
+		types.I32Write(prgrm.Memory, outputs[0].Offset, int32(gl.CreateShader(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))))
 	case 671:
-		gl.DeleteProgram(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.DeleteProgram(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 672:
-		gl.DeleteShader(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.DeleteShader(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 673:
-		gl.DetachShader(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)))
+		gl.DetachShader(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)))
 	case 674:
-		gl.EnableVertexAttribArray(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.EnableVertexAttribArray(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 675:
 		OpGlGetAttribLocation(prgrm, inputs, outputs)
 	case 676:
@@ -191,27 +191,27 @@ func CxfxOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, ou
 	case 680:
 		OpGlGetUniformLocation(prgrm, inputs, outputs)
 	case 681:
-		gl.LinkProgram(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.LinkProgram(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 682:
 		OpGlShaderSource(prgrm, inputs, outputs)
 	case 683:
-		gl.UseProgram(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.UseProgram(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 684:
-		gl.Uniform1f(types.Read_i32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset))
+		gl.Uniform1f(types.I32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset))
 	case 685:
-		gl.Uniform2f(types.Read_i32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset), types.Read_f32(prgrm.Memory, inputs[2].Offset))
+		gl.Uniform2f(types.I32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset), types.F32Read(prgrm.Memory, inputs[2].Offset))
 	case 686:
-		gl.Uniform3f(types.Read_i32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset), types.Read_f32(prgrm.Memory, inputs[2].Offset), types.Read_f32(prgrm.Memory, inputs[3].Offset))
+		gl.Uniform3f(types.I32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset), types.F32Read(prgrm.Memory, inputs[2].Offset), types.F32Read(prgrm.Memory, inputs[3].Offset))
 	case 687:
-		gl.Uniform4f(types.Read_i32(prgrm.Memory, inputs[0].Offset), types.Read_f32(prgrm.Memory, inputs[1].Offset), types.Read_f32(prgrm.Memory, inputs[2].Offset), types.Read_f32(prgrm.Memory, inputs[3].Offset), types.Read_f32(prgrm.Memory, inputs[4].Offset))
+		gl.Uniform4f(types.I32Read(prgrm.Memory, inputs[0].Offset), types.F32Read(prgrm.Memory, inputs[1].Offset), types.F32Read(prgrm.Memory, inputs[2].Offset), types.F32Read(prgrm.Memory, inputs[3].Offset), types.F32Read(prgrm.Memory, inputs[4].Offset))
 	case 688:
-		gl.Uniform1i(types.Read_i32(prgrm.Memory, inputs[0].Offset), types.Read_i32(prgrm.Memory, inputs[1].Offset))
+		gl.Uniform1i(types.I32Read(prgrm.Memory, inputs[0].Offset), types.I32Read(prgrm.Memory, inputs[1].Offset))
 	case 689:
-		gl.Uniform2i(types.Read_i32(prgrm.Memory, inputs[0].Offset), types.Read_i32(prgrm.Memory, inputs[1].Offset), types.Read_i32(prgrm.Memory, inputs[2].Offset))
+		gl.Uniform2i(types.I32Read(prgrm.Memory, inputs[0].Offset), types.I32Read(prgrm.Memory, inputs[1].Offset), types.I32Read(prgrm.Memory, inputs[2].Offset))
 	case 690:
-		gl.Uniform3i(types.Read_i32(prgrm.Memory, inputs[0].Offset), types.Read_i32(prgrm.Memory, inputs[1].Offset), types.Read_i32(prgrm.Memory, inputs[2].Offset), types.Read_i32(prgrm.Memory, inputs[3].Offset))
+		gl.Uniform3i(types.I32Read(prgrm.Memory, inputs[0].Offset), types.I32Read(prgrm.Memory, inputs[1].Offset), types.I32Read(prgrm.Memory, inputs[2].Offset), types.I32Read(prgrm.Memory, inputs[3].Offset))
 	case 691:
-		gl.Uniform4i(types.Read_i32(prgrm.Memory, inputs[0].Offset), types.Read_i32(prgrm.Memory, inputs[1].Offset), types.Read_i32(prgrm.Memory, inputs[2].Offset), types.Read_i32(prgrm.Memory, inputs[3].Offset), types.Read_i32(prgrm.Memory, inputs[4].Offset))
+		gl.Uniform4i(types.I32Read(prgrm.Memory, inputs[0].Offset), types.I32Read(prgrm.Memory, inputs[1].Offset), types.I32Read(prgrm.Memory, inputs[2].Offset), types.I32Read(prgrm.Memory, inputs[3].Offset), types.I32Read(prgrm.Memory, inputs[4].Offset))
 	case 692:
 		OpGlUniform1fv(prgrm, inputs, outputs)
 	case 693:
@@ -241,9 +241,9 @@ func CxfxOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, ou
 	case 705:
 		OpGlUniformM44FV(prgrm, inputs, outputs)
 	case 706:
-		gl.VertexAttribPointer(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), types.Read_i32(prgrm.Memory, inputs[1].Offset), uint32(types.Read_i32(prgrm.Memory, inputs[2].Offset)), types.Read_bool(prgrm.Memory, inputs[3].Offset), types.Read_i32(prgrm.Memory, inputs[4].Offset), nil)
+		gl.VertexAttribPointer(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), types.I32Read(prgrm.Memory, inputs[1].Offset), uint32(types.I32Read(prgrm.Memory, inputs[2].Offset)), types.BoolRead(prgrm.Memory, inputs[3].Offset), types.I32Read(prgrm.Memory, inputs[4].Offset), nil)
 	case 707:
-		gl.VertexAttribPointer(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), types.Read_i32(prgrm.Memory, inputs[1].Offset), uint32(types.Read_i32(prgrm.Memory, inputs[2].Offset)), types.Read_bool(prgrm.Memory, inputs[3].Offset), types.Read_i32(prgrm.Memory, inputs[4].Offset), gl.PtrOffset(int(types.Read_i32(prgrm.Memory, inputs[5].Offset))))
+		gl.VertexAttribPointer(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), types.I32Read(prgrm.Memory, inputs[1].Offset), uint32(types.I32Read(prgrm.Memory, inputs[2].Offset)), types.BoolRead(prgrm.Memory, inputs[3].Offset), types.I32Read(prgrm.Memory, inputs[4].Offset), gl.PtrOffset(int(types.I32Read(prgrm.Memory, inputs[5].Offset))))
 	case 708:
 		OpGlClearBufferI(prgrm, inputs, outputs)
 	case 709:
@@ -251,31 +251,31 @@ func CxfxOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, ou
 	case 710:
 		OpGlClearBufferF(prgrm, inputs, outputs)
 	case 711:
-		gl.BindRenderbuffer(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)))
+		gl.BindRenderbuffer(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)))
 	case 712:
 		OpGlDeleteRenderbuffers(prgrm, inputs, outputs)
 	case 713:
 		OpGlGenRenderbuffers(prgrm, inputs, outputs)
 	case 714:
-		gl.RenderbufferStorage(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)), types.Read_i32(prgrm.Memory, inputs[2].Offset), types.Read_i32(prgrm.Memory, inputs[3].Offset))
+		gl.RenderbufferStorage(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)), types.I32Read(prgrm.Memory, inputs[2].Offset), types.I32Read(prgrm.Memory, inputs[3].Offset))
 	case 715:
-		gl.BindFramebuffer(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)))
+		gl.BindFramebuffer(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)))
 	case 716:
 		OpGlDeleteFramebuffers(prgrm, inputs, outputs)
 	case 717:
 		OpGlGenFramebuffers(prgrm, inputs, outputs)
 	case 718:
-		types.Write_i32(prgrm.Memory, outputs[0].Offset, int32(gl.CheckFramebufferStatus(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))))
+		types.I32Write(prgrm.Memory, outputs[0].Offset, int32(gl.CheckFramebufferStatus(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))))
 	case 719:
-		gl.FramebufferTexture2D(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[2].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[3].Offset)), types.Read_i32(prgrm.Memory, inputs[4].Offset))
+		gl.FramebufferTexture2D(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[2].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[3].Offset)), types.I32Read(prgrm.Memory, inputs[4].Offset))
 	case 720:
-		gl.FramebufferRenderbuffer(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[1].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[2].Offset)), uint32(types.Read_i32(prgrm.Memory, inputs[3].Offset)))
+		gl.FramebufferRenderbuffer(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[1].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[2].Offset)), uint32(types.I32Read(prgrm.Memory, inputs[3].Offset)))
 	case 721:
-		gl.GenerateMipmap(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.GenerateMipmap(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 722:
 		OpGlBindVertexArray(prgrm, inputs, outputs)
 	case 723:
-		gl.BindVertexArray(uint32(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		gl.BindVertexArray(uint32(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 724:
 		OpGlDeleteVertexArrays(prgrm, inputs, outputs)
 	case 725:
@@ -289,19 +289,19 @@ func CxfxOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, ou
 	case 729:
 		OpGlfwInit(prgrm, inputs, outputs)
 	case 730:
-		glfw.WindowHint(glfw.Hint(types.Read_i32(prgrm.Memory, inputs[0].Offset)), int(types.Read_i32(prgrm.Memory, inputs[1].Offset)))
+		glfw.WindowHint(glfw.Hint(types.I32Read(prgrm.Memory, inputs[0].Offset)), int(types.I32Read(prgrm.Memory, inputs[1].Offset)))
 	case 731:
 		OpGlfwCreateWindow(prgrm, inputs, outputs)
 	case 732:
-		cxfxWindowGet(types.Read_i32(prgrm.Memory, inputs[0].Offset)).MakeContextCurrent()
+		cxfxWindowGet(types.I32Read(prgrm.Memory, inputs[0].Offset)).MakeContextCurrent()
 	case 733:
-		types.Write_bool(prgrm.Memory, outputs[0].Offset, cxfxWindowGet(types.Read_i32(prgrm.Memory, inputs[0].Offset)).ShouldClose())
+		types.BoolWrite(prgrm.Memory, outputs[0].Offset, cxfxWindowGet(types.I32Read(prgrm.Memory, inputs[0].Offset)).ShouldClose())
 	case 734:
-		cxfxWindowGet(types.Read_i32(prgrm.Memory, inputs[0].Offset)).SetShouldClose(types.Read_bool(prgrm.Memory, inputs[1].Offset))
+		cxfxWindowGet(types.I32Read(prgrm.Memory, inputs[0].Offset)).SetShouldClose(types.BoolRead(prgrm.Memory, inputs[1].Offset))
 	case 735:
 		OpGlfwPollEvents(prgrm, inputs, outputs)
 	case 736:
-		cxfxWindowGet(types.Read_i32(prgrm.Memory, inputs[0].Offset)).SwapBuffers()
+		cxfxWindowGet(types.I32Read(prgrm.Memory, inputs[0].Offset)).SwapBuffers()
 	case 737:
 		OpGlfwGetFramebufferSize(prgrm, inputs, outputs)
 	case 738:
@@ -309,9 +309,9 @@ func CxfxOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, ou
 	case 739:
 		OpGlfwGetWindowSize(prgrm, inputs, outputs)
 	case 740:
-		types.Write_f64(prgrm.Memory, outputs[0].Offset, glfw.GetTime())
+		types.F64Write(prgrm.Memory, outputs[0].Offset, glfw.GetTime())
 	case 741:
-		glfw.SwapInterval(int(types.Read_i32(prgrm.Memory, inputs[0].Offset)))
+		glfw.SwapInterval(int(types.I32Read(prgrm.Memory, inputs[0].Offset)))
 	case 742:
 		OpGlfwSetStartCallback(prgrm, inputs, outputs)
 	case 743:
@@ -335,11 +335,11 @@ func CxfxOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, ou
 	case 752:
 		OpGlfwGetCursorPos(prgrm, inputs, outputs)
 	case 753:
-		cxfxWindowGet(types.Read_i32(prgrm.Memory, inputs[0].Offset)).SetInputMode(glfw.InputMode(types.Read_i32(prgrm.Memory, inputs[1].Offset)), int(types.Read_i32(prgrm.Memory, inputs[2].Offset)))
+		cxfxWindowGet(types.I32Read(prgrm.Memory, inputs[0].Offset)).SetInputMode(glfw.InputMode(types.I32Read(prgrm.Memory, inputs[1].Offset)), int(types.I32Read(prgrm.Memory, inputs[2].Offset)))
 	case 754:
-		cxfxWindowGet(types.Read_i32(prgrm.Memory, inputs[0].Offset)).SetPos(int(types.Read_i32(prgrm.Memory, inputs[1].Offset)), int(types.Read_i32(prgrm.Memory, inputs[2].Offset)))
+		cxfxWindowGet(types.I32Read(prgrm.Memory, inputs[0].Offset)).SetPos(int(types.I32Read(prgrm.Memory, inputs[1].Offset)), int(types.I32Read(prgrm.Memory, inputs[2].Offset)))
 	case 755:
-		types.Write_i32(prgrm.Memory, outputs[0].Offset, int32(cxfxWindowGet(types.Read_i32(prgrm.Memory, inputs[0].Offset)).GetKey(glfw.Key(types.Read_i32(prgrm.Memory, inputs[1].Offset)))))
+		types.I32Write(prgrm.Memory, outputs[0].Offset, int32(cxfxWindowGet(types.I32Read(prgrm.Memory, inputs[0].Offset)).GetKey(glfw.Key(types.I32Read(prgrm.Memory, inputs[1].Offset)))))
 	case 756:
 		OpGlfwFuncI32I32(prgrm, inputs, outputs)
 	case 757:

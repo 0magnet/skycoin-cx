@@ -46,7 +46,7 @@ func AffordanceLiteral(prgrm *ast.CXProgram, clauses []AffordanceClauseParsed, l
 	}
 	literal.AffordanceLiteralOffset = prgrm.Data.StartsAt + prgrm.Data.Size
 	prgrm.CXProgramAffordanceLiteralAdd(literal)
-	return PrimaryExpressionsWrite(prgrm, types.AFF, make([]byte, types.AFF_SIZE), false)
+	return PrimaryExpressionsWrite(prgrm, types.AFF, make([]byte, types.AffSize), false)
 }
 
 // AffordanceLiteralsResolve writes the value of each aff literal compiled
@@ -181,7 +181,7 @@ func affordanceFunctionVariable(prgrm *ast.CXProgram, fn *ast.CXFunction, name s
 	variable = -1
 	var offset types.Pointer
 	for e := range fn.Expressions {
-		if fn.Expressions[e].Type != ast.CX_ATOMIC_OPERATOR {
+		if fn.Expressions[e].Type != ast.CXOperationTypeAtomicOperator {
 			continue
 		}
 		cxAtomicOp, err := prgrm.CXAtomicOpGet(fn.Expressions[e].Index)

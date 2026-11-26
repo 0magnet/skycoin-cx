@@ -6,7 +6,7 @@ package constants
 // A system library is a group of built-in functions that reach the operating
 // system, such as files or the network, or that link a Go module outside the
 // standard library, such as cipher. A program calls one through the
-// single opcode OP_LIBRARY_CALL with a library number and a function number,
+// single opcode OpLibraryCall with a library number and a function number,
 // not through a row of OpcodeLifecycleTable. A library runs only when it is
 // enabled for the run, see LibraryPolicyEnabledWhenImported.
 //

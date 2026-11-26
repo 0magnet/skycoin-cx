@@ -43,12 +43,12 @@ func TestGlobalInferredMatchesDeclared(t *testing.T) {
 func globalTypeDescription(prgrm *ast.CXProgram, glbl *ast.CXTypeSignature) string {
 	text := fmt.Sprintf("signature type %d pass by %d deref %v type %s size %d", glbl.Type, glbl.PassBy, glbl.Deref, ast.FormattedTypeGet(prgrm, glbl), glbl.SizeGet(prgrm, false))
 	switch glbl.Type {
-	case ast.TYPE_ATOMIC, ast.TYPE_POINTER_ATOMIC:
+	case ast.TypeAtomic, ast.TypePointerAtomic:
 		text += fmt.Sprintf(" meta %d", glbl.Meta)
-	case ast.TYPE_ARRAY_ATOMIC, ast.TYPE_POINTER_ARRAY_ATOMIC, ast.TYPE_SLICE_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
+	case ast.TypeArrayAtomic, ast.TypePointerArrayAtomic, ast.TypeSliceAtomic, ast.TypePointerSliceAtomic:
 		array := prgrm.CXTypeSignatureArrayFromArrayGet(glbl.Meta)
 		text += fmt.Sprintf(" element %d lengths %v indexes %d", array.Meta, array.Lengths, len(array.Indexes))
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		arg := prgrm.CXArgGet(ast.CXArgumentIndex(glbl.Meta))
 		structName := ""
 		if arg.StructType != nil {

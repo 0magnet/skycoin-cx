@@ -38,7 +38,7 @@ func cxglTexParameteri(target uint32, pname uint32, param int32) {
 }
 
 func cxglTexImage2D(target uint32, level int32, internalFormat int32, width int32, height int32, border int32, format uint32, gltype uint32, pixels []uint8) {
-	gl.TexImage2D(target, level, internalFormat, width, height, border, format, gltype, Slice_ui8_ToPtr(pixels))
+	gl.TexImage2D(target, level, internalFormat, width, height, border, format, gltype, SliceUI8ToPtr(pixels))
 }
 
 func cxglEnable(cap uint32) {
@@ -56,14 +56,14 @@ func cxglBindTexture(target uint32, texture uint32) {
 
 func cxglDeleteTextures(n int32, textures *uint32) {
 	if n > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	gl.DeleteTextures(n, textures)
 }
 
 func cxglGenTextures(n int32, textures *uint32) {
 	if n > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	gl.GenTextures(n, textures)
 }
@@ -71,29 +71,29 @@ func cxglGenTextures(n int32, textures *uint32) {
 // cxgl_1_5
 func cxglDeleteBuffers(n int32, buffers *uint32) {
 	if n > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	gl.DeleteBuffers(n, buffers)
 }
 
 func cxglGenBuffers(n int32, buffers *uint32) {
 	if n > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	gl.GenBuffers(n, buffers)
 }
 
 // cxgl_2_0
 func cxglBufferData(target uint32, size int, buffer []uint8, usage uint32) {
-	gl.BufferData(target, size, Slice_ui8_ToPtr(buffer), usage)
+	gl.BufferData(target, size, SliceUI8ToPtr(buffer), usage)
 }
 
 func cxglBufferSubData(target uint32, offset int, size int, buffer []uint8) {
-	gl.BufferSubData(target, offset, size, Slice_ui8_ToPtr(buffer))
+	gl.BufferSubData(target, offset, size, SliceUI8ToPtr(buffer))
 }
 
 func cxglDrawBuffers(size int32, bufs []uint8) {
-	gl.DrawBuffers(size, (*uint32)(Slice_ui8_ToPtr(bufs)))
+	gl.DrawBuffers(size, (*uint32)(SliceUI8ToPtr(bufs)))
 }
 
 func cxglBindAttribLocation(program uint32, index uint32, name []byte) {
@@ -147,7 +147,7 @@ func cxglGetUniformLocation(program uint32, name []byte) int32 {
 // GCREACH: allocates the argument holder once, see docs/GarbageCollector.md.
 func cxglShaderSource(shader uint32, count int32, source []byte) {
 	if count > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	if cxfxState.CxfxShaderSource == nil {
 		cxfxState.CxfxShaderSource = &ShaderSourceArgument{}
@@ -166,86 +166,86 @@ func cxglShaderSource(shader uint32, count int32, source []byte) {
 }
 
 func cxglUniform1fv(location int32, count int32, value []uint8) {
-	gl.Uniform1fv(location, count, (*float32)(Slice_ui8_ToPtr(value)))
+	gl.Uniform1fv(location, count, (*float32)(SliceUI8ToPtr(value)))
 }
 
 func cxglUniform2fv(location int32, count int32, value []uint8) {
-	gl.Uniform2fv(location, count, (*float32)(Slice_ui8_ToPtr(value)))
+	gl.Uniform2fv(location, count, (*float32)(SliceUI8ToPtr(value)))
 }
 
 func cxglUniform3fv(location int32, count int32, value []uint8) {
-	gl.Uniform3fv(location, count, (*float32)(Slice_ui8_ToPtr(value)))
+	gl.Uniform3fv(location, count, (*float32)(SliceUI8ToPtr(value)))
 }
 
 func cxglUniform4fv(location int32, count int32, value []uint8) {
-	gl.Uniform4fv(location, count, (*float32)(Slice_ui8_ToPtr(value)))
+	gl.Uniform4fv(location, count, (*float32)(SliceUI8ToPtr(value)))
 }
 
 func cxglUniform1iv(location int32, count int32, value []uint8) {
-	gl.Uniform1iv(location, count, (*int32)(Slice_ui8_ToPtr(value)))
+	gl.Uniform1iv(location, count, (*int32)(SliceUI8ToPtr(value)))
 }
 
 func cxglUniform2iv(location int32, count int32, value []uint8) {
-	gl.Uniform2iv(location, count, (*int32)(Slice_ui8_ToPtr(value)))
+	gl.Uniform2iv(location, count, (*int32)(SliceUI8ToPtr(value)))
 }
 
 func cxglUniform3iv(location int32, count int32, value []uint8) {
-	gl.Uniform3iv(location, count, (*int32)(Slice_ui8_ToPtr(value)))
+	gl.Uniform3iv(location, count, (*int32)(SliceUI8ToPtr(value)))
 }
 
 func cxglUniform4iv(location int32, count int32, value []uint8) {
-	gl.Uniform4iv(location, count, (*int32)(Slice_ui8_ToPtr(value)))
+	gl.Uniform4iv(location, count, (*int32)(SliceUI8ToPtr(value)))
 }
 
 func cxglUniformMatrix2fv(location int32, count int32, transpose bool, value []uint8) {
-	gl.UniformMatrix2fv(location, count, transpose, (*float32)(Slice_ui8_ToPtr(value)))
+	gl.UniformMatrix2fv(location, count, transpose, (*float32)(SliceUI8ToPtr(value)))
 }
 
 func cxglUniformMatrix3fv(location int32, count int32, transpose bool, value []uint8) {
-	gl.UniformMatrix3fv(location, count, transpose, (*float32)(Slice_ui8_ToPtr(value)))
+	gl.UniformMatrix3fv(location, count, transpose, (*float32)(SliceUI8ToPtr(value)))
 }
 
 func cxglUniformMatrix4fv(location int32, count int32, transpose bool, value []uint8) {
-	gl.UniformMatrix4fv(location, count, transpose, (*float32)(Slice_ui8_ToPtr(value)))
+	gl.UniformMatrix4fv(location, count, transpose, (*float32)(SliceUI8ToPtr(value)))
 }
 
 // cxgl_3_0
 func cxglClearBufferiv(buffer uint32, drawBuffer int32, value []int32) {
-	gl.ClearBufferiv(buffer, drawBuffer, (*int32)(Slice_i32_ToPtr(value)))
+	gl.ClearBufferiv(buffer, drawBuffer, (*int32)(SliceI32ToPtr(value)))
 }
 
 func cxglClearBufferuiv(buffer uint32, drawBuffer int32, value []uint32) {
-	gl.ClearBufferuiv(buffer, drawBuffer, (*uint32)(Slice_ui32_ToPtr(value)))
+	gl.ClearBufferuiv(buffer, drawBuffer, (*uint32)(SliceUI32ToPtr(value)))
 }
 
 func cxglClearBufferfv(buffer uint32, drawBuffer int32, value []float32) {
-	gl.ClearBufferfv(buffer, drawBuffer, (*float32)(Slice_f32_ToPtr(value)))
+	gl.ClearBufferfv(buffer, drawBuffer, (*float32)(SliceF32ToPtr(value)))
 }
 
 func cxglDeleteRenderbuffers(n int32, renderbuffers *uint32) {
 	if n > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	gl.DeleteRenderbuffers(n, renderbuffers)
 }
 
 func cxglGenRenderbuffers(n int32, renderbuffers *uint32) {
 	if n > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	gl.GenRenderbuffers(n, renderbuffers)
 }
 
 func cxglDeleteFramebuffers(n int32, framebuffers *uint32) {
 	if n > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	gl.DeleteFramebuffers(n, framebuffers)
 }
 
 func cxglGenFramebuffers(n int32, framebuffers *uint32) {
 	if n > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	gl.GenFramebuffers(n, framebuffers)
 }
@@ -260,28 +260,28 @@ func cxglBindVertexArray(array uint32) {
 
 func cxglDeleteVertexArraysAPPLE(n int32, arrays *uint32) {
 	if n > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	gl.DeleteVertexArraysAPPLE(n, arrays)
 }
 
 func cxglDeleteVertexArrays(n int32, arrays *uint32) {
 	if n > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	gl.DeleteVertexArrays(n, arrays)
 }
 
 func cxglGenVertexArraysAPPLE(n int32, arrays *uint32) {
 	if n > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	gl.GenVertexArraysAPPLE(n, arrays)
 }
 
 func cxglGenVertexArrays(n int32, arrays *uint32) {
 	if n > 1 {
-		panic(types.CX_RUNTIME_NOT_IMPLEMENTED)
+		panic(types.CXRuntimeNotImplemented)
 	}
 	gl.GenVertexArrays(n, arrays)
 }

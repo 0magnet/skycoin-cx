@@ -1385,7 +1385,7 @@ func getFormattedParam(prgrm *ast.CXProgram, paramTypeSigIdxs []ast.CXTypeSignat
 			externalPkg = true
 		}
 
-		if paramTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if paramTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1559.
 			param := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(paramTypeSig.Meta))
@@ -1394,9 +1394,9 @@ func getFormattedParam(prgrm *ast.CXProgram, paramTypeSigIdxs []ast.CXTypeSignat
 		} else {
 			name := prgrm.CXProgramNameText(paramTypeSig.Name)
 
-			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
+			// If it's a literal, just override the name with LiteralPlaceholder.
 			if paramTypeSig.Name == stringpool.StringGidNil {
-				name = constants.LITERAL_PLACEHOLDER
+				name = constants.LiteralPlaceholder
 			}
 
 			// TODO: Check if external pkg and pkg name shown are correct

@@ -77,24 +77,24 @@ func memoryZero(mem []byte, offset uint32, size uint32) {
 	}
 }
 
-// rPointer reads a pointer of types.POINTER_SIZE bytes.
+// rPointer reads a pointer of types.PointerSize bytes.
 func rPointer(mem []byte, offset uint32) uint64 {
-	if types.POINTER_SIZE == 4 {
+	if types.PointerSize == 4 {
 		return uint64(rUI32(mem, offset))
 	}
 	return rUI64(mem, offset)
 }
 
-// wPointer writes address as a pointer of types.POINTER_SIZE bytes.
+// wPointer writes address as a pointer of types.PointerSize bytes.
 func wPointer(mem []byte, offset uint32, address uint32) {
-	if types.POINTER_SIZE == 4 {
+	if types.PointerSize == 4 {
 		wUI32(mem, offset, address)
 		return
 	}
 	wUI64(mem, offset, uint64(address))
 }
 
-// memoryStrRead returns the bytes of the str at address as types.Read_str
+// memoryStrRead returns the bytes of the str at address as types.StrRead
 // reads them, nil for a null str. It returns false when the object is not
 // inside the first end bytes, where the old loop would read the heap or
 // panic.
@@ -103,12 +103,12 @@ func memoryStrRead(mem []byte, address uint32, end uint32) ([]byte, bool) {
 	if object == 0 || object == uint64(types.InvalidPointer) {
 		return nil, true
 	}
-	if object+uint64(types.OBJECT_HEADER_SIZE) > uint64(end) {
+	if object+uint64(types.ObjectHeaderSize) > uint64(end) {
 		return nil, false
 	}
-	objectSize := uint64(types.Read_obj_size(mem, types.Pointer(object)))
-	if objectSize < uint64(types.OBJECT_HEADER_SIZE) || object+objectSize > uint64(end) {
+	objectSize := uint64(types.ObjectSizeRead(mem, types.Pointer(object)))
+	if objectSize < uint64(types.ObjectHeaderSize) || object+objectSize > uint64(end) {
 		return nil, false
 	}
-	return mem[object+uint64(types.OBJECT_HEADER_SIZE) : object+objectSize], true
+	return mem[object+uint64(types.ObjectHeaderSize) : object+objectSize], true
 }

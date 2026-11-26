@@ -46,8 +46,8 @@ func popStack(prgrm *CXProgram, call *CXCall) error {
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0099.
 		cxAtomicOpOutput := prgrm.CXTypeSignatureFromArrayGet(cxAtomicOpOutputs[i])
-		types.WriteSlice_byte(prgrm.Memory, FinalOffsetGet(prgrm, returnFP, nil, cxAtomicOpOutput),
-			types.GetSlice_byte(prgrm.Memory, FinalOffsetGet(prgrm, fp, nil, output), output.SizeGet(prgrm, false)))
+		types.SliceByteWrite(prgrm.Memory, FinalOffsetGet(prgrm, returnFP, nil, cxAtomicOpOutput),
+			types.SliceByteGet(prgrm.Memory, FinalOffsetGet(prgrm, fp, nil, output), output.SizeGet(prgrm, false)))
 	}
 
 	// return the stack pointer to its previous state
@@ -68,23 +68,23 @@ func wipeDeclarationMemory(prgrm *CXProgram, cxAtomicOp *CXAtomicOperator) error
 	cxAtomicOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(cxAtomicOpOutputs[0])
 	size := cxAtomicOutputTypeSig.SizeGet(prgrm, false)
 	var offset types.Pointer
-	if cxAtomicOutputTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+	if cxAtomicOutputTypeSig.Type == TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1630.
 		offset = prgrm.CXArgGet(CXArgumentIndex(cxAtomicOutputTypeSig.Meta)).Offset
-	} else if cxAtomicOutputTypeSig.Type == TYPE_ATOMIC || cxAtomicOutputTypeSig.Type == TYPE_POINTER_ATOMIC {
+	} else if cxAtomicOutputTypeSig.Type == TypeAtomic || cxAtomicOutputTypeSig.Type == TypePointerAtomic {
 		offset = cxAtomicOutputTypeSig.Offset
-	} else if cxAtomicOutputTypeSig.Type == TYPE_ARRAY_ATOMIC {
+	} else if cxAtomicOutputTypeSig.Type == TypeArrayAtomic {
 		offset = cxAtomicOutputTypeSig.Offset
-	} else if cxAtomicOutputTypeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
+	} else if cxAtomicOutputTypeSig.Type == TypePointerArrayAtomic {
 		offset = cxAtomicOutputTypeSig.Offset
-	} else if cxAtomicOutputTypeSig.Type == TYPE_SLICE_ATOMIC {
+	} else if cxAtomicOutputTypeSig.Type == TypeSliceAtomic {
 		offset = cxAtomicOutputTypeSig.Offset
-	} else if cxAtomicOutputTypeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
+	} else if cxAtomicOutputTypeSig.Type == TypePointerSliceAtomic {
 		offset = cxAtomicOutputTypeSig.Offset
-	} else if cxAtomicOutputTypeSig.Type == TYPE_STRUCT {
+	} else if cxAtomicOutputTypeSig.Type == TypeStruct {
 		offset = cxAtomicOutputTypeSig.Offset
-	} else if cxAtomicOutputTypeSig.Type == TYPE_POINTER_STRUCT {
+	} else if cxAtomicOutputTypeSig.Type == TypePointerStruct {
 		offset = cxAtomicOutputTypeSig.Offset
 	} else {
 		panic("type is not known")
@@ -132,7 +132,7 @@ func builtInOperatorRun(prgrm *CXProgram, expr *CXExpression, cxAtomicOp *CXAtom
 		value.Offset = offset
 
 		var input *CXArgument
-		if inputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+		if inputTypeSignature.Type == TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0106.
 			input = prgrm.CXArgFromArrayGet(CXArgumentIndex(inputTypeSignature.Meta))
@@ -162,7 +162,7 @@ func builtInOperatorRun(prgrm *CXProgram, expr *CXExpression, cxAtomicOp *CXAtom
 		value.Offset = offset
 
 		var output *CXArgument
-		if outputTypeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+		if outputTypeSignature.Type == TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0109.
 			output = prgrm.CXArgFromArrayGet(CXArgumentIndex(outputTypeSignature.Meta))
@@ -180,7 +180,7 @@ func builtInOperatorRun(prgrm *CXProgram, expr *CXExpression, cxAtomicOp *CXAtom
 		argIndex++
 	}
 
-	if cxAtomicOpOperator.AtomicOPCode == constants.OP_LIBRARY_CALL {
+	if cxAtomicOpOperator.AtomicOPCode == constants.OpLibraryCall {
 		libraryCall(prgrm, cxAtomicOpOperator, inputValues, outputValues)
 	} else if !OpcodeDispatch(prgrm, cxAtomicOpOperator.AtomicOPCode, inputValues, outputValues) {
 		panic(RuntimeOpcodeUnlinked(cxAtomicOpOperator.AtomicOPCode))
@@ -219,7 +219,7 @@ func nonAtomicOperatorRun(prgrm *CXProgram, cxAtomicOp *CXAtomicOperator, cxAtom
 		input := prgrm.CXTypeSignatureFromArrayGet(inputIdx)
 		// An atomic input is passed by its signature only.
 		inpPassBy := 0
-		if input.Type == TYPE_CXARGUMENT_DEPRECATE {
+		if input.Type == TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0114.
 			inpPassBy = prgrm.CXArgFromArrayGet(CXArgumentIndex(input.Meta)).PassBy
@@ -228,10 +228,10 @@ func nonAtomicOperatorRun(prgrm *CXProgram, cxAtomicOp *CXAtomicOperator, cxAtom
 		var byts []byte
 
 		finalOffset := FinalOffsetGet(prgrm, fp, nil, input)
-		if input.PassBy == constants.PASSBY_REFERENCE || inpPassBy == constants.PASSBY_REFERENCE {
+		if input.PassBy == constants.PassByReference || inpPassBy == constants.PassByReference {
 			finalOffset = PointerOfAddress(prgrm, finalOffset)
-			var finalOffsetB [types.POINTER_SIZE]byte
-			types.Write_ptr(finalOffsetB[:], 0, finalOffset)
+			var finalOffsetB [types.PointerSize]byte
+			types.PtrWrite(finalOffsetB[:], 0, finalOffset)
 			byts = finalOffsetB[:]
 
 		} else {
@@ -243,7 +243,7 @@ func nonAtomicOperatorRun(prgrm *CXProgram, cxAtomicOp *CXAtomicOperator, cxAtom
 		// Now an arena getter, site S0115.
 		newCallOperatorInputTypeSignature := prgrm.CXTypeSignatureFromArrayGet(newCallOperatorInputs[i])
 		// writing inputs to new stack frame
-		types.WriteSlice_byte(
+		types.SliceByteWrite(
 			prgrm.Memory,
 			FinalOffsetGet(prgrm, newFP, nil, newCallOperatorInputTypeSignature),
 			byts)
@@ -253,11 +253,11 @@ func nonAtomicOperatorRun(prgrm *CXProgram, cxAtomicOp *CXAtomicOperator, cxAtom
 	return nil
 }
 
-// callPushCheck panics with STACK_OVERFLOW_ERROR when a call of operator
+// callPushCheck panics with StackOverflowError when a call of operator
 // does not fit in the call stack or the stack. The caller stays the current call.
 func callPushCheck(prgrm *CXProgram, operator *CXFunction) {
-	if prgrm.CallCounter+1 >= constants.CALLSTACK_SIZE || prgrm.Stack.Pointer+operator.Size > constants.STACK_SIZE {
-		panic(constants.STACK_OVERFLOW_ERROR)
+	if prgrm.CallCounter+1 >= constants.CallStackSize || prgrm.Stack.Pointer+operator.Size > constants.StackSize {
+		panic(constants.StackOverflowError)
 	}
 }
 
@@ -297,7 +297,7 @@ func (call *CXCall) Call(prgrm *CXProgram, fn *CXFunction, globalInputs *[]CXVal
 	expr := &fn.Expressions[call.Line]
 	fp := call.FramePointer
 
-	if expr.Type == CX_LINE {
+	if expr.Type == CXOperationTypeLine {
 		call.Line++
 		return nil
 	}

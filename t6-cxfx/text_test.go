@@ -15,8 +15,8 @@ import (
 func textTestProgram(text string) (*ast.CXProgram, ast.CXValue) {
 	memory := make([]byte, 64+len(text))
 	heapOffset := types.Pointer(32)
-	types.ObjectPayloadWrite(memory, heapOffset, types.Compute_obj_size([]byte(text)), []byte(text))
-	types.Write_ptr(memory, 0, heapOffset)
+	types.ObjectPayloadWrite(memory, heapOffset, types.ObjectSizeCompute([]byte(text)), []byte(text))
+	types.PtrWrite(memory, 0, heapOffset)
 	return &ast.CXProgram{Memory: memory}, ast.CXValue{Offset: 0}
 }
 
@@ -86,7 +86,7 @@ func TestCxfxCallbackInputsAllocations(t *testing.T) {
 	if allocations != 0 {
 		t.Fatalf("writing callback inputs allocates %v times", allocations)
 	}
-	if types.Read_i32(cxfxState.CxfxCallbackInputs[0], 0) != 3 || types.Read_i64(cxfxState.CxfxCallbackInputs[1], 0) != -1 || types.Read_f64(cxfxState.CxfxCallbackInputs[2], 0) != 0.5 {
+	if types.I32Read(cxfxState.CxfxCallbackInputs[0], 0) != 3 || types.I64Read(cxfxState.CxfxCallbackInputs[1], 0) != -1 || types.F64Read(cxfxState.CxfxCallbackInputs[2], 0) != 0.5 {
 		t.Fatal("callback inputs read back wrong")
 	}
 }

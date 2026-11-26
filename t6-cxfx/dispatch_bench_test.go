@@ -75,10 +75,10 @@ func BenchmarkCxfxOpcodeDispatch(b *testing.B) {
 			handle := cxfxWindowAdd(benchWindow)
 			defer func() { cxfxState.CxfxWindowTable[handle] = nil }()
 			prgrm := &ast.CXProgram{Memory: make([]byte, 64)}
-			types.Write_f32(prgrm.Memory, 0, 0.25)
-			types.Write_f32(prgrm.Memory, 4, 0.5)
-			types.Write_f32(prgrm.Memory, 8, 0.75)
-			types.Write_i32(prgrm.Memory, 16, handle)
+			types.F32Write(prgrm.Memory, 0, 0.25)
+			types.F32Write(prgrm.Memory, 4, 0.5)
+			types.F32Write(prgrm.Memory, 8, 0.75)
+			types.I32Write(prgrm.Memory, 16, handle)
 			inputs := make([]ast.CXValue, len(bench.inputs))
 			for i, offset := range bench.inputs {
 				inputs[i].Offset = offset

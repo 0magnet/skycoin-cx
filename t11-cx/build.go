@@ -38,20 +38,20 @@ type buildOptions struct {
 }
 
 // buildRun runs cx build with args, the arguments after "build", and returns
-// the exit code. Every failure is CX_COMPILATION_ERROR with a message on
+// the exit code. Every failure is CXCompilationError with a message on
 // stderr.
 func buildRun(args []string) int {
 	options, problem := buildOptionsParse(args)
 	if options.buildOptionsHelp {
 		buildUsagePrint()
-		return types.CX_SUCCESS
+		return types.CXSuccess
 	}
 	if problem != "" {
 		return buildFail(problem + ", see cx build --help")
 	}
 	compileOptions, cxArgs, sourceCode, fileNames, start := runStart(options.buildOptionsCompile)
 	if !start {
-		return types.CX_SUCCESS
+		return types.CXSuccess
 	}
 	if len(cxArgs) > 0 {
 		return buildFail(fmt.Sprintf("program arguments %s are given when the built program runs, not to cx build", strings.Join(cxArgs, " ")))
@@ -70,7 +70,7 @@ func buildRun(args []string) int {
 		options.buildOptionsOutput = output
 	}
 	if !parseProgram(compileOptions, fileNames, sourceCode) {
-		return types.CX_COMPILATION_ERROR
+		return types.CXCompilationError
 	}
 	if options.buildOptionsTarget == buildTargetImage {
 		return buildImage(options)
@@ -122,7 +122,7 @@ func buildRun(args []string) int {
 	if err := os.Chmod(output, 0o755); err != nil {
 		return buildFileFail(sandbox.FileErrorWrap(sandbox.FileOperationWrite, output, err))
 	}
-	return types.CX_SUCCESS
+	return types.CXSuccess
 }
 
 // buildProgramImage keeps the enabled libraries the compiled program calls
@@ -289,7 +289,7 @@ func buildCorePath(path string, libraries []string) (string, string) {
 
 func buildFail(message string) int {
 	fmt.Fprintf(os.Stderr, "cx build: %s\n", message)
-	return types.CX_COMPILATION_ERROR
+	return types.CXCompilationError
 }
 
 func buildFileFail(fileError *sandbox.FileError) int {

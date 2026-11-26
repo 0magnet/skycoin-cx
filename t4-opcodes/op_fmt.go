@@ -15,7 +15,7 @@ import (
 // returns it. %v appends the value with ast.PrintableValueAppend.
 // VIOLATION VMALLOC-022: appending grows the format buffer past its size, once, #407.
 func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, res []byte) []byte {
-	fmtStr := inputs[0].Get_str_bytes(prgrm)
+	fmtStr := inputs[0].StrBytesGet(prgrm)
 
 	var specifiersCounter int
 	var lenStr = int(len(fmtStr))
@@ -46,37 +46,37 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, res []byte) []byte 
 			}
 			switch nextCh {
 			case 's':
-				res = append(res, inp.Get_str_bytes(prgrm)...)
+				res = append(res, inp.StrBytesGet(prgrm)...)
 			case 'd':
 				switch inp.Type {
 				case types.I8:
-					res = strconv.AppendInt(res, int64(inp.Get_i8(prgrm)), 10)
+					res = strconv.AppendInt(res, int64(inp.I8Get(prgrm)), 10)
 				case types.I16:
-					res = strconv.AppendInt(res, int64(inp.Get_i16(prgrm)), 10)
+					res = strconv.AppendInt(res, int64(inp.I16Get(prgrm)), 10)
 				case types.I32:
-					res = strconv.AppendInt(res, int64(inp.Get_i32(prgrm)), 10)
+					res = strconv.AppendInt(res, int64(inp.I32Get(prgrm)), 10)
 				case types.I64:
-					res = strconv.AppendInt(res, inp.Get_i64(prgrm), 10)
+					res = strconv.AppendInt(res, inp.I64Get(prgrm), 10)
 				case types.UI8:
-					res = strconv.AppendUint(res, uint64(inp.Get_ui8(prgrm)), 10)
+					res = strconv.AppendUint(res, uint64(inp.UI8Get(prgrm)), 10)
 				case types.UI16:
-					res = strconv.AppendUint(res, uint64(inp.Get_ui16(prgrm)), 10)
+					res = strconv.AppendUint(res, uint64(inp.UI16Get(prgrm)), 10)
 				case types.UI32:
-					res = strconv.AppendUint(res, uint64(inp.Get_ui32(prgrm)), 10)
+					res = strconv.AppendUint(res, uint64(inp.UI32Get(prgrm)), 10)
 				case types.UI64:
-					res = strconv.AppendUint(res, inp.Get_ui64(prgrm), 10)
+					res = strconv.AppendUint(res, inp.UI64Get(prgrm), 10)
 				}
 			case 'f':
 				switch inp.Type {
 				case types.F32:
-					res = strconv.AppendFloat(res, float64(inp.Get_f32(prgrm)), 'f', 7, 32)
+					res = strconv.AppendFloat(res, float64(inp.F32Get(prgrm)), 'f', 7, 32)
 				case types.F64:
-					res = strconv.AppendFloat(res, inp.Get_f64(prgrm), 'f', 16, 64)
+					res = strconv.AppendFloat(res, inp.F64Get(prgrm), 'f', 16, 64)
 				}
 			case 'v':
 				res = ast.PrintableValueAppend(res, prgrm, inp.FramePointer, inp.TypeSignature)
 			case 'b':
-				res = strconv.AppendBool(res, inp.Get_bool(prgrm))
+				res = strconv.AppendBool(res, inp.BoolGet(prgrm))
 			}
 			c++
 			specifiersCounter++
@@ -105,7 +105,7 @@ func buildString(prgrm *ast.CXProgram, inputs []ast.CXValue, res []byte) []byte 
 
 func OpSprintf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	formatted := buildString(prgrm, inputs, formatBuffer(prgrm))
-	outputs[0].Set_str_bytes(prgrm, formatted)
+	outputs[0].StrBytesSet(prgrm, formatted)
 	formatBufferKeep(prgrm, formatted)
 }
 

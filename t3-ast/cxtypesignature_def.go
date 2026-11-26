@@ -9,7 +9,7 @@ type CXTypeSignature struct {
 	Index   CXTypeSignatureIndex
 	Name    stringpool.StringGid
 	Offset  types.Pointer
-	Type    CXTypeSignature_TYPE
+	Type    CXTypeSignatureType
 	Package CXPackageIndex
 
 	PassBy int  // pass by value or reference

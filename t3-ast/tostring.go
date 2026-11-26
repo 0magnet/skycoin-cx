@@ -152,7 +152,7 @@ func buildStrFunctions(prgrm *CXProgram, pkg *CXPackage, ast1 *string) {
 			getFormattedParam(prgrm, cxAtomicOp.InputsGet(prgrm), pkg, &inps)
 			getFormattedParam(prgrm, cxAtomicOp.OutputsGet(prgrm), pkg, &outs)
 
-			if expr.Type == CX_LINE {
+			if expr.Type == CXOperationTypeLine {
 				// OBJMODEL: state.CXLineMng.CXLineGet(gid), phase 5 #312.
 				// Now an arena getter, site S0482.
 				cxLine, _ := prgrm.CXLineGet(expr.Index)
@@ -264,7 +264,7 @@ func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex
 			externalPkg = true
 		}
 
-		if paramTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+		if paramTypeSig.Type == TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S0486.
 			param := prgrm.CXArgFromArrayGet(CXArgumentIndex(paramTypeSig.Meta))
@@ -273,9 +273,9 @@ func getFormattedParam(prgrm *CXProgram, paramTypeSigIdxs []CXTypeSignatureIndex
 		} else {
 			name := prgrm.CXProgramNameText(paramTypeSig.Name)
 
-			// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
+			// If it's a literal, just override the name with LiteralPlaceholder.
 			if paramTypeSig.Name == stringpool.StringGidNil {
-				name = constants.LITERAL_PLACEHOLDER
+				name = constants.LiteralPlaceholder
 			}
 
 			// TODO: Check if external pkg and pkg name shown are correct
@@ -318,9 +318,9 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg 
 		name = prgrm.CXProgramNameText(arg.Name)
 	}
 
-	// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
+	// If it's a literal, just override the name with LiteralPlaceholder.
 	if arg.Name == stringpool.StringGidNil {
-		name = constants.LITERAL_PLACEHOLDER
+		name = constants.LiteralPlaceholder
 	}
 
 	// Checking if we have indexing operations, e.g. foo[2][1]
@@ -333,7 +333,7 @@ func getFormattedDerefs(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg 
 		idxValue := ""
 		if idx.Offset > prgrm.Stack.Size {
 			// Then it's a literal.
-			idxI32 := types.Read_ptr(prgrm.Memory, idx.Offset)
+			idxI32 := types.PtrRead(prgrm.Memory, idx.Offset)
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
@@ -363,7 +363,7 @@ func FormattedNameGet(prgrm *CXProgram, arg *CXArgument, includePkg bool, pkg *C
 	}
 
 	// Checking if we're referencing `arg`.
-	if arg.PassBy == constants.PASSBY_REFERENCE {
+	if arg.PassBy == constants.PassByReference {
 		name = "&" + name
 	}
 
@@ -393,23 +393,23 @@ func formatParameters(prgrm *CXProgram, params []CXTypeSignatureIndex) string {
 func FormattedTypeGet(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	typ := ""
 
-	if typeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+	if typeSig.Type == TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0501.
 		expressionOutputArg := prgrm.CXArgFromArrayGet(CXArgumentIndex(typeSig.Meta))
-		typ = getFormattedType_CXArg(prgrm, expressionOutputArg)
-	} else if typeSig.Type == TYPE_ATOMIC {
+		typ = formattedTypeCXArgGet(prgrm, expressionOutputArg)
+	} else if typeSig.Type == TypeAtomic {
 		typ = types.Code(typeSig.Meta).Name()
 
-		if typeSig.PassBy == constants.PASSBY_REFERENCE {
+		if typeSig.PassBy == constants.PassByReference {
 			typ = "*" + typ
 		}
-	} else if typeSig.Type == TYPE_POINTER_ATOMIC {
+	} else if typeSig.Type == TypePointerAtomic {
 		typ = types.Code(typeSig.Meta).Name()
 		if !typeSig.Deref {
 			typ = "*" + typ
 		}
-	} else if typeSig.Type == TYPE_ARRAY_ATOMIC {
+	} else if typeSig.Type == TypeArrayAtomic {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0502.
 		arraySignature := prgrm.CXTypeSignatureArrayFromArrayGet(typeSig.Meta)
@@ -423,10 +423,10 @@ func FormattedTypeGet(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 		}
 
 		typ += types.Code(arraySignature.Meta).Name()
-		if typeSig.PassBy == constants.PASSBY_REFERENCE {
+		if typeSig.PassBy == constants.PassByReference {
 			typ = "*" + typ
 		}
-	} else if typeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
+	} else if typeSig.Type == TypePointerArrayAtomic {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0503.
 		arraySignature := prgrm.CXTypeSignatureArrayFromArrayGet(typeSig.Meta)
@@ -444,7 +444,7 @@ func FormattedTypeGet(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			typ = "*" + typ
 		}
 
-	} else if typeSig.Type == TYPE_SLICE_ATOMIC {
+	} else if typeSig.Type == TypeSliceAtomic {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0504.
 		arraySignature := prgrm.CXTypeSignatureArrayFromArrayGet(typeSig.Meta)
@@ -457,10 +457,10 @@ func FormattedTypeGet(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 		}
 
 		typ += types.Code(arraySignature.Meta).Name()
-		if typeSig.PassBy == constants.PASSBY_REFERENCE {
+		if typeSig.PassBy == constants.PassByReference {
 			typ = "*" + typ
 		}
-	} else if typeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
+	} else if typeSig.Type == TypePointerSliceAtomic {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0505.
 		arraySignature := prgrm.CXTypeSignatureArrayFromArrayGet(typeSig.Meta)
@@ -476,7 +476,7 @@ func FormattedTypeGet(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 		if !typeSig.Deref {
 			typ = "*" + typ
 		}
-	} else if typeSig.Type == TYPE_STRUCT {
+	} else if typeSig.Type == TypeStruct {
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S0506.
 		structDetails := prgrm.CXTypeSignatureStructFromArrayGet(typeSig.Meta)
@@ -490,16 +490,16 @@ func FormattedTypeGet(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			// TODO: to be replaced with correct
 			// way of getting type, that is not
 			// dependent on CXArg.
-			typ = getFormattedType_CXArg(prgrm, fld)
+			typ = formattedTypeCXArgGet(prgrm, fld)
 		} else {
 			typ = prgrm.CXProgramNameText(structDetails.StructType.Name)
 
-			if typeSig.PassBy == constants.PASSBY_REFERENCE {
+			if typeSig.PassBy == constants.PassByReference {
 				typ = "*" + typ
 			}
 		}
 
-	} else if typeSig.Type == TYPE_POINTER_STRUCT {
+	} else if typeSig.Type == TypePointerStruct {
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S0508.
 		structDetails := prgrm.CXTypeSignatureStructFromArrayGet(typeSig.Meta)
@@ -513,7 +513,7 @@ func FormattedTypeGet(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 			// TODO: to be replaced with correct
 			// way of getting type, that is not
 			// dependent on CXArg.
-			typ = getFormattedType_CXArg(prgrm, fld)
+			typ = formattedTypeCXArgGet(prgrm, fld)
 		} else {
 			typ = prgrm.CXProgramNameText(structDetails.StructType.Name)
 
@@ -528,7 +528,7 @@ func FormattedTypeGet(prgrm *CXProgram, typeSig *CXTypeSignature) string {
 	return typ
 }
 
-func getFormattedType_CXArg(prgrm *CXProgram, arg *CXArgument) string {
+func formattedTypeCXArgGet(prgrm *CXProgram, arg *CXArgument) string {
 	typ := ""
 	elt := arg.AssignmentElementGet(prgrm)
 
@@ -538,21 +538,21 @@ func getFormattedType_CXArg(prgrm *CXProgram, arg *CXArgument) string {
 	// looping declaration specifiers
 	for _, spec := range elt.DeclarationSpecifiers {
 		switch spec {
-		case constants.DECL_POINTER:
+		case constants.DeclarationPointer:
 			typ = "*" + typ
-		case constants.DECL_DEREF:
+		case constants.DeclarationDeref:
 			typ = typ[1:]
-		case constants.DECL_ARRAY:
+		case constants.DeclarationArray:
 			if arrDeclCount >= 0 {
 				typ = fmt.Sprintf("[%d]%s", elt.Lengths[arrDeclCount], typ)
 			} else {
 				typ = "[?]" + typ
 			}
 			arrDeclCount--
-		case constants.DECL_SLICE:
+		case constants.DeclarationSlice:
 			typ = "[]" + typ
 			arrDeclCount--
-		case constants.DECL_INDEXING:
+		case constants.DeclarationIndexing:
 		default:
 			// base type
 			if elt.StructType != nil {
@@ -613,5 +613,5 @@ func SignatureStringOfStruct(prgrm *CXProgram, s *CXStruct) string {
 
 // ArgumentFormattedType is the CX spelling of the type of arg.
 func ArgumentFormattedType(prgrm *CXProgram, arg *CXArgument) string {
-	return getFormattedType_CXArg(prgrm, arg)
+	return formattedTypeCXArgGet(prgrm, arg)
 }

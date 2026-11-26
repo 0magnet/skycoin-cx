@@ -43,7 +43,7 @@ func sliceLiteralSetType(prgrm *ast.CXProgram, arg *ast.CXArgument, typeCode typ
 	arg.StructType = strct
 	arg.Size = strct.StructSizeGet(prgrm)
 	if declaration {
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_STRUCT)
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DeclarationStruct)
 	}
 }
 
@@ -57,7 +57,7 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 		panic(err)
 	}
 
-	symName := temporaryVariableNameGenerate(prgrm, constants.SLICE_LITERAL_PREFIX)
+	symName := temporaryVariableNameGenerate(prgrm, constants.SliceLiteralPrefix)
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S0980.
@@ -71,7 +71,7 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 	prgrm.CXAtomicOps[slcVarExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 	_, slcVar := ast.ArgumentMake(prgrm, symName, CurrentFile, LineNo)
 	sliceLiteralSetType(prgrm, slcVar, typeCode, strct, template, true)
-	slcVar = DeclarationSpecifiers(slcVar, []types.Pointer{0}, constants.DECL_SLICE)
+	slcVar = DeclarationSpecifiers(slcVar, []types.Pointer{0}, constants.DeclarationSlice)
 	slcVar.Package = ast.CXPackageIndex(pkg.Index)
 	slcVar.PreviouslyDeclared = true
 
@@ -82,7 +82,7 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 
 	var endPointsCounter int
 	for i, expr := range exprs {
-		if expr.Type == ast.CX_LINE {
+		if expr.Type == ast.CXOperationTypeLine {
 			continue
 		}
 		// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
@@ -96,7 +96,7 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 		exprCXLine, _ := prgrm.PreviousCXLineGet(exprs, i)
 
 		if expr.TypeArrayLiteral() {
-			expr.ExpressionType = ast.CXEXPR_UNUSED
+			expr.ExpressionType = ast.CXExpressionTypeUnused
 			if exprAtomicOpOperator == nil && len(exprAtomicOp.OutputsGet(prgrm)) == 0 {
 				// An element with no value, such as T{} in a []i32.
 				prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeInvalidExpression, CurrentFile, LineNo, ast.CompileErrorOperands{})
@@ -133,7 +133,7 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 
 			if exprAtomicOpOperator == nil {
 				// then it's a literal
-				opIdx := prgrm.NativeFunctionInArrayAdd(ast.NativeFunctionOf(prgrm, constants.OP_APPEND))
+				opIdx := prgrm.NativeFunctionInArrayAdd(ast.NativeFunctionOf(prgrm, constants.OpAppend))
 				prgrm.CXAtomicOps[symExprAtomicOpIdx].Operator = opIdx
 
 				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = nil
@@ -154,12 +154,12 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 				}
 				var outArg *ast.CXArgument
 				var outTypeSigIdx ast.CXTypeSignatureIndex
-				if outTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				if outTypeSig.Type == ast.TypeCXArgumentDeprecate {
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S0993.
 					outArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(outTypeSig.Meta))
 
-					_, out := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), exprCXLine.FileName, exprCXLine.LineNumber)
+					_, out := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LocalPrefix), exprCXLine.FileName, exprCXLine.LineNumber)
 					out.TypeSet(outArg.Type)
 					out.DeclarationSpecifiers = append(out.DeclarationSpecifiers[:0], outArg.DeclarationSpecifiers...)
 					out.Lengths = outArg.Lengths
@@ -170,26 +170,26 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 					out.Package = ast.CXPackageIndex(pkg.Index)
 
 					outTypeSigIdx = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, out)
-				} else if outTypeSig.Type == ast.TYPE_ATOMIC || outTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				} else if outTypeSig.Type == ast.TypeAtomic || outTypeSig.Type == ast.TypePointerAtomic {
 					_, newTypeSig := prgrm.CXTypeSignatureCopyAlloc(outTypeSig)
-					newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+					newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 					newTypeSig.Package = ast.CXPackageIndex(pkg.Index)
 					outTypeSigIdx = newTypeSig.Index
-				} else if outTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+				} else if outTypeSig.Type == ast.TypeSliceAtomic {
 					arrDetails := prgrm.CXTypeSignatureArrayFromArrayGet(outTypeSig.Meta)
-					_, out := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), exprCXLine.FileName, exprCXLine.LineNumber)
+					_, out := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LocalPrefix), exprCXLine.FileName, exprCXLine.LineNumber)
 					out.TypeSet(types.Code(arrDetails.Meta))
 					out.DeclarationSpecifiers = declarationSpecifiersSlice(len(arrDetails.Lengths))
 					out.Lengths = arrDetails.Lengths
 					out.PreviouslyDeclared = true
 					out.Package = ast.CXPackageIndex(pkg.Index)
 					outTypeSigIdx = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, out)
-				} else if outTypeSig.Type == ast.TYPE_ARRAY_ATOMIC {
+				} else if outTypeSig.Type == ast.TypeArrayAtomic {
 					// An array literal element of a slice of arrays, as in [][2]i32{{1, 2}}.
 					arrDetails := prgrm.CXTypeSignatureArrayFromArrayGet(outTypeSig.Meta)
-					_, out := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), exprCXLine.FileName, exprCXLine.LineNumber)
+					_, out := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LocalPrefix), exprCXLine.FileName, exprCXLine.LineNumber)
 					out.TypeSet(types.Code(arrDetails.Meta))
-					out = DeclarationSpecifiers(out, arrDetails.Lengths, constants.DECL_ARRAY)
+					out = DeclarationSpecifiers(out, arrDetails.Lengths, constants.DeclarationArray)
 					out.PreviouslyDeclared = true
 					out.Package = ast.CXPackageIndex(pkg.Index)
 					outTypeSigIdx = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, out)
@@ -210,7 +210,7 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 				exprAtomicOp.OutputAdd(prgrm, outTypeSigIdx)
 
 				result = append(result, expr)
-				opIdx := prgrm.NativeFunctionInArrayAdd(ast.NativeFunctionOf(prgrm, constants.OP_APPEND))
+				opIdx := prgrm.NativeFunctionInArrayAdd(ast.NativeFunctionOf(prgrm, constants.OpAppend))
 				prgrm.CXAtomicOps[symExprAtomicOpIdx].Operator = opIdx
 
 				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = nil
@@ -224,11 +224,11 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 		}
 	}
 
-	symNameOutput := temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+	symNameOutput := temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 
 	_, symOutput := ast.ArgumentMake(prgrm, symNameOutput, CurrentFile, LineNo)
 	sliceLiteralSetType(prgrm, symOutput, typeCode, strct, template, true)
-	symOutput = DeclarationSpecifiers(symOutput, []types.Pointer{0}, constants.DECL_SLICE)
+	symOutput = DeclarationSpecifiers(symOutput, []types.Pointer{0}, constants.DeclarationSlice)
 	symOutput.Package = ast.CXPackageIndex(pkg.Index)
 	symOutput.PreviouslyDeclared = true
 
@@ -241,7 +241,7 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 	symExprExprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1005.
-	symExpr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OP_IDENTITY))
+	symExpr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpIdentity))
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
 	// Now an arena getter, site S1006.
 	symExprAtomicOp, err := prgrm.CXAtomicOpGet(symExpr.Index)
@@ -256,7 +256,7 @@ func sliceLiteralExpressionOf(prgrm *ast.CXProgram, typeCode types.Code, strct *
 	symExprAtomicOp.InputAdd(prgrm, typeSigIdx)
 
 	// marking the output so multidimensional arrays identify the expressions
-	symExpr.ExpressionType = ast.CXEXPR_ARRAY_LITERAL
+	symExpr.ExpressionType = ast.CXExpressionTypeArrayLiteral
 	result = append(result, *symExprExprCXLine, *symExpr)
 
 	return result
@@ -271,7 +271,7 @@ func SliceLiteralElement(prgrm *ast.CXProgram, element []ast.CXExpression, line 
 		element = []ast.CXExpression{*ast.AtomicOperatorExpressionMake(prgrm, nil)}
 	}
 	last := len(element) - 1
-	element[last].ExpressionType = ast.CXEXPR_ARRAY_LITERAL
+	element[last].ExpressionType = ast.CXExpressionTypeArrayLiteral
 	if column > 0 {
 		cxLine := ast.CXLineExpressionMake(prgrm, CurrentFile, line, prgrm.CXProgramNameIntern(LineStr))
 		if position, err := prgrm.CXLineGet(cxLine.Index); err == nil {
@@ -292,7 +292,7 @@ func SliceLiteralStructExpression(prgrm *ast.CXProgram, structName string, line 
 	if elt.StructType == nil {
 		return structLiteralInvalid(prgrm)
 	}
-	return sliceLiteralExpressionOf(prgrm, types.STRUCT, elt.StructType, nil, sliceLiteralStructElements(prgrm, elt.StructType, exprs, constants.ELEMENT_PREFIX))
+	return sliceLiteralExpressionOf(prgrm, types.STRUCT, elt.StructType, nil, sliceLiteralStructElements(prgrm, elt.StructType, exprs, constants.ElementPrefix))
 }
 
 // sliceLiteralStructElements gives each element of a literal of the struct strct
@@ -301,7 +301,7 @@ func sliceLiteralStructElements(prgrm *ast.CXProgram, strct *ast.CXStruct, exprs
 	var elements []ast.CXExpression
 	start := 0
 	for i := range exprs {
-		if exprs[i].Type == ast.CX_LINE || !exprs[i].TypeArrayLiteral() {
+		if exprs[i].Type == ast.CXOperationTypeLine || !exprs[i].TypeArrayLiteral() {
 			continue
 		}
 		elements = append(elements, sliceLiteralStructElement(prgrm, strct, exprs[start:i+1], prefix)...)
@@ -337,10 +337,10 @@ func sliceLiteralStructElement(prgrm *ast.CXProgram, strct *ast.CXStruct, elemen
 	result := []ast.CXExpression{*declCXLine, *decl}
 
 	last := len(element) - 1
-	for last > 0 && element[last].Type == ast.CX_LINE {
+	for last > 0 && element[last].Type == ast.CXOperationTypeLine {
 		last--
 	}
-	element[last].ExpressionType = ast.CXEXPR_UNUSED
+	element[last].ExpressionType = ast.CXExpressionTypeUnused
 	// The element written is at the element start, for the type error.
 	elementAt := func() ast.CXTypeSignatureIndex {
 		output := elementArg(false)
@@ -359,7 +359,7 @@ func sliceLiteralStructElement(prgrm *ast.CXProgram, strct *ast.CXStruct, elemen
 		// A value: elementName = value, which type checks it.
 		value := prgrm.CXAtomicOps[element[last].Index].OutputsGet(prgrm)
 		result = append(result, element[:last]...)
-		assign := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OP_IDENTITY))
+		assign := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpIdentity))
 		prgrm.CXAtomicOps[assign.Index].Package = ast.CXPackageIndex(pkg.Index)
 		prgrm.CXAtomicOps[assign.Index].OutputAdd(prgrm, elementAt())
 		prgrm.CXAtomicOps[assign.Index].InputAdd(prgrm, value[0])
@@ -374,7 +374,7 @@ func sliceLiteralStructElement(prgrm *ast.CXProgram, strct *ast.CXStruct, elemen
 	use := ast.AtomicOperatorExpressionMake(prgrm, nil)
 	prgrm.CXAtomicOps[use.Index].Package = ast.CXPackageIndex(pkg.Index)
 	prgrm.CXAtomicOps[use.Index].OutputAdd(prgrm, elementArg(false))
-	use.ExpressionType = ast.CXEXPR_ARRAY_LITERAL
+	use.ExpressionType = ast.CXExpressionTypeArrayLiteral
 	return append(result, *use)
 }
 
@@ -395,7 +395,7 @@ func PrimaryStructLiteral(prgrm *ast.CXProgram, structName string, line int, col
 			}
 		}
 	}
-	name := temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+	name := temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 	writes, strct := primaryStructLiteralWrites(prgrm, structName, line, column, name, structFields)
 	if strct == nil {
 		return structLiteralInvalid(prgrm)
@@ -421,11 +421,11 @@ func primaryStructLiteralWrites(prgrm *ast.CXProgram, structName string, line in
 		if strct, err := prgrm.StructGet(structNameGid, pkg.Name); err == nil {
 			structResult = strct
 			for _, expr := range structFields {
-				if expr.Type == ast.CX_LINE {
+				if expr.Type == ast.CXOperationTypeLine {
 					continue
 				}
 				// A method call or a nested value is not a field write.
-				if expr.ExpressionType != ast.CXEXPR_STRUCT_LITERAL_FIELD {
+				if expr.ExpressionType != ast.CXExpressionTypeStructLiteralField {
 					result = append(result, expr)
 					continue
 				}
@@ -440,7 +440,7 @@ func primaryStructLiteralWrites(prgrm *ast.CXProgram, structName string, line in
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S1010.
 				cxAtomicOpOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(cxAtomicOp.OutputsGet(prgrm)[0])
-				if cxAtomicOpOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				if cxAtomicOpOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 					cxAtomicOpOutputIdx := cxAtomicOpOutputTypeSig.Meta
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1741.
@@ -481,7 +481,7 @@ func primaryStructLiteralWrites(prgrm *ast.CXProgram, structName string, line in
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1749.
 					prgrm.CXArgGet(ast.CXArgumentIndex(cxAtomicOpOutputIdx)).Fields = append(prgrm.CXArgGet(ast.CXArgumentIndex(cxAtomicOpOutputIdx)).Fields, fieldIdx)
-				} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_ATOMIC {
+				} else if cxAtomicOpOutputTypeSig.Type == ast.TypeAtomic {
 					// TODO: give proper change when we implement type_structs
 					// Looks like we have to convert the arg to type cx arg deprecate again
 					argDetailsGid := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugAlloc()
@@ -509,9 +509,9 @@ func primaryStructLiteralWrites(prgrm *ast.CXProgram, structName string, line in
 					newCXArgIdx := ast.CXArgumentIndex(newCXArg.Index)
 
 					cxAtomicOpOutputTypeSig.Name = outputName
-					cxAtomicOpOutputTypeSig.Type = ast.TYPE_CXARGUMENT_DEPRECATE
+					cxAtomicOpOutputTypeSig.Type = ast.TypeCXArgumentDeprecate
 					cxAtomicOpOutputTypeSig.Meta = int(newCXArgIdx)
-				} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				} else if cxAtomicOpOutputTypeSig.Type == ast.TypePointerAtomic {
 					// TODO: give proper change when we implement type_structs
 					// Looks like we have to convert the arg to type cx arg deprecate again
 					argDetailsGid := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugAlloc()
@@ -524,7 +524,7 @@ func primaryStructLiteralWrites(prgrm *ast.CXProgram, structName string, line in
 					newCXArg.Type = types.Code(cxAtomicOpOutputTypeSig.Meta)
 					newCXArg.Package = ast.CXPackageIndex(pkg.Index)
 					newCXArg.Offset = cxAtomicOpOutputTypeSig.Offset
-					newCXArg.DeclarationSpecifiers = []int{constants.DECL_BASIC, constants.DEREF_POINTER}
+					newCXArg.DeclarationSpecifiers = []int{constants.DeclarationBasic, constants.DerefPointer}
 
 					newCXArg.StructType = strct
 					newCXArg.Size = strct.StructSizeGet(prgrm)
@@ -540,13 +540,13 @@ func primaryStructLiteralWrites(prgrm *ast.CXProgram, structName string, line in
 					newCXArgIdx := ast.CXArgumentIndex(newCXArg.Index)
 
 					cxAtomicOpOutputTypeSig.Name = outputName
-					cxAtomicOpOutputTypeSig.Type = ast.TYPE_CXARGUMENT_DEPRECATE
+					cxAtomicOpOutputTypeSig.Type = ast.TypeCXArgumentDeprecate
 					cxAtomicOpOutputTypeSig.Meta = int(newCXArgIdx)
 				} else {
 					panic("type is not known")
 				}
 
-				expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
+				expr.ExpressionType = ast.CXExpressionTypeStructLiteral
 				result = append(result, expr)
 			}
 		} else {
@@ -562,7 +562,7 @@ func primaryStructLiteralWrites(prgrm *ast.CXProgram, structName string, line in
 // PrimaryStructLiteralExternal creates a value of the struct literal
 // importName.structName{...}, as PrimaryStructLiteral does.
 func PrimaryStructLiteralExternal(prgrm *ast.CXProgram, importName string, structName string, line int, column int, structFields []ast.CXExpression) []ast.CXExpression {
-	name := temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+	name := temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 	writes, strct := primaryStructLiteralExternalWrites(prgrm, importName, structName, line, column, name, structFields)
 	if strct == nil {
 		return structLiteralInvalid(prgrm)
@@ -583,10 +583,10 @@ func primaryStructLiteralExternalWrites(prgrm *ast.CXProgram, importName string,
 			if strct, err := prgrm.StructGet(structNameGid, importNameGid); err == nil {
 				structResult = strct
 				for _, expr := range structFields {
-					if expr.Type == ast.CX_LINE {
+					if expr.Type == ast.CXOperationTypeLine {
 						continue
 					}
-					if expr.ExpressionType != ast.CXEXPR_STRUCT_LITERAL_FIELD {
+					if expr.ExpressionType != ast.CXExpressionTypeStructLiteralField {
 						result = append(result, expr)
 						continue
 					}
@@ -601,7 +601,7 @@ func primaryStructLiteralExternalWrites(prgrm *ast.CXProgram, importName string,
 					// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 					// Now an arena getter, site S1024.
 					cxAtomicOpOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(cxAtomicOp.OutputsGet(prgrm)[0])
-					if cxAtomicOpOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+					if cxAtomicOpOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 						cxAtomicOpOutputIdx := cxAtomicOpOutputTypeSig.Meta
 						_, field := ast.ArgumentMake(prgrm, stringpool.StringGidNil, CurrentFile, LineNo)
 						argumentDebugPositionCopy(prgrm, field.ArgDetails, cxAtomicOpOutputTypeSig.ArgDetails)
@@ -611,7 +611,7 @@ func primaryStructLiteralExternalWrites(prgrm *ast.CXProgram, importName string,
 						field.Name = prgrm.CXArgGet(ast.CXArgumentIndex(cxAtomicOpOutputIdx)).Name
 						structLiteralValueTypeSet(prgrm, strct, prgrm.CXArgGet(ast.CXArgumentIndex(cxAtomicOpOutputIdx)), field.Name)
 
-						expr.ExpressionType = ast.CXEXPR_STRUCT_LITERAL
+						expr.ExpressionType = ast.CXExpressionTypeStructLiteral
 
 						// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 						// Now an arena getter, site S1751.
@@ -633,7 +633,7 @@ func primaryStructLiteralExternalWrites(prgrm *ast.CXProgram, importName string,
 						// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 						// Now an arena getter, site S1755.
 						prgrm.CXArgGet(ast.CXArgumentIndex(cxAtomicOpOutputIdx)).Fields = append(prgrm.CXArgGet(ast.CXArgumentIndex(cxAtomicOpOutputIdx)).Fields, fieldIdx)
-					} else if cxAtomicOpOutputTypeSig.Type == ast.TYPE_ATOMIC || cxAtomicOpOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+					} else if cxAtomicOpOutputTypeSig.Type == ast.TypeAtomic || cxAtomicOpOutputTypeSig.Type == ast.TypePointerAtomic {
 						panic("type signature is type atomic")
 					} else {
 						panic("type is not known")
@@ -681,7 +681,7 @@ func ArrayLiteralStructExpression(prgrm *ast.CXProgram, arraySizes []types.Point
 	if elt.StructType == nil {
 		return structLiteralInvalid(prgrm)
 	}
-	return arrayLiteralExpressionOf(prgrm, arraySizes, types.STRUCT, elt.StructType, nil, line, column, sliceLiteralStructElements(prgrm, elt.StructType, exprs, constants.ARRAY_ELEMENT_PREFIX))
+	return arrayLiteralExpressionOf(prgrm, arraySizes, types.STRUCT, elt.StructType, nil, line, column, sliceLiteralStructElements(prgrm, elt.StructType, exprs, constants.ArrayElementPrefix))
 }
 
 // arrayLiteralExpressionOf is ArrayLiteralExpression for elements of type
@@ -694,7 +694,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 		panic(err)
 	}
 
-	symName := temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+	symName := temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1027.
@@ -707,7 +707,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 	prgrm.CXAtomicOps[arrVarExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 	_, arrVar := ast.ArgumentMake(prgrm, symName, CurrentFile, LineNo)
 	sliceLiteralSetType(prgrm, arrVar, typeCode, strct, template, true)
-	arrVar = DeclarationSpecifiers(arrVar, arraySizes, constants.DECL_ARRAY)
+	arrVar = DeclarationSpecifiers(arrVar, arraySizes, constants.DeclarationArray)
 	arrVar.Package = ast.CXPackageIndex(pkg.Index)
 	arrVar.PreviouslyDeclared = true
 
@@ -717,13 +717,13 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 	result = append(result, *arrVarExprCXLine, *arrVarExpr)
 
 	for i := range exprs {
-		if exprs[i].Type != ast.CX_LINE && exprs[i].TypeArrayLiteral() {
+		if exprs[i].Type != ast.CXOperationTypeLine && exprs[i].TypeArrayLiteral() {
 			outputlessValueCheck(prgrm, exprs[:i+1])
 		}
 	}
 	var endPointsCounter int
 	for _, expr := range exprs {
-		if expr.Type == ast.CX_LINE {
+		if expr.Type == ast.CXOperationTypeLine {
 			continue
 		}
 		// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
@@ -735,7 +735,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 		expressionOperator := prgrm.CxIrState.CxIrStateFunctionGetOrNil(expression.Operator)
 
 		if expr.TypeArrayLiteral() {
-			expr.ExpressionType = ast.CXEXPR_UNUSED
+			expr.ExpressionType = ast.CXExpressionTypeUnused
 
 			_, sym := ast.ArgumentMake(prgrm, symName, CurrentFile, LineNo)
 			sliceLiteralSetType(prgrm, sym, typeCode, strct, template, false)
@@ -748,7 +748,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 
 			_, indexTypeSignature := prgrm.CXTypeSignatureAlloc()
 			indexTypeSignature.Name = idxArg.Name
-			indexTypeSignature.Type = ast.TYPE_ATOMIC
+			indexTypeSignature.Type = ast.TypeAtomic
 			indexTypeSignature.Meta = int(idxArg.Type)
 			indexTypeSignature.Offset = idxArg.Offset // important for this
 			indexTypeSignature.Package = idxArg.Package
@@ -760,11 +760,11 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 			endPointsCounter++
 
 			sym.Indexes = append(sym.Indexes, indexTypeSignatureIdx)
-			sym.DereferenceOperations = append(sym.DereferenceOperations, constants.DEREF_ARRAY)
+			sym.DereferenceOperations = append(sym.DereferenceOperations, constants.DerefArray)
 			sym.Lengths = literalTemplateLengths(arraySizes, template)
 			if template != nil {
 				// tmp[i] has the element type, as the parser gives it.
-				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, constants.DECL_INDEXING)
+				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, constants.DeclarationIndexing)
 				if expressionOperator == nil && len(expression.OutputsGet(prgrm)) > 0 {
 					// &x stores the address, as tmp[i] = &x does.
 					sym.PassBy = ast.CXTypeSignaturePassBy(prgrm, prgrm.CXTypeSignatureFromArrayGet(expression.OutputsGet(prgrm)[0]))
@@ -784,7 +784,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 
 			if expressionOperator == nil {
 				// then it's a literal
-				opIdx := prgrm.NativeFunctionInArrayAdd(ast.NativeFunctionOf(prgrm, constants.OP_IDENTITY))
+				opIdx := prgrm.NativeFunctionInArrayAdd(ast.NativeFunctionOf(prgrm, constants.OpIdentity))
 				prgrm.CXAtomicOps[symExprAtomicOpIdx].Operator = opIdx
 				prgrm.CXAtomicOps[symExprAtomicOpIdx].Inputs = expression.Outputs
 			} else {
@@ -818,11 +818,11 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 		}
 	}
 
-	symNameOutput := temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+	symNameOutput := temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 
 	_, symOutput := ast.ArgumentMake(prgrm, symNameOutput, CurrentFile, LineNo)
 	sliceLiteralSetType(prgrm, symOutput, typeCode, strct, template, true)
-	symOutput = DeclarationSpecifiers(symOutput, arraySizes, constants.DECL_ARRAY)
+	symOutput = DeclarationSpecifiers(symOutput, arraySizes, constants.DeclarationArray)
 	symOutput.Package = ast.CXPackageIndex(pkg.Index)
 	symOutput.PreviouslyDeclared = true
 
@@ -837,7 +837,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 	symExprCXLine := CXLineExpressionCurrentMake(prgrm)
 	// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 	// Now a constructor call, site S1045.
-	symExpr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OP_IDENTITY))
+	symExpr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpIdentity))
 	symExprAtomicOpIdx := symExpr.Index
 	prgrm.CXAtomicOps[symExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
@@ -850,7 +850,7 @@ func arrayLiteralExpressionOf(prgrm *ast.CXProgram, arraySizes []types.Pointer, 
 	// symOutput.SynonymousTo = symInput.Name
 
 	// marking the output so multidimensional arrays identify the expressions
-	symExpr.ExpressionType = ast.CXEXPR_ARRAY_LITERAL
+	symExpr.ExpressionType = ast.CXExpressionTypeArrayLiteral
 	result = append(result, *symExprCXLine, *symExpr)
 
 	return result
@@ -901,7 +901,7 @@ func structLiteralValueTypeSet(prgrm *ast.CXProgram, strct *ast.CXStruct, value 
 		return
 	}
 	if fieldSig, err := strct.FieldGet(prgrm, fieldName); err == nil {
-		if fieldSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if fieldSig.Type == ast.TypeCXArgumentDeprecate {
 			value.Type = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(fieldSig.Meta)).Type
 		} else {
 			value.Type = fieldSig.TypeGet(prgrm)
@@ -925,8 +925,8 @@ func StructLiteralField(prgrm *ast.CXProgram, fieldName string, line int, column
 		result = Assignment(prgrm, field, "=", value)
 	}
 	for i := len(result) - 1; i >= 0; i-- {
-		if result[i].Type != ast.CX_LINE {
-			result[i].ExpressionType = ast.CXEXPR_STRUCT_LITERAL_FIELD
+		if result[i].Type != ast.CXOperationTypeLine {
+			result[i].ExpressionType = ast.CXExpressionTypeStructLiteralField
 			break
 		}
 	}
@@ -937,7 +937,7 @@ func StructLiteralField(prgrm *ast.CXProgram, fieldName string, line int, column
 // literal that is not a value.
 func structLiteralReference(value []ast.CXExpression) bool {
 	for i := range value {
-		if value[i].Type != ast.CX_LINE {
+		if value[i].Type != ast.CXOperationTypeLine {
 			return value[i].TypeStructLiteral()
 		}
 	}
@@ -973,11 +973,11 @@ func structLiteralValue(prgrm *ast.CXProgram, strct *ast.CXStruct, name stringpo
 	result := []ast.CXExpression{*declCXLine, *decl}
 
 	for i := range writes {
-		if writes[i].Type != ast.CX_LINE && writes[i].TypeStructLiteral() {
+		if writes[i].Type != ast.CXOperationTypeLine && writes[i].TypeStructLiteral() {
 			sig := prgrm.CXTypeSignatureFromArrayGet(prgrm.CXAtomicOps[writes[i].Index].OutputsGet(prgrm)[0])
 			out := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(sig.Meta))
 			if out.Name == name {
-				out.DereferenceOperations = append(out.DereferenceOperations, constants.DEREF_FIELD)
+				out.DereferenceOperations = append(out.DereferenceOperations, constants.DerefField)
 			}
 		}
 		result = append(result, writes[i])
@@ -1007,7 +1007,7 @@ func structLiteralFieldRepeatedCheck(prgrm *ast.CXProgram, fieldNames *[]stringp
 // extra dimension. The append of the element checks its type.
 func sliceLiteralStructInner(prgrm *ast.CXProgram, element []ast.CXExpression) bool {
 	last := len(element) - 1
-	for last > 0 && element[last].Type == ast.CX_LINE {
+	for last > 0 && element[last].Type == ast.CXOperationTypeLine {
 		last--
 	}
 	if last < 0 || len(prgrm.CXAtomicOps[element[last].Index].OutputsGet(prgrm)) == 0 {
@@ -1015,10 +1015,10 @@ func sliceLiteralStructInner(prgrm *ast.CXProgram, element []ast.CXExpression) b
 	}
 	sig := prgrm.CXTypeSignatureFromArrayGet(prgrm.CXAtomicOps[element[last].Index].OutputsGet(prgrm)[0])
 	switch sig.Type {
-	case ast.TYPE_SLICE_ATOMIC, ast.TYPE_POINTER_SLICE_ATOMIC:
+	case ast.TypeSliceAtomic, ast.TypePointerSliceAtomic:
 		return true
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
-		return declarationSpecifierFound(prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(sig.Meta)), constants.DECL_SLICE)
+	case ast.TypeCXArgumentDeprecate:
+		return declarationSpecifierFound(prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(sig.Meta)), constants.DeclarationSlice)
 	}
 	return false
 }
@@ -1043,7 +1043,7 @@ func structLiteralInvalid(prgrm *ast.CXProgram) []ast.CXExpression {
 	if err != nil {
 		panic(err)
 	}
-	name := temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+	name := temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 	variable := func(declaration bool) ast.CXTypeSignatureIndex {
 		_, arg := ast.ArgumentMake(prgrm, name, CurrentFile, LineNo)
 		arg.TypeSet(types.INVALID)

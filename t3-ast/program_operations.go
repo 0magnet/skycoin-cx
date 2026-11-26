@@ -38,5 +38,5 @@ func (prgrm *CXProgram) CXProgramOperationRefusalLine(code int) string {
 		name := constants.LibraryOperationName(code)
 		message = "operation " + name + " is not enabled, enable it with --enable=" + name
 	}
-	return "error: " + ErrorString(types.CX_RUNTIME_LIBRARY_DISABLED) + ", " + message
+	return "error: " + ErrorString(types.CXRuntimeLibraryDisabled) + ", " + message
 }

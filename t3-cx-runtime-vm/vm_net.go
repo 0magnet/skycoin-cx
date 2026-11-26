@@ -25,26 +25,26 @@ type netBlock struct {
 }
 
 func (block *netBlock) blockI32() int32 {
-	value := types.Read_i32(block.blockMemory, types.Pointer(block.blockOffset))
+	value := types.I32Read(block.blockMemory, types.Pointer(block.blockOffset))
 	block.blockOffset += 4
 	return value
 }
 
 func (block *netBlock) blockI32Write(value int32) {
-	types.Write_i32(block.blockMemory, types.Pointer(block.blockOffset), value)
+	types.I32Write(block.blockMemory, types.Pointer(block.blockOffset), value)
 	block.blockOffset += 4
 }
 
 func (block *netBlock) blockBoolWrite(value bool) {
-	types.Write_bool(block.blockMemory, types.Pointer(block.blockOffset), value)
+	types.BoolWrite(block.blockMemory, types.Pointer(block.blockOffset), value)
 	block.blockOffset++
 }
 
 // blockBuffer returns the ui8 array at the address and size the lowering
 // wrote, empty when it lies outside memory.
 func (block *netBlock) blockBuffer() []byte {
-	address := uint64(types.Read_ptr(block.blockMemory, types.Pointer(block.blockOffset)))
-	size := uint64(types.Read_ptr(block.blockMemory, types.Pointer(block.blockOffset+machinePointerSize)))
+	address := uint64(types.PtrRead(block.blockMemory, types.Pointer(block.blockOffset)))
+	size := uint64(types.PtrRead(block.blockMemory, types.Pointer(block.blockOffset+machinePointerSize)))
 	block.blockOffset += 2 * machinePointerSize
 	if address+size > uint64(len(block.blockMemory)) {
 		return nil
@@ -91,7 +91,7 @@ func netOpcodeRun(op ir.Opcode, memory []byte, offset uint32) {
 		block.blockI32Write(messageID)
 		block.blockI32Write(detail)
 	case ir.OpcodeNetClock:
-		types.Write_i64(memory, types.Pointer(offset), netbatch.NetClock())
+		types.I64Write(memory, types.Pointer(offset), netbatch.NetClock())
 	case ir.OpcodeNetRead:
 		handle, messageID, buffer, payloadOffset := block.blockI32(), block.blockI32(), block.blockBuffer(), block.blockI32()
 		block.blockI32Write(netbatch.NetRead(handle, messageID, buffer, payloadOffset))

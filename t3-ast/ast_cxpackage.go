@@ -265,17 +265,17 @@ func (pkg *CXPackage) GlobalAdd(prgrm *CXProgram, defIdx CXArgumentIndex) *CXPac
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0183.
 		field := prgrm.CXTypeSignatureFromArrayGet(fieldIdx)
-		if field.Name == defArg.Name && field.Type == TYPE_CXARGUMENT_DEPRECATE {
+		if field.Name == defArg.Name && field.Type == TypeCXArgumentDeprecate {
 			return pkg
 		}
 	}
 
-	pkg.Globals.AddField_Globals_CXAtomicOps(prgrm, defIdx)
+	pkg.Globals.FieldGlobalsCXAtomicOpsAdd(prgrm, defIdx)
 
 	return pkg
 }
 
-func (pkg *CXPackage) AddGlobal_TypeSignature(prgrm *CXProgram, typeSignatureIdx CXTypeSignatureIndex) *CXPackage {
+func (pkg *CXPackage) GlobalTypeSignatureAdd(prgrm *CXProgram, typeSignatureIdx CXTypeSignatureIndex) *CXPackage {
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0184.
 	typeSignature := prgrm.CXTypeSignatureFromArrayGet(typeSignatureIdx)
@@ -289,7 +289,7 @@ func (pkg *CXPackage) AddGlobal_TypeSignature(prgrm *CXProgram, typeSignatureIdx
 		}
 	}
 
-	pkg.Globals.AddField_TypeSignature(prgrm, typeSignatureIdx)
+	pkg.Globals.FieldTypeSignatureAdd(prgrm, typeSignatureIdx)
 
 	return pkg
 }

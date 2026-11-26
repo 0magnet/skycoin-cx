@@ -43,7 +43,7 @@ func cipherHashTaken(handle int32) hash.Hash {
 // cipherBytesView returns the elements of the []ui8 value, a view of program
 // memory. An allocation may move the slice, so a view is used before one.
 func cipherBytesView(prgrm *ast.CXProgram, value *ast.CXValue) []byte {
-	return ast.SliceElementsGet(prgrm, value.Get_ptr(prgrm), 1)
+	return ast.SliceElementsGet(prgrm, value.PtrGet(prgrm), 1)
 }
 
 // cipherBytesOutput writes a new []ui8 holding data to output. data is never
@@ -51,9 +51,9 @@ func cipherBytesView(prgrm *ast.CXProgram, value *ast.CXValue) []byte {
 // GCREACH: allocates the output byte slice, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
 func cipherBytesOutput(prgrm *ast.CXProgram, output *ast.CXValue, content []byte) {
-	slice := ast.SliceResizeEx(prgrm, 0, types.Cast_int_to_ptr(len(content)), 1)
+	slice := ast.SliceResizeEx(prgrm, 0, types.IntToPtrCast(len(content)), 1)
 	copy(ast.SliceElementsGet(prgrm, slice, 1), content)
-	output.Set_ptr(prgrm, slice)
+	output.PtrSet(prgrm, slice)
 }
 
 // cipherArrayFromView copies view into array and reports whether its length
@@ -89,32 +89,32 @@ func OpCipherHashOfBytes(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []a
 func OpCipherHashStateNew(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	handle := cipherstate.HashStateNew()
 	cipherHashTable.HashTableHashes[handle].Reset()
-	outputs[0].Set_i32(prgrm, handle)
+	outputs[0].I32Set(prgrm, handle)
 }
 
 // OpCipherHashStateWrite is cipher.HashStateWrite, which adds a []ui8 to a
 // state.
 func OpCipherHashStateWrite(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	cipherHashTaken(inputs[0].Get_i32(prgrm)).Write(cipherBytesView(prgrm, &inputs[1]))
+	cipherHashTaken(inputs[0].I32Get(prgrm)).Write(cipherBytesView(prgrm, &inputs[1]))
 }
 
 // OpCipherHashStateSum is cipher.HashStateSum, the digest of what was written
 // to a state. The state stays as it is and takes more writes.
 func OpCipherHashStateSum(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	digest := cipherHashTaken(inputs[0].Get_i32(prgrm)).Sum(cipherHashTable.HashTableDigestScratch[:0])
+	digest := cipherHashTaken(inputs[0].I32Get(prgrm)).Sum(cipherHashTable.HashTableDigestScratch[:0])
 	cipherBytesOutput(prgrm, &outputs[0], digest)
 }
 
 // OpCipherHashStateRelease is cipher.HashStateRelease, which frees a state.
 func OpCipherHashStateRelease(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	cipherstate.HashStateRelease(inputs[0].Get_i32(prgrm))
+	cipherstate.HashStateRelease(inputs[0].I32Get(prgrm))
 }
 
 // OpCipherSignatureVerify is cipher.SignatureVerify(hash, signature, pubKey).
 // VIOLATION VMALLOC-024: secp256k1-go2 of Skycoin computes with math/big, #510.
 func OpCipherSignatureVerify(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	valid := SignatureVerify(cipherBytesView(prgrm, &inputs[0]), cipherBytesView(prgrm, &inputs[1]), cipherBytesView(prgrm, &inputs[2]))
-	outputs[0].Set_bool(prgrm, valid)
+	outputs[0].BoolSet(prgrm, valid)
 }
 
 // OpCipherSignatureRecoverPubKey is cipher.SignatureRecoverPubKey(hash,
@@ -132,7 +132,7 @@ func OpCipherSignatureRecoverPubKey(prgrm *ast.CXProgram, inputs []ast.CXValue, 
 		recovered = err == nil
 	}
 	cipherSliceOutput(prgrm, &outputs[0], pubKey[:], recovered)
-	outputs[1].Set_bool(prgrm, recovered)
+	outputs[1].BoolSet(prgrm, recovered)
 }
 
 // OpCipherSignatureSign is cipher.SignatureSign(hash, secKey), the signature
@@ -149,7 +149,7 @@ func OpCipherSignatureSign(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs [
 		signed = err == nil
 	}
 	cipherSliceOutput(prgrm, &outputs[0], signature[:], signed)
-	outputs[1].Set_bool(prgrm, signed)
+	outputs[1].BoolSet(prgrm, signed)
 }
 
 // OpCipherKeyPairGenerate is cipher.KeyPairGenerate, a new random public and
@@ -167,7 +167,7 @@ func OpCipherKeyPairGenerate(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs
 // docs/GarbageCollector.md.
 func cipherSliceOutput(prgrm *ast.CXProgram, output *ast.CXValue, content []byte, written bool) {
 	if !written {
-		output.Set_ptr(prgrm, 0)
+		output.PtrSet(prgrm, 0)
 		return
 	}
 	cipherBytesOutput(prgrm, output, content)

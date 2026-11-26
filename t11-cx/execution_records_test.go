@@ -371,7 +371,7 @@ func (harness executionRecordHarness) inputOf(inputs map[string]executionRecordI
 // build would append, or the child's exit code when it does not compile.
 func (harness executionRecordHarness) programHash(name string) (string, executionRecordRun) {
 	run := executionRecordProcess(harness.t, harness.executable, []string{executionRecordsProgramHashEnv + "=" + strings.Join(strings.Fields(name), executionRecordsArgumentSeparator)}, harness.tests, "")
-	if run.exitCode != types.CX_SUCCESS {
+	if run.exitCode != types.CXSuccess {
 		return "", run
 	}
 	lines := strings.Fields(string(run.stdout))
@@ -397,7 +397,7 @@ func (harness executionRecordHarness) image(executor string, name string, input 
 // executionRecordVmOutside reports whether run is vm refusing a program that
 // does not lower.
 func executionRecordVmOutside(run executionRecordRun) bool {
-	return run.exitCode == types.CX_RUNTIME_NOT_IMPLEMENTED && bytes.Contains(run.stderr, []byte("cannot run on vm:"))
+	return run.exitCode == types.CXRuntimeNotImplemented && bytes.Contains(run.stderr, []byte("cannot run on vm:"))
 }
 
 // executionRecordGoPanic reports whether run ended in a Go panic.
@@ -668,9 +668,9 @@ func TestExecutionRecords(t *testing.T) {
 				buildArgs = append(buildArgs, "-o", output, "--core", dir)
 				build := executionRecordProcess(t, harness.cxExecutable, []string{"CX_TEST_RUN_MAIN=1"}, harness.tests, "", buildArgs...)
 				switch {
-				case build.exitCode != types.CX_SUCCESS && bytes.Contains(build.stderr, []byte("opcodes it does not include")):
+				case build.exitCode != types.CXSuccess && bytes.Contains(build.stderr, []byte("opcodes it does not include")):
 					forms[executionRecordFormBuilt] = executionRecordFormOutcome{note: "uses opcodes outside the core"}
-				case build.exitCode != types.CX_SUCCESS:
+				case build.exitCode != types.CXSuccess:
 					forms[executionRecordFormBuilt] = executionRecordFormOutcome{run: build, applicable: true, note: "cx build failed"}
 				default:
 					if program, fileError := core.TrailerRead(output); fileError == nil {
@@ -907,11 +907,11 @@ func executionRecordReason(t *testing.T, harness executionRecordHarness, program
 }
 
 // executionRecordsProgramHashChild prints the program hash of the program
-// args name and exits, with CX_COMPILATION_ERROR when it does not compile.
+// args name and exits, with CXCompilationError when it does not compile.
 func executionRecordsProgramHashChild(args []string) {
 	options, _, sourceCode, fileNames, start := runStart(args)
 	if !start || !parseProgram(options, fileNames, sourceCode) {
-		os.Exit(types.CX_COMPILATION_ERROR)
+		os.Exit(types.CXCompilationError)
 	}
 	image, err := buildProgramImage()
 	if err != nil {
@@ -919,7 +919,7 @@ func executionRecordsProgramHashChild(args []string) {
 		os.Exit(executionRecordsChildFailed)
 	}
 	fmt.Println(executionRecordHash(image))
-	os.Exit(types.CX_SUCCESS)
+	os.Exit(types.CXSuccess)
 }
 
 // executionRecordsImageChild runs args as cx does, except that the compiled
@@ -928,7 +928,7 @@ func executionRecordsProgramHashChild(args []string) {
 func executionRecordsImageChild(args []string) {
 	options, cxArgs, sourceCode, fileNames, start := runStart(args)
 	if !start || !parseProgram(options, fileNames, sourceCode) {
-		os.Exit(types.CX_COMPILATION_ERROR)
+		os.Exit(types.CXCompilationError)
 	}
 	image, err := buildProgramImage()
 	if err != nil {
@@ -943,7 +943,7 @@ func executionRecordsImageChild(args []string) {
 	printer.CompileErrorsRegister(prgrm)
 	actions.AST = prgrm
 	runProgram(options, cxArgs, sourceCode)
-	os.Exit(types.CX_SUCCESS)
+	os.Exit(types.CXSuccess)
 }
 
 // executionRecordsChildArguments splits an argument environment variable.
@@ -963,7 +963,7 @@ func (harness executionRecordHarness) native(dir string, index int, name string,
 	buildArgs = append(buildArgs, "-o", output)
 	build := executionRecordProcess(harness.t, harness.cxExecutable, []string{"CX_TEST_RUN_MAIN=1"}, harness.tests, "", buildArgs...)
 	switch {
-	case build.exitCode != types.CX_SUCCESS:
+	case build.exitCode != types.CXSuccess:
 		return executionRecordFormOutcome{run: build, applicable: true, note: "cx build --target=llvm failed"}
 	}
 	defer os.Remove(output)
@@ -995,7 +995,7 @@ func executionRecordImageCore(t *testing.T, dir string) string {
 		path += ".exe"
 	}
 	tags := "cxcore"
-	if types.POINTER_SIZE == 8 {
+	if types.PointerSize == 8 {
 		tags += ",ptr64"
 	}
 	if out, err := exec.Command("go", "build", "-o", path, "-tags", tags, "../t4-cx-core-image").CombinedOutput(); err != nil {
@@ -1013,11 +1013,11 @@ func (harness executionRecordHarness) imageCore(dir string, index int, runner st
 	buildArgs = append(buildArgs, "-o", output)
 	build := executionRecordProcess(harness.t, harness.cxExecutable, []string{"CX_TEST_RUN_MAIN=1"}, harness.tests, "", buildArgs...)
 	switch {
-	case build.exitCode != types.CX_SUCCESS && bytes.Contains(build.stderr, []byte("which cx-core-image does not link")):
+	case build.exitCode != types.CXSuccess && bytes.Contains(build.stderr, []byte("which cx-core-image does not link")):
 		return executionRecordFormOutcome{note: "uses the file or net library"}
-	case build.exitCode == types.CX_RUNTIME_LIBRARY_DISABLED:
+	case build.exitCode == types.CXRuntimeLibraryDisabled:
 		return executionRecordFormOutcome{note: "is refused before it runs"}
-	case build.exitCode != types.CX_SUCCESS:
+	case build.exitCode != types.CXSuccess:
 		return executionRecordFormOutcome{run: build, applicable: true, note: "cx build --target=image failed"}
 	}
 	defer os.Remove(output)

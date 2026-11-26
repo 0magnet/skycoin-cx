@@ -20,33 +20,33 @@ const printValueInvalid = "<invalid address>"
 
 // printMemoryFits reports whether size bytes at addr are inside memory.
 func printMemoryFits(memory []byte, addr, size types.Pointer) bool {
-	length := types.Cast_int_to_ptr(len(memory))
+	length := types.IntToPtrCast(len(memory))
 	return addr <= length && size <= length-addr
 }
 
 // appendPointerAt appends the pointer stored at addr as appendPointer does.
 func appendPointerAt(dst []byte, memory []byte, addr types.Pointer) []byte {
-	if !printMemoryFits(memory, addr, types.POINTER_SIZE) {
+	if !printMemoryFits(memory, addr, types.PointerSize) {
 		return append(dst, printValueInvalid...)
 	}
-	return appendPointer(dst, types.Read_ptr(memory, addr))
+	return appendPointer(dst, types.PtrRead(memory, addr))
 }
 
 // appendStrAt appends the str whose pointer is at addr. A nil str is empty,
 // and a pointer to no whole object in memory prints printValueInvalid.
 func appendStrAt(dst []byte, memory []byte, addr types.Pointer) []byte {
-	obj := types.Read_ptr(memory, addr)
+	obj := types.PtrRead(memory, addr)
 	if obj == 0 {
 		return dst
 	}
-	if !printMemoryFits(memory, obj, types.OBJECT_HEADER_SIZE) {
+	if !printMemoryFits(memory, obj, types.ObjectHeaderSize) {
 		return append(dst, printValueInvalid...)
 	}
-	size := types.Read_obj_size(memory, obj)
-	if size < types.OBJECT_HEADER_SIZE || !printMemoryFits(memory, obj, size) {
+	size := types.ObjectSizeRead(memory, obj)
+	if size < types.ObjectHeaderSize || !printMemoryFits(memory, obj, size) {
 		return append(dst, printValueInvalid...)
 	}
-	return append(dst, memory[obj+types.OBJECT_HEADER_SIZE:obj+size]...)
+	return append(dst, memory[obj+types.ObjectHeaderSize:obj+size]...)
 }
 
 // appendValueAt appends the value of type typ with dimensions dims at addr. A
@@ -66,7 +66,7 @@ func appendValueAt(dst []byte, prgrm *CXProgram, addr types.Pointer, typ types.C
 	stride := size
 	for i := len(dims) - 1; i > 0; i-- {
 		if dims[i] == 0 {
-			stride = types.POINTER_SIZE
+			stride = types.PointerSize
 		} else {
 			stride *= dims[i]
 		}
@@ -74,19 +74,19 @@ func appendValueAt(dst []byte, prgrm *CXProgram, addr types.Pointer, typ types.C
 
 	n := dims[0]
 	if n == 0 {
-		if !printMemoryFits(prgrm.Memory, addr, types.POINTER_SIZE) {
+		if !printMemoryFits(prgrm.Memory, addr, types.PointerSize) {
 			return append(dst, printValueInvalid...)
 		}
-		sliceOffset := types.Read_ptr(prgrm.Memory, addr)
-		addr = sliceOffset + types.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE
+		sliceOffset := types.PtrRead(prgrm.Memory, addr)
+		addr = sliceOffset + types.ObjectHeaderSize + constants.SliceHeaderSize
 		if sliceOffset != 0 {
-			if !printMemoryFits(prgrm.Memory, sliceOffset, types.OBJECT_HEADER_SIZE+constants.SLICE_HEADER_SIZE) {
+			if !printMemoryFits(prgrm.Memory, sliceOffset, types.ObjectHeaderSize+constants.SliceHeaderSize) {
 				return append(dst, printValueInvalid...)
 			}
 			n = SliceLenGet(prgrm, sliceOffset)
 		}
 	}
-	if n > 0 && stride > 0 && (!printMemoryFits(prgrm.Memory, addr, 0) || n > (types.Cast_int_to_ptr(len(prgrm.Memory))-addr)/stride) {
+	if n > 0 && stride > 0 && (!printMemoryFits(prgrm.Memory, addr, 0) || n > (types.IntToPtrCast(len(prgrm.Memory))-addr)/stride) {
 		return append(dst, printValueInvalid...)
 	}
 	dst = append(dst, '[')
@@ -126,19 +126,19 @@ func appendStructAt(dst []byte, prgrm *CXProgram, addr types.Pointer, strct *CXS
 // appendTypeSignatureAt appends the value of the struct field typeSig at addr.
 func appendTypeSignatureAt(dst []byte, prgrm *CXProgram, addr types.Pointer, typeSig *CXTypeSignature) []byte {
 	switch typeSig.Type {
-	case TYPE_ATOMIC:
+	case TypeAtomic:
 		return appendAtomic(dst, prgrm.Memory, types.Code(typeSig.Meta), addr)
-	case TYPE_ARRAY_ATOMIC, TYPE_SLICE_ATOMIC:
+	case TypeArrayAtomic, TypeSliceAtomic:
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0488.
 		arr := prgrm.CXTypeSignatureArrayFromArrayGet(typeSig.Meta)
 		eltType := types.Code(arr.Meta)
 		return appendValueAt(dst, prgrm, addr, eltType, eltType.Size(), nil, arr.Lengths, len(arr.Lengths) > 1)
-	case TYPE_STRUCT:
+	case TypeStruct:
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S0490.
 		return appendStructAt(dst, prgrm, addr, prgrm.CXTypeSignatureStructFromArrayGet(typeSig.Meta).StructType)
-	case TYPE_CXARGUMENT_DEPRECATE:
+	case TypeCXArgumentDeprecate:
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0491.
 		return appendArgValueAt(dst, prgrm, addr, prgrm.CXArgFromArrayGet(CXArgumentIndex(typeSig.Meta)))
@@ -164,15 +164,15 @@ func appendPointer(dst []byte, p types.Pointer) []byte {
 // appendStructPointerAt appends the pointer to a struct strct stored at addr
 // as Go prints a pointer to a struct that it is given, &{...}, or <nil>.
 func appendStructPointerAt(dst []byte, prgrm *CXProgram, addr types.Pointer, strct *CXStruct) []byte {
-	if !printMemoryFits(prgrm.Memory, addr, types.POINTER_SIZE) {
+	if !printMemoryFits(prgrm.Memory, addr, types.PointerSize) {
 		return append(dst, printValueInvalid...)
 	}
-	p := types.Read_ptr(prgrm.Memory, addr)
+	p := types.PtrRead(prgrm.Memory, addr)
 	if p == 0 || strct == nil {
 		return appendPointer(dst, p)
 	}
 	if p >= prgrm.Heap.StartsAt {
-		p += types.OBJECT_HEADER_SIZE
+		p += types.ObjectHeaderSize
 	}
 	if !printMemoryFits(prgrm.Memory, p, strct.StructSizeGet(prgrm)) {
 		return append(dst, printValueInvalid...)
@@ -185,7 +185,7 @@ func appendStructPointerAt(dst []byte, prgrm *CXProgram, addr types.Pointer, str
 func printSpecifiers(elt *CXArgument, specs []int) []int {
 	for _, spec := range elt.DeclarationSpecifiers {
 		switch spec {
-		case constants.DECL_DEREF, constants.DECL_INDEXING:
+		case constants.DeclarationDeref, constants.DeclarationIndexing:
 			if len(specs) > 0 {
 				specs = specs[:len(specs)-1]
 			}
@@ -207,29 +207,29 @@ func appendAtomic(dst []byte, memory []byte, typ types.Code, offset types.Pointe
 	}
 	switch typ {
 	case types.BOOL:
-		return strconv.AppendBool(dst, types.Read_bool(memory, offset))
+		return strconv.AppendBool(dst, types.BoolRead(memory, offset))
 	case types.STR:
 		return appendStrAt(dst, memory, offset)
 	case types.I8:
-		return strconv.AppendInt(dst, int64(types.Read_i8(memory, offset)), 10)
+		return strconv.AppendInt(dst, int64(types.I8Read(memory, offset)), 10)
 	case types.I16:
-		return strconv.AppendInt(dst, int64(types.Read_i16(memory, offset)), 10)
+		return strconv.AppendInt(dst, int64(types.I16Read(memory, offset)), 10)
 	case types.I32:
-		return strconv.AppendInt(dst, int64(types.Read_i32(memory, offset)), 10)
+		return strconv.AppendInt(dst, int64(types.I32Read(memory, offset)), 10)
 	case types.I64:
-		return strconv.AppendInt(dst, types.Read_i64(memory, offset), 10)
+		return strconv.AppendInt(dst, types.I64Read(memory, offset), 10)
 	case types.UI8:
-		return strconv.AppendUint(dst, uint64(types.Read_ui8(memory, offset)), 10)
+		return strconv.AppendUint(dst, uint64(types.UI8Read(memory, offset)), 10)
 	case types.UI16:
-		return strconv.AppendUint(dst, uint64(types.Read_ui16(memory, offset)), 10)
+		return strconv.AppendUint(dst, uint64(types.UI16Read(memory, offset)), 10)
 	case types.UI32:
-		return strconv.AppendUint(dst, uint64(types.Read_ui32(memory, offset)), 10)
+		return strconv.AppendUint(dst, uint64(types.UI32Read(memory, offset)), 10)
 	case types.UI64:
-		return strconv.AppendUint(dst, types.Read_ui64(memory, offset), 10)
+		return strconv.AppendUint(dst, types.UI64Read(memory, offset), 10)
 	case types.F32:
-		return strconv.AppendFloat(dst, float64(types.Read_f32(memory, offset)), 'g', -1, 32)
+		return strconv.AppendFloat(dst, float64(types.F32Read(memory, offset)), 'g', -1, 32)
 	case types.F64:
-		return strconv.AppendFloat(dst, types.Read_f64(memory, offset), 'g', -1, 64)
+		return strconv.AppendFloat(dst, types.F64Read(memory, offset), 'g', -1, 64)
 	}
 	return dst
 }
@@ -240,7 +240,7 @@ func appendArgValueAt(dst []byte, prgrm *CXProgram, addr types.Pointer, elt *CXA
 	typ := elt.Type
 	if elt.PointerTyped() {
 		for _, op := range elt.DereferenceOperations {
-			if op == constants.DEREF_POINTER {
+			if op == constants.DerefPointer {
 				typ = elt.PointerTargetType
 				break
 			}
@@ -255,16 +255,16 @@ func appendArgValueAt(dst []byte, prgrm *CXProgram, addr types.Pointer, elt *CXA
 	if direct, behind := elt.DirectDimensions(); behind && len(elt.Indexes) <= direct {
 		// The elements of [N]*[M]T are pointers.
 		dims = elt.Lengths[len(elt.Indexes):direct]
-		return appendValueAt(dst, prgrm, addr, types.POINTER, types.POINTER_SIZE, nil, dims, len(dims) > 1)
+		return appendValueAt(dst, prgrm, addr, types.POINTER, types.PointerSize, nil, dims, len(dims) > 1)
 	}
-	if len(specs) > 1 && specs[1] == constants.DECL_POINTER && (len(dims) > 0 || len(specs) == 2) {
+	if len(specs) > 1 && specs[1] == constants.DeclarationPointer && (len(dims) > 0 || len(specs) == 2) {
 		if len(dims) == 0 && elt.StructType != nil {
 			return appendStructPointerAt(dst, prgrm, addr, elt.StructType)
 		}
 		// A pointer, or an array or slice of pointers, prints addresses.
-		return appendValueAt(dst, prgrm, addr, types.POINTER, types.POINTER_SIZE, nil, dims, len(dims) > 1)
+		return appendValueAt(dst, prgrm, addr, types.POINTER, types.PointerSize, nil, dims, len(dims) > 1)
 	}
-	if len(dims) == 0 && len(specs) > 2 && specs[len(specs)-1] == constants.DECL_POINTER {
+	if len(dims) == 0 && len(specs) > 2 && specs[len(specs)-1] == constants.DeclarationPointer {
 		return appendPointerAt(dst, prgrm.Memory, addr)
 	}
 	return appendValueAt(dst, prgrm, addr, typ, elt.Size, elt.StructType, dims, len(dims) > 1)
@@ -274,13 +274,13 @@ func appendArgValueAt(dst []byte, prgrm *CXProgram, addr types.Pointer, elt *CXA
 // dst as printf prints it with %v.
 func PrintableValueAppend(dst []byte, prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSignature) []byte {
 	switch argTypeSig.Type {
-	case TYPE_CXARGUMENT_DEPRECATE:
+	case TypeCXArgumentDeprecate:
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0493.
 		arg := prgrm.CXArgFromArrayGet(CXArgumentIndex(argTypeSig.Meta))
 		elt := arg.AssignmentElementGet(prgrm)
 		addr := FinalOffsetGet(prgrm, fp, nil, argTypeSig)
-		if arg.PassBy == constants.PASSBY_REFERENCE {
+		if arg.PassBy == constants.PassByReference {
 			// &v prints the address of v, or &{...} for a struct.
 			if elt.StructType != nil && len(elt.Lengths) <= len(elt.Indexes) {
 				return appendStructAt(append(dst, '&'), prgrm, addr, elt.StructType)
@@ -288,17 +288,17 @@ func PrintableValueAppend(dst []byte, prgrm *CXProgram, fp types.Pointer, argTyp
 			return appendAddress(dst, addr)
 		}
 		return appendArgValueAt(dst, prgrm, addr, elt)
-	case TYPE_ATOMIC:
-		if argTypeSig.PassBy == constants.PASSBY_REFERENCE {
+	case TypeAtomic:
+		if argTypeSig.PassBy == constants.PassByReference {
 			return appendAddress(dst, FinalOffsetGet(prgrm, fp, nil, argTypeSig))
 		}
 		return appendAtomic(dst, prgrm.Memory, types.Code(argTypeSig.Meta), FinalOffsetGet(prgrm, fp, nil, argTypeSig))
-	case TYPE_POINTER_ATOMIC:
+	case TypePointerAtomic:
 		if argTypeSig.Deref {
 			return appendAtomic(dst, prgrm.Memory, types.Code(argTypeSig.Meta), FinalOffsetGet(prgrm, fp, nil, argTypeSig))
 		}
 		return appendPointerAt(dst, prgrm.Memory, FinalOffsetGet(prgrm, fp, nil, argTypeSig))
-	case TYPE_ARRAY_ATOMIC, TYPE_POINTER_ARRAY_ATOMIC, TYPE_SLICE_ATOMIC, TYPE_POINTER_SLICE_ATOMIC:
+	case TypeArrayAtomic, TypePointerArrayAtomic, TypeSliceAtomic, TypePointerSliceAtomic:
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0494.
 		arr := prgrm.CXTypeSignatureArrayFromArrayGet(argTypeSig.Meta)
@@ -308,20 +308,20 @@ func PrintableValueAppend(dst []byte, prgrm *CXProgram, fp types.Pointer, argTyp
 			dims = dims[len(arr.Indexes):]
 		}
 		addr := FinalOffsetGet(prgrm, fp, nil, argTypeSig)
-		pointer := argTypeSig.Type == TYPE_POINTER_ARRAY_ATOMIC || argTypeSig.Type == TYPE_POINTER_SLICE_ATOMIC
+		pointer := argTypeSig.Type == TypePointerArrayAtomic || argTypeSig.Type == TypePointerSliceAtomic
 		if pointer && !argTypeSig.Deref {
 			return appendPointerAt(dst, prgrm.Memory, addr)
 		}
 		return appendValueAt(dst, prgrm, addr, eltType, eltType.Size(), nil, dims, len(dims) > 1)
-	case TYPE_STRUCT, TYPE_POINTER_STRUCT:
+	case TypeStruct, TypePointerStruct:
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S0496.
 		structDetails := prgrm.CXTypeSignatureStructFromArrayGet(argTypeSig.Meta)
 		addr := FinalOffsetGet(prgrm, fp, nil, argTypeSig)
-		if argTypeSig.Type == TYPE_POINTER_STRUCT && !argTypeSig.Deref && len(structDetails.Fields) == 0 {
+		if argTypeSig.Type == TypePointerStruct && !argTypeSig.Deref && len(structDetails.Fields) == 0 {
 			return appendStructPointerAt(dst, prgrm, addr, structDetails.StructType)
 		}
-		if argTypeSig.Type == TYPE_STRUCT && argTypeSig.PassBy == constants.PASSBY_REFERENCE && len(structDetails.Fields) == 0 {
+		if argTypeSig.Type == TypeStruct && argTypeSig.PassBy == constants.PassByReference && len(structDetails.Fields) == 0 {
 			return appendStructAt(append(dst, '&'), prgrm, addr, structDetails.StructType)
 		}
 		if n := len(structDetails.Fields); n > 0 {

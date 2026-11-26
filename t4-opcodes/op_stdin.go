@@ -20,11 +20,11 @@ func OpReadStdin(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 		var err error
 		text, err = prgrm.ProgramStdin.ReadString('\n')
 		if err != nil && err != io.EOF {
-			panic(types.CX_INTERNAL_ERROR)
+			panic(types.CXInternalError)
 		}
 	}
 
 	text = strings.Replace(text, "\n", "", -1)
 	text = strings.Replace(text, "\r", "", -1)
-	outputs[0].Set_str(prgrm, text)
+	outputs[0].StrSet(prgrm, text)
 }

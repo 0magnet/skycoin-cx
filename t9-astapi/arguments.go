@@ -258,7 +258,7 @@ func ExpressionInputPointerMake(cxprogram *cxast.CXProgram, functionName string,
 		return err
 	}
 
-	if expr.Type == cxast.CX_LINE {
+	if expr.Type == cxast.CXOperationTypeLine {
 		return errors.New("Expression is a CXLine")
 	}
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
@@ -315,7 +315,7 @@ func ExpressionOutputPointerMake(cxprogram *cxast.CXProgram, functionName string
 		return err
 	}
 
-	if expr.Type == cxast.CX_LINE {
+	if expr.Type == cxast.CXOperationTypeLine {
 		return errors.New("Expression is a CXLine")
 	}
 	// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorGet(gid), phase 5 #342.
@@ -412,11 +412,11 @@ func FunctionAccessibleArgsByTypeGet(cxprogram *cxast.CXProgram, packageLocation
 // they are of argType. typeSig may be atomic or a deprecated CXArgument.
 func appendArgsByType(cxprogram *cxast.CXProgram, argsList []*cxast.CXTypeSignature, typeSig *cxast.CXTypeSignature, argType types.Code) []*cxast.CXTypeSignature {
 	switch typeSig.Type {
-	case cxast.TYPE_ATOMIC, cxast.TYPE_POINTER_ATOMIC:
+	case cxast.TypeAtomic, cxast.TypePointerAtomic:
 		if types.Code(typeSig.Meta) == argType {
 			argsList = append(argsList, typeSig)
 		}
-	case cxast.TYPE_CXARGUMENT_DEPRECATE:
+	case cxast.TypeCXArgumentDeprecate:
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1581.
 		arg := cxprogram.CXArgFromArrayGet(cxast.CXArgumentIndex(typeSig.Meta))

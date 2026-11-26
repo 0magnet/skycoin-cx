@@ -50,7 +50,7 @@ type TypeField struct {
 }
 
 // Root is a value the collection starts from. A frame root has a frame
-// offset, flagged with ESCAPE_OFFSET_FLAG when the local escaped, and a
+// offset, flagged with EscapeOffsetFlag when the local escaped, and a
 // global root an address. RootInner is added after the frame address.
 type Root struct {
 	RootOffset types.Pointer
@@ -152,7 +152,7 @@ func StatePrepare(state *State, heapCap types.Pointer, memorySize types.Pointer)
 // StateTypeAdd gives the pointer or slice type t its TypeIndex.
 func StateTypeAdd(state *State, t *Type) {
 	state.StateTypes = append(state.StateTypes, t)
-	t.TypeIndex = types.Cast_int_to_ptr(len(state.StateTypes))
+	t.TypeIndex = types.IntToPtrCast(len(state.StateTypes))
 }
 
 // gcCollection is one collection of the heap from heapStartsAt to
@@ -192,15 +192,15 @@ func GarbageCollectorCollect(memory []byte, heapStartsAt types.Pointer, heapPoin
 	}
 	collection.gcMarkDrain()
 
-	forward := constants.NULL_HEAP_ADDRESS_OFFSET
+	forward := constants.NullHeapAddressOffset
 	end := heapStartsAt + heapPointer
-	for object := heapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; object < end; {
-		size := types.Read_obj_size(memory, object)
+	for object := heapStartsAt + constants.NullHeapAddressOffset; object < end; {
+		size := types.ObjectSizeRead(memory, object)
 		if size == 0 {
 			break
 		}
 		if memory[object] == gcMarkLive {
-			types.Write_obj_forwarding_address(memory, object, heapStartsAt+forward)
+			types.ObjectForwardingAddressWrite(memory, object, heapStartsAt+forward)
 			forward += size
 		}
 		object += size
@@ -208,14 +208,14 @@ func GarbageCollectorCollect(memory []byte, heapStartsAt types.Pointer, heapPoin
 
 	collection.gcSlotsUpdate()
 
-	for object := heapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; object < end; {
-		size := types.Read_obj_size(memory, object)
+	for object := heapStartsAt + constants.NullHeapAddressOffset; object < end; {
+		size := types.ObjectSizeRead(memory, object)
 		if size == 0 {
 			break
 		}
 		if memory[object] == gcMarkLive {
 			memory[object] = 0
-			to := types.Read_obj_forwarding_address(memory, object)
+			to := types.ObjectForwardingAddressRead(memory, object)
 			copy(memory[to:to+size], memory[object:object+size])
 		}
 		object += size
@@ -239,11 +239,11 @@ func (collection *gcCollection) gcSlotsUpdate() {
 			slotBits := state.StateSlots[word]
 			state.StateSlots[word] = 0
 			for slotBits != 0 {
-				slot := types.Cast_int_to_ptr(word*64 + bits.TrailingZeros64(slotBits))
+				slot := types.IntToPtrCast(word*64 + bits.TrailingZeros64(slotBits))
 				slotBits &= slotBits - 1
-				pointer := types.Read_ptr(memory, slot)
+				pointer := types.PtrRead(memory, slot)
 				if object, found := collection.gcObjectContaining(pointer); found {
-					types.Write_ptr(memory, slot, pointer-object+types.Read_obj_forwarding_address(memory, object))
+					types.PtrWrite(memory, slot, pointer-object+types.ObjectForwardingAddressRead(memory, object))
 				}
 			}
 		}
@@ -271,10 +271,10 @@ func (collection *gcCollection) gcMarkValue(address types.Pointer, t *Type) {
 // slot read before is skipped: CX gives a memory location one type, so the
 // first read queued all it refers to.
 func (collection *gcCollection) gcMarkReference(slot types.Pointer, t *Type) {
-	if uint64(slot)+uint64(types.POINTER_SIZE) > uint64(len(collection.memory)) {
+	if uint64(slot)+uint64(types.PointerSize) > uint64(len(collection.memory)) {
 		return
 	}
-	pointer := types.Read_ptr(collection.memory, slot)
+	pointer := types.PtrRead(collection.memory, slot)
 	object, found := collection.gcObjectContaining(pointer)
 	if !found {
 		return
@@ -296,9 +296,9 @@ func (collection *gcCollection) gcMarkReference(slot types.Pointer, t *Type) {
 	if pointer == object && t.TypeIndex != 0 {
 		// The forwarding address field holds the type the object is queued
 		// with until the mark ends.
-		switch types.Read_obj_forwarding_address(collection.memory, object) {
+		switch types.ObjectForwardingAddressRead(collection.memory, object) {
 		case 0:
-			types.Write_obj_forwarding_address(collection.memory, object, t.TypeIndex)
+			types.ObjectForwardingAddressWrite(collection.memory, object, t.TypeIndex)
 			if len(state.StateWork) == cap(state.StateWork) {
 				collection.memory[object] = gcMarkPending
 				state.StateWorkOverflow = true
@@ -326,14 +326,14 @@ func (collection *gcCollection) gcMarkDrain() {
 		}
 		state.StateWorkOverflow = false
 		end := collection.heapStartsAt + collection.heapPointer
-		for object := collection.heapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; object < end; {
-			size := types.Read_obj_size(memory, object)
+		for object := collection.heapStartsAt + constants.NullHeapAddressOffset; object < end; {
+			size := types.ObjectSizeRead(memory, object)
 			if size == 0 {
 				break
 			}
 			if memory[object] == gcMarkPending {
 				memory[object] = gcMarkLive
-				collection.gcVisit(object, state.StateTypes[types.Read_obj_forwarding_address(memory, object)-1])
+				collection.gcVisit(object, state.StateTypes[types.ObjectForwardingAddressRead(memory, object)-1])
 				collection.gcMarkQueuesDrain()
 			}
 			object += size
@@ -357,7 +357,7 @@ func (collection *gcCollection) gcMarkQueuesDrain() {
 		}
 		object := state.StateWork[n-1]
 		state.StateWork = state.StateWork[:n-1]
-		collection.gcVisit(object, state.StateTypes[types.Read_obj_forwarding_address(collection.memory, object)-1])
+		collection.gcVisit(object, state.StateTypes[types.ObjectForwardingAddressRead(collection.memory, object)-1])
 	}
 }
 
@@ -365,16 +365,16 @@ func (collection *gcCollection) gcMarkQueuesDrain() {
 // to the heap is the address of the value less the object header.
 func (collection *gcCollection) gcVisit(pointer types.Pointer, t *Type) {
 	if t.TypeKind == KindPointer {
-		collection.gcMarkValue(pointer+types.OBJECT_HEADER_SIZE, t.TypeElement)
+		collection.gcMarkValue(pointer+types.ObjectHeaderSize, t.TypeElement)
 		return
 	}
 	object, _ := collection.gcObjectContaining(pointer)
-	elements := pointer + types.OBJECT_HEADER_SIZE + constants.SLICE_HEADER_SIZE
-	end := object + types.Read_obj_size(collection.memory, object)
+	elements := pointer + types.ObjectHeaderSize + constants.SliceHeaderSize
+	end := object + types.ObjectSizeRead(collection.memory, object)
 	if elements > end || t.TypeElementSize == 0 {
 		return
 	}
-	length := types.Read_ptr(collection.memory, pointer+types.OBJECT_HEADER_SIZE+types.POINTER_SIZE)
+	length := types.PtrRead(collection.memory, pointer+types.ObjectHeaderSize+types.PointerSize)
 	length = min(length, (end-elements)/t.TypeElementSize)
 	for i := types.Pointer(0); i < length; i++ {
 		collection.gcMarkValue(elements+i*t.TypeElementSize, t.TypeElement)
@@ -385,17 +385,17 @@ func (collection *gcCollection) gcVisit(pointer types.Pointer, t *Type) {
 // frame at framePointer. It returns false for an escaped local whose
 // declaration has not run yet. An offset outside the stack is an address.
 func (collection *gcCollection) gcFrameAddress(roots *RootTable, framePointer types.Pointer, offset types.Pointer) (types.Pointer, bool) {
-	if offset&constants.ESCAPE_OFFSET_FLAG == 0 {
+	if offset&constants.EscapeOffsetFlag == 0 {
 		if offset >= roots.RootTableStackSize {
 			return offset, true
 		}
 		return offset + framePointer, true
 	}
-	object := types.Read_ptr(collection.memory, framePointer+offset&^constants.ESCAPE_OFFSET_FLAG)
-	if object < collection.heapStartsAt+constants.NULL_HEAP_ADDRESS_OFFSET || object >= collection.heapStartsAt+collection.heapPointer {
+	object := types.PtrRead(collection.memory, framePointer+offset&^constants.EscapeOffsetFlag)
+	if object < collection.heapStartsAt+constants.NullHeapAddressOffset || object >= collection.heapStartsAt+collection.heapPointer {
 		return 0, false
 	}
-	return object + types.OBJECT_HEADER_SIZE, true
+	return object + types.ObjectHeaderSize, true
 }
 
 // gcObjectStartsBuild sets the bit of each heap object in StateStarts and
@@ -403,15 +403,15 @@ func (collection *gcCollection) gcFrameAddress(roots *RootTable, framePointer ty
 func (collection *gcCollection) gcObjectStartsBuild() {
 	starts := collection.state.StateStarts
 	end := collection.heapStartsAt + collection.heapPointer
-	for c := collection.heapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET; c < end; {
+	for c := collection.heapStartsAt + constants.NullHeapAddressOffset; c < end; {
 		offset := c - collection.heapStartsAt
 		starts[offset/64] |= 1 << (offset % 64)
 		collection.memory[c] = 0
-		objSize := types.Read_obj_size(collection.memory, c)
+		objSize := types.ObjectSizeRead(collection.memory, c)
 		if objSize == 0 {
 			break
 		}
-		types.Write_obj_forwarding_address(collection.memory, c, 0)
+		types.ObjectForwardingAddressWrite(collection.memory, c, 0)
 		c += objSize
 	}
 }
@@ -419,7 +419,7 @@ func (collection *gcCollection) gcObjectStartsBuild() {
 // gcObjectContaining returns the address of the heap object that pointer
 // points into. A pointer inside an object, as &s[1] is, keeps it alive.
 func (collection *gcCollection) gcObjectContaining(pointer types.Pointer) (types.Pointer, bool) {
-	if pointer < collection.heapStartsAt+constants.NULL_HEAP_ADDRESS_OFFSET || pointer >= collection.heapStartsAt+collection.heapPointer {
+	if pointer < collection.heapStartsAt+constants.NullHeapAddressOffset || pointer >= collection.heapStartsAt+collection.heapPointer {
 		return 0, false
 	}
 	starts := collection.state.StateStarts
@@ -434,8 +434,8 @@ func (collection *gcCollection) gcObjectContaining(pointer types.Pointer) (types
 		word--
 		startBits = starts[word]
 	}
-	start := collection.heapStartsAt + types.Cast_int_to_ptr(word*64+63-bits.LeadingZeros64(startBits))
-	if pointer >= start+types.Read_obj_size(collection.memory, start) {
+	start := collection.heapStartsAt + types.IntToPtrCast(word*64+63-bits.LeadingZeros64(startBits))
+	if pointer >= start+types.ObjectSizeRead(collection.memory, start) {
 		return 0, false
 	}
 	return start, true

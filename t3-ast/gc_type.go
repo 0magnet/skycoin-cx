@@ -48,10 +48,10 @@ func gcTypeCache(prgrm *CXProgram) *GCTypeCache {
 func CXArgumentGCDeclaration(arg *CXArgument) ([]int, types.Code, *CXStruct, []types.Pointer) {
 	specs := arg.DeclarationSpecifiers
 	for i, spec := range specs {
-		if spec == constants.DECL_DEREF || spec == constants.DECL_INDEXING {
+		if spec == constants.DeclarationDeref || spec == constants.DeclarationIndexing {
 			specs = append([]int(nil), specs[:i]...)
 			for _, spec := range arg.DeclarationSpecifiers[i+1:] {
-				if spec != constants.DECL_DEREF && spec != constants.DECL_INDEXING {
+				if spec != constants.DeclarationDeref && spec != constants.DeclarationIndexing {
 					specs = append(specs, spec)
 				}
 			}
@@ -70,34 +70,34 @@ func SignatureGCDeclaration(prgrm *CXProgram, sig *CXTypeSignature) ([]int, type
 	array := func(specs []int) ([]int, types.Code, []types.Pointer) {
 		details := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
 		for range details.Lengths {
-			specs = append(specs, constants.DECL_ARRAY)
+			specs = append(specs, constants.DeclarationArray)
 		}
 		return specs, types.Code(details.Meta), details.Lengths
 	}
 	switch sig.Type {
-	case TYPE_CXARGUMENT_DEPRECATE:
+	case TypeCXArgumentDeprecate:
 		return CXArgumentGCDeclaration(prgrm.CXArgGet(CXArgumentIndex(sig.Meta)))
-	case TYPE_ATOMIC:
-		return []int{constants.DECL_BASIC}, types.Code(sig.Meta), nil, nil
-	case TYPE_POINTER_ATOMIC:
-		return []int{constants.DECL_BASIC, constants.DECL_POINTER}, types.Code(sig.Meta), nil, nil
-	case TYPE_ARRAY_ATOMIC:
-		specs, typ, lengths := array([]int{constants.DECL_BASIC})
+	case TypeAtomic:
+		return []int{constants.DeclarationBasic}, types.Code(sig.Meta), nil, nil
+	case TypePointerAtomic:
+		return []int{constants.DeclarationBasic, constants.DeclarationPointer}, types.Code(sig.Meta), nil, nil
+	case TypeArrayAtomic:
+		specs, typ, lengths := array([]int{constants.DeclarationBasic})
 		return specs, typ, nil, lengths
-	case TYPE_POINTER_ARRAY_ATOMIC:
-		specs, typ, lengths := array([]int{constants.DECL_BASIC})
-		return append(specs, constants.DECL_POINTER), typ, nil, lengths
-	case TYPE_SLICE_ATOMIC, TYPE_POINTER_SLICE_ATOMIC:
+	case TypePointerArrayAtomic:
+		specs, typ, lengths := array([]int{constants.DeclarationBasic})
+		return append(specs, constants.DeclarationPointer), typ, nil, lengths
+	case TypeSliceAtomic, TypePointerSliceAtomic:
 		details := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
-		specs := []int{constants.DECL_BASIC, constants.DECL_SLICE}
-		if sig.Type == TYPE_POINTER_SLICE_ATOMIC {
-			specs = append(specs, constants.DECL_POINTER)
+		specs := []int{constants.DeclarationBasic, constants.DeclarationSlice}
+		if sig.Type == TypePointerSliceAtomic {
+			specs = append(specs, constants.DeclarationPointer)
 		}
 		return specs, types.Code(details.Meta), nil, details.Lengths
-	case TYPE_STRUCT:
-		return []int{constants.DECL_STRUCT}, types.STRUCT, sig.StructTypeGet(prgrm), nil
-	case TYPE_POINTER_STRUCT:
-		return []int{constants.DECL_STRUCT, constants.DECL_POINTER}, types.STRUCT, sig.StructTypeGet(prgrm), nil
+	case TypeStruct:
+		return []int{constants.DeclarationStruct}, types.STRUCT, sig.StructTypeGet(prgrm), nil
+	case TypePointerStruct:
+		return []int{constants.DeclarationStruct, constants.DeclarationPointer}, types.STRUCT, sig.StructTypeGet(prgrm), nil
 	}
 	return nil, types.UNDEFINED, nil, nil
 }
@@ -112,9 +112,9 @@ func GCTypeOf(prgrm *CXProgram, specs []int, typ types.Code, strct *CXStruct, le
 	}
 	inner := specs[:len(specs)-1]
 	switch specs[len(specs)-1] {
-	case constants.DECL_POINTER:
+	case constants.DeclarationPointer:
 		return gcTypeAdd(prgrm, &gc.Type{TypeKind: gc.KindPointer, TypeElement: GCTypeOf(prgrm, inner, typ, strct, lengths)})
-	case constants.DECL_SLICE:
+	case constants.DeclarationSlice:
 		if len(lengths) > gcArrayCount(inner) {
 			lengths = lengths[1:]
 		}
@@ -123,7 +123,7 @@ func GCTypeOf(prgrm *CXProgram, specs []int, typ types.Code, strct *CXStruct, le
 			slice.TypeElementSize = gcValueSize(prgrm, inner, typ, strct, lengths)
 		}
 		return gcTypeAdd(prgrm, slice)
-	case constants.DECL_ARRAY:
+	case constants.DeclarationArray:
 		if len(lengths) == 0 || lengths[0] == 0 {
 			return nil
 		}
@@ -132,7 +132,7 @@ func GCTypeOf(prgrm *CXProgram, specs []int, typ types.Code, strct *CXStruct, le
 			return nil
 		}
 		return &gc.Type{TypeKind: gc.KindArray, TypeElement: elem, TypeLength: lengths[0], TypeElementSize: gcValueSize(prgrm, inner, typ, strct, lengths[1:])}
-	case constants.DECL_BASIC, constants.DECL_STRUCT:
+	case constants.DeclarationBasic, constants.DeclarationStruct:
 		return cache.gcBaseType(prgrm, typ, strct)
 	}
 	return nil
@@ -169,7 +169,7 @@ func (cache *GCTypeCache) gcBaseType(prgrm *CXProgram, typ types.Code, strct *CX
 func gcArrayCount(specs []int) int {
 	var count int
 	for _, spec := range specs {
-		if spec == constants.DECL_ARRAY {
+		if spec == constants.DeclarationArray {
 			count++
 		}
 	}
@@ -179,12 +179,12 @@ func gcArrayCount(specs []int) int {
 // gcValueSize returns the size of a value, as GCTypeOf reads its type.
 func gcValueSize(prgrm *CXProgram, specs []int, typ types.Code, strct *CXStruct, lengths []types.Pointer) types.Pointer {
 	if len(specs) == 0 {
-		specs = []int{constants.DECL_BASIC}
+		specs = []int{constants.DeclarationBasic}
 	}
 	switch specs[len(specs)-1] {
-	case constants.DECL_POINTER, constants.DECL_SLICE:
-		return types.POINTER_SIZE
-	case constants.DECL_ARRAY:
+	case constants.DeclarationPointer, constants.DeclarationSlice:
+		return types.PointerSize
+	case constants.DeclarationArray:
 		if len(lengths) == 0 {
 			return 0
 		}
@@ -256,7 +256,7 @@ func gcGlobalRoots(prgrm *CXProgram) []gc.Root {
 		for _, glblFldIdx := range pkg.Globals.Fields {
 			sig := prgrm.CXTypeSignatureFromArrayGet(glblFldIdx)
 			offset := sig.Offset
-			if sig.Type == TYPE_CXARGUMENT_DEPRECATE {
+			if sig.Type == TypeCXArgumentDeprecate {
 				offset = prgrm.CXArgGet(CXArgumentIndex(sig.Meta)).Offset
 			}
 			specs, typ, strct, lengths := SignatureGCDeclaration(prgrm, sig)

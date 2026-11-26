@@ -266,7 +266,7 @@ func (prgrm *CXProgram) CXProgramCompileErrorExit() {
 	if prgrm.CompileErrorPrint != nil {
 		prgrm.CompileErrorPrint(prgrm)
 	}
-	os.Exit(types.CX_COMPILATION_ERROR)
+	os.Exit(types.CXCompilationError)
 }
 
 // CXArgumentDebugFileGidLine returns the source file and line of the debug

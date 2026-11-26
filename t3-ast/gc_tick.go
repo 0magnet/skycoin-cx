@@ -35,14 +35,14 @@ func GarbageCollectorPrepare(prgrm *CXProgram) {
 	if cap(heap.Roots.RootTableFrames) < len(prgrm.CallStack) {
 		heap.Roots.RootTableFrames = make([]gc.RootFrame, 0, len(prgrm.CallStack))
 	}
-	memorySize := types.Cast_int_to_ptr(cap(prgrm.Memory))
+	memorySize := types.IntToPtrCast(cap(prgrm.Memory))
 	gc.StatePrepare(&heap.Collector, memorySize-heap.StartsAt, memorySize)
 }
 
 // GarbageCollectorTrigger collects the heap at a safe point of the old loop,
 // between two steps, where every root is in a global or a frame slot. It
 // hands the collector a root table and the heap, then resizes the heap to
-// keep MIN_HEAP_FREE_RATIO to MAX_HEAP_FREE_RATIO of it free. It allocates
+// keep MinHeapFreeRatio to MaxHeapFreeRatio of it free. It allocates
 // nothing, as GarbageCollectorPrepare built the roots and the scratch.
 // GCREACH: builds the root table and runs the collector,
 // see docs/GarbageCollector.md.
@@ -68,20 +68,20 @@ func GarbageCollectorTrigger(prgrm *CXProgram) {
 	heap.PressureLimit = heapPressureLimit(prgrm)
 }
 
-// heapFreeRatioKeep grows the heap when less than MIN_HEAP_FREE_RATIO of it
-// is free and shrinks it, never below INIT_HEAP_SIZE, when more than
-// MAX_HEAP_FREE_RATIO is.
+// heapFreeRatioKeep grows the heap when less than MinHeapFreeRatio of it
+// is free and shrinks it, never below HeapSizeInit, when more than
+// MaxHeapFreeRatio is.
 func heapFreeRatioKeep(prgrm *CXProgram) {
 	used := prgrm.Heap.Pointer
 	free := 1.0 - float32(used)/float32(prgrm.Heap.Size)
-	if free < constants.MIN_HEAP_FREE_RATIO {
+	if free < constants.MinHeapFreeRatio {
 		// GCREACH: grows the heap after a collection,
 		// see docs/GarbageCollector.md.
-		MemoryResize(prgrm, types.Cast_f32_to_ptr(float32(used)/(1.0-constants.MIN_HEAP_FREE_RATIO)), true)
+		MemoryResize(prgrm, types.F32ToPtrCast(float32(used)/(1.0-constants.MinHeapFreeRatio)), true)
 	}
-	if free > constants.MAX_HEAP_FREE_RATIO {
-		size := types.Cast_f32_to_ptr(float32(used) / (1.0 - constants.MAX_HEAP_FREE_RATIO))
-		if size > constants.INIT_HEAP_SIZE {
+	if free > constants.MaxHeapFreeRatio {
+		size := types.F32ToPtrCast(float32(used) / (1.0 - constants.MaxHeapFreeRatio))
+		if size > constants.HeapSizeInit {
 			// GCREACH: shrinks the heap after a collection,
 			// see docs/GarbageCollector.md.
 			MemoryResize(prgrm, size, false)

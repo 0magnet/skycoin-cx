@@ -36,17 +36,17 @@ func ArgSizeGet(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 		deref := arg.DereferenceOperations[derefCount-1]
 
 		switch deref {
-		case constants.DEREF_SLICE, constants.DEREF_ARRAY:
+		case constants.DerefSlice, constants.DerefArray:
 			if direct, behind := arg.DirectDimensions(); behind && len(arg.Indexes) <= direct {
 				// e[1] of a [2]*[3]T is a pointer.
-				return ValueSizeOfLengths(arg.Lengths[len(arg.Indexes):direct], types.POINTER_SIZE)
+				return ValueSizeOfLengths(arg.Lengths[len(arg.Indexes):direct], types.PointerSize)
 			}
 			if len(arg.Indexes) < len(arg.Lengths) {
 				// r[1] of a [2][3]i32 is a [3]i32.
 				return ValueSizeOfLengths(arg.Lengths[len(arg.Indexes):], arg.Size)
 			}
 			return arg.Size
-		case constants.DEREF_POINTER:
+		case constants.DerefPointer:
 			return arg.Type.Size()
 		}
 	}
@@ -54,12 +54,12 @@ func ArgSizeGet(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	// The last specifier is the outermost, so [3]*i32 is an array of pointers.
 	for i := len(arg.DeclarationSpecifiers) - 1; i >= 0; i-- {
 		switch arg.DeclarationSpecifiers[i] {
-		case constants.DECL_ARRAY:
+		case constants.DeclarationArray:
 			return arg.ArraySize()
-		case constants.DECL_POINTER:
+		case constants.DeclarationPointer:
 			return arg.Size
-		case constants.DECL_SLICE:
-			return types.POINTER_SIZE
+		case constants.DeclarationSlice:
+			return types.PointerSize
 		}
 	}
 
@@ -75,9 +75,9 @@ func NativeSizeGet(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	if derefCount > 0 {
 		deref := arg.DereferenceOperations[derefCount-1]
 		switch deref {
-		case constants.DEREF_SLICE, constants.DEREF_ARRAY:
+		case constants.DerefSlice, constants.DerefArray:
 			return arg.Size
-		case constants.DEREF_POINTER:
+		case constants.DerefPointer:
 			return arg.Type.Size()
 		}
 	}
@@ -85,12 +85,12 @@ func NativeSizeGet(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 	// The last specifier is the outermost, so [3]*i32 is an array of pointers.
 	for i := len(arg.DeclarationSpecifiers) - 1; i >= 0; i-- {
 		switch arg.DeclarationSpecifiers[i] {
-		case constants.DECL_ARRAY:
+		case constants.DeclarationArray:
 			return arg.ArraySize()
-		case constants.DECL_POINTER:
+		case constants.DeclarationPointer:
 			return arg.Size
-		case constants.DECL_SLICE:
-			return types.POINTER_SIZE
+		case constants.DeclarationSlice:
+			return types.PointerSize
 		}
 	}
 
@@ -107,16 +107,16 @@ func DerefSizeGet(prgrm *CXProgram, arg *CXArgument, index int, derefPointer boo
 		// The elements of the dimensions before a pointer, as in [2]*[3]T,
 		// are pointers.
 		if derefArray {
-			return types.POINTER_SIZE
+			return types.PointerSize
 		}
-		return ValueSizeOfLengths(arg.Lengths[index+1:direct], types.POINTER_SIZE)
+		return ValueSizeOfLengths(arg.Lengths[index+1:direct], types.PointerSize)
 	}
 	if !derefArray && len(arg.Lengths) > 1 && ((index + 1) < len(arg.Lengths)) {
 		if rest := arg.Lengths[index+1:]; rest[0] != 0 {
 			// An element of [][N]T is an array.
 			return ValueSizeOfLengths(rest, getDerefElementSize(prgrm, arg, derefPointer))
 		}
-		return types.POINTER_SIZE
+		return types.PointerSize
 	}
 	return getDerefElementSize(prgrm, arg, derefPointer)
 }
@@ -131,7 +131,7 @@ func getDerefElementSize(prgrm *CXProgram, arg *CXArgument, derefPointer bool) t
 	if derefPointer && arg.StructType == nil {
 		// p[i] on a *[N]*T reads a pointer.
 		if cxArgumentElementPointer(arg) {
-			return types.POINTER_SIZE
+			return types.PointerSize
 		}
 		return arg.Type.Size()
 	}
@@ -140,32 +140,32 @@ func getDerefElementSize(prgrm *CXProgram, arg *CXArgument, derefPointer bool) t
 
 // DerefSizeSliceGet returns the element size of the slice typeSignature names.
 func DerefSizeSliceGet(prgrm *CXProgram, typeSignature *CXTypeSignature) types.Pointer {
-	if typeSignature.Type == TYPE_CXARGUMENT_DEPRECATE {
+	if typeSignature.Type == TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0368.
 		arg := prgrm.CXArgFromArrayGet(CXArgumentIndex(typeSignature.Meta))
 		return derefSizeSliceOfArg(prgrm, arg.AssignmentElementGet(prgrm))
-	} else if typeSignature.Type == TYPE_STRUCT || typeSignature.Type == TYPE_POINTER_STRUCT {
+	} else if typeSignature.Type == TypeStruct || typeSignature.Type == TypePointerStruct {
 		// A field access such as t.s, sized by its last field, not by the slice header.
 		structDetails := prgrm.CXTypeSignatureStructFromArrayGet(typeSignature.Meta)
 		if fldLen := len(structDetails.Fields); fldLen > 0 {
 			fld := prgrm.CXArgFromArrayGet(structDetails.Fields[fldLen-1])
 			return derefSizeSliceOfArg(prgrm, fld.AssignmentElementGet(prgrm))
 		}
-	} else if typeSignature.Type == TYPE_SLICE_ATOMIC {
+	} else if typeSignature.Type == TypeSliceAtomic {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0369.
 		sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(typeSignature.Meta)
 		if len(sliceDetails.Lengths) > 1 && (len(sliceDetails.Lengths)-len(sliceDetails.Indexes)) > 1 {
-			return types.POINTER_SIZE
+			return types.PointerSize
 		}
 		return types.Code(sliceDetails.Meta).Size()
-	} else if typeSignature.Type == TYPE_POINTER_SLICE_ATOMIC {
+	} else if typeSignature.Type == TypePointerSliceAtomic {
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0370.
 		sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(typeSignature.Meta)
 		if len(sliceDetails.Lengths) > 1 && (len(sliceDetails.Lengths)-len(sliceDetails.Indexes)) > 1 {
-			return types.POINTER_SIZE
+			return types.PointerSize
 		}
 
 		return types.Code(sliceDetails.Meta).Size()
@@ -188,17 +188,17 @@ func FinalOffsetChecked(prgrm *CXProgram, fp types.Pointer, argTypeSig *CXTypeSi
 	return offset, !fault
 }
 
-// offsetIndexFromI32 is types.Cast_i32_to_ptr for an index. With fault set a
+// offsetIndexFromI32 is types.I32ToPtrCast for an index. With fault set a
 // negative index sets *fault and counts as 0 instead of panicking.
 func offsetIndexFromI32(value int32, fault *bool) types.Pointer {
 	if value < 0 && fault != nil {
 		*fault = true
 		return 0
 	}
-	return types.Cast_i32_to_ptr(value)
+	return types.I32ToPtrCast(value)
 }
 
-// offsetSliceIndexCheck panics with CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE when
+// offsetSliceIndexCheck panics with CXRuntimeSliceIndexOutOfRange when
 // an index is out of range, or sets *fault when fault is set.
 func offsetSliceIndexCheck(valid bool, fault *bool) {
 	if valid {
@@ -208,7 +208,7 @@ func offsetSliceIndexCheck(valid bool, fault *bool) {
 		*fault = true
 		return
 	}
-	panic(types.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+	panic(types.CXRuntimeSliceIndexOutOfRange)
 }
 
 // finalOffsetCompute is FinalOffsetGet. With fault set it records a bad index
@@ -219,22 +219,22 @@ func finalOffsetCompute(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, 
 	var arg *CXArgument
 	if oldArg != nil {
 		arg = oldArg
-	} else if argTypeSig.Type == TYPE_CXARGUMENT_DEPRECATE {
+	} else if argTypeSig.Type == TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S0372.
 		arg = prgrm.CXArgGet(CXArgumentIndex(argTypeSig.Meta))
-	} else if argTypeSig.Type == TYPE_ATOMIC {
+	} else if argTypeSig.Type == TypeAtomic {
 		argTypeSigOffset := frameAddress(prgrm, fp, argTypeSig.Offset)
 
 		return argTypeSigOffset
-	} else if argTypeSig.Type == TYPE_POINTER_ATOMIC {
+	} else if argTypeSig.Type == TypePointerAtomic {
 		if OffsetEscaped(argTypeSig.Offset) {
 			return finalOffsetEscapedPointer(prgrm, fp, argTypeSig)
 		}
 		finalOffset = argTypeSig.Offset
 
 		if argTypeSig.Deref {
-			finalOffset = types.Read_ptr(prgrm.Memory, finalOffset)
+			finalOffset = types.PtrRead(prgrm.Memory, finalOffset)
 		}
 
 		//Todo: find way to eliminate this check
@@ -245,11 +245,11 @@ func finalOffsetCompute(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, 
 
 		if finalOffset.Valid() && finalOffset >= prgrm.Heap.StartsAt {
 			// then it's an object
-			finalOffset += types.OBJECT_HEADER_SIZE
+			finalOffset += types.ObjectHeaderSize
 		}
 
 		return finalOffset
-	} else if argTypeSig.Type == TYPE_ARRAY_ATOMIC {
+	} else if argTypeSig.Type == TypeArrayAtomic {
 		argTypeSigOffset := frameAddress(prgrm, fp, argTypeSig.Offset)
 
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
@@ -267,15 +267,15 @@ func finalOffsetCompute(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, 
 			sizeOfElement := subSize * sizeToUse
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 			// Now an arena getter, site S0374.
-			argTypeSigOffset += offsetIndexFromI32(types.Read_i32(prgrm.Memory, finalOffsetCompute(prgrm, fp, nil, prgrm.CXTypeSignatureFromArrayGet(arrDetails.Indexes[i]), fault)), fault) * sizeOfElement
+			argTypeSigOffset += offsetIndexFromI32(types.I32Read(prgrm.Memory, finalOffsetCompute(prgrm, fp, nil, prgrm.CXTypeSignatureFromArrayGet(arrDetails.Indexes[i]), fault)), fault) * sizeOfElement
 		}
 
 		return argTypeSigOffset
-	} else if argTypeSig.Type == TYPE_POINTER_ARRAY_ATOMIC {
+	} else if argTypeSig.Type == TypePointerArrayAtomic {
 		finalOffset = frameAddress(prgrm, fp, argTypeSig.Offset)
 
 		if argTypeSig.Deref {
-			finalOffset = types.Read_ptr(prgrm.Memory, finalOffset)
+			finalOffset = types.PtrRead(prgrm.Memory, finalOffset)
 
 			// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 			// Now an arena getter, site S0375.
@@ -292,30 +292,30 @@ func finalOffsetCompute(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, 
 				sizeOfElement := subSize * sizeToUse
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S0376.
-				finalOffset += offsetIndexFromI32(types.Read_i32(prgrm.Memory, finalOffsetCompute(prgrm, fp, nil, prgrm.CXTypeSignatureFromArrayGet(arrDetails.Indexes[i]), fault)), fault) * sizeOfElement
+				finalOffset += offsetIndexFromI32(types.I32Read(prgrm.Memory, finalOffsetCompute(prgrm, fp, nil, prgrm.CXTypeSignatureFromArrayGet(arrDetails.Indexes[i]), fault)), fault) * sizeOfElement
 			}
 		}
 
 		if argTypeSig.Deref && finalOffset.Valid() && finalOffset >= prgrm.Heap.StartsAt {
 			// then it's an object
-			finalOffset += types.OBJECT_HEADER_SIZE
+			finalOffset += types.ObjectHeaderSize
 		}
 
 		return finalOffset
-	} else if argTypeSig.Type == TYPE_SLICE_ATOMIC {
+	} else if argTypeSig.Type == TypeSliceAtomic {
 		argTypeSigOffset := frameAddress(prgrm, fp, argTypeSig.Offset)
 
 		// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 		// Now an arena getter, site S0377.
 		return finalOffsetSliceIndexes(prgrm, fp, argTypeSigOffset, prgrm.CXTypeSignatureArrayFromArrayGet(argTypeSig.Meta), fault)
-	} else if argTypeSig.Type == TYPE_POINTER_SLICE_ATOMIC {
+	} else if argTypeSig.Type == TypePointerSliceAtomic {
 		argTypeSigOffset := frameAddress(prgrm, fp, argTypeSig.Offset)
 
 		if argTypeSig.Deref {
-			argTypeSigOffset = types.Read_ptr(prgrm.Memory, argTypeSigOffset)
+			argTypeSigOffset = types.PtrRead(prgrm.Memory, argTypeSigOffset)
 			if argTypeSigOffset.Valid() && argTypeSigOffset >= prgrm.Heap.StartsAt {
 				// p points to a slice variable in a heap object.
-				argTypeSigOffset += types.OBJECT_HEADER_SIZE
+				argTypeSigOffset += types.ObjectHeaderSize
 			}
 
 			// (*p)[i] indexes the slice that p points to.
@@ -326,7 +326,7 @@ func finalOffsetCompute(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, 
 		}
 
 		return argTypeSigOffset
-	} else if argTypeSig.Type == TYPE_STRUCT {
+	} else if argTypeSig.Type == TypeStruct {
 		argTypeSigOffset := frameAddress(prgrm, fp, argTypeSig.Offset)
 
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
@@ -341,14 +341,14 @@ func finalOffsetCompute(prgrm *CXProgram, fp types.Pointer, oldArg *CXArgument, 
 		}
 
 		return argTypeSigOffset
-	} else if argTypeSig.Type == TYPE_POINTER_STRUCT {
+	} else if argTypeSig.Type == TypePointerStruct {
 		argTypeSigOffset := frameAddress(prgrm, fp, argTypeSig.Offset)
 
 		if argTypeSig.Deref {
-			argTypeSigOffset = types.Read_ptr(prgrm.Memory, argTypeSigOffset)
+			argTypeSigOffset = types.PtrRead(prgrm.Memory, argTypeSigOffset)
 			if argTypeSigOffset.Valid() && argTypeSigOffset >= prgrm.Heap.StartsAt {
 				// then it's an object
-				argTypeSigOffset += types.OBJECT_HEADER_SIZE
+				argTypeSigOffset += types.ObjectHeaderSize
 			}
 		}
 
@@ -403,40 +403,40 @@ func finalOffsetSliceIndexes(prgrm *CXProgram, fp types.Pointer, offset types.Po
 		// The elements of an outer slice are pointers to the inner slices.
 		sizeToUse := eltSize
 		if i+1 < len(sliceDetails.Lengths) {
-			sizeToUse = types.POINTER_SIZE
+			sizeToUse = types.PointerSize
 		}
 
-		offset = types.Read_ptr(prgrm.Memory, offset)
+		offset = types.PtrRead(prgrm.Memory, offset)
 		baseOffset := offset
 
-		offset += types.OBJECT_HEADER_SIZE
-		offset += constants.SLICE_HEADER_SIZE
+		offset += types.ObjectHeaderSize
+		offset += constants.SliceHeaderSize
 
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S0378.
 		indexOffset := finalOffsetCompute(prgrm, fp, nil, prgrm.CXTypeSignatureFromArrayGet(sliceDetails.Indexes[i]), fault)
-		indexValue := types.Read_i32(prgrm.Memory, indexOffset)
+		indexValue := types.I32Read(prgrm.Memory, indexOffset)
 
-		offset += offsetIndexFromI32(indexValue, fault) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
+		offset += offsetIndexFromI32(indexValue, fault) * sizeToUse // TODO:PTR Use ptr/PtrRead, array/slice indexing only works with i32.
 
 		offsetSliceIndexCheck(SliceIndexValid(prgrm, baseOffset, offset, sizeToUse), fault)
 	}
 	return offset
 }
 
-func CalculateDereference_Slice(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
+func DereferenceSliceCalculate(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
 	if drfsStruct.pointerTyped && drfsStruct.finalOffset.Valid() && drfsStruct.finalOffset >= prgrm.Heap.StartsAt {
 		// A slice behind a pointer into a heap object, as in (*s[i])[j] on a
 		// []*[]T, see PointerOfAddress.
-		drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
+		drfsStruct.finalOffset += types.ObjectHeaderSize
 	}
 	drfsStruct.sliceIndexed = true
 	drfsStruct.pointerTyped = false
-	drfsStruct.finalOffset = types.Read_ptr(prgrm.Memory, drfsStruct.finalOffset)
+	drfsStruct.finalOffset = types.PtrRead(prgrm.Memory, drfsStruct.finalOffset)
 	drfsStruct.baseOffset = drfsStruct.finalOffset
 
-	drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
-	drfsStruct.finalOffset += constants.SLICE_HEADER_SIZE
+	drfsStruct.finalOffset += types.ObjectHeaderSize
+	drfsStruct.finalOffset += constants.SliceHeaderSize
 
 	//TODO: delete
 	sizeToUse := DerefSizeGet(prgrm, drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, false) //TODO: is always arg.Size unless arg.StructType != nil
@@ -445,16 +445,16 @@ func CalculateDereference_Slice(prgrm *CXProgram, drfsStruct *DereferenceStruct)
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0384.
 	indexOffset := finalOffsetCompute(prgrm, drfsStruct.fp, nil, prgrm.CXTypeSignatureFromArrayGet(drfsStruct.arg.Indexes[drfsStruct.idxCounter]), drfsStruct.fault)
-	indexValue := types.Read_i32(prgrm.Memory, indexOffset)
+	indexValue := types.I32Read(prgrm.Memory, indexOffset)
 
-	drfsStruct.finalOffset += offsetIndexFromI32(indexValue, drfsStruct.fault) * sizeToUse // TODO:PTR Use ptr/Read_ptr, array/slice indexing only works with i32.
+	drfsStruct.finalOffset += offsetIndexFromI32(indexValue, drfsStruct.fault) * sizeToUse // TODO:PTR Use ptr/PtrRead, array/slice indexing only works with i32.
 
 	offsetSliceIndexCheck(SliceIndexValid(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, sizeToUse), drfsStruct.fault)
 
 	drfsStruct.idxCounter++
 }
 
-func CalculateDereference_Array(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
+func DereferenceArrayCalculate(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
 	if drfsStruct.fault != nil && drfsStruct.idxCounter >= len(drfsStruct.arg.Lengths) {
 		*drfsStruct.fault = true
 		return
@@ -477,7 +477,7 @@ func CalculateDereference_Array(prgrm *CXProgram, drfsStruct *DereferenceStruct)
 	//TODO: Delete
 	sizeToUse := DerefSizeGet(prgrm, drfsStruct.arg, drfsStruct.idxCounter, drfsStruct.derefPointer, true) //TODO: is always arg.Size unless arg.StructType != nil
 	if elementSlice {
-		sizeToUse = types.POINTER_SIZE
+		sizeToUse = types.PointerSize
 	}
 	drfsStruct.derefPointer = false
 	drfsStruct.baseOffset = drfsStruct.finalOffset
@@ -485,17 +485,17 @@ func CalculateDereference_Array(prgrm *CXProgram, drfsStruct *DereferenceStruct)
 
 	// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 	// Now an arena getter, site S0385.
-	drfsStruct.finalOffset += offsetIndexFromI32(types.Read_i32(prgrm.Memory, finalOffsetCompute(prgrm, drfsStruct.fp, nil, prgrm.CXTypeSignatureFromArrayGet(drfsStruct.arg.Indexes[drfsStruct.idxCounter]), drfsStruct.fault)), drfsStruct.fault) * drfsStruct.sizeofElement // TODO:PTR Use Read_ptr
+	drfsStruct.finalOffset += offsetIndexFromI32(types.I32Read(prgrm.Memory, finalOffsetCompute(prgrm, drfsStruct.fp, nil, prgrm.CXTypeSignatureFromArrayGet(drfsStruct.arg.Indexes[drfsStruct.idxCounter]), drfsStruct.fault)), drfsStruct.fault) * drfsStruct.sizeofElement // TODO:PTR Use PtrRead
 	drfsStruct.idxCounter++
 }
 
-func CalculateDereference_Pointer(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
+func DereferencePointerCalculate(prgrm *CXProgram, drfsStruct *DereferenceStruct) {
 	if drfsStruct.pointerTyped && drfsStruct.finalOffset.Valid() && drfsStruct.finalOffset >= prgrm.Heap.StartsAt {
 		// A pointer read from a heap object, as in **pp.
-		drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
+		drfsStruct.finalOffset += types.ObjectHeaderSize
 	}
 	drfsStruct.pointerTyped = true
-	drfsStruct.finalOffset = types.Read_ptr(prgrm.Memory, drfsStruct.finalOffset)
+	drfsStruct.finalOffset = types.PtrRead(prgrm.Memory, drfsStruct.finalOffset)
 	drfsStruct.derefPointer = true
 }
 
@@ -517,27 +517,27 @@ func calculateDereferencesCompute(prgrm *CXProgram, arg *CXArgument, finalOffset
 	}
 
 	for _, op := range drfsStruct.arg.DereferenceOperations {
-		if len(drfsStruct.arg.Indexes) == 0 && op != constants.DEREF_POINTER {
+		if len(drfsStruct.arg.Indexes) == 0 && op != constants.DerefPointer {
 			continue
 		}
 
 		switch op {
-		case constants.DEREF_SLICE:
-			CalculateDereference_Slice(prgrm, drfsStruct)
-		case constants.DEREF_ARRAY:
-			CalculateDereference_Array(prgrm, drfsStruct)
-		case constants.DEREF_POINTER:
-			CalculateDereference_Pointer(prgrm, drfsStruct)
+		case constants.DerefSlice:
+			DereferenceSliceCalculate(prgrm, drfsStruct)
+		case constants.DerefArray:
+			DereferenceArrayCalculate(prgrm, drfsStruct)
+		case constants.DerefPointer:
+			DereferencePointerCalculate(prgrm, drfsStruct)
 		}
 	}
 
 	if drfsStruct.finalOffset.Valid() && drfsStruct.finalOffset >= prgrm.Heap.StartsAt && drfsStruct.pointerTyped {
 		// then it's an object
-		drfsStruct.finalOffset += types.OBJECT_HEADER_SIZE
+		drfsStruct.finalOffset += types.ObjectHeaderSize
 		// An element of a slice, as ps[i] is, is not the slice. The Lengths of
 		// an arg with fields, as in gp.s, are those of its last field.
 		if drfsStruct.arg.SliceTyped() && !drfsStruct.sliceIndexed && len(drfsStruct.arg.Fields) == 0 {
-			drfsStruct.finalOffset += constants.SLICE_HEADER_SIZE
+			drfsStruct.finalOffset += constants.SliceHeaderSize
 			offsetSliceIndexCheck(SliceIndexValid(prgrm, drfsStruct.baseOffset, drfsStruct.finalOffset, drfsStruct.sizeofElement), drfsStruct.fault)
 		}
 	}
@@ -551,7 +551,7 @@ func derefSizeSliceOfArg(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 		if rest := arg.Lengths[len(arg.Indexes)+1:]; rest[0] != 0 {
 			return ValueSizeOfLengths(rest, derefSizeSliceElement(prgrm, arg))
 		}
-		return types.POINTER_SIZE
+		return types.PointerSize
 	}
 	return derefSizeSliceElement(prgrm, arg)
 }
@@ -569,9 +569,9 @@ func derefSizeSliceElement(prgrm *CXProgram, arg *CXArgument) types.Pointer {
 func cxArgumentElementPointer(arg *CXArgument) bool {
 	for _, spec := range arg.DeclarationSpecifiers {
 		switch spec {
-		case constants.DECL_POINTER:
+		case constants.DeclarationPointer:
 			return true
-		case constants.DECL_ARRAY, constants.DECL_SLICE:
+		case constants.DeclarationArray, constants.DeclarationSlice:
 			return false
 		}
 	}

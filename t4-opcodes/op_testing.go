@@ -23,32 +23,32 @@ func AssertFailed() bool {
 func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (same bool) {
 	var byts1, byts2 []byte
 	var inp0 *ast.CXArgument
-	if inputs[0].TypeSignature.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if inputs[0].TypeSignature.Type == ast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1341.
 		inp0 = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(inputs[0].TypeSignature.Meta))
 
 		if inp0.Type == types.STR || inp0.PointerTargetType == types.STR {
-			byts1 = inputs[0].Get_str_bytes(prgrm)
-			byts2 = inputs[1].Get_str_bytes(prgrm)
+			byts1 = inputs[0].StrBytesGet(prgrm)
+			byts2 = inputs[1].StrBytesGet(prgrm)
 		} else {
-			byts1 = inputs[0].Get_bytes(prgrm)
-			byts2 = inputs[1].Get_bytes(prgrm)
+			byts1 = inputs[0].BytesGet(prgrm)
+			byts2 = inputs[1].BytesGet(prgrm)
 		}
 
-	} else if inputs[0].TypeSignature.Type == ast.TYPE_ATOMIC || inputs[0].TypeSignature.Type == ast.TYPE_POINTER_ATOMIC {
-		byts1 = inputs[0].Get_bytes(prgrm)
-		byts2 = inputs[1].Get_bytes(prgrm)
-	} else if inputs[0].TypeSignature.Type == ast.TYPE_ARRAY_ATOMIC {
-		byts1 = inputs[0].Get_bytes(prgrm)
-		byts2 = inputs[1].Get_bytes(prgrm)
-	} else if inputs[0].TypeSignature.Type == ast.TYPE_POINTER_ARRAY_ATOMIC {
-		byts1 = inputs[0].Get_bytes(prgrm)
-		byts2 = inputs[1].Get_bytes(prgrm)
-	} else if inputs[0].TypeSignature.Type == ast.TYPE_SLICE_ATOMIC {
-		byts1 = inputs[0].Get_bytes(prgrm)
-		byts2 = inputs[1].Get_bytes(prgrm)
-	} else if inputs[0].TypeSignature.Type == ast.TYPE_STRUCT || inputs[0].TypeSignature.Type == ast.TYPE_POINTER_STRUCT {
+	} else if inputs[0].TypeSignature.Type == ast.TypeAtomic || inputs[0].TypeSignature.Type == ast.TypePointerAtomic {
+		byts1 = inputs[0].BytesGet(prgrm)
+		byts2 = inputs[1].BytesGet(prgrm)
+	} else if inputs[0].TypeSignature.Type == ast.TypeArrayAtomic {
+		byts1 = inputs[0].BytesGet(prgrm)
+		byts2 = inputs[1].BytesGet(prgrm)
+	} else if inputs[0].TypeSignature.Type == ast.TypePointerArrayAtomic {
+		byts1 = inputs[0].BytesGet(prgrm)
+		byts2 = inputs[1].BytesGet(prgrm)
+	} else if inputs[0].TypeSignature.Type == ast.TypeSliceAtomic {
+		byts1 = inputs[0].BytesGet(prgrm)
+		byts2 = inputs[1].BytesGet(prgrm)
+	} else if inputs[0].TypeSignature.Type == ast.TypeStruct || inputs[0].TypeSignature.Type == ast.TypePointerStruct {
 		var strTyped bool = false
 		// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 		// Now an arena getter, site S1342.
@@ -65,11 +65,11 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 		}
 
 		if strTyped {
-			byts1 = inputs[0].Get_str_bytes(prgrm)
-			byts2 = inputs[1].Get_str_bytes(prgrm)
+			byts1 = inputs[0].StrBytesGet(prgrm)
+			byts2 = inputs[1].StrBytesGet(prgrm)
 		} else {
-			byts1 = inputs[0].Get_bytes(prgrm)
-			byts2 = inputs[1].Get_bytes(prgrm)
+			byts1 = inputs[0].BytesGet(prgrm)
+			byts2 = inputs[1].BytesGet(prgrm)
 		}
 	} else {
 		panic("type is not known")
@@ -77,7 +77,7 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 
 	same = bytes.Equal(byts1, byts2)
 	if !same {
-		message := inputs[2].Get_str_bytes(prgrm)
+		message := inputs[2].StrBytesGet(prgrm)
 		call := prgrm.CurrentCallGet()
 		// expr := call.Operator.Expressions[call.Line]
 		cxLine, _ := prgrm.PreviousCXLineGet(prgrm.CxIrState.CXFunctionMng.CXFunctionGet(call.Operator).Expressions, call.Line)
@@ -95,7 +95,7 @@ func assert(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) (
 
 func OpAssertValue(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	same := assert(prgrm, inputs, outputs)
-	outputs[0].Set_bool(prgrm, same)
+	outputs[0].BoolSet(prgrm, same)
 }
 
 func OpTest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -104,31 +104,31 @@ func OpTest(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 
 func OpPanic(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	if !assert(prgrm, inputs, outputs) {
-		panic(types.CX_ASSERT)
+		panic(types.CXAssert)
 	}
 }
 
 // panicIf/panicIfNot implementation
 func panicIf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue, condition bool) {
-	if inputs[0].Get_bool(prgrm) == condition {
+	if inputs[0].BoolGet(prgrm) == condition {
 		// The printer prints the line and the message after the loop.
 		prgrm.RuntimeError.RuntimeErrorRecordAssertLine = true
-		prgrm.RuntimeError.RuntimeErrorRecordAssertMessage = inputs[1].Get_ptr(prgrm)
-		panic(types.CX_ASSERT)
+		prgrm.RuntimeError.RuntimeErrorRecordAssertMessage = inputs[1].PtrGet(prgrm)
+		panic(types.CXAssert)
 	}
 }
 
-// panic with CX_ASSERT exit code if condition is true
+// panic with CXAssert exit code if condition is true
 func OpPanicIf(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	panicIf(prgrm, inputs, outputs, true)
 }
 
-// panic with CX_ASSERT exit code if condition is false
+// panic with CXAssert exit code if condition is false
 func OpPanicIfNot(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	panicIf(prgrm, inputs, outputs, false)
 }
 
 // VIOLATION STRHOT-120: B, the text of an error code, #412.
 func OpStrError(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_str(prgrm, ast.ErrorString(int(inputs[0].Get_i32(prgrm))))
+	outputs[0].StrSet(prgrm, ast.ErrorString(int(inputs[0].I32Get(prgrm))))
 }

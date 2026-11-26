@@ -70,7 +70,7 @@ func TestAffordanceLiteralParse(t *testing.T) {
 				t.Fatalf("compile errors %q", errors)
 			}
 			prgrm := actions.AST
-			value := ast.AffordanceValueRead(prgrm.Memory, prgrm.Data.StartsAt+prgrm.Data.Size-types.AFF_SIZE)
+			value := ast.AffordanceValueRead(prgrm.Memory, prgrm.Data.StartsAt+prgrm.Data.Size-types.AffSize)
 			pkg, err := prgrm.PackageGet(prgrm.CxIrState.CxIrStateNameMain)
 			if err != nil {
 				t.Fatal(err)
@@ -155,7 +155,7 @@ func TestAffordanceSerializeDeclarations(t *testing.T) {
 				t.Fatalf("compile errors %q", errors)
 			}
 			prgrm := actions.AST
-			value := ast.AffordanceValueRead(prgrm.Memory, prgrm.Data.StartsAt+prgrm.Data.Size-types.AFF_SIZE)
+			value := ast.AffordanceValueRead(prgrm.Memory, prgrm.Data.StartsAt+prgrm.Data.Size-types.AffSize)
 			b, ok := ast.AffordanceSerialize(prgrm, value)
 			if !ok {
 				t.Fatal("SerializeAffordance failed")

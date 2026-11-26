@@ -26,7 +26,7 @@ import (
 // sampleOperand matches an expression input in ToString, as in i32.add(15 i32, 11 i32).
 var sampleOperand = regexp.MustCompile(`\(\w+ (i32|bool)[,)]`)
 
-// TestSerialize round trips the sample program, whose operands are TYPE_ATOMIC
+// TestSerialize round trips the sample program, whose operands are TypeAtomic
 // type signatures, with and without memory and compression. See #12.
 func TestSerialize(t *testing.T) {
 	tests := []struct {

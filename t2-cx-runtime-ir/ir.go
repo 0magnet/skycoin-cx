@@ -141,7 +141,7 @@ const ImageFuncNone = ^uint32(0)
 
 // ImageCallDepthMax is the deepest call nesting an image may reach, the size
 // of the fixed frame array of a machine.
-const ImageCallDepthMax = uint32(constants.CALLSTACK_SIZE)
+const ImageCallDepthMax = uint32(constants.CallStackSize)
 
 // LineAt returns the line of pc in function, false when it has none.
 func LineAt(image *Image, function uint32, pc uint32) (Line, bool) {

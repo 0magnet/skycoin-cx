@@ -207,7 +207,7 @@ func buildLlvmTinygoNative(modulePath string, output string, target string, debu
 	if err := buildLlvmTinygoRun(tinygo, directory, append(args, ".")); err != nil {
 		return buildFail(err.Error())
 	}
-	return types.CX_SUCCESS
+	return types.CXSuccess
 }
 
 // buildLlvmTinygoRun runs tinygo with args in directory, its output on

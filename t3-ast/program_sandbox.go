@@ -9,7 +9,7 @@ import (
 // ProgramStringBytesRead returns the bytes of the str in value. They alias
 // program memory, so the caller copies them before the program runs on.
 func ProgramStringBytesRead(prgrm *CXProgram, value *CXValue) []byte {
-	return value.Get_str_bytes(prgrm)
+	return value.StrBytesGet(prgrm)
 }
 
 // ProgramFileSystemPathRead validates the str in value as a program path,

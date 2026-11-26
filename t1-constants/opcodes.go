@@ -928,62 +928,62 @@ func OpcodeNameAt(row OpcodeLifecycle, version int64) string {
 // START_ and END_ markers bound the operator ranges and are not opcodes.
 // nolint golint
 const (
-	OP_IDENTITY          = 1
-	OP_JMP               = 2
-	OP_ABS_JMP           = 3
-	OP_JMP_EQ            = 4
-	OP_JMP_UNEQ          = 5
-	OP_JMP_GT            = 6
-	OP_JMP_GTEQ          = 7
-	OP_JMP_LT            = 8
-	OP_JMP_LTEQ          = 9
-	OP_JMP_ZERO          = 10
-	OP_JMP_NOT_ZERO      = 11
-	OP_NOP               = 12
-	OP_GOTO              = 13
-	OP_BREAK             = 14
-	OP_CONTINUE          = 15
-	OP_DEBUG_PRINT_STACK = 16
-	OP_SERIALIZE         = 17
-	OP_DESERIALIZE       = 18
+	OpIdentity        = 1
+	OpJmp             = 2
+	OpAbsJmp          = 3
+	OpJmpEq           = 4
+	OpJmpUneq         = 5
+	OpJmpGt           = 6
+	OpJmpGteq         = 7
+	OpJmpLt           = 8
+	OpJmpLteq         = 9
+	OpJmpZero         = 10
+	OpJmpNotZero      = 11
+	OpNop             = 12
+	OpGoto            = 13
+	OpBreak           = 14
+	OpContinue        = 15
+	OpDebugPrintStack = 16
+	OpSerialize       = 17
+	OpDeserialize     = 18
 
-	START_OF_OPERATORS            = 19
-	START_OF_COMPARISON_OPERATORS = 38
-	OP_EQUAL                      = 39
-	OP_UNEQUAL                    = 40
-	OP_LT                         = 41
-	OP_GT                         = 42
-	OP_LTEQ                       = 43
-	OP_GTEQ                       = 44
-	END_OF_COMPARISON_OPERATORS   = 45
-	START_OF_ARITHMETIC_OPERATORS = 72
-	OP_BITAND                     = 73
-	OP_BITOR                      = 74
-	OP_BITXOR                     = 75
-	OP_BITCLEAR                   = 76
-	OP_BITSHL                     = 77
-	OP_BITSHR                     = 78
-	OP_MUL                        = 79
-	OP_DIV                        = 80
-	OP_MOD                        = 81
-	OP_ADD                        = 82
-	OP_SUB                        = 83
-	OP_NEG                        = 84
-	END_OF_ARITHMETIC_OPERATORS   = 85
-	END_OF_OPERATORS              = 126
+	StartOfOperators           = 19
+	StartOfComparisonOperators = 38
+	OpEqual                    = 39
+	OpUnequal                  = 40
+	OpLt                       = 41
+	OpGt                       = 42
+	OpLteq                     = 43
+	OpGteq                     = 44
+	EndOfComparisonOperators   = 45
+	StartOfArithmeticOperators = 72
+	OpBitand                   = 73
+	OpBitor                    = 74
+	OpBitxor                   = 75
+	OpBitclear                 = 76
+	OpBitshl                   = 77
+	OpBitshr                   = 78
+	OpMul                      = 79
+	OpDiv                      = 80
+	OpMod                      = 81
+	OpAdd                      = 82
+	OpSub                      = 83
+	OpNeg                      = 84
+	EndOfArithmeticOperators   = 85
+	EndOfOperators             = 126
 
-	OP_ASSERT            = 127
-	OP_TEST              = 128
-	OP_PANIC             = 129
-	OP_APPEND            = 130
-	OP_BOOL_OR           = 131
-	OP_BOOL_AND          = 132
-	OP_BOOL_NOT          = 133
-	END_OF_NAMED_OPCODES = 134
+	OpAssert          = 127
+	OpTest            = 128
+	OpPanic           = 129
+	OpAppend          = 130
+	OpBoolOr          = 131
+	OpBoolAnd         = 132
+	OpBoolNot         = 133
+	EndOfNamedOpcodes = 134
 
-	// OP_LIBRARY_CALL calls function CXFunction.LibraryFunctionNumber of system
+	// OpLibraryCall calls function CXFunction.LibraryFunctionNumber of system
 	// library CXFunction.LibraryNumber, see libraries.go.
-	OP_LIBRARY_CALL = 795
+	OpLibraryCall = 795
 
 	// The cipher library, decision D119. Each function is its own opcode,
 	// run only when the run enables the library, see OpcodeLibraryOf.
@@ -1073,15 +1073,15 @@ const (
 	OpcodeFileRemove              = 875
 
 	// The slice built-ins after append, which the compiler checks by number.
-	OP_RESIZE = 210
-	OP_INSERT = 211
-	OP_REMOVE = 212
-	OP_COPY   = 213
+	OpResize = 210
+	OpInsert = 211
+	OpRemove = 212
+	OpCopy   = 213
 )
 
 // The conversion opcodes, i8.str to f64.f32, lie strictly between these.
 // nolint golint
 const (
-	START_PARSE_OPS = 220
-	END_PARSE_OPS   = 321
+	StartParseOps = 220
+	EndParseOps   = 321
 )

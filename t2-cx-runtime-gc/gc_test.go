@@ -11,20 +11,20 @@ import (
 // holds a garbage str "dead" and then a live str "live" the root points to.
 func gcTestHeap() (memory []byte, heapStartsAt types.Pointer, heapPointer types.Pointer, live types.Pointer) {
 	heapStartsAt = 64
-	size := types.OBJECT_HEADER_SIZE + 4
+	size := types.ObjectHeaderSize + 4
 	memory = make([]byte, 256)
-	garbage := heapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET
+	garbage := heapStartsAt + constants.NullHeapAddressOffset
 	live = garbage + size
 	types.ObjectPayloadWrite(memory, garbage, size, []byte("dead"))
 	types.ObjectPayloadWrite(memory, live, size, []byte("live"))
-	types.Write_ptr(memory, 0, live)
+	types.PtrWrite(memory, 0, live)
 	return memory, heapStartsAt, live + size - heapStartsAt, live
 }
 
 // gcTestState returns a State prepared for memory and its heap.
 func gcTestState(memory []byte, heapStartsAt types.Pointer) *State {
 	var state State
-	StatePrepare(&state, types.Cast_int_to_ptr(len(memory))-heapStartsAt, types.Cast_int_to_ptr(len(memory)))
+	StatePrepare(&state, types.IntToPtrCast(len(memory))-heapStartsAt, types.IntToPtrCast(len(memory)))
 	return &state
 }
 
@@ -32,36 +32,36 @@ func TestGarbageCollectorCollectMovesLiveObjectDown(t *testing.T) {
 	memory, heapStartsAt, heapPointer, _ := gcTestHeap()
 	roots := &RootTable{RootTableGlobals: []Root{{RootOffset: 0, RootType: &Type{TypeKind: KindStr}}}, RootTableStackSize: 32}
 	pointer := GarbageCollectorCollect(memory, heapStartsAt, heapPointer, roots, gcTestState(memory, heapStartsAt))
-	moved := heapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET
-	if want := constants.NULL_HEAP_ADDRESS_OFFSET + types.OBJECT_HEADER_SIZE + 4; pointer != want {
+	moved := heapStartsAt + constants.NullHeapAddressOffset
+	if want := constants.NullHeapAddressOffset + types.ObjectHeaderSize + 4; pointer != want {
 		t.Fatalf("heap pointer %d, want %d", pointer, want)
 	}
-	if got := types.Read_ptr(memory, 0); got != moved {
+	if got := types.PtrRead(memory, 0); got != moved {
 		t.Fatalf("root points to %d, want %d", got, moved)
 	}
-	if got := string(memory[moved+types.OBJECT_HEADER_SIZE : moved+types.OBJECT_HEADER_SIZE+4]); got != "live" {
+	if got := string(memory[moved+types.ObjectHeaderSize : moved+types.ObjectHeaderSize+4]); got != "live" {
 		t.Fatalf("moved object holds %q, want live", got)
 	}
 }
 
 func TestGarbageCollectorCollectFreesUnreachable(t *testing.T) {
 	memory, heapStartsAt, heapPointer, _ := gcTestHeap()
-	if pointer := GarbageCollectorCollect(memory, heapStartsAt, heapPointer, &RootTable{RootTableStackSize: 32}, gcTestState(memory, heapStartsAt)); pointer != constants.NULL_HEAP_ADDRESS_OFFSET {
-		t.Fatalf("heap pointer %d, want %d", pointer, constants.NULL_HEAP_ADDRESS_OFFSET)
+	if pointer := GarbageCollectorCollect(memory, heapStartsAt, heapPointer, &RootTable{RootTableStackSize: 32}, gcTestState(memory, heapStartsAt)); pointer != constants.NullHeapAddressOffset {
+		t.Fatalf("heap pointer %d, want %d", pointer, constants.NullHeapAddressOffset)
 	}
 }
 
 // A frame root at a frame offset is read relative to its frame pointer.
 func TestGarbageCollectorCollectFrameRoot(t *testing.T) {
 	memory, heapStartsAt, heapPointer, live := gcTestHeap()
-	types.Write_ptr(memory, 0, 0)
-	types.Write_ptr(memory, 16+8, live)
+	types.PtrWrite(memory, 0, 0)
+	types.PtrWrite(memory, 16+8, live)
 	roots := &RootTable{
 		RootTableFrames:    []RootFrame{{RootFramePointer: 16, RootFrameRoots: []Root{{RootOffset: 8, RootType: &Type{TypeKind: KindStr}}}}},
 		RootTableStackSize: 32,
 	}
 	GarbageCollectorCollect(memory, heapStartsAt, heapPointer, roots, gcTestState(memory, heapStartsAt))
-	if got, want := types.Read_ptr(memory, 16+8), heapStartsAt+constants.NULL_HEAP_ADDRESS_OFFSET; got != want {
+	if got, want := types.PtrRead(memory, 16+8), heapStartsAt+constants.NullHeapAddressOffset; got != want {
 		t.Fatalf("frame slot points to %d, want %d", got, want)
 	}
 }
@@ -74,11 +74,11 @@ func gcTestList(state *State, count int) (memory []byte, heapStartsAt types.Poin
 	node := &Type{TypeKind: KindStruct}
 	pointer := &Type{TypeKind: KindPointer, TypeElement: node}
 	StateTypeAdd(state, pointer)
-	node.TypeFields = []TypeField{{TypeFieldOffset: 0, TypeFieldType: pointer}, {TypeFieldOffset: types.POINTER_SIZE, TypeFieldType: &Type{TypeKind: KindStr}}}
-	strSize := types.OBJECT_HEADER_SIZE + 1
-	nodeSize := types.OBJECT_HEADER_SIZE + 2*types.POINTER_SIZE
-	memory = make([]byte, heapStartsAt+constants.NULL_HEAP_ADDRESS_OFFSET+types.Cast_int_to_ptr(count)*(2*strSize+nodeSize))
-	c := heapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET
+	node.TypeFields = []TypeField{{TypeFieldOffset: 0, TypeFieldType: pointer}, {TypeFieldOffset: types.PointerSize, TypeFieldType: &Type{TypeKind: KindStr}}}
+	strSize := types.ObjectHeaderSize + 1
+	nodeSize := types.ObjectHeaderSize + 2*types.PointerSize
+	memory = make([]byte, heapStartsAt+constants.NullHeapAddressOffset+types.IntToPtrCast(count)*(2*strSize+nodeSize))
+	c := heapStartsAt + constants.NullHeapAddressOffset
 	previous := types.Pointer(0)
 	for i := 0; i < count; i++ {
 		types.ObjectPayloadWrite(memory, c, strSize, []byte{'g'})
@@ -86,12 +86,12 @@ func gcTestList(state *State, count int) (memory []byte, heapStartsAt types.Poin
 		str := c
 		types.ObjectPayloadWrite(memory, str, strSize, []byte{byte('a' + i%26)})
 		c += strSize
-		types.Write_obj_size(memory, c, nodeSize)
-		types.Write_ptr(memory, c+types.OBJECT_HEADER_SIZE+types.POINTER_SIZE, str)
+		types.ObjectSizeWrite(memory, c, nodeSize)
+		types.PtrWrite(memory, c+types.ObjectHeaderSize+types.PointerSize, str)
 		if previous == 0 {
-			types.Write_ptr(memory, 0, c)
+			types.PtrWrite(memory, 0, c)
 		} else {
-			types.Write_ptr(memory, previous+types.OBJECT_HEADER_SIZE, c)
+			types.PtrWrite(memory, previous+types.ObjectHeaderSize, c)
 		}
 		previous = c
 		c += nodeSize
@@ -103,16 +103,16 @@ func gcTestList(state *State, count int) (memory []byte, heapStartsAt types.Poin
 // count nodes whose strs read a, b, c and on.
 func gcTestListCheck(t *testing.T, memory []byte, count int) {
 	t.Helper()
-	node := types.Read_ptr(memory, 0)
+	node := types.PtrRead(memory, 0)
 	for i := 0; i < count; i++ {
 		if node == 0 {
 			t.Fatalf("list ends after %d nodes, want %d", i, count)
 		}
-		str := types.Read_ptr(memory, node+types.OBJECT_HEADER_SIZE+types.POINTER_SIZE)
-		if got, want := memory[str+types.OBJECT_HEADER_SIZE], byte('a'+i%26); got != want {
+		str := types.PtrRead(memory, node+types.ObjectHeaderSize+types.PointerSize)
+		if got, want := memory[str+types.ObjectHeaderSize], byte('a'+i%26); got != want {
 			t.Fatalf("node %d holds %q, want %q", i, got, want)
 		}
-		node = types.Read_ptr(memory, node+types.OBJECT_HEADER_SIZE)
+		node = types.PtrRead(memory, node+types.ObjectHeaderSize)
 	}
 }
 
@@ -123,7 +123,7 @@ func TestGarbageCollectorCollectList(t *testing.T) {
 	for _, work := range []int{0, 1} {
 		var state State
 		memory, heapStartsAt, heapPointer, root := gcTestList(&state, count)
-		StatePrepare(&state, types.Cast_int_to_ptr(len(memory))-heapStartsAt, types.Cast_int_to_ptr(len(memory)))
+		StatePrepare(&state, types.IntToPtrCast(len(memory))-heapStartsAt, types.IntToPtrCast(len(memory)))
 		if work != 0 {
 			state.StateWork = make([]types.Pointer, 0, work)
 		}
@@ -135,7 +135,7 @@ func TestGarbageCollectorCollectList(t *testing.T) {
 		if allocs != 0 {
 			t.Errorf("work %d: %.0f allocations per collection, want 0", work, allocs)
 		}
-		live := constants.NULL_HEAP_ADDRESS_OFFSET + count*(types.OBJECT_HEADER_SIZE+1+types.OBJECT_HEADER_SIZE+2*types.POINTER_SIZE)
+		live := constants.NullHeapAddressOffset + count*(types.ObjectHeaderSize+1+types.ObjectHeaderSize+2*types.PointerSize)
 		if pointer != live {
 			t.Errorf("work %d: heap pointer %d, want %d", work, pointer, live)
 		}
@@ -155,19 +155,19 @@ func TestGarbageCollectorCollectViewsGrow(t *testing.T) {
 	inner := &Type{TypeKind: KindPointer, TypeElement: &Type{TypeKind: KindStr}}
 	roots := &RootTable{RootTableStackSize: 32}
 	for i := types.Pointer(0); i < 3; i++ {
-		types.Write_ptr(memory, i*8, live+1+i)
+		types.PtrWrite(memory, i*8, live+1+i)
 		roots.RootTableGlobals = append(roots.RootTableGlobals, Root{RootOffset: i * 8, RootType: inner})
 	}
 	state := gcTestState(memory, heapStartsAt)
 	state.StateViews = make([]Visit, 0, 2)
 	GarbageCollectorCollect(memory, heapStartsAt, heapPointer, roots, state)
-	moved := heapStartsAt + constants.NULL_HEAP_ADDRESS_OFFSET
+	moved := heapStartsAt + constants.NullHeapAddressOffset
 	for i := types.Pointer(0); i < 3; i++ {
-		if got, want := types.Read_ptr(memory, i*8), moved+1+i; got != want {
+		if got, want := types.PtrRead(memory, i*8), moved+1+i; got != want {
 			t.Errorf("pointer %d is %d, want %d", i, got, want)
 		}
 	}
-	if got := string(memory[moved+types.OBJECT_HEADER_SIZE : moved+types.OBJECT_HEADER_SIZE+4]); got != "live" {
+	if got := string(memory[moved+types.ObjectHeaderSize : moved+types.ObjectHeaderSize+4]); got != "live" {
 		t.Fatalf("moved object holds %q, want live", got)
 	}
 }

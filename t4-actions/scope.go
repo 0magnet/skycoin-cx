@@ -7,12 +7,12 @@ import (
 	"github.com/skycoin/skycoin-cx/t3-ast"
 )
 
-// DefineNewScope marks the first and last non CX_LINE expressions of a block
+// DefineNewScope marks the first and last non CXOperationTypeLine expressions of a block
 // as the start and end of a scope. Nested blocks may share an expression.
 func DefineNewScope(exprs []ast.CXExpression) {
 	first, last := -1, -1
 	for i := range exprs {
-		if exprs[i].Type != ast.CX_LINE {
+		if exprs[i].Type != ast.CXOperationTypeLine {
 			if first < 0 {
 				first = i
 			}

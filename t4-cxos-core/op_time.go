@@ -13,13 +13,13 @@ func makeTimestamp() int64 {
 }
 
 func OpTimeUnixMilli(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_i64(prgrm, makeTimestamp())
+	outputs[0].I64Set(prgrm, makeTimestamp())
 }
 
 func OpTimeUnixNano(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_i64(prgrm, time.Now().UnixNano())
+	outputs[0].I64Set(prgrm, time.Now().UnixNano())
 }
 
 func OpTimeSleep(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	time.Sleep(time.Duration(inputs[0].Get_i32(prgrm)) * time.Millisecond)
+	time.Sleep(time.Duration(inputs[0].I32Get(prgrm)) * time.Millisecond)
 }

@@ -32,7 +32,7 @@ func netReplayEndAssertFailure() {
 // program memory.
 func netBufferView(prgrm *ast.CXProgram, value *ast.CXValue) []byte {
 	signature := value.TypeSignature
-	if signature.Type != ast.TYPE_ARRAY_ATOMIC || signature.TypeGet(prgrm) != types.UI8 {
+	if signature.Type != ast.TypeArrayAtomic || signature.TypeGet(prgrm) != types.UI8 {
 		netBufferAssertFailure()
 	}
 	return prgrm.Memory[value.Offset : value.Offset+signature.ArraySizeGet(prgrm)]
@@ -51,78 +51,78 @@ func netBufferLength(buffer []byte, length int32) []byte {
 }
 
 func OpNetUpdate(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_i32(prgrm, netUpdate(inputs[0].Get_i32(prgrm)))
+	outputs[0].I32Set(prgrm, netUpdate(inputs[0].I32Get(prgrm)))
 }
 
 func OpNetReadyCount(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_i32(prgrm, netbatch.NetReadyCount())
+	outputs[0].I32Set(prgrm, netbatch.NetReadyCount())
 }
 
 func OpNetReadyNext(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	handle, trigger, messageID, detail := netbatch.NetReadyNext()
-	outputs[0].Set_i32(prgrm, handle)
-	outputs[1].Set_i32(prgrm, int32(trigger))
-	outputs[2].Set_i32(prgrm, messageID)
-	outputs[3].Set_i32(prgrm, detail)
+	outputs[0].I32Set(prgrm, handle)
+	outputs[1].I32Set(prgrm, int32(trigger))
+	outputs[2].I32Set(prgrm, messageID)
+	outputs[3].I32Set(prgrm, detail)
 }
 
 func OpNetClock(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_i64(prgrm, netbatch.NetClock())
+	outputs[0].I64Set(prgrm, netbatch.NetClock())
 }
 
 func OpNetRead(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	buffer := netBufferView(prgrm, &inputs[2])
-	outputs[0].Set_i32(prgrm, netbatch.NetRead(inputs[0].Get_i32(prgrm), inputs[1].Get_i32(prgrm), buffer, inputs[3].Get_i32(prgrm)))
+	outputs[0].I32Set(prgrm, netbatch.NetRead(inputs[0].I32Get(prgrm), inputs[1].I32Get(prgrm), buffer, inputs[3].I32Get(prgrm)))
 }
 
 func OpNetWrite(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	buffer := netBufferLength(netBufferView(prgrm, &inputs[1]), inputs[2].Get_i32(prgrm))
-	outputs[0].Set_i32(prgrm, netbatch.NetWrite(inputs[0].Get_i32(prgrm), buffer))
+	buffer := netBufferLength(netBufferView(prgrm, &inputs[1]), inputs[2].I32Get(prgrm))
+	outputs[0].I32Set(prgrm, netbatch.NetWrite(inputs[0].I32Get(prgrm), buffer))
 }
 
 func OpNetClose(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_bool(prgrm, netbatch.NetClose(inputs[0].Get_i32(prgrm)))
+	outputs[0].BoolSet(prgrm, netbatch.NetClose(inputs[0].I32Get(prgrm)))
 }
 
 func OpNetTimeoutSet(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_bool(prgrm, netbatch.NetTimeoutSet(inputs[0].Get_i32(prgrm), inputs[1].Get_i32(prgrm)))
+	outputs[0].BoolSet(prgrm, netbatch.NetTimeoutSet(inputs[0].I32Get(prgrm), inputs[1].I32Get(prgrm)))
 }
 
 // VIOLATION STRHOT-329: B, hands an address to Go and the OS, #508.
 func OpNetTCPListen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_i32(prgrm, netbatch.NetTCPListen(netAddress(inputs[0].Get_str(prgrm), inputs[1].Get_i32(prgrm))))
+	outputs[0].I32Set(prgrm, netbatch.NetTCPListen(netAddress(inputs[0].StrGet(prgrm), inputs[1].I32Get(prgrm))))
 }
 
 // VIOLATION STRHOT-330: B, hands an address to Go and the OS, #508.
 func OpNetTCPDial(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_i32(prgrm, netbatch.NetTCPDial(netAddress(inputs[0].Get_str(prgrm), inputs[1].Get_i32(prgrm))))
+	outputs[0].I32Set(prgrm, netbatch.NetTCPDial(netAddress(inputs[0].StrGet(prgrm), inputs[1].I32Get(prgrm))))
 }
 
 // VIOLATION STRHOT-331: B, hands an address to Go and the OS, #508.
 func OpNetUDPListen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_i32(prgrm, netbatch.NetUDPListen(netAddress(inputs[0].Get_str(prgrm), inputs[1].Get_i32(prgrm))))
+	outputs[0].I32Set(prgrm, netbatch.NetUDPListen(netAddress(inputs[0].StrGet(prgrm), inputs[1].I32Get(prgrm))))
 }
 
 // VIOLATION STRHOT-332: B, hands an address to Go and the OS, #508.
 func OpNetUDPDial(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_i32(prgrm, netbatch.NetUDPDial(netAddress(inputs[0].Get_str(prgrm), inputs[1].Get_i32(prgrm))))
+	outputs[0].I32Set(prgrm, netbatch.NetUDPDial(netAddress(inputs[0].StrGet(prgrm), inputs[1].I32Get(prgrm))))
 }
 
 func OpNetUDPReadFrom(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	buffer := netBufferView(prgrm, &inputs[2])
-	length, peer := netbatch.NetUDPReadFrom(inputs[0].Get_i32(prgrm), inputs[1].Get_i32(prgrm), buffer, inputs[3].Get_i32(prgrm))
-	outputs[0].Set_i32(prgrm, length)
-	outputs[1].Set_i32(prgrm, peer)
+	length, peer := netbatch.NetUDPReadFrom(inputs[0].I32Get(prgrm), inputs[1].I32Get(prgrm), buffer, inputs[3].I32Get(prgrm))
+	outputs[0].I32Set(prgrm, length)
+	outputs[1].I32Set(prgrm, peer)
 }
 
 func OpNetUDPWriteTo(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	buffer := netBufferLength(netBufferView(prgrm, &inputs[2]), inputs[3].Get_i32(prgrm))
-	outputs[0].Set_i32(prgrm, netbatch.NetUDPWriteTo(inputs[0].Get_i32(prgrm), inputs[1].Get_i32(prgrm), buffer))
+	buffer := netBufferLength(netBufferView(prgrm, &inputs[2]), inputs[3].I32Get(prgrm))
+	outputs[0].I32Set(prgrm, netbatch.NetUDPWriteTo(inputs[0].I32Get(prgrm), inputs[1].I32Get(prgrm), buffer))
 }
 
 // VIOLATION STRHOT-333: B, hands an address to Go, #508.
 func OpNetUDPPeerResolve(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].Set_i32(prgrm, netbatch.NetUDPPeerResolve(netAddress(inputs[0].Get_str(prgrm), inputs[1].Get_i32(prgrm))))
+	outputs[0].I32Set(prgrm, netbatch.NetUDPPeerResolve(netAddress(inputs[0].StrGet(prgrm), inputs[1].I32Get(prgrm))))
 }
 
 // netAddress joins host and port as Go's net package takes them.

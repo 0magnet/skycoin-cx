@@ -5,9 +5,9 @@ import (
 )
 
 const (
-	SEL_RESERVED = iota
-	SEL_ELSEIF
-	SEL_ELSEIFELSE
+	SelectionReserved = iota
+	SelectionElseIf
+	SelectionElseIfElse
 )
 
 // used for selection_statement to layout its outputs
@@ -39,9 +39,9 @@ type SelectStatement struct {
 func SelectionStatementCreate(prgrm *ast.CXProgram, conditionExprs []ast.CXExpression, thenExprs []ast.CXExpression, elseifExprs []SelectStatement, elseExprs []ast.CXExpression, statementType int) []ast.CXExpression {
 	var lastElse []ast.CXExpression
 	switch statementType {
-	case SEL_ELSEIFELSE:
+	case SelectionElseIfElse:
 		lastElse = elseExprs
-	case SEL_ELSEIF:
+	case SelectionElseIf:
 		lastElse = nil
 	}
 

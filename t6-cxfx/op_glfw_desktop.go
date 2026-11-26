@@ -13,13 +13,13 @@ import (
 // glfw.CreateWindow, see #432.
 
 func OpGlfwFullscreen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	window := cxfxWindowGet(inputs[0].Get_i32(prgrm))
+	window := cxfxWindowGet(inputs[0].I32Get(prgrm))
 	monitor := glfw.GetPrimaryMonitor()
 	mode := monitor.GetVideoMode()
-	if inputs[1].Get_bool(prgrm) {
+	if inputs[1].BoolGet(prgrm) {
 		window.SetMonitor(monitor, 0, 0, mode.Width, mode.Height, mode.RefreshRate)
 	} else {
-		window.SetMonitor(nil, int(inputs[2].Get_i32(prgrm)), int(inputs[3].Get_i32(prgrm)), int(inputs[4].Get_i32(prgrm)), int(inputs[5].Get_i32(prgrm)), mode.RefreshRate)
+		window.SetMonitor(nil, int(inputs[2].I32Get(prgrm)), int(inputs[3].I32Get(prgrm)), int(inputs[4].I32Get(prgrm)), int(inputs[5].I32Get(prgrm)), mode.RefreshRate)
 	}
 	window.MakeContextCurrent()
 }
@@ -30,49 +30,49 @@ func OpGlfwInit(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 }
 
 func OpGlfwGetCursorPos(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	x, y := cxfxWindowGet(inputs[0].Get_i32(prgrm)).GetCursorPos()
-	outputs[0].Set_f64(prgrm, x)
-	outputs[1].Set_f64(prgrm, y)
+	x, y := cxfxWindowGet(inputs[0].I32Get(prgrm)).GetCursorPos()
+	outputs[0].F64Set(prgrm, x)
+	outputs[1].F64Set(prgrm, y)
 }
 
 // VIOLATION STRHOT-170: B, hands the window title to GLFW, #432.
 func OpGlfwCreateWindow(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	window, err := glfw.CreateWindow(int(inputs[0].Get_i32(prgrm)), int(inputs[1].Get_i32(prgrm)),
+	window, err := glfw.CreateWindow(int(inputs[0].I32Get(prgrm)), int(inputs[1].I32Get(prgrm)),
 		stringpool.StringView(ast.ProgramStringBytesRead(prgrm, &inputs[2])), nil, nil)
 	if err != nil {
 		panic(err)
 	}
-	outputs[0].Set_i32(prgrm, cxfxWindowAdd(window))
+	outputs[0].I32Set(prgrm, cxfxWindowAdd(window))
 }
 
 func OpGlfwGetWindowContentScale(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	xscale, yscale := cxfxWindowGet(inputs[0].Get_i32(prgrm)).GetContentScale()
-	outputs[0].Set_f32(prgrm, xscale)
-	outputs[1].Set_f32(prgrm, yscale)
+	xscale, yscale := cxfxWindowGet(inputs[0].I32Get(prgrm)).GetContentScale()
+	outputs[0].F32Set(prgrm, xscale)
+	outputs[1].F32Set(prgrm, yscale)
 }
 
 func OpGlfwGetMonitorContentScale(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	xscale, yscale := glfw.GetPrimaryMonitor().GetContentScale()
-	outputs[0].Set_f32(prgrm, xscale)
-	outputs[1].Set_f32(prgrm, yscale)
+	outputs[0].F32Set(prgrm, xscale)
+	outputs[1].F32Set(prgrm, yscale)
 }
 
 func OpGlfwGetFramebufferSize(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	width, height := cxfxWindowGet(inputs[0].Get_i32(prgrm)).GetFramebufferSize()
-	outputs[0].Set_i32(prgrm, int32(width))
-	outputs[1].Set_i32(prgrm, int32(height))
+	width, height := cxfxWindowGet(inputs[0].I32Get(prgrm)).GetFramebufferSize()
+	outputs[0].I32Set(prgrm, int32(width))
+	outputs[1].I32Set(prgrm, int32(height))
 }
 
 func OpGlfwGetWindowPos(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	x, y := cxfxWindowGet(inputs[0].Get_i32(prgrm)).GetPos()
-	outputs[0].Set_i32(prgrm, int32(x))
-	outputs[1].Set_i32(prgrm, int32(y))
+	x, y := cxfxWindowGet(inputs[0].I32Get(prgrm)).GetPos()
+	outputs[0].I32Set(prgrm, int32(x))
+	outputs[1].I32Set(prgrm, int32(y))
 }
 
 func OpGlfwGetWindowSize(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	width, height := cxfxWindowGet(inputs[0].Get_i32(prgrm)).GetSize()
-	outputs[0].Set_i32(prgrm, int32(width))
-	outputs[1].Set_i32(prgrm, int32(height))
+	width, height := cxfxWindowGet(inputs[0].I32Get(prgrm)).GetSize()
+	outputs[0].I32Set(prgrm, int32(width))
+	outputs[1].I32Set(prgrm, int32(height))
 }
 
 func OpGlfwPollEvents(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -90,7 +90,7 @@ func glfwSetKeyCallback(window *glfw.Window) {
 
 func glfwSetCursorPosCallback(window *glfw.Window, eventType EventType) {
 	window.SetCursorPosCallback(func(w *glfw.Window, xpos float64, ypos float64) {
-		MouseEventPush(eventType, ACTION_MOVE, 0, -1, 0, xpos, ypos)
+		MouseEventPush(eventType, ActionMove, 0, -1, 0, xpos, ypos)
 	})
 }
 
@@ -102,60 +102,60 @@ func glfwSetMouseButtonCallback(window *glfw.Window, eventType EventType) {
 }
 
 func OpGlfwSetKeyCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) { // TODO : to deprecate
-	glfwSetKeyCallback(cxfxWindowGet(inputs[0].Get_i32(prgrm)))
-	cxfxAppCallbackSet(prgrm, APP_KEYBOARD, inputs)
+	glfwSetKeyCallback(cxfxWindowGet(inputs[0].I32Get(prgrm)))
+	cxfxAppCallbackSet(prgrm, AppKeyboard, inputs)
 }
 
 func OpGlfwSetCursorPosCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) { // TODO : to deprecate
-	glfwSetCursorPosCallback(cxfxWindowGet(inputs[0].Get_i32(prgrm)), APP_CURSOR_POS)
-	cxfxAppCallbackSet(prgrm, APP_CURSOR_POS, inputs)
+	glfwSetCursorPosCallback(cxfxWindowGet(inputs[0].I32Get(prgrm)), AppCursorPos)
+	cxfxAppCallbackSet(prgrm, AppCursorPos, inputs)
 }
 
 func OpGlfwSetMouseButtonCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) { // TODO : to deprecate
-	glfwSetMouseButtonCallback(cxfxWindowGet(inputs[0].Get_i32(prgrm)), APP_MOUSE_BUTTON)
-	cxfxAppCallbackSet(prgrm, APP_MOUSE_BUTTON, inputs)
+	glfwSetMouseButtonCallback(cxfxWindowGet(inputs[0].I32Get(prgrm)), AppMouseButton)
+	cxfxAppCallbackSet(prgrm, AppMouseButton, inputs)
 }
 
 func OpGlfwSetKeyboardCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	glfwSetKeyCallback(cxfxWindowGet(inputs[0].Get_i32(prgrm)))
-	cxfxAppCallbackSet(prgrm, APP_KEYBOARD, inputs)
+	glfwSetKeyCallback(cxfxWindowGet(inputs[0].I32Get(prgrm)))
+	cxfxAppCallbackSet(prgrm, AppKeyboard, inputs)
 }
 
 func OpGlfwSetMouseCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	window := cxfxWindowGet(inputs[0].Get_i32(prgrm))
-	glfwSetCursorPosCallback(window, APP_MOUSE)
-	glfwSetMouseButtonCallback(window, APP_MOUSE)
-	cxfxAppCallbackSet(prgrm, APP_MOUSE, inputs)
+	window := cxfxWindowGet(inputs[0].I32Get(prgrm))
+	glfwSetCursorPosCallback(window, AppMouse)
+	glfwSetMouseButtonCallback(window, AppMouse)
+	cxfxAppCallbackSet(prgrm, AppMouse, inputs)
 }
 
 func OpGlfwSetFramebufferSizeCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	cxfxWindowGet(inputs[0].Get_i32(prgrm)).SetFramebufferSizeCallback(func(w *glfw.Window, width int, height int) {
+	cxfxWindowGet(inputs[0].I32Get(prgrm)).SetFramebufferSizeCallback(func(w *glfw.Window, width int, height int) {
 		FramebufferSizeEventPush(float64(width), float64(height)) // TODO : to deprecate, use float64
 	})
-	cxfxAppCallbackSet(prgrm, APP_FRAMEBUFFER_SIZE, inputs)
+	cxfxAppCallbackSet(prgrm, AppFramebufferSize, inputs)
 }
 
 func OpGlfwSetWindowSizeCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	cxfxWindowGet(inputs[0].Get_i32(prgrm)).SetSizeCallback(func(w *glfw.Window, width int, height int) {
+	cxfxWindowGet(inputs[0].I32Get(prgrm)).SetSizeCallback(func(w *glfw.Window, width int, height int) {
 		WindowSizeEventPush(float64(width), float64(height)) // TODO : to deprecate, use float64
 	})
-	cxfxAppCallbackSet(prgrm, APP_WINDOW_SIZE, inputs)
+	cxfxAppCallbackSet(prgrm, AppWindowSize, inputs)
 }
 
 func OpGlfwSetWindowPosCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	cxfxWindowGet(inputs[0].Get_i32(prgrm)).SetPosCallback(func(w *glfw.Window, x int, y int) {
+	cxfxWindowGet(inputs[0].I32Get(prgrm)).SetPosCallback(func(w *glfw.Window, x int, y int) {
 		WindowPositionEventPush(float64(x), float64(y)) // TODO to deprecate, use float64
 	})
-	cxfxAppCallbackSet(prgrm, APP_WINDOW_POSITION, inputs)
+	cxfxAppCallbackSet(prgrm, AppWindowPosition, inputs)
 }
 
 func OpGlfwSetStartCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	cxfxWindowGet(inputs[0].Get_i32(prgrm))
-	cxfxAppCallbackSet(prgrm, APP_START, inputs)
-	EventPush(APP_START)
+	cxfxWindowGet(inputs[0].I32Get(prgrm))
+	cxfxAppCallbackSet(prgrm, AppStart, inputs)
+	EventPush(AppStart)
 }
 
 func OpGlfwSetStopCallback(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	cxfxWindowGet(inputs[0].Get_i32(prgrm))
-	cxfxAppCallbackSet(prgrm, APP_STOP, inputs)
+	cxfxWindowGet(inputs[0].I32Get(prgrm))
+	cxfxAppCallbackSet(prgrm, AppStop, inputs)
 }

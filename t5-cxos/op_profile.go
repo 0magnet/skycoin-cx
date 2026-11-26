@@ -23,7 +23,7 @@ func OpStartProfile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 		fmt.Fprintln(os.Stderr, fileError.FileErrorMessage)
 		return
 	}
-	profRate := int(inputs[1].Get_i32(prgrm))
+	profRate := int(inputs[1].I32Get(prgrm))
 	if profRate == 0 {
 		return
 	}

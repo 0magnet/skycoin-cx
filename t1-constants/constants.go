@@ -1,156 +1,156 @@
 package constants
 
 import (
-	"github.com/skycoin/skycoin-cx/t0-types" // thin: only POINTER_SIZE, Pointer; core types, keep
+	"github.com/skycoin/skycoin-cx/t0-types" // thin: only PointerSize, Pointer; core types, keep
 )
 
 // var COREPATH = ""
 
-const STACK_OVERFLOW_ERROR = "stack overflow"
-const MAIN_FUNC = "main"
-const SYS_INIT_FUNC = "*init"
-const MAIN_PKG = "main"
-const STDLIB_PKG = "stdlib"
-const OS_PKG = "os"
-const OS_ARGS = "Args"
+const StackOverflowError = "stack overflow"
+const MainFunction = "main"
+const SysInitFunction = "*init"
+const MainPackage = "main"
+const StdlibPackage = "stdlib"
+const OsPackage = "os"
+const OsArgs = "Args"
 
 // LanguageVersionCurrent is the language version this CX implements, a
 // yymmddnnnn integer stored in serialized programs as CXProgram.Version.
 // See the Language versions section of LanguageGuide.md.
 const LanguageVersionCurrent int64 = 2611250005
 
-const NON_ASSIGN_PREFIX = "nonAssign"
-const LOCAL_PREFIX = "*tmp"
+const NonAssignPrefix = "nonAssign"
+const LocalPrefix = "*tmp"
 
-// SLICE_LITERAL_PREFIX names the slice a slice literal appends its elements
-// to. It starts with LOCAL_PREFIX, so the slice is a temp.
-const SLICE_LITERAL_PREFIX = LOCAL_PREFIX + "slc"
-const LABEL_PREFIX = "*lbl"
+// SliceLiteralPrefix names the slice a slice literal appends its elements
+// to. It starts with LocalPrefix, so the slice is a temp.
+const SliceLiteralPrefix = LocalPrefix + "slc"
+const LabelPrefix = "*lbl"
 
-// RESULT_NAME names the result of func f() T, which has no name in the source.
-const RESULT_NAME = "*result"
+// ResultName names the result of func f() T, which has no name in the source.
+const ResultName = "*result"
 
-// ELEMENT_PREFIX names the variable that holds a struct literal element of a
+// ElementPrefix names the variable that holds a struct literal element of a
 // slice literal. It is not a temp, so its field assignments are typed normally.
-const ELEMENT_PREFIX = "*elt"
+const ElementPrefix = "*elt"
 
-// ARRAY_ELEMENT_PREFIX names the element variable of an array literal. It starts
-// with ELEMENT_PREFIX, so the element is typed as a slice literal element.
-const ARRAY_ELEMENT_PREFIX = ELEMENT_PREFIX + "arr"
+// ArrayElementPrefix names the element variable of an array literal. It starts
+// with ElementPrefix, so the element is typed as a slice literal element.
+const ArrayElementPrefix = ElementPrefix + "arr"
 
-// METHOD_RESULT_PREFIX names the variable that holds the result of a method
+// MethodResultPrefix names the variable that holds the result of a method
 // call used as a value. It is not a temp, so a read of it is looked up.
-const METHOD_RESULT_PREFIX = "*mrs"
+const MethodResultPrefix = "*mrs"
 
-// MULTIPLE_VALUE_PREFIX names the variable that holds one value of a, b = x, y
+// MultipleValuePrefix names the variable that holds one value of a, b = x, y
 // until every value is computed.
-const MULTIPLE_VALUE_PREFIX = "*mva"
+const MultipleValuePrefix = "*mva"
 
 // Used in `ProgramPrint` to represent literals (`CXArgument`s with no name).
-const LITERAL_PLACEHOLDER = "*lit"
-const ID_FN = "identity"
-const INIT_FN = "initDef"
+const LiteralPlaceholder = "*lit"
+const IDFunction = "identity"
+const InitFunction = "initDef"
 
-const CALLSTACK_SIZE types.Pointer = 1000
+const CallStackSize types.Pointer = 1000
 
-var STACK_SIZE types.Pointer = 1048576 // 1 Mb
+var StackSize types.Pointer = 1048576 // 1 Mb
 // VIOLATION: state outside State. Owner: t1-constants; moves to ConfigMng in phase 2.
-var INIT_HEAP_SIZE types.Pointer = 2097152 // 2 Mb
+var HeapSizeInit types.Pointer = 2097152 // 2 Mb
 // VIOLATION: state outside State. Owner: t1-constants; moves to ConfigMng in phase 2.
-var MAX_HEAP_SIZE types.Pointer = 67108864 // 64 Mb
+var MaxHeapSize types.Pointer = 67108864 // 64 Mb
 // VIOLATION: state outside State. Owner: t1-constants; moves to ConfigMng in phase 2.
-var MIN_HEAP_FREE_RATIO float32 = 0.4
+var MinHeapFreeRatio float32 = 0.4
 
 // VIOLATION: state outside State. Owner: t1-constants; moves to ConfigMng in phase 2.
-var MAX_HEAP_FREE_RATIO float32 = 0.7
+var MaxHeapFreeRatio float32 = 0.7
 
-const NULL_HEAP_ADDRESS_OFFSET = types.POINTER_SIZE
+const NullHeapAddressOffset = types.PointerSize
 
-// ESCAPE_OFFSET_FLAG marks the offset of a local that lives in a heap object.
+// EscapeOffsetFlag marks the offset of a local that lives in a heap object.
 // Memory stays below it, see ast.OffsetEscaped.
-const ESCAPE_OFFSET_FLAG types.Pointer = 1 << 31
-const NULL_HEAP_ADDRESS = types.Pointer(0)
-const SLICE_HEADER_SIZE = 2 * types.POINTER_SIZE
+const EscapeOffsetFlag types.Pointer = 1 << 31
+const NullHeapAddress = types.Pointer(0)
+const SliceHeaderSize = 2 * types.PointerSize
 
 //VERY WEIRD
 //gives error, "cx" not found, even if it exists when changed
 
 /*
 grep -rn "PARAM_DEFAULT" .
-./cx/config.go:87:	PARAM_DEFAULT = iota
-./cx/config.go:96:	PARAM_DEFAULT
-./cx/opcodes.go:843:	case PARAM_DEFAULT:
+./cx/config.go:87:	ParamDefault = iota
+./cx/config.go:96:	ParamDefault
+./cx/opcodes.go:843:	case ParamDefault:
 
 grep -rn "PARAM_SLICE" .
-./cx/config.go:88:	PARAM_SLICE
-./cx/config.go:97:	PARAM_SLICE
-./cx/opcodes.go:845:	case PARAM_SLICE:
+./cx/config.go:88:	ParamSlice
+./cx/config.go:97:	ParamSlice
+./cx/opcodes.go:845:	case ParamSlice:
 
 grep -rn "PARAM_STRUCT" .
-./cx/config.go:89:	PARAM_STRUCT
-./cx/config.go:98:	PARAM_STRUCT
-./cx/opcodes.go:847:	case PARAM_STRUCT:
+./cx/config.go:89:	ParamStruct
+./cx/config.go:98:	ParamStruct
+./cx/opcodes.go:847:	case ParamStruct:
 
 */
 
 // works
 // BUG
 const (
-	PARAM_DEFAULT = iota
-	PARAM_SLICE
-	PARAM_STRUCT
+	ParamDefault = iota
+	ParamSlice
+	ParamStruct
 )
 
 /*
 //doesnt work
 const (
 	PARAM_UNUSED = iota
-	PARAM_DEFAULT
-	PARAM_SLICE
-	PARAM_STRUCT
+	ParamDefault
+	ParamSlice
+	ParamStruct
 )
 */
 
 var ErrorStrings map[int]string = map[int]string{
-	types.CX_SUCCESS:                          "CX_SUCCESS",
-	types.CX_COMPILATION_ERROR:                "CX_COMPILATION_ERROR",
-	types.CX_PANIC:                            "CX_PANIC",
-	types.CX_INTERNAL_ERROR:                   "CX_INTERNAL_ERROR",
-	types.CX_ASSERT:                           "CX_ASSERT",
-	types.CX_RUNTIME_ERROR:                    "CX_RUNTIME_ERROR",
-	types.CX_RUNTIME_STACK_OVERFLOW_ERROR:     "CX_RUNTIME_STACK_OVERFLOW_ERROR",
-	types.CX_RUNTIME_HEAP_EXHAUSTED_ERROR:     "CX_RUNTIME_HEAP_EXHAUSTED_ERROR",
-	types.CX_RUNTIME_INVALID_ARGUMENT:         "CX_RUNTIME_INVALID_ARGUMENT",
-	types.CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE: "CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE",
-	types.CX_RUNTIME_NOT_IMPLEMENTED:          "CX_RUNTIME_NOT_IMPLEMENTED",
-	types.CX_RUNTIME_INVALID_CAST:             "CX_RUNTIME_INVALID_CAST",
-	types.CX_RUNTIME_LIBRARY_DISABLED:         "CX_RUNTIME_LIBRARY_DISABLED",
+	types.CXSuccess:                     "CX_SUCCESS",
+	types.CXCompilationError:            "CX_COMPILATION_ERROR",
+	types.CXPanic:                       "CX_PANIC",
+	types.CXInternalError:               "CX_INTERNAL_ERROR",
+	types.CXAssert:                      "CX_ASSERT",
+	types.CXRuntimeError:                "CX_RUNTIME_ERROR",
+	types.CXRuntimeStackOverflowError:   "CX_RUNTIME_STACK_OVERFLOW_ERROR",
+	types.CXRuntimeHeapExhaustedError:   "CX_RUNTIME_HEAP_EXHAUSTED_ERROR",
+	types.CXRuntimeInvalidArgument:      "CX_RUNTIME_INVALID_ARGUMENT",
+	types.CXRuntimeSliceIndexOutOfRange: "CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE",
+	types.CXRuntimeNotImplemented:       "CX_RUNTIME_NOT_IMPLEMENTED",
+	types.CXRuntimeInvalidCast:          "CX_RUNTIME_INVALID_CAST",
+	types.CXRuntimeLibraryDisabled:      "CX_RUNTIME_LIBRARY_DISABLED",
 }
 
 const (
-	DECL_UNUSED   = iota //if this value appears, program should crash; is error
-	DECL_POINTER         // 1
-	DECL_DEREF           // 2
-	DECL_ARRAY           // 3
-	DECL_SLICE           // 4
-	DECL_STRUCT          // 5
-	DECL_INDEXING        // 6
-	DECL_BASIC           // 7
-	DECL_FUNC            // 8
+	DeclarationUnused   = iota //if this value appears, program should crash; is error
+	DeclarationPointer         // 1
+	DeclarationDeref           // 2
+	DeclarationArray           // 3
+	DeclarationSlice           // 4
+	DeclarationStruct          // 5
+	DeclarationIndexing        // 6
+	DeclarationBasic           // 7
+	DeclarationFunc            // 8
 )
 
 // ERROR: see below,
 const (
 	//PASSBY_UNUSED = iota
-	PASSBY_VALUE = iota
-	PASSBY_REFERENCE
+	PassByValue = iota
+	PassByReference
 )
 
 const (
-	DEREF_UNUSED  = iota //reserve zero value, if this value appears, program should crash; should be assert
-	DEREF_ARRAY          // 1
-	DEREF_FIELD          // 2
-	DEREF_POINTER        // 3
-	DEREF_DEREF          // 4
-	DEREF_SLICE          // 5
+	DerefUnused  = iota //reserve zero value, if this value appears, program should crash; should be assert
+	DerefArray          // 1
+	DerefField          // 2
+	DerefPointer        // 3
+	DerefDeref          // 4
+	DerefSlice          // 5
 )

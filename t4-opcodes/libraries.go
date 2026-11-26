@@ -9,7 +9,7 @@ import (
 // LibraryLink links system library into this binary. The old loop runs its
 // functions through dispatch, the switch t2-cx-core-opcodegen writes from
 // constants.LibraryFunctionDefinitionTable (decision D96). A call of one of
-// its functions compiles to constants.OP_LIBRARY_CALL. Only the process
+// its functions compiles to constants.OpLibraryCall. Only the process
 // library is linked this way, the others are opcodes (decision D119).
 func LibraryLink(library int, dispatch ast.LibraryDispatchFunction) {
 	ast.LibraryDispatches[library] = dispatch

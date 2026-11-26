@@ -22,7 +22,7 @@ func globalInitializerResolve(prgrm *ast.CXProgram, initializer []ast.CXExpressi
 		prgrm.CXAtomicOps[initializerExpressionIdx].Outputs = nil
 
 		prgrm.CXAtomicOps[initializerExpressionIdx].OutputAdd(prgrm, glblIdx)
-		opIdx := prgrm.NativeFunctionInArrayAdd(ast.NativeFunctionOf(prgrm, constants.OP_IDENTITY))
+		opIdx := prgrm.NativeFunctionInArrayAdd(ast.NativeFunctionOf(prgrm, constants.OpIdentity))
 		prgrm.CXAtomicOps[initializerExpressionIdx].Operator = opIdx
 
 		//add intialization statements, to array
@@ -33,7 +33,7 @@ func globalInitializerResolve(prgrm *ast.CXProgram, initializer []ast.CXExpressi
 			// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
 			// Now a heap literal, site S1211.
 			outputStruct := &ast.CXStruct{}
-			outputStruct.AddField_TypeSignature(prgrm, glblIdx)
+			outputStruct.FieldTypeSignatureAdd(prgrm, glblIdx)
 			// OBJMODEL: state.CXAtomicOperatorMng.CXAtomicOperatorAlloc(), phase 4 #341.
 			// Now a heap literal, site S1212 S1213.
 			index := prgrm.CXAtomicOpAdd(&ast.CXAtomicOperator{Outputs: outputStruct})
@@ -43,7 +43,7 @@ func globalInitializerResolve(prgrm *ast.CXProgram, initializer []ast.CXExpressi
 				[]ast.CXExpression{
 					{
 						Index: index,
-						Type:  ast.CX_ATOMIC_OPERATOR,
+						Type:  ast.CXOperationTypeAtomicOperator,
 					},
 				},
 				initializer,
@@ -87,9 +87,9 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 	totalSize := declaration_specifiers.Size
 	for _, decl := range declaration_specifiers.DeclarationSpecifiers {
 		switch decl {
-		case constants.DECL_POINTER, constants.DECL_SLICE:
-			totalSize = types.POINTER_SIZE
-		case constants.DECL_ARRAY:
+		case constants.DeclarationPointer, constants.DeclarationSlice:
+			totalSize = types.PointerSize
+		case constants.DeclarationArray:
 			totalSize = declaration_specifiers.ArraySize()
 		}
 	}
@@ -115,7 +115,7 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			var glblArg *ast.CXArgument
 			if declaration_specifiers.SliceTyped() { // TODO:PTR move branch in WritePrimary
 				glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type,
-					make([]byte, types.POINTER_SIZE), true)
+					make([]byte, types.PointerSize), true)
 			} else {
 				glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type,
 					make([]byte, totalSize), true)
@@ -126,7 +126,7 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		}
 
 		if ast.CXArgumentTypeAtomic(declaration_specifiers) {
-			glbl.Type = ast.TYPE_ATOMIC
+			glbl.Type = ast.TypeAtomic
 			glbl.Meta = int(declaration_specifiers.Type)
 			if !glbl.Offset.Valid() {
 				glbl.Offset = glblArgOffset
@@ -134,7 +134,7 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 			glbl.PassBy = declaration_specifiers.PassBy
 		} else if ast.CXArgumentTypePointerAtomic(declaration_specifiers) {
-			glbl.Type = ast.TYPE_POINTER_ATOMIC
+			glbl.Type = ast.TypePointerAtomic
 			glbl.Meta = int(declaration_specifiers.Type)
 			if !glbl.Offset.Valid() {
 				glbl.Offset = glblArgOffset
@@ -142,7 +142,7 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 			glbl.PassBy = declaration_specifiers.PassBy
 		} else if ast.CXArgumentTypeArrayAtomic(declaration_specifiers) {
-			glbl.Type = ast.TYPE_ARRAY_ATOMIC
+			glbl.Type = ast.TypeArrayAtomic
 
 			arrayGid := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayAlloc()
 			typeSignatureForArray := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(arrayGid)
@@ -158,7 +158,7 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 				glbl.Offset = glblArgOffset
 			}
 		} else if ast.CXArgumentTypePointerArrayAtomic(declaration_specifiers) {
-			glbl.Type = ast.TYPE_POINTER_ARRAY_ATOMIC
+			glbl.Type = ast.TypePointerArrayAtomic
 
 			arrayGid := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayAlloc()
 			typeSignatureForArray := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(arrayGid)
@@ -174,7 +174,7 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		} else if ast.CXArgumentTypeSliceAtomic(declaration_specifiers) {
 			// If slice atomic type, i.e. []i32, []f64, etc.
 
-			glbl.Type = ast.TYPE_SLICE_ATOMIC
+			glbl.Type = ast.TypeSliceAtomic
 
 			arrayGid := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayAlloc()
 			typeSignatureForArray := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(arrayGid)
@@ -190,7 +190,7 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		} else if ast.CXArgumentTypePointerSliceAtomic(declaration_specifiers) {
 			// If pointer slice atomic type, i.e. *[]i32, *[]f64, etc.
 
-			glbl.Type = ast.TYPE_POINTER_SLICE_ATOMIC
+			glbl.Type = ast.TypePointerSliceAtomic
 
 			arrayGid := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayAlloc()
 			typeSignatureForArray := prgrm.CxIrState.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(arrayGid)
@@ -207,7 +207,7 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 			// its a cxargument_deprecate type
 			var glblIdx int
 			var glblCXArg *ast.CXArgument
-			if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if glbl.Type == ast.TypeCXArgumentDeprecate {
 				glblIdx = glbl.Meta
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S1225.
@@ -247,11 +247,11 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 
 		}
 
-		declaratorTaken = glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE && glbl.Meta == declarator.Index
+		declaratorTaken = glbl.Type == ast.TypeCXArgumentDeprecate && glbl.Meta == declarator.Index
 
 		// The global took a copy of the declaration, and of its debug record when
 		// it names an argument.
-		if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if glbl.Type == ast.TypeCXArgumentDeprecate {
 			prgrm.CXArgUnlessNamedRelease(declaration_specifiers, glbl.Index)
 		} else {
 			prgrm.CXArgBuilderRelease(declaration_specifiers)
@@ -268,7 +268,7 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		// then it hasn't been defined
 		var glblArg *ast.CXArgument
 		if declaration_specifiers.SliceTyped() { // TODO:PTR move branch in WritePrimary
-			glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type, make([]byte, types.POINTER_SIZE), true)
+			glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type, make([]byte, types.PointerSize), true)
 		} else {
 			glblArg = PrimaryWrite(prgrm, declaration_specifiers.Type, make([]byte, totalSize), true)
 		}
@@ -284,7 +284,7 @@ func GlobalInPackageDeclare(prgrm *ast.CXProgram, pkg *ast.CXPackage,
 		declaration_specifiers.Package = ast.CXPackageIndex(pkg.Index)
 
 		typeSignatureIdx := ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, declaration_specifiers)
-		pkg.AddGlobal_TypeSignature(prgrm, typeSignatureIdx)
+		pkg.GlobalTypeSignatureAdd(prgrm, typeSignatureIdx)
 
 		// Checking if something is supposed to be initialized
 		// and if `initializer` actually contains something.
@@ -319,7 +319,7 @@ func localInitializationResolve(prgrm *ast.CXProgram, pkg *ast.CXPackage, initia
 		// with the declared variable
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S1231.
-		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OP_IDENTITY))
+		expr := ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpIdentity))
 		cxExprAtomicOpIdx := expr.Index
 		prgrm.CXAtomicOps[cxExprAtomicOpIdx].Package = ast.CXPackageIndex(pkg.Index)
 
@@ -327,7 +327,7 @@ func localInitializationResolve(prgrm *ast.CXProgram, pkg *ast.CXPackage, initia
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S1232.
 		initializerExpressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(initializerExpression.OutputsGet(prgrm)[0])
-		if initializerExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if initializerExpressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1233.
 			initializerExpressionOutputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(initializerExpressionOutputTypeSig.Meta))
@@ -344,9 +344,9 @@ func localInitializationResolve(prgrm *ast.CXProgram, pkg *ast.CXPackage, initia
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1234.
 			initOutTypeSigIdx = ast.CXTypeSignatureOfCXArgAlloc(prgrm, prgrm.CXArgFromArrayGet(initOutIdx))
-		} else if initializerExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || initializerExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+		} else if initializerExpressionOutputTypeSig.Type == ast.TypeAtomic || initializerExpressionOutputTypeSig.Type == ast.TypePointerAtomic {
 			initOutTypeSigIdx = initializerExpression.OutputsGet(prgrm)[0]
-		} else if initializerExpressionOutputTypeSig.Type == ast.TYPE_STRUCT || initializerExpressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+		} else if initializerExpressionOutputTypeSig.Type == ast.TypeStruct || initializerExpressionOutputTypeSig.Type == ast.TypeSliceAtomic {
 			// A slice result read whole or by index, as in var c ui8 = f()[1].
 			initOutTypeSigIdx = initializerExpression.OutputsGet(prgrm)[0]
 		} else {
@@ -682,7 +682,7 @@ func globalDeclared(prgrm *ast.CXProgram, name *ast.CXArgument) *ast.CXTypeSigna
 	if err != nil {
 		return nil
 	}
-	if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if glbl.Type == ast.TypeCXArgumentDeprecate {
 		if !prgrm.CXArgGet(ast.CXArgumentIndex(glbl.Meta)).Offset.Valid() {
 			return nil
 		}

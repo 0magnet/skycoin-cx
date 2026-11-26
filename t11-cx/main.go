@@ -13,7 +13,7 @@ import (
 	constants "github.com/skycoin/skycoin-cx/t1-constants"
 	profiling "github.com/skycoin/skycoin-cx/t1-profiling"
 	repl "github.com/skycoin/skycoin-cx/t10-cxrepl"    // thin: only Repl, TargetFunction; only user of cxrepl, could merge it here, max tier 11 to 10
-	globals "github.com/skycoin/skycoin-cx/t2-globals" // thin: only DBG_GOLANG_STACK_TRACE; no depth gain
+	globals "github.com/skycoin/skycoin-cx/t2-globals" // thin: only DebugGolangStackTrace; no depth gain
 	actions "github.com/skycoin/skycoin-cx/t4-actions"
 	cxnet "github.com/skycoin/skycoin-cx/t4-cxnet"          // thin: only ConstantsInit; no depth gain
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core" // thin: only ExecutorRun, ExecutorMemoryLimitsClamp and the executor names; no depth gain
@@ -62,7 +62,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 	root, fileError := sandbox.RootOpen(options.sandbox)
 	if fileError != nil {
 		fmt.Fprintf(os.Stderr, "cannot open the sandbox: %s\n", fileError.FileErrorMessage)
-		os.Exit(types.CX_COMPILATION_ERROR)
+		os.Exit(types.CXCompilationError)
 	}
 	defer root.Close()
 	actions.AST.ProgramSandboxRoot = root
@@ -74,7 +74,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 
 	if options.executor != core.ExecutorAuto && options.executor != core.ExecutorOld && options.executor != core.ExecutorVm {
 		fmt.Fprintf(os.Stderr, "unknown --executor %q, want auto, old or vm\n", options.executor)
-		os.Exit(types.CX_COMPILATION_ERROR)
+		os.Exit(types.CXCompilationError)
 	}
 
 	if options.replMode || len(sourceCode) == 0 {
@@ -82,7 +82,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 		return
 	}
 
-	if code := core.ExecutorRun(actions.AST, options.executor, cxArgs); code != types.CX_SUCCESS {
+	if code := core.ExecutorRun(actions.AST, options.executor, cxArgs); code != types.CXSuccess {
 		os.Exit(int(code))
 	}
 }
@@ -173,7 +173,7 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 		$cx --debug-file-access
 		$cx -Df
 	*/
-	globals.DBG_GOLANG_STACK_TRACE = options.debugGoStack
+	globals.DebugGolangStackTrace = options.debugGoStack
 	if options.debugFileAccess {
 		filelog.Enable(true)
 	}
@@ -183,7 +183,7 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 		$cx --heap-initial
 	*/
 	if options.initialHeap != "" {
-		constants.INIT_HEAP_SIZE = parseMemoryString(options.initialHeap)
+		constants.HeapSizeInit = parseMemoryString(options.initialHeap)
 	}
 
 	/*
@@ -191,17 +191,17 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 		$cx --maxHeap
 	*/
 	if options.maxHeap != "" {
-		constants.MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
-		if constants.MAX_HEAP_SIZE < constants.INIT_HEAP_SIZE {
-			// Then MAX_HEAP_SIZE overrides INIT_HEAP_SIZE's value.
-			constants.INIT_HEAP_SIZE = constants.MAX_HEAP_SIZE
+		constants.MaxHeapSize = parseMemoryString(options.maxHeap)
+		if constants.MaxHeapSize < constants.HeapSizeInit {
+			// Then MaxHeapSize overrides HeapSizeInit's value.
+			constants.HeapSizeInit = constants.MaxHeapSize
 		}
 	}
 
 	if options.stackSize != "" {
-		constants.STACK_SIZE = parseMemoryString(options.stackSize)
+		constants.StackSize = parseMemoryString(options.stackSize)
 	}
-	// Memory stays below constants.ESCAPE_OFFSET_FLAG.
+	// Memory stays below constants.EscapeOffsetFlag.
 	core.ExecutorMemoryLimitsClamp()
 
 	/*
@@ -209,7 +209,7 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 		$cx --min-heap-free
 	*/
 	if options.minHeapFreeRatio != float64(0) {
-		constants.MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
+		constants.MinHeapFreeRatio = float32(options.minHeapFreeRatio)
 	}
 
 	/*
@@ -217,14 +217,14 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 		$cx --max-heap-free
 	*/
 	if options.maxHeapFreeRatio != float64(0) {
-		constants.MAX_HEAP_FREE_RATIO = float32(options.maxHeapFreeRatio)
+		constants.MaxHeapFreeRatio = float32(options.maxHeapFreeRatio)
 	}
 
 	// options, file pointers, filenames
 	cxArgs, sourceCode, fileNames, err := sourceargs.Parse(commandLine.Args(), true)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(types.CX_COMPILATION_ERROR)
+		os.Exit(types.CXCompilationError)
 	}
 
 	// Propagate some options out to other packages.
@@ -252,13 +252,13 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 	enabled, operations, problem := librariesEnabledParse(options.enable)
 	if problem != "" {
 		fmt.Fprintln(os.Stderr, problem)
-		os.Exit(types.CX_COMPILATION_ERROR)
+		os.Exit(types.CXCompilationError)
 	}
 	actions.AST.ProgramLibrariesEnabled = enabled
 	actions.AST.ProgramOperationsEnabled = operations
 	if problem := netModeSet(options); problem != "" {
 		fmt.Fprintln(os.Stderr, problem)
-		os.Exit(types.CX_COMPILATION_ERROR)
+		os.Exit(types.CXCompilationError)
 	}
 
 	return options, cxArgs, sourceCode, fileNames, true

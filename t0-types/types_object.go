@@ -3,50 +3,50 @@ package types
 //"fmt"
 
 // TODO: rewrite api
-// TODO: cleanup object size mess: object size == object data size + OBJECT_HEADER_SIZE.
+// TODO: cleanup object size mess: object size == object data size + ObjectHeaderSize.
 
-const MARK_SIZE = Pointer(1)
-const FORWARDING_ADDRESS_SIZE = POINTER_SIZE
-const OBJECT_GC_HEADER_SIZE = MARK_SIZE + FORWARDING_ADDRESS_SIZE
+const MarkSize = Pointer(1)
+const ForwardingAddressSize = PointerSize
+const ObjectGCHeaderSize = MarkSize + ForwardingAddressSize
 
-const OBJECT_SIZE = POINTER_SIZE
-const OBJECT_HEADER_SIZE = OBJECT_GC_HEADER_SIZE + OBJECT_SIZE
+const ObjectSize = PointerSize
+const ObjectHeaderSize = ObjectGCHeaderSize + ObjectSize
 
-func Get_obj_header(memory []byte, offset Pointer) []byte {
-	return memory[offset : offset+OBJECT_HEADER_SIZE]
+func ObjectHeaderGet(memory []byte, offset Pointer) []byte {
+	return memory[offset : offset+ObjectHeaderSize]
 }
 
 func ObjectPayloadGet(memory []byte, offset Pointer, size Pointer) []byte {
-	offset += OBJECT_HEADER_SIZE
+	offset += ObjectHeaderSize
 	return memory[offset : offset+size]
 }
 
-func Compute_obj_size(payload []byte) Pointer {
-	return Cast_int_to_ptr(len(payload)) + OBJECT_HEADER_SIZE
+func ObjectSizeCompute(payload []byte) Pointer {
+	return IntToPtrCast(len(payload)) + ObjectHeaderSize
 }
 
-func Read_obj_forwarding_address(memory []byte, offset Pointer) Pointer {
-	return Read_ptr(memory, offset+MARK_SIZE)
+func ObjectForwardingAddressRead(memory []byte, offset Pointer) Pointer {
+	return PtrRead(memory, offset+MarkSize)
 }
 
-func Read_obj_size(memory []byte, offset Pointer) Pointer {
-	return Read_ptr(memory, offset+OBJECT_HEADER_SIZE-OBJECT_SIZE)
+func ObjectSizeRead(memory []byte, offset Pointer) Pointer {
+	return PtrRead(memory, offset+ObjectHeaderSize-ObjectSize)
 }
 
-func Write_obj_size(memory []byte, offset Pointer, size Pointer) {
-	Write_ptr(memory, offset+OBJECT_HEADER_SIZE-OBJECT_SIZE, size)
+func ObjectSizeWrite(memory []byte, offset Pointer, size Pointer) {
+	PtrWrite(memory, offset+ObjectHeaderSize-ObjectSize, size)
 }
 
-func Write_obj_mark(memory []byte, offset Pointer, mark byte) {
-	Write_ui8(memory, offset, mark)
+func ObjectMarkWrite(memory []byte, offset Pointer, mark byte) {
+	UI8Write(memory, offset, mark)
 }
 
-func Write_obj_forwarding_address(memory []byte, offset Pointer, address Pointer) {
-	Write_ptr(memory, offset+MARK_SIZE, address)
+func ObjectForwardingAddressWrite(memory []byte, offset Pointer, address Pointer) {
+	PtrWrite(memory, offset+MarkSize, address)
 }
 
-func Make_obj(payload []byte) []byte {
-	size := Compute_obj_size(payload)
+func ObjectMake(payload []byte) []byte {
+	size := ObjectSizeCompute(payload)
 	obj := make([]byte, size)
 	//fmt.Printf("MAKE_OBJ SIZE %d, LEN_DATA %d, LEN_OBJ %d\n", size, len(data), len(obj))
 	ObjectPayloadWrite(obj, 0, size, payload)
@@ -54,20 +54,20 @@ func Make_obj(payload []byte) []byte {
 }
 
 func ObjectPayloadWrite(memory []byte, offset Pointer, size Pointer, obj []byte) {
-	//size := Cast_int_to_ptr(len(obj))
-	Write_obj_size(memory, offset, size)
-	WriteSlice_byte(memory, offset+OBJECT_HEADER_SIZE, obj)
+	//size := IntToPtrCast(len(obj))
+	ObjectSizeWrite(memory, offset, size)
+	SliceByteWrite(memory, offset+ObjectHeaderSize, obj)
 }
 
 func ObjectPayloadRead(memory []byte, offset Pointer) []byte {
-	size := Read_obj_size(memory, offset)
-	size -= OBJECT_HEADER_SIZE
-	obj := GetSlice_byte(memory, offset+OBJECT_HEADER_SIZE, size)
+	size := ObjectSizeRead(memory, offset)
+	size -= ObjectHeaderSize
+	obj := SliceByteGet(memory, offset+ObjectHeaderSize, size)
 	return obj
 }
 
-func Read_obj(memory []byte, offset Pointer) []byte {
-	heapOffset := Read_ptr(memory, offset)
+func ObjectRead(memory []byte, offset Pointer) []byte {
+	heapOffset := PtrRead(memory, offset)
 	if heapOffset != 0 && heapOffset.Valid() {
 		obj := ObjectPayloadRead(memory, heapOffset)
 		return obj

@@ -70,7 +70,7 @@ func StructDeclare(prgrm *ast.CXProgram, structName string, structFields []*ast.
 // or nil for no struct or one behind a pointer, slice or array (issue-233).
 func declareStructArgValueStruct(arg *ast.CXArgument) *ast.CXStruct {
 	for _, decl := range arg.DeclarationSpecifiers {
-		if decl == constants.DECL_POINTER || decl == constants.DECL_SLICE || decl == constants.DECL_ARRAY {
+		if decl == constants.DeclarationPointer || decl == constants.DeclarationSlice || decl == constants.DeclarationArray {
 			return nil
 		}
 	}
@@ -87,9 +87,9 @@ func declareStructContains(prgrm *ast.CXProgram, strct *ast.CXStruct, target *as
 		field := prgrm.CXTypeSignatureFromArrayGet(fieldIdx)
 		var inner *ast.CXStruct
 		switch field.Type {
-		case ast.TYPE_STRUCT:
+		case ast.TypeStruct:
 			inner = prgrm.CXTypeSignatureStructFromArrayGet(field.Meta).StructType
-		case ast.TYPE_CXARGUMENT_DEPRECATE:
+		case ast.TypeCXArgumentDeprecate:
 			inner = declareStructArgValueStruct(prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(field.Meta)))
 		}
 		if inner != nil && declareStructContains(prgrm, inner, target) {

@@ -16,7 +16,7 @@ import (
 )
 
 // ExitCode is the exit status of a failed assert. It equals
-// CX_INTERNAL_ERROR in t0-types, which this tier 0 package cannot import.
+// CXInternalError in t0-types, which this tier 0 package cannot import.
 const ExitCode = 3
 
 // PreconditionTrue crashes when a function's input breaks its contract.

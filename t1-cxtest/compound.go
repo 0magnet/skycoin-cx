@@ -177,7 +177,7 @@ func runCompoundTypeTests(t *runner.TestRunner, workingDir string) {
 		want := strings.Repeat(typ.want+"\n", len(compoundCases))
 		path := filepath.Base(dir) + "/" + name
 		for _, executor := range []string{"auto", "old"} {
-			t.RunWant("--executor="+executor+" "+path, types.CX_SUCCESS, fmt.Sprintf("values of %s as parameters, results, locals, globals, fields and elements, on %s", typ.name, executor), want)
+			t.RunWant("--executor="+executor+" "+path, types.CXSuccess, fmt.Sprintf("values of %s as parameters, results, locals, globals, fields and elements, on %s", typ.name, executor), want)
 		}
 	}
 }

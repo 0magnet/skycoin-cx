@@ -15,9 +15,9 @@ var inlineImports = map[string]string{
 	"glfw": "github.com/go-gl/glfw/v3.3/glfw",
 }
 
-// inlineReadTypes are the operand types an inline call reads, those with a
-// types.Read_ and types.Write_ function of the same name.
-var inlineReadTypes = map[string]bool{"bool": true, "i32": true, "ui32": true, "f32": true, "f64": true}
+// inlineReadTypes are the operand types an inline call reads, with the type
+// part of the name of their types read and write functions, I32Read.
+var inlineReadTypes = map[string]string{"bool": "Bool", "i32": "I32", "ui32": "UI32", "f32": "F32", "f64": "F64"}
 
 // goFunctionInline reports whether the function part of a GoFunction is a call the
 // switch makes inline rather than the name of a handler.
@@ -42,17 +42,17 @@ func inlineCase(row constants.OpcodeDefinition, call string) (string, error) {
 			j++
 		}
 		var index int
-		if _, err := fmt.Sscan(call[i+1:j], &index); err != nil || index >= len(inputs) || !inlineReadTypes[inputs[index]] {
+		if _, err := fmt.Sscan(call[i+1:j], &index); err != nil || index >= len(inputs) || inlineReadTypes[inputs[index]] == "" {
 			return "", fmt.Errorf("definition %q: inline operand %q is not an atomic input", row.Name, call[i:j])
 		}
-		fmt.Fprintf(&b, "types.Read_%s(prgrm.Memory, inputs[%d].Offset)", inputs[index], index)
+		fmt.Fprintf(&b, "types.%sRead(prgrm.Memory, inputs[%d].Offset)", inlineReadTypes[inputs[index]], index)
 		i = j - 1
 	}
 	switch {
 	case len(outputs) == 0:
 		return b.String(), nil
-	case len(outputs) == 1 && inlineReadTypes[outputs[0]]:
-		return fmt.Sprintf("types.Write_%s(prgrm.Memory, outputs[0].Offset, %s)", outputs[0], b.String()), nil
+	case len(outputs) == 1 && inlineReadTypes[outputs[0]] != "":
+		return fmt.Sprintf("types.%sWrite(prgrm.Memory, outputs[0].Offset, %s)", inlineReadTypes[outputs[0]], b.String()), nil
 	}
 	return "", fmt.Errorf("definition %q: an inline call writes at most one atomic output", row.Name)
 }

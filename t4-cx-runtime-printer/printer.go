@@ -36,7 +36,7 @@ func RuntimeErrorPrint(prgrm *ast.CXProgram) int {
 }
 
 // printerHeapBytes returns the bytes of the CX string at heapOffset, nil
-// for the empty string, as types.Read_obj reads them.
+// for the empty string, as types.ObjectRead reads them.
 func printerHeapBytes(prgrm *ast.CXProgram, heapOffset types.Pointer) []byte {
 	if heapOffset != 0 && heapOffset.Valid() {
 		return types.ObjectPayloadRead(prgrm.Memory, heapOffset)

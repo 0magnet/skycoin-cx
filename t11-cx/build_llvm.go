@@ -40,7 +40,7 @@ var buildLlvmStops = [llvm.StopCount]vm.Stop{
 
 // buildLlvmOptions gives the emitted code the exit codes and messages of vm.
 func buildLlvmOptions() llvm.Options {
-	options := llvm.Options{AssertCode: types.CX_ASSERT}
+	options := llvm.Options{AssertCode: types.CXAssert}
 	for stop, vmStop := range buildLlvmStops {
 		code := vm.StopExitCodes[vmStop]
 		options.StopCodes[stop] = code
@@ -73,12 +73,12 @@ func buildLlvm(options buildOptions) int {
 	if code := core.OperationRefused(prgrm); code != 0 {
 		// The program is refused before it runs, as cx refuses it, so its
 		// code needs no native form.
-		llvmOptions.RefusalLine, llvmOptions.RefusalCode = core.OperationRefusalLine(prgrm, code), types.CX_RUNTIME_LIBRARY_DISABLED
+		llvmOptions.RefusalLine, llvmOptions.RefusalCode = core.OperationRefusalLine(prgrm, code), types.CXRuntimeLibraryDisabled
 		image, outside = ir.Image{ImageEntryInit: ir.ImageFuncNone, ImageEntryMain: ir.ImageFuncNone}, ""
 	}
 	if outside != "" {
 		fmt.Fprintf(os.Stderr, "cx build: cannot run on vm: %s\n", outside)
-		return types.CX_RUNTIME_NOT_IMPLEMENTED
+		return types.CXRuntimeNotImplemented
 	}
 	if tinygoLink && image.ImageOperationsEnabled.OpcodeSetLibraryAny(constants.LibraryNumberNet) {
 		return buildFail("the program uses the net library, which --llvm-linker=tinygo leaves out")
@@ -86,7 +86,7 @@ func buildLlvm(options buildOptions) int {
 	module, stats, err := llvm.Emit(&image, llvmOptions)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "cx build: cannot build for llvm: %v\n", err)
-		return types.CX_RUNTIME_NOT_IMPLEMENTED
+		return types.CXRuntimeNotImplemented
 	}
 	if options.buildOptionsStats {
 		buildLlvmStatsPrint(stats)
@@ -96,7 +96,7 @@ func buildLlvm(options buildOptions) int {
 		if err := os.WriteFile(output, module, 0o644); err != nil {
 			return buildFail(err.Error())
 		}
-		return types.CX_SUCCESS
+		return types.CXSuccess
 	}
 	modulePath := strings.TrimSuffix(output, ".exe") + buildLlvmExtension
 	if err := os.WriteFile(modulePath, module, 0o644); err != nil {
@@ -160,7 +160,7 @@ func buildLlvmNative(modulePath string, output string, debug bool) int {
 	if err := command.Run(); err != nil {
 		return buildFail(fmt.Sprintf("%s: %v", clang, err))
 	}
-	return types.CX_SUCCESS
+	return types.CXSuccess
 }
 
 // buildLlvmStatsPrint lists each scalar opcode of the module by how it was

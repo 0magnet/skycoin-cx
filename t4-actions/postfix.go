@@ -27,7 +27,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 	prevExprCXLine, _ := prgrm.PreviousCXLineGet(prevExprs, len(prevExprs)-1)
 
 	if prevExpressionOperator != nil && len(prgrm.CXAtomicOps[prevExpressionIdx].OutputsGet(prgrm)) == 0 {
-		genName := temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+		genName := temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S1095.
@@ -42,7 +42,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 		// Now an arena getter, site S1097.
 		prevExpressionOperatorOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(prevExpressionOperatorOutputs[0])
-		if prevExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if prevExpressionOperatorOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1098.
 			prevExpressionOperatorOutputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(prevExpressionOperatorOutputTypeSig.Meta))
@@ -76,7 +76,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				typeSigIdx = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, inp)
 			}
 			prgrm.CXAtomicOps[useExpressionIdx].OutputAdd(prgrm, typeSigIdx)
-		} else if prevExpressionOperatorOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+		} else if prevExpressionOperatorOutputTypeSig.Type == ast.TypeSliceAtomic {
 			// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 			// Now an arena getter, site S1103.
 			sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(prevExpressionOperatorOutputTypeSig.Meta)
@@ -138,7 +138,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 	// nil for a slice output, which has no fields.
 	var prevExpressionOutputArg *ast.CXArgument
-	if prevExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if prevExpressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 		// Now an arena getter, site S1116.
 		prevExpressionOutputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(prevExpressionOutputTypeSig.Meta))
@@ -152,10 +152,10 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 
 		// elt.IsArray = false
-		elt.DereferenceOperations = append(elt.DereferenceOperations, constants.DEREF_ARRAY)
-		elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, constants.DECL_INDEXING)
+		elt.DereferenceOperations = append(elt.DereferenceOperations, constants.DerefArray)
+		elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, constants.DeclarationIndexing)
 
-	} else if prevExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || prevExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+	} else if prevExpressionOutputTypeSig.Type == ast.TypeAtomic || prevExpressionOutputTypeSig.Type == ast.TypePointerAtomic {
 		// TODO: implement correct way when it is possible
 		// temporarily return back to cx arg deprecate
 		_, arg := ast.ArgumentMake(prgrm, prevExpressionOutputTypeSig.Name, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
@@ -165,7 +165,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		arg.PassBy = prevExpressionOutputTypeSig.PassBy
 
 		argIdx := ast.CXArgumentIndex(arg.Index)
-		prevExpressionOutputTypeSig.Type = ast.TYPE_CXARGUMENT_DEPRECATE
+		prevExpressionOutputTypeSig.Type = ast.TypeCXArgumentDeprecate
 		prevExpressionOutputTypeSig.Meta = int(argIdx)
 
 		// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
@@ -174,9 +174,9 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 
 		elt = prevExpressionOutputArg
 		// elt.IsArray = false
-		elt.DereferenceOperations = append(elt.DereferenceOperations, constants.DEREF_ARRAY)
-		elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, constants.DECL_INDEXING)
-	} else if prevExpressionOutputTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+		elt.DereferenceOperations = append(elt.DereferenceOperations, constants.DerefArray)
+		elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, constants.DeclarationIndexing)
+	} else if prevExpressionOutputTypeSig.Type == ast.TypeSliceAtomic {
 		prevExpressionOutputTypeSig.Deref = true
 	} else {
 		panic("type is not known")
@@ -199,7 +199,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			// Now an arena getter, site S1124.
 			postExpressionOperatorOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(postExpressionOperatorOutputs[0])
 			var postExpressionOperatorOutputArg *ast.CXArgument
-			if postExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if postExpressionOperatorOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S1126.
 				postExpressionOperatorOutputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(postExpressionOperatorOutputTypeSig.Meta))
@@ -207,7 +207,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				panic("type is not cx argument deprecate\n\n")
 			}
 
-			_, sym := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
+			_, sym := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LocalPrefix), CurrentFile, LineNo)
 			sym.TypeSet(postExpressionOperatorOutputArg.Type)
 			sym.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
 			sym.PreviouslyDeclared = true
@@ -230,11 +230,11 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			// Now an arena getter, site S1129.
 			postExpressionOperatorOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(postExpressionOperatorOutputs[0])
 			var typeSigIdx ast.CXTypeSignatureIndex
-			if postExpressionOperatorOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if postExpressionOperatorOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S1130.
 				postExpressionOperatorOutputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(postExpressionOperatorOutputTypeSig.Meta))
-				_, idxSym := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX), CurrentFile, LineNo)
+				_, idxSym := ast.ArgumentMake(prgrm, temporaryVariableNameGenerate(prgrm, constants.LocalPrefix), CurrentFile, LineNo)
 				idxSym.TypeSet(postExpressionOperatorOutputArg.Type)
 				idxSym.Size = postExpressionOperatorOutputArg.Size
 
@@ -242,7 +242,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				idxSym.PreviouslyDeclared = true
 
 				typeSigIdx = ast.CXTypeSignatureOfCXArgBuilderAlloc(prgrm, idxSym)
-			} else if postExpressionOperatorOutputTypeSig.Type == ast.TYPE_ATOMIC {
+			} else if postExpressionOperatorOutputTypeSig.Type == ast.TypeAtomic {
 				argDetailsGid := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugAlloc()
 				argDetails := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet(argDetailsGid)
 				argDetails.FileName = CurrentFile
@@ -250,13 +250,13 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				argDetails.FileColumn = prgrm.CXProgramCompileErrorColumn(argDetails.FileName, argDetails.FileLine)
 				_, newTypeSig := prgrm.CXTypeSignatureAlloc()
 				newTypeSig.ArgDetails = argDetailsGid
-				newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+				newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 				newTypeSig.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
 				newTypeSig.Type = postExpressionOperatorOutputTypeSig.Type
 				newTypeSig.Meta = postExpressionOperatorOutputTypeSig.Meta
 				newTypeSig.Offset = postExpressionOperatorOutputTypeSig.Offset
 				typeSigIdx = newTypeSig.Index
-			} else if postExpressionOperatorOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			} else if postExpressionOperatorOutputTypeSig.Type == ast.TypePointerAtomic {
 				argDetailsGid := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugAlloc()
 				argDetails := prgrm.CxIrState.CXArgumentDebugMng.CXArgumentDebugGet(argDetailsGid)
 				argDetails.FileName = CurrentFile
@@ -264,7 +264,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				argDetails.FileColumn = prgrm.CXProgramCompileErrorColumn(argDetails.FileName, argDetails.FileLine)
 				_, newTypeSig := prgrm.CXTypeSignatureAlloc()
 				newTypeSig.ArgDetails = argDetailsGid
-				newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
+				newTypeSig.Name = temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
 				newTypeSig.Package = prgrm.CXAtomicOps[postExpressionIdx].Package
 				newTypeSig.Type = postExpressionOperatorOutputTypeSig.Type
 				newTypeSig.Meta = postExpressionOperatorOutputTypeSig.Meta
@@ -280,7 +280,7 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			// Now an arena getter, site S1139.
 			prevExpressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(prevExpression.OutputsGet(prgrm)[0])
 			var prevExpressionOutputArg *ast.CXArgument
-			if prevExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if prevExpressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S1141.
 				prevExpressionOutputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(prevExpressionOutputTypeSig.Meta))
@@ -297,16 +297,16 @@ func PostfixExpressionArray(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 			// Now an arena getter, site S1142.
 			prevOutsTypeSig := prgrm.CXTypeSignatureFromArrayGet(prevExpression.OutputsGet(prgrm)[0])
-			if prevOutsTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if prevOutsTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				prevOutsIdx := ast.CXArgumentIndex(prevOutsTypeSig.Meta)
 
 				postOutsIndex := prgrm.CXAtomicOps[postExpressionIdx].OutputsGet(prgrm)[0]
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S1758.
 				prgrm.CXArgGet(ast.CXArgumentIndex(prevOutsIdx)).Indexes = append(prgrm.CXArgGet(ast.CXArgumentIndex(prevOutsIdx)).Indexes, postOutsIndex)
-			} else if prevOutsTypeSig.Type == ast.TYPE_ATOMIC || prevOutsTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+			} else if prevOutsTypeSig.Type == ast.TypeAtomic || prevOutsTypeSig.Type == ast.TypePointerAtomic {
 				panic("type is not cx argument deprecate\n\n")
-			} else if prevOutsTypeSig.Type == ast.TYPE_SLICE_ATOMIC {
+			} else if prevOutsTypeSig.Type == ast.TypeSliceAtomic {
 				// OBJMODEL: state.CXTypeSignature_ArrayMng.CXTypeSignature_ArrayGet(gid), phase 5 #317.
 				// Now an arena getter, site S1143.
 				sliceDetails := prgrm.CXTypeSignatureArrayFromArrayGet(prevOutsTypeSig.Meta)
@@ -399,7 +399,7 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpre
 
 	var firstPrevExpressionIdx int
 	for i := 0; i < len(prevExprs); i++ {
-		if prevExprs[i].Type == ast.CX_ATOMIC_OPERATOR {
+		if prevExprs[i].Type == ast.CXOperationTypeAtomicOperator {
 			firstPrevExpressionIdx = prevExprs[i].Index
 			break
 		}
@@ -412,7 +412,7 @@ func PostfixExpressionEmptyFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpre
 		// Now an arena getter, site S1150.
 		prevExpressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(prevExpression.OutputsGet(prgrm)[0])
 		if prevExpression.Outputs != nil {
-			if prevExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if prevExpressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S1151.
 				prevExpressionOutputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(prevExpressionOutputTypeSig.Meta))
@@ -475,11 +475,11 @@ func PostfixExpressionFunCall(prgrm *ast.CXProgram, prevExprs []ast.CXExpression
 		// Now an arena getter, site S1157.
 		lastPrevExpressionOutputTypeSig = prgrm.CXTypeSignatureFromArrayGet(lastPrevExpression.OutputsGet(prgrm)[0])
 
-		if lastPrevExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if lastPrevExpressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1158.
 			lastPrevExpressionOutputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(lastPrevExpressionOutputTypeSig.Meta))
-		} else if lastPrevExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || lastPrevExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+		} else if lastPrevExpressionOutputTypeSig.Type == ast.TypeAtomic || lastPrevExpressionOutputTypeSig.Type == ast.TypePointerAtomic {
 			// do nothing
 		} else {
 			panic("type is not known")
@@ -527,11 +527,11 @@ func PostfixExpressionIncDec(prgrm *ast.CXProgram, prevExprs []ast.CXExpression,
 	if increment {
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S1161.
-		expr = ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OP_ADD))
+		expr = ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpAdd))
 	} else {
 		// OBJMODEL: state.CXExpressionMng.CXExpressionAlloc(), phase 4 #346.
 		// Now a constructor call, site S1162.
-		expr = ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OP_SUB))
+		expr = ast.AtomicOperatorExpressionMake(prgrm, ast.NativeFunctionOf(prgrm, constants.OpSub))
 	}
 
 	lastPrevExpression, err := prgrm.CXAtomicOpFromExpressionsGet(prevExprs, len(prevExprs)-1)
@@ -581,8 +581,8 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		// Now an arena getter, site S1166.
 		lastExpressionOperatorOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(lastExpressionOperatorOutputs[0])
 
-		symName := temporaryVariableNameGenerate(prgrm, constants.LOCAL_PREFIX)
-		if sigType := lastExpressionOperatorOutputTypeSig.Type; sigType == ast.TYPE_CXARGUMENT_DEPRECATE || sigType == ast.TYPE_STRUCT || sigType == ast.TYPE_POINTER_STRUCT {
+		symName := temporaryVariableNameGenerate(prgrm, constants.LocalPrefix)
+		if sigType := lastExpressionOperatorOutputTypeSig.Type; sigType == ast.TypeCXArgumentDeprecate || sigType == ast.TypeStruct || sigType == ast.TypePointerStruct {
 			opOut := postfixCallResultArgument(prgrm, lastExpressionOperatorOutputTypeSig)
 
 			// we associate the result of the function call to the aux variable
@@ -663,11 +663,11 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S1188.
 				lastExpressionOutputFieldTypeSig := prgrm.CXTypeSignatureFromArrayGet(prgrm.CXAtomicOps[lastExpressionIdx].Outputs.Fields[0])
-				if lastExpressionOutputFieldTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				if lastExpressionOutputFieldTypeSig.Type == ast.TypeCXArgumentDeprecate {
 					lastExpressionOutputFieldTypeSig.Meta = valArg.Index
 					lastExpressionOutputFieldTypeSig.Name = valArg.Name
 					lastExpressionOutputFieldTypeSig.Offset = valArg.Offset
-				} else if lastExpressionOutputFieldTypeSig.Type == ast.TYPE_ATOMIC {
+				} else if lastExpressionOutputFieldTypeSig.Type == ast.TypeAtomic {
 					// TODO: Review if this is the correct one
 					typeSigIdx := ast.CXTypeSignatureOfCXArgAlloc(prgrm, valArg)
 					// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
@@ -676,7 +676,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 					prgrm.CXArgUnlessNamedRelease(valArg, typeSigIdx)
 
 					prgrm.CXAtomicOps[lastExpressionIdx].Outputs.Fields[0] = typeSigIdx
-				} else if lastExpressionOutputFieldTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				} else if lastExpressionOutputFieldTypeSig.Type == ast.TypePointerAtomic {
 					// TODO: Review if this is the correct one
 					typeSigIdx := ast.CXTypeSignatureOfCXArgAlloc(prgrm, valArg)
 					// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
@@ -696,7 +696,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				// (functions as first-class objects)
 				leftExprOutputTypeSigName := prgrm.CXProgramNameIntern(native.NativeNameEntryText)
 				leftExprOutputTypeSig.Name = leftExprOutputTypeSigName
-				if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				if leftExprOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 					leftExprIdx := leftExprOutputTypeSig.Meta
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1759.
@@ -708,7 +708,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		}
 
 		leftExprOutputTypeSig.Package = ast.CXPackageIndex(imp.Index)
-		if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if leftExprOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			leftExprIdx := leftExprOutputTypeSig.Meta
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1760.
@@ -718,7 +718,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		if glbl, err := imp.GlobalGet(prgrm, identGid); err == nil {
 			// then it's a global
 			// prevExprs[len(prevExprs)-1].ProgramOutput[0] = glbl
-			if glbl.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if glbl.Type == ast.TypeCXArgumentDeprecate {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S1191.
 				glblArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(glbl.Meta))
@@ -730,7 +730,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				lastExpressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(prgrm.CXAtomicOps[lastExpressionIdx].OutputsGet(prgrm)[0])
 
 				var lastExpressionOutputArg *ast.CXArgument
-				if lastExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+				if lastExpressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 					// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 					// Now an arena getter, site S1194.
 					lastExpressionOutputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(lastExpressionOutputTypeSig.Meta))
@@ -742,7 +742,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 					lastExpressionOutputArg.Size = glblArg.Size
 					lastExpressionOutputArg.PointerTargetType = glblArg.PointerTargetType
 					lastExpressionOutputArg.Package = glblArg.Package
-				} else if lastExpressionOutputTypeSig.Type == ast.TYPE_ATOMIC || lastExpressionOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+				} else if lastExpressionOutputTypeSig.Type == ast.TypeAtomic || lastExpressionOutputTypeSig.Type == ast.TypePointerAtomic {
 					lastExpressionOutputTypeSig.Name = glbl.Name
 					lastExpressionOutputTypeSig.Type = glbl.Type
 					lastExpressionOutputTypeSig.Meta = glbl.Meta
@@ -751,7 +751,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 					panic("type is not known")
 				}
 
-			} else if glbl.Type == ast.TYPE_ATOMIC || glbl.Type == ast.TYPE_POINTER_ATOMIC {
+			} else if glbl.Type == ast.TypeAtomic || glbl.Type == ast.TypePointerAtomic {
 				// OBJMODEL: state.CXTypeSignatureMng.CXTypeSignatureGet(gid), phase 5 #332.
 				// Now an arena getter, site S1195.
 				lastExpressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(prgrm.CXAtomicOps[lastExpressionIdx].OutputsGet(prgrm)[0])
@@ -759,7 +759,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 				lastExpressionOutputTypeSig.Type = glbl.Type
 				lastExpressionOutputTypeSig.Meta = glbl.Meta
 				lastExpressionOutputTypeSig.Offset = glbl.Offset
-			} else if lastExpressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(prgrm.CXAtomicOps[lastExpressionIdx].OutputsGet(prgrm)[0]); lastExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			} else if lastExpressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(prgrm.CXAtomicOps[lastExpressionIdx].OutputsGet(prgrm)[0]); lastExpressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				// An array or slice global, pkg.A[i], is found by name like a global of this package.
 				lastExpressionOutputArg := prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(lastExpressionOutputTypeSig.Meta))
 				lastExpressionOutputArg.Name = glbl.Name
@@ -773,7 +773,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			// A function of imp, not of its imports (skycoin/cx#9). Like a local
 			// function name it is a call only with parentheses (skycoin-cx#48).
 			leftExprOutputTypeSig.Name = identGid
-			if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if leftExprOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				prgrm.CXArgGet(ast.CXArgumentIndex(leftExprOutputTypeSig.Meta)).Name = identGid
 			}
 		} else if strct, err := prgrm.StructGet(identGid, imp.Name); err == nil {
@@ -781,7 +781,7 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			// Now an arena getter, site S1196.
 			lastExpressionOutputTypeSig := prgrm.CXTypeSignatureFromArrayGet(prgrm.CXAtomicOps[lastExpressionIdx].OutputsGet(prgrm)[0])
 			var lastExpressionOutputArg *ast.CXArgument
-			if lastExpressionOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+			if lastExpressionOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 				// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 				// Now an arena getter, site S1198.
 				lastExpressionOutputArg = prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(lastExpressionOutputTypeSig.Meta))
@@ -822,13 +822,13 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 		leftExprFieldIdx := ast.CXArgumentIndex(leftExprField.Index)
 
 		var leftExprIdx int
-		if leftExprOutputTypeSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if leftExprOutputTypeSig.Type == ast.TypeCXArgumentDeprecate {
 			leftExprIdx = leftExprOutputTypeSig.Meta
 
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1761.
 			prgrm.CXArgGet(ast.CXArgumentIndex(leftExprIdx)).Fields = append(prgrm.CXArgGet(ast.CXArgumentIndex(leftExprIdx)).Fields, leftExprFieldIdx)
-		} else if leftExprOutputTypeSig.Type == ast.TYPE_ATOMIC || leftExprOutputTypeSig.Type == ast.TYPE_POINTER_ATOMIC {
+		} else if leftExprOutputTypeSig.Type == ast.TypeAtomic || leftExprOutputTypeSig.Type == ast.TypePointerAtomic {
 			// TODO: implement correct way when it is possible
 			// temporarily return back to cx arg deprecate
 			// since the arg will become a struct
@@ -839,14 +839,14 @@ func PostfixExpressionField(prgrm *ast.CXProgram, prevExprs []ast.CXExpression, 
 			arg.PassBy = leftExprOutputTypeSig.PassBy
 
 			argIdx := ast.CXArgumentIndex(arg.Index)
-			leftExprOutputTypeSig.Type = ast.TYPE_CXARGUMENT_DEPRECATE
+			leftExprOutputTypeSig.Type = ast.TypeCXArgumentDeprecate
 			leftExprOutputTypeSig.Meta = int(argIdx)
 
 			leftExprIdx = int(argIdx)
 			// OBJMODEL: state.CXArgumentMng.CXArgumentGet(gid), phase 5 #327.
 			// Now an arena getter, site S1762.
 			prgrm.CXArgGet(ast.CXArgumentIndex(leftExprIdx)).Fields = append(prgrm.CXArgGet(ast.CXArgumentIndex(leftExprIdx)).Fields, leftExprFieldIdx)
-		} else if leftExprOutputTypeSig.Type == ast.TYPE_STRUCT {
+		} else if leftExprOutputTypeSig.Type == ast.TypeStruct {
 			// OBJMODEL: state.CXTypeSignature_StructMng.CXTypeSignature_StructGet(gid), phase 5 #322.
 			// Now an arena getter, site S1204.
 			structDetails := prgrm.CXTypeSignatureStructFromArrayGet(leftExprOutputTypeSig.Meta)
@@ -898,7 +898,7 @@ func methodCallResultAdd(prgrm *ast.CXProgram, callOp *ast.CXAtomicOperator) str
 		panic(err)
 	}
 
-	resultName := temporaryVariableNameGenerate(prgrm, constants.METHOD_RESULT_PREFIX)
+	resultName := temporaryVariableNameGenerate(prgrm, constants.MethodResultPrefix)
 	// A local name, so the result is declared even when typed by a signature.
 	fn, err := prgrm.CurrentFunctionGet()
 	if err != nil {
@@ -918,7 +918,7 @@ func methodCallResultAdd(prgrm *ast.CXProgram, callOp *ast.CXAtomicOperator) str
 // MethodCallStatement undoes MethodCallValue for a method call whose result
 // is not used, so exprs end with the method call again.
 func MethodCallStatement(prgrm *ast.CXProgram, exprs []ast.CXExpression) []ast.CXExpression {
-	if len(exprs) < 2 || !exprs[len(exprs)-2].TypeMethodCall() || exprs[len(exprs)-1].Type == ast.CX_LINE {
+	if len(exprs) < 2 || !exprs[len(exprs)-2].TypeMethodCall() || exprs[len(exprs)-1].Type == ast.CXOperationTypeLine {
 		return exprs
 	}
 	readOp := &prgrm.CXAtomicOps[exprs[len(exprs)-1].Index]
@@ -928,7 +928,7 @@ func MethodCallStatement(prgrm *ast.CXProgram, exprs []ast.CXExpression) []ast.C
 	}
 	resultTypeSig := prgrm.CXTypeSignatureFromArrayGet(callOp.OutputsGet(prgrm)[0])
 	readTypeSig := prgrm.CXTypeSignatureFromArrayGet(readOp.OutputsGet(prgrm)[0])
-	if readTypeSig.Name != resultTypeSig.Name || readTypeSig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if readTypeSig.Name != resultTypeSig.Name || readTypeSig.Type != ast.TypeCXArgumentDeprecate {
 		return exprs
 	}
 	read := prgrm.CXArgGet(ast.CXArgumentIndex(readTypeSig.Meta))
@@ -951,7 +951,7 @@ func functionCallRepeated(prgrm *ast.CXProgram, prevExprs []ast.CXExpression) bo
 		return false
 	}
 	last := prevExprs[len(prevExprs)-1]
-	if last.ExpressionType != ast.CXEXPR_FUNCTION_CALL && !last.TypeMethodCall() {
+	if last.ExpressionType != ast.CXExpressionTypeFunctionCall && !last.TypeMethodCall() {
 		return false
 	}
 	prgrm.CXProgramCompileErrorAdd(ast.CompileErrorCodeCallResultCall, CurrentFile, LineNo, ast.CompileErrorOperands{})
@@ -976,7 +976,7 @@ func functionDeclared(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) bool {
 // its own arguments, so one expression can read and write it as in p.x++.
 func ArgumentReadCopy(prgrm *ast.CXProgram, sigIdx ast.CXTypeSignatureIndex) ast.CXTypeSignatureIndex {
 	sig := prgrm.CXTypeSignatureFromArrayGet(sigIdx)
-	if sig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if sig.Type != ast.TypeCXArgumentDeprecate {
 		return sigIdx
 	}
 	arg := prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta))
@@ -1000,7 +1000,7 @@ func argumentCopy(prgrm *ast.CXProgram, arg *ast.CXArgument) *ast.CXArgument {
 	for i, indexSigIdx := range arg.Indexes {
 		indexSig := prgrm.CXTypeSignatureFromArrayGet(indexSigIdx)
 		argCopy.Indexes[i] = indexSigIdx
-		if indexSig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if indexSig.Type == ast.TypeCXArgumentDeprecate {
 			argCopy.Indexes[i] = ast.CXTypeSignatureOfCXArgDeprecateAlloc(prgrm, argumentCopy(prgrm, prgrm.CXArgGet(ast.CXArgumentIndex(indexSig.Meta))))
 		}
 	}
@@ -1014,14 +1014,14 @@ func argumentCopy(prgrm *ast.CXProgram, arg *ast.CXArgument) *ast.CXArgument {
 // postfixCallResultArgument returns the argument of the result sig of a call
 // that f().x reads, made for a struct or *T result that has none.
 func postfixCallResultArgument(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) *ast.CXArgument {
-	if sig.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+	if sig.Type == ast.TypeCXArgumentDeprecate {
 		return prgrm.CXArgFromArrayGet(ast.CXArgumentIndex(sig.Meta))
 	}
 	strct := prgrm.CXTypeSignatureStructFromArrayGet(sig.Meta).StructType
-	arg := &ast.CXArgument{Type: types.STRUCT, StructType: strct, Size: strct.StructSizeGet(prgrm), DeclarationSpecifiers: []int{constants.DECL_STRUCT}}
-	if sig.Type == ast.TYPE_POINTER_STRUCT {
-		arg.Type, arg.PointerTargetType, arg.Size = types.POINTER, types.STRUCT, types.POINTER_SIZE
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DECL_POINTER)
+	arg := &ast.CXArgument{Type: types.STRUCT, StructType: strct, Size: strct.StructSizeGet(prgrm), DeclarationSpecifiers: []int{constants.DeclarationStruct}}
+	if sig.Type == ast.TypePointerStruct {
+		arg.Type, arg.PointerTargetType, arg.Size = types.POINTER, types.STRUCT, types.PointerSize
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, constants.DeclarationPointer)
 	}
 	return arg
 }

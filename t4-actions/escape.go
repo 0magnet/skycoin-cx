@@ -139,7 +139,7 @@ func escapeAnalyze(prgrm *ast.CXProgram, params []escapeParam, results []*ast.CX
 
 // escapeAtomicOp returns the operator of expr, or nil for a line.
 func escapeAtomicOp(prgrm *ast.CXProgram, expr *ast.CXExpression) *ast.CXAtomicOperator {
-	if expr.Type == ast.CX_LINE {
+	if expr.Type == ast.CXOperationTypeLine {
 		return nil
 	}
 	op, err := prgrm.CXAtomicOpGet(expr.Index)
@@ -169,7 +169,7 @@ func (state *escapeState) escapeExpression(expr *ast.CXExpression) {
 			state.escapeCallArgument(operator, i, state.escapeSources(inputIdx), outputs)
 		}
 		state.escapeStoreUnknown(outputs)
-	case operator.AtomicOPCode == constants.OP_IDENTITY:
+	case operator.AtomicOPCode == constants.OpIdentity:
 		if len(inputs) == 1 && len(outputs) == 1 {
 			state.escapeStore(outputs[0], state.escapeSources(inputs[0]))
 		}
@@ -187,7 +187,7 @@ func (state *escapeState) escapeExpression(expr *ast.CXExpression) {
 // heap, as append does.
 func escapeOpcodeStores(opcode int) bool {
 	switch opcode {
-	case constants.OP_APPEND, constants.OP_INSERT, constants.OP_RESIZE, constants.OP_REMOVE, constants.OP_COPY:
+	case constants.OpAppend, constants.OpInsert, constants.OpResize, constants.OpRemove, constants.OpCopy:
 		return true
 	}
 	return false
@@ -225,7 +225,7 @@ func (state *escapeState) escapeMethodCall(inputs, outputs []ast.CXTypeSignature
 func (state *escapeState) escapeMethod(receiverIdx ast.CXTypeSignatureIndex) *ast.CXFunction {
 	prgrm := state.escapeStatePrgrm
 	sig := prgrm.CXTypeSignatureFromArrayGet(receiverIdx)
-	if sig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if sig.Type != ast.TypeCXArgumentDeprecate {
 		return nil
 	}
 	receiver := prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta))
@@ -272,7 +272,7 @@ func (state *escapeState) escapeCallArgument(fn *ast.CXFunction, i int, sources 
 func (state *escapeState) escapeSources(sigIdx ast.CXTypeSignatureIndex) map[escapeKey]bool {
 	prgrm := state.escapeStatePrgrm
 	sig := prgrm.CXTypeSignatureFromArrayGet(sigIdx)
-	if ast.CXTypeSignaturePassBy(prgrm, sig) == constants.PASSBY_REFERENCE {
+	if ast.CXTypeSignaturePassBy(prgrm, sig) == constants.PassByReference {
 		return state.escapeAddressSources(sigIdx)
 	}
 	name := StripNameNumber(prgrm, sig.Name)
@@ -404,13 +404,13 @@ func (state *escapeState) escapeClosure(key escapeKey) map[escapeKey]bool {
 // escapeAccessInside reports whether sig stays inside the storage of the
 // local, as x, x.f and x[i] on an array do, and goes through no pointer or slice.
 func escapeAccessInside(prgrm *ast.CXProgram, specs []int, strct *ast.CXStruct, sig *ast.CXTypeSignature) bool {
-	if sig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if sig.Type != ast.TypeCXArgumentDeprecate {
 		return !sig.Deref
 	}
 	arg := prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta))
 	stack, inside := escapeAccessIndexes(specs, arg)
 	for _, fieldIdx := range arg.Fields {
-		if !inside || strct == nil || len(stack) == 0 || stack[len(stack)-1] != constants.DECL_STRUCT {
+		if !inside || strct == nil || len(stack) == 0 || stack[len(stack)-1] != constants.DeclarationStruct {
 			return false
 		}
 		field := prgrm.CXArgFromArrayGet(fieldIdx)
@@ -431,9 +431,9 @@ func escapeAccessIndexes(specs []int, arg *ast.CXArgument) ([]int, bool) {
 	indexing := 0
 	for _, spec := range arg.DeclarationSpecifiers {
 		switch spec {
-		case constants.DECL_DEREF:
+		case constants.DeclarationDeref:
 			return nil, false
-		case constants.DECL_INDEXING:
+		case constants.DeclarationIndexing:
 			indexing++
 		}
 	}
@@ -442,7 +442,7 @@ func escapeAccessIndexes(specs []int, arg *ast.CXArgument) ([]int, bool) {
 		return nil, false
 	}
 	for _, spec := range specs[len(specs)-indexes:] {
-		if spec != constants.DECL_ARRAY {
+		if spec != constants.DeclarationArray {
 			return nil, false
 		}
 	}
@@ -463,34 +463,34 @@ func escapeSignatureSpecifiers(prgrm *ast.CXProgram, sig *ast.CXTypeSignature) [
 	array := func(base []int) []int {
 		details := prgrm.CXTypeSignatureArrayFromArrayGet(sig.Meta)
 		for range details.Lengths {
-			base = append(base, constants.DECL_ARRAY)
+			base = append(base, constants.DeclarationArray)
 		}
 		return base
 	}
 	switch sig.Type {
-	case ast.TYPE_CXARGUMENT_DEPRECATE:
+	case ast.TypeCXArgumentDeprecate:
 		return prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta)).DeclarationSpecifiers
-	case ast.TYPE_POINTER_ATOMIC:
-		return []int{constants.DECL_BASIC, constants.DECL_POINTER}
-	case ast.TYPE_ARRAY_ATOMIC:
-		return array([]int{constants.DECL_BASIC})
-	case ast.TYPE_POINTER_ARRAY_ATOMIC:
-		return append(array([]int{constants.DECL_BASIC}), constants.DECL_POINTER)
-	case ast.TYPE_SLICE_ATOMIC:
-		return []int{constants.DECL_BASIC, constants.DECL_SLICE}
-	case ast.TYPE_POINTER_SLICE_ATOMIC:
-		return []int{constants.DECL_BASIC, constants.DECL_SLICE, constants.DECL_POINTER}
-	case ast.TYPE_STRUCT:
-		return []int{constants.DECL_STRUCT}
-	case ast.TYPE_POINTER_STRUCT:
-		return []int{constants.DECL_STRUCT, constants.DECL_POINTER}
+	case ast.TypePointerAtomic:
+		return []int{constants.DeclarationBasic, constants.DeclarationPointer}
+	case ast.TypeArrayAtomic:
+		return array([]int{constants.DeclarationBasic})
+	case ast.TypePointerArrayAtomic:
+		return append(array([]int{constants.DeclarationBasic}), constants.DeclarationPointer)
+	case ast.TypeSliceAtomic:
+		return []int{constants.DeclarationBasic, constants.DeclarationSlice}
+	case ast.TypePointerSliceAtomic:
+		return []int{constants.DeclarationBasic, constants.DeclarationSlice, constants.DeclarationPointer}
+	case ast.TypeStruct:
+		return []int{constants.DeclarationStruct}
+	case ast.TypePointerStruct:
+		return []int{constants.DeclarationStruct, constants.DeclarationPointer}
 	}
-	return []int{constants.DECL_BASIC}
+	return []int{constants.DeclarationBasic}
 }
 
 // escapeSlotSize is the frame size of an escaped local, the slot that holds
 // the address of its heap object.
-const escapeSlotSize = types.POINTER_SIZE
+const escapeSlotSize = types.PointerSize
 
 // escapeInputPrefix starts the new name of an escaped input. The body then
 // declares the old name as a local, a copy of the input, which can escape.
@@ -521,7 +521,7 @@ func escapePrologue(prgrm *ast.CXProgram, params []escapeParam, escaped map[stri
 		specs.DereferenceOperations = slices.Clone(source.DereferenceOperations)
 		specs.DeclarationSpecifiers = slices.Clone(source.DeclarationSpecifiers)
 		specs.Offset = 0
-		specs.PassBy = constants.PASSBY_VALUE
+		specs.PassBy = constants.PassByValue
 		source.Name = hidden
 
 		_, declarator := ast.ArgumentMake(prgrm, param.escapeParamName, CurrentFile, line)
@@ -545,9 +545,9 @@ func escapeDeclare(prgrm *ast.CXProgram, symbolTable *SymbolTable, typeSig *ast.
 	slot := *offset
 	if sym != nil {
 		sym.Name = typeSig.Name
-		sym.Offset = slot | constants.ESCAPE_OFFSET_FLAG
+		sym.Offset = slot | constants.EscapeOffsetFlag
 	}
-	typeSig.Offset = slot | constants.ESCAPE_OFFSET_FLAG
+	typeSig.Offset = slot | constants.EscapeOffsetFlag
 	updateSymbolsTableOffsetAdd(prgrm, typeSig, offset, escapeSlotSize)
 	symbolTable.escapedSlots = append(symbolTable.escapedSlots, escapeSlot{escapeSlotName: typeSig.Name, escapeSlotOffset: slot})
 }
@@ -559,7 +559,7 @@ func escapeFunction(prgrm *ast.CXProgram, fn *ast.CXFunction, inputs, outputs []
 	if fnInputs := fn.InputsGet(prgrm); len(fnInputs) != len(inputs) && len(fnInputs) > 0 {
 		receiver := prgrm.CXTypeSignatureFromArrayGet(fnInputs[0])
 		param := escapeParam{escapeParamName: StripNameNumber(prgrm, receiver.Name), escapeParamSignature: receiver}
-		if receiver.Type == ast.TYPE_CXARGUMENT_DEPRECATE {
+		if receiver.Type == ast.TypeCXArgumentDeprecate {
 			param.escapeParamArgument = prgrm.CXArgGet(ast.CXArgumentIndex(receiver.Meta))
 		}
 		params = append(params, param)
@@ -611,10 +611,10 @@ func (state *escapeState) escapeStoreUnknown(outputs []ast.CXTypeSignatureIndex)
 func (state *escapeState) escapeStructLiteralTemporary(name stringpool.StringGid, sig *ast.CXTypeSignature) bool {
 	prgrm := state.escapeStatePrgrm
 	specs := state.escapeStateLocals[name]
-	if !TemporaryVariable(prgrm, name) || state.escapeStateStructs[name] == nil || len(specs) == 0 || specs[len(specs)-1] != constants.DECL_POINTER {
+	if !TemporaryVariable(prgrm, name) || state.escapeStateStructs[name] == nil || len(specs) == 0 || specs[len(specs)-1] != constants.DeclarationPointer {
 		return false
 	}
-	if sig.Type != ast.TYPE_CXARGUMENT_DEPRECATE {
+	if sig.Type != ast.TypeCXArgumentDeprecate {
 		return true
 	}
 	arg := prgrm.CXArgGet(ast.CXArgumentIndex(sig.Meta))
@@ -627,7 +627,7 @@ func (state *escapeState) escapeLoopAdd(i int, op *ast.CXAtomicOperator, operato
 		return
 	}
 	switch operator.AtomicOPCode {
-	case constants.OP_JMP, constants.OP_GOTO, constants.OP_BREAK, constants.OP_CONTINUE:
+	case constants.OpJmp, constants.OpGoto, constants.OpBreak, constants.OpContinue:
 	default:
 		return
 	}

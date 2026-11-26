@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/skycoin/skycoin-cx/t0-types"                 // thin: tests use only Code, I16, I32; no depth gain
-	cxconstants "github.com/skycoin/skycoin-cx/t1-constants" // thin: tests use only OP_ADD, OP_DIV, OP_SUB; no depth gain
+	cxconstants "github.com/skycoin/skycoin-cx/t1-constants" // thin: tests use only OpAdd, OpDiv, OpSub; no depth gain
 	cxast "github.com/skycoin/skycoin-cx/t3-ast"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"                         // thin: tests use only MakeProgram, RegisterPackages; tests only, moving these tests up lets astapi drop to t5
 	parsingcompletor "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: tests use only InitCXCore; tests only, could init with t7-init and t4-opcodes
@@ -56,21 +56,21 @@ func TestASTAPI_Expressions(t *testing.T) {
 	})
 
 	t.Run("add first expression to function", func(t *testing.T) {
-		err := astapi.FunctionNativeExpressionAdd(cxprogram, "TestFunction", cxconstants.OP_ADD)
+		err := astapi.FunctionNativeExpressionAdd(cxprogram, "TestFunction", cxconstants.OpAdd)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add second expression to function", func(t *testing.T) {
-		err := astapi.FunctionNativeExpressionAdd(cxprogram, "TestFunction", cxconstants.OP_SUB)
+		err := astapi.FunctionNativeExpressionAdd(cxprogram, "TestFunction", cxconstants.OpSub)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}
 	})
 
 	t.Run("add an expression to function on a line number", func(t *testing.T) {
-		err := astapi.FunctionNativeExpressionAddAtLine(cxprogram, "TestFunction", cxconstants.OP_DIV, 1)
+		err := astapi.FunctionNativeExpressionAddAtLine(cxprogram, "TestFunction", cxconstants.OpDiv, 1)
 		if err != nil {
 			t.Errorf("want no error, got %v", err)
 		}

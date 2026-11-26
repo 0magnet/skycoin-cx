@@ -49,7 +49,7 @@ func ProgramMake() *ast.CXProgram {
 // which the loop runs, or an opcode with a handler outside t6-cxfx that the
 // build tags link. The core is built with the tags of cx, so cx can ask.
 func OpcodeLinked(code int) bool {
-	if code == constants.OP_LIBRARY_CALL {
+	if code == constants.OpLibraryCall {
 		return true
 	}
 	return constants.OpcodeHandled(code) && constants.OpcodeLinked(code) && constants.OpcodeSignatureOf(code).OpcodeSignatureGroup != constants.OpcodeGroupCxfx
@@ -140,7 +140,7 @@ func OperationRefused(prgrm *ast.CXProgram) int {
 }
 
 // OperationRefusalLine is the line a program refused for opcode code
-// prints, the runtime error CX_RUNTIME_LIBRARY_DISABLED without a source
+// prints, the runtime error CXRuntimeLibraryDisabled without a source
 // position. It names the library when the run enables nothing of it, and
 // the operation otherwise.
 func OperationRefusalLine(prgrm *ast.CXProgram, code int) string {
