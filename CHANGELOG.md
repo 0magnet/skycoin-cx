@@ -166,6 +166,7 @@
 
 #### Fixed
 
+- The grammars `cxpartialparsing.y` and `parsingcompletor.y` call the renamed functions again, so `make build-parser` writes the committed parsers. The new `make check-parser`, part of `make check`, fails when it would not (#569)
 - cx no longer panics when CXPATH is unset and the user lookup fails, as on js/wasm. It takes the home directory from $HOME, and without one it says so and runs on
 - A program that uses a library opcode its run does not enable is refused by `execute.RunCompiled` and `lower.Program` as well as by `core.ExecutorRun`, through the new `CXProgram.CXProgramOperationRefused`, so an embedder with its own executor cannot run it (D119). `lower.Program` reports it as `ReasonOperationRefused` and lowers nothing
 - `gl.UploadImageToTexture` of an `.hdr` file reads the `-Y height +X width` line the right way round. It took the height as the width, so a texture that was not square decoded wrong. The HDR header and the image format are read as bytes, which drops STRHOT-325 and leaves STRHOT-197 a failure branch only (#432)
