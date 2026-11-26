@@ -59,7 +59,7 @@ that differs. `.gitattributes` keeps those files byte for byte.
 ## The programs
 
 The programs are every `.cx` file under `tests/` on its own, and every
-`t1-cxtest` entry that passes flags or several files, without its
+`t1-cx-tools-programtest` entry that passes flags or several files, without its
 `--executor` flag, since the forms choose the executor. Each one is either a
 record or excluded with a reason. The ones excluded now are these.
 
@@ -137,6 +137,6 @@ committing it. A changed output hash is a changed result.
 | `TestSerializeRoundTrip` | removed. The image-old and image-vm forms run every program it ran after the round trip, through the image a built program loads |
 | `TestBuildPrograms` | removed. The built form runs every program it built, and the harness logs the core and program sizes it logged |
 | `TestLowerCompare` | keeps the memory comparison after both loops and the lowering statistics. Its comparison of stdout and exit code of `cx --executor=old` and `cx --executor=vm` moved to the vm form |
-| `TestCompareExpected` | stays. It checks the hashes of `t0-benchmarks/compare/expected.txt` against the math, an oracle outside CX, and those programs run for seconds each at their one scale |
+| `TestCompareExpected` | stays. It checks the hashes of `t0-cx-tools-benchmarks/compare/expected.txt` against the math, an oracle outside CX, and those programs run for seconds each at their one scale |
 | `TestBuildCoreRefuses`, `TestBuildLibraries` | stay. They check refusals and library linking, not results |
-| `make test` (`t1-cxtest`) | stays. It checks the expected exit code and output of each test, written by hand |
+| `make test` (`t1-cx-tools-programtest`) | stays. It checks the expected exit code and output of each test, written by hand |

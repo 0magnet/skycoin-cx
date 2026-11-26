@@ -1,0 +1,56 @@
+package packagetree
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+
+	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
+	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader"
+)
+
+// loadSource stores the files, given as path and content, as one program.
+func loadSource(t *testing.T, name string, files map[string]string) {
+	t.Helper()
+	dir := t.TempDir()
+	for path, content := range files {
+		path = filepath.Join(dir, "src", path)
+		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	_, sourceCodes, _, err := sourceargs.Parse([]string{filepath.Join(dir, "src")}, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	closeFiles(t, sourceCodes)
+	if err := packageloader.CXProgramLoad(name, sourceCodes); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestTreeSkipsCommentedImport(t *testing.T) {
+	loadSource(t, "TreeComment", map[string]string{
+		"m.cx": "package main\nimport \"sys/os\"\n/*\nimport \"fromcomment\"\n*/\nfunc main() {\n}\n",
+	})
+	got, err := ImportTreeGet("TreeComment")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := "main\n`--sys/os\n"; got != want {
+		t.Errorf("GetImportTree:\n got %q\nwant %q", got, want)
+	}
+}
+
+// closeFiles closes the source files when the test ends, before its temporary
+// directory is removed, which Windows refuses while a file is open.
+func closeFiles(t *testing.T, files []*os.File) {
+	t.Cleanup(func() {
+		for _, file := range files {
+			file.Close()
+		}
+	})
+}

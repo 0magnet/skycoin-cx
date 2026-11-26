@@ -1,0 +1,131 @@
+package repl_test
+
+import (
+	"io"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/skycoin/skycoin-cx/t10-cx-tools-repl"
+	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t5-cxos"
+	cxinit "github.com/skycoin/skycoin-cx/t7-init"
+)
+
+const hello = "package main\nimport \"sys/string\"\nfunc main() {\n\tstring.PrintLine(\"hi\")\n}\n"
+
+func TestMain(m *testing.M) {
+	actions.ConstantsInit()
+	cxos.ConstantsInit(actions.ConstI32Add)
+	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
+	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0011 S0012.
+	actions.AST = cxinit.ProgramMake()
+	cxinit.PackagesRegister(actions.AST)
+	os.Exit(m.Run())
+}
+
+func eval(t *testing.T, code string) string {
+	t.Helper()
+	stdout := os.Stdout
+	start := time.Now()
+	out := repl.Eval(code)
+	if d := time.Since(start); d > 10*time.Second {
+		t.Fatalf("Eval took %v", d)
+	}
+	if os.Stdout != stdout {
+		os.Stdout = stdout
+		t.Fatal("Eval left os.Stdout redirected")
+	}
+	return out
+}
+
+// The error returns used to leave os.Stdout pointing at the pipe. See #147.
+func TestEvalErrorRestoresStdout(t *testing.T) {
+	for _, code := range []string{
+		"package foo\nfunc bar() {\n}\n",
+		"package main\nfunc foo() {\n}\n",
+	} {
+		if out := eval(t, code); out == "" {
+			t.Errorf("Eval(%q) returned no error", code)
+		}
+		if out := eval(t, hello); out != "hi\n" {
+			t.Fatalf("Eval after %q: got %q, want %q", code, out, "hi\n")
+		}
+	}
+}
+
+// Output larger than the pipe buffer used to block Eval until it timed out.
+// See #147.
+func TestEvalLargeOutput(t *testing.T) {
+	const line = "0123456789012345678901234567890123456789\n"
+	out := eval(t, `package main
+import "sys/string"
+func main() {
+	var i i32
+	for i = 0; i < 5000; i++ {
+		string.PrintLine("0123456789012345678901234567890123456789")
+	}
+}
+`)
+	if want := strings.Repeat(line, 5000); out != want {
+		t.Fatalf("got %d bytes of output, want %d: %.80q", len(out), len(want), out)
+	}
+}
+
+// Operators used to keep the argument index of the program that first used
+// them, so the next program read the wrong argument. See #174.
+func TestEvalNoStateBetweenPrograms(t *testing.T) {
+	a := "package main\nfunc main() {\n\tvar i i32 = 1\n\ti++\n\tbool.print(i < 3)\n}\n"
+	b := "package main\nfunc main() {\n\tvar f f32 = 1.5\n\tf32.print(f + 2.0)\n}\n"
+	if out := eval(t, a); out != "true\n" {
+		t.Fatalf("Eval(a): got %q, want %q", out, "true\n")
+	}
+	stderr := os.Stderr
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stderr = w
+	out := eval(t, b)
+	os.Stderr = stderr
+	w.Close()
+	var errs strings.Builder
+	io.Copy(&errs, r)
+	if out != "3.5\n" || errs.Len() > 0 {
+		t.Fatalf("Eval(b) after Eval(a): got %q, compile output %q", out, errs.String())
+	}
+}
+
+// A program that fails to compile used to run anyway. See #189.
+func TestEvalCompileErrorDoesNotRun(t *testing.T) {
+	bad := "package main\nfunc main() {\n\tvar x i32 = \"s\"\n\ti32.print(x)\n}\n"
+	if out := eval(t, bad); out != "compilation error" {
+		t.Fatalf("Eval(bad): got %q, want %q", out, "compilation error")
+	}
+	if out := eval(t, hello); out != "hi\n" {
+		t.Fatalf("Eval after a compile error: got %q, want %q", out, "hi\n")
+	}
+}
+
+// An initialization cycle is found by SysInitFunctionAdd, after parsing, and
+// used to run anyway. See #519.
+func TestEvalInitCycleDoesNotRun(t *testing.T) {
+	cycle := "package main\nvar a i32 = b\nvar b i32 = a + 1\nfunc main() { global a\n\ti32.print(a)\n}\n"
+	stderr := os.Stderr
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stderr = w
+	out := eval(t, cycle)
+	os.Stderr = stderr
+	w.Close()
+	io.Copy(io.Discard, r)
+	if out != "compilation error" {
+		t.Fatalf("Eval(cycle): got %q, want %q", out, "compilation error")
+	}
+	if out := eval(t, hello); out != "hi\n" {
+		t.Fatalf("Eval after an init cycle: got %q, want %q", out, "hi\n")
+	}
+}

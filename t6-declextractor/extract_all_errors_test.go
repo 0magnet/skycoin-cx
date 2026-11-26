@@ -4,13 +4,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: only File; no depth gain
 	"github.com/skycoin/skycoin-cx/t6-declextractor"
 )
 
 // A bad package line makes every extractor of the file fail. See #123.
 func TestDeclarationExtractor_ExtractAllDeclarationsManyErrors(t *testing.T) {
-	files := []*loader.File{
+	files := []*packageloader.File{
 		{FileName: "a.cx", Content: []byte("package\n")},
 		{FileName: "b.cx", Content: []byte("package\n")},
 	}

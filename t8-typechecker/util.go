@@ -10,7 +10,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-types"
 	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t1-plloader" // thin: only File; no depth gain
+	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: only File; no depth gain
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-ast"
 	"github.com/skycoin/skycoin-cx/t4-actions"
@@ -134,7 +134,7 @@ func DeclarationSpecifierParse(prgrm *ast.CXProgram, declarationSpecifierByte []
 }
 
 // Finds the SourceBytes from the files array
-func SourceBytesGet(files []*loader.File, fileName string) ([]byte, error) {
+func SourceBytesGet(files []*packageloader.File, fileName string) ([]byte, error) {
 	for _, file := range files {
 		if file.FileName == fileName {
 			return file.Content, nil

@@ -204,11 +204,11 @@ func lowerCompareClip(out []byte) []byte {
 	return out
 }
 
-// lowerCompareHarnessRun matches a t1-cxtest entry, its files and flags.
+// lowerCompareHarnessRun matches a t1-cx-tools-programtest entry, its files and flags.
 var lowerCompareHarnessRun = regexp.MustCompile(`t\.(?:Run|RunEx|RunWant)\("([^"]+)"`)
 
 // lowerComparePrograms lists each .cx file of tests/ alone, then each entry
-// of the t1-cxtest harness that compiles several files together and passes
+// of the t1-cx-tools-programtest harness that compiles several files together and passes
 // no flags. A program is its files relative to tests/, joined by spaces.
 func lowerComparePrograms(t *testing.T) []string {
 	tests := filepath.Join("..", "tests")
@@ -231,7 +231,7 @@ func lowerComparePrograms(t *testing.T) []string {
 	}
 	sort.Strings(programs)
 
-	harness, err := os.ReadFile(filepath.Join("..", "t1-cxtest", "main.go"))
+	harness, err := os.ReadFile(filepath.Join("..", "t1-cx-tools-programtest", "main.go"))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -86,8 +86,8 @@ A new area takes the next free block and is added here in the same change.
 | 1000 - 1999 | Files | `FileError` | `t1-cx-runtime-sandbox` | exists |
 | 2000 - 2999 | Paths and the working directory | `PathError` | `t1-cx-runtime-sandbox` | planned |
 | 3000 - 3999 | Networking | `NetworkingError` | `t4-cxnet` | planned |
-| 4000 - 4999 | Package store database | `PackageStoreError` | `t0-plbolt` | planned |
-| 5000 - 5999 | Package loader | `PackageLoaderError` | `t1-plloader` | planned |
+| 4000 - 4999 | Package store database | `PackageStoreError` | `t0-cx-tools-packagestore` | planned |
+| 5000 - 5999 | Package loader | `PackageLoaderError` | `t1-cx-tools-packageloader` | planned |
 | 6000 - 6999 | LZ4 compression | `LZ4CodecError` | `t0-lz4codec` | planned |
 | 7000 - 7999 | Compiler | `CompileErrorRecord`, held as a list | `t3-ast` | exists |
 
@@ -307,7 +307,7 @@ should do. The file, line and stack come from the assert.
 
 No code in this module calls `recover`. A test that needs to see a crash runs
 the crashing code in a subprocess and checks its exit status and stderr, as
-`t0-cx-core-assert/assert_test.go` does. `t1-cxtest` already runs CX programs
+`t0-cx-core-assert/assert_test.go` does. `t1-cx-tools-programtest` already runs CX programs
 this way.
 
 `make check-recovers` fails on a `recover(` call outside `vendor/`. The sites

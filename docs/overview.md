@@ -23,9 +23,9 @@ sources themselves.
 ### Tests and benchmarks
 
 * **tests/** product tests and regression tests for the CX parser and
-interpreter, run by `t1-cxtest` (`make test`). See the file
+interpreter, run by `t1-cx-tools-programtest` (`make test`). See the file
 `CONTRIBUTING.md` for more details about the tests.
-* **t0-benchmarks/** benchmarks of CX against the same algorithms in Go.
+* **t0-cx-tools-benchmarks/** benchmarks of CX against the same algorithms in Go.
 
 ## Parser Workflow
 

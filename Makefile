@@ -116,7 +116,7 @@ run-mcu: ## Run MCU_PROGRAM on vm in the emulator of MCU_TARGET: cortex-m-qemu, 
 	CX_MCU_TARGET=$(MCU_TARGET) TINYGO=$(TINYGO) ./t4-cx-core-image/emulator-run.sh ./bin/mcu.cximage
 
 build-tests: build ## Build the cx program test runner
-	go build -o ./bin/cxtest ./t1-cxtest
+	go build -o ./bin/cxtest ./t1-cx-tools-programtest
 
 test: build-tests ## Run the stable CX program tests
 	./bin/cxtest --cxpath=$(CURDIR)/bin/$(CXEXE) --wdir=./tests --log=fail,stderr --disable-tests=gui,issue
@@ -126,7 +126,7 @@ test-all: build-tests ## Run all non-GUI CX program tests, including any marked 
 
 test-ptr64: ## Run the stable CX program tests with a ptr64 build
 	go build -tags="$(TAGS) ptr64" -o ./bin/cx64$(EXE) ./t11-cx
-	go build -o ./bin/cxtest ./t1-cxtest
+	go build -o ./bin/cxtest ./t1-cx-tools-programtest
 	./bin/cxtest --cxpath=$(CURDIR)/bin/cx64$(EXE) --wdir=./tests --log=fail,stderr --disable-tests=gui,issue
 
 test-go: ## Run the Go unit tests
@@ -142,7 +142,7 @@ vet-gui: ## go vet with the cxfx tag (needs cgo and X11/GL/OpenAL headers)
 
 test-gui: ## Build cx with cxfx and run the gui CX program tests, under xvfb-run when DISPLAY is unset (needs cgo, X11/GL/OpenAL headers and a GL driver)
 	go build -tags="$(TAGS) $(GUI_TAGS)" -o ./bin/cx-gui$(EXE) ./t11-cx
-	go build -o ./bin/cxtest ./t1-cxtest
+	go build -o ./bin/cxtest ./t1-cx-tools-programtest
 	$(if $(DISPLAY),,xvfb-run -a) ./bin/cxtest --cxpath=$(CURDIR)/bin/cx-gui$(EXE) --wdir=./tests --log=fail,stderr --enable-tests=gui
 
 lint: ## golangci-lint with .golangci.yml, the version the lint job of CI pins
@@ -199,10 +199,10 @@ generate-objmodel: ## Regenerate the Gid, manager and manager test files of t3-a
 
 check: check-tiers llvm-clang check-inits check-ifaces check-names check-parser check-json check-recovers check-objmodel check-opcodes check-gcreach check-strhot vet test-go test test-ptr64 ## tier, init, interface, naming, JSON, recover, object model, opcode table, GC reach and STRHOT checks, vet, Go tests and CX program tests (default and ptr64)
 
-bench-compare: ## Time the t0-benchmarks/compare programs in cx, C, Python 3 and Bash (needs clang, python3, taskset)
+bench-compare: ## Time the t0-cx-tools-benchmarks/compare programs in cx, C, Python 3 and Bash (needs clang, python3, taskset)
 	go build -tags="$(TAGS)" -o ./bin/$(CXEXE) ./t11-cx
 	go build -tags="$(TAGS) cxopcount" -o ./bin/cx-opcount$(EXE) ./t11-cx
-	./t0-benchmarks/compare/run.sh
+	./t0-cx-tools-benchmarks/compare/run.sh
 
 records: ## Write tests/execution-records.txt from the old loop, see docs/ExecutionRecords.md. Review the diff before committing it
 	CX_EXECUTION_RECORDS_WRITE=1 go test -count=1 -run '^TestExecutionRecords$$' ./t11-cx

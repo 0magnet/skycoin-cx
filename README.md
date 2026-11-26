@@ -203,7 +203,7 @@ prints what vm prints. See [docs/LlvmTarget.md](docs/LlvmTarget.md).
 
 ## Performance
 
-`t0-benchmarks/compare` holds six long benchmarks, each in CX, C, Python 3
+`t0-cx-tools-benchmarks/compare` holds six long benchmarks, each in CX, C, Python 3
 and Bash with the same algorithm, and each prints a hash of its results that
 `TestCompareExpected` derives from the math. `make bench-compare` times them
 and needs clang, python3 and taskset. It is not part of `make check`. The
@@ -220,7 +220,7 @@ the start up time taken off, the median of 5 runs pinned to one core.
 | memtest | 22956 | 1443 | 12.6 | 2057 |
 | primes | 11550 | 762 | 63.0 | 1421 |
 
-See [t0-benchmarks/README.md](t0-benchmarks/README.md).
+See [t0-cx-tools-benchmarks/README.md](t0-cx-tools-benchmarks/README.md).
 
 ## Tests and checks
 
@@ -275,9 +275,9 @@ that [docs/ObjectModel.md](docs/ObjectModel.md) and
 Every Go package, binaries included, sits one level below the root as
 `t<N>-<name>`, where N is its tier in the import graph. A tier N package
 imports only packages of lower tiers. `t11-cx` is the cx binary,
-`t6-cx-core-run` the `cx build` core and `t1-cxtest` the CX program test
+`t6-cx-core-run` the `cx build` core and `t1-cx-tools-programtest` the CX program test
 runner. `tests/` holds the CX test programs, `lib/` CX libraries and
-`t0-benchmarks/` the benchmarks. `CLEANUP.md` lists every file of the former
+`t0-cx-tools-benchmarks/` the benchmarks. `CLEANUP.md` lists every file of the former
 CX repositories with a keep, merge or delete recommendation.
 
 The code follows these rules, each listed in
@@ -303,7 +303,7 @@ and these lists only shrink.
   the web playground. It runs cx compiled to js/wasm.
 - [skycoin-cx-playground-android](https://github.com/skycoin/skycoin-cx-playground-android),
   an Android app that lists CX programs and runs them, with a headless
-  emulator test rig, a benchmark app for the `t0-benchmarks/compare`
+  emulator test rig, a benchmark app for the `t0-cx-tools-benchmarks/compare`
   programs and a CX port of the femtoclaw agent.
 - [skycoin-cx-forth](https://github.com/skycoin/skycoin-cx-forth), a small
   Forth VM that runs a subset of the CX IR, for the host and for ESP32 with

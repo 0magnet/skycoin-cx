@@ -28,7 +28,7 @@ loading programs one after another allocates and clears them once (D106).
 ## Tests
 
 - `TestRunAllocs` runs every `BenchmarkRun` program and the
-  `t0-benchmarks/compare` programs, shrunk to a size that runs in
+  `t0-cx-tools-benchmarks/compare` programs, shrunk to a size that runs in
   milliseconds, with `testing.AllocsPerRun` around `RunCompiled` and requires
   0, test-gc.cx included.
 - `TestRunHeapAllocs` requires 0 and no Go GC cycle for the GC tests run with

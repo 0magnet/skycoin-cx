@@ -42,7 +42,7 @@ of tests:
   issues on github.com.
 * `test-*.cx` which are more thorough tests that test specific aspects of CX.
 
-Every test is registered in `runTestCases` in `t1-cxtest/main.go`, which
+Every test is registered in `runTestCases` in `t1-cx-tools-programtest/main.go`, which
 gives the expected exit code and a description. `make test` builds that
 runner and runs the stable tests. It also compiles every `cx` code block in
 `LanguageGuide.md` that has a `func main`. A block fenced as `cx compile-error`
@@ -246,7 +246,7 @@ find a bug in CX, please do the following:
 2. Write a new test in the `tests/` subdirectory that fails, showing the
    issue. Name the test file issue-<xx>.cx, where <xx> is the actual issue
    number from step 1.
-3. Register it in `runTestCases` in `t1-cxtest/main.go` with
+3. Register it in `runTestCases` in `t1-cx-tools-programtest/main.go` with
    `t.RunEx(..., runner.TestIssue, 0)` and a comment that names the issue,
    so `make test` skips it and `make test-all` runs it.
 4. Create a pull request for the new test.
