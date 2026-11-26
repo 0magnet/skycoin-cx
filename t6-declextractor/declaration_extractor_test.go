@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-programfiles"
-	"github.com/skycoin/skycoin-cx/t1-plloader"     // thin: tests use only LoadCXProgram; no depth gain
-	"github.com/skycoin/skycoin-cx/t5-plfileoutput" // thin: tests use only GetImportFiles; tests only, could move the test to t5-plfileoutput, tier 6 to 2
-	"github.com/skycoin/skycoin-cx/t6-declextractor"
+	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
+	loader "github.com/skycoin/skycoin-cx/t1-plloader"          // thin: tests use only LoadCXProgram; no depth gain
+	file_output "github.com/skycoin/skycoin-cx/t5-plfileoutput" // thin: tests use only GetImportFiles; tests only, could move the test to t5-plfileoutput, tier 6 to 2
+	declaration_extractor "github.com/skycoin/skycoin-cx/t6-declextractor"
 )
 
 // Sets the offset for windows or other os
@@ -1431,7 +1431,7 @@ func TestDeclarationExtractor_ExtractAllDeclarations(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			_, sourceCodes, _, perr := programfiles.ParseArgsForCX([]string{tc.testDir}, true)
+			_, sourceCodes, _, perr := sourceargs.Parse([]string{tc.testDir}, true)
 			if perr != nil {
 				t.Fatal(perr)
 			}

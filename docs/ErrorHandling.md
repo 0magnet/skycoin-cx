@@ -23,7 +23,7 @@ Errors are plain structs. There is no interface, and there is no shared
 error package that every module imports.
 
 Each module or system area defines its own error struct in its own package.
-`FileError` in `t0-programfiles` is the only class A struct so far, see
+`FileError` in `t1-cx-runtime-sandbox` is the only class A struct so far, see
 [Error records today](#error-records-today). Its fields are
 
 - the failure code, a specific code for each failure,
@@ -32,7 +32,7 @@ Each module or system area defines its own error struct in its own package.
 - any context fields the area needs, such as a path or an address.
 
 ```go
-// in t0-programfiles, next to the file calls
+// in t1-cx-runtime-sandbox, next to the file calls
 type FileErrorCode uint32
 type FileOperationCode uint32
 
@@ -83,8 +83,8 @@ A new area takes the next free block and is added here in the same change.
 | Block | Area | Struct | Package | Status |
 |---|---|---|---|---|
 | 0 - 999 | CX exit and runtime codes | none, `CX_*` constants | `t0-types` | exists |
-| 1000 - 1999 | Files | `FileError` | `t0-programfiles` | exists |
-| 2000 - 2999 | Paths and the working directory | `PathError` | `t0-programfiles` | planned |
+| 1000 - 1999 | Files | `FileError` | `t1-cx-runtime-sandbox` | exists |
+| 2000 - 2999 | Paths and the working directory | `PathError` | `t1-cx-runtime-sandbox` | planned |
 | 3000 - 3999 | Networking | `NetworkingError` | `t4-cxnet` | planned |
 | 4000 - 4999 | Package store database | `PackageStoreError` | `t0-plbolt` | planned |
 | 5000 - 5999 | Package loader | `PackageLoaderError` | `t1-plloader` | planned |
@@ -121,7 +121,7 @@ Only a binary's `main` turns a class A error into an exit code.
 
 Three error records exist.
 
-- `FileError` in `t0-programfiles/file_error.go` is the class A struct for file
+- `FileError` in `t1-cx-runtime-sandbox/file_error.go` is the class A struct for file
   calls. Its failure codes are `FileErrorCodeNotFound` (1001) to
   `FileErrorCodeContentInvalid` (1007), a file whose content is not in the
   expected format such as a damaged `cx build` trailer, and its operation

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skycoin/skycoin-cx/t0-programfiles"
-	"github.com/skycoin/skycoin-cx/t1-profiling" // thin: only StartCPUProfileOnFile; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-ast"
+	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
+	profiling "github.com/skycoin/skycoin-cx/t1-profiling" // thin: only StartCPUProfileOnFile; no depth gain
+	ast "github.com/skycoin/skycoin-cx/t3-ast"
 )
 
 // VIOLATION: state outside State. Owner: t5-cxos; moves to OsFileMng in phase 1.
@@ -27,7 +27,7 @@ func OpStartProfile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 	if profRate == 0 {
 		return
 	}
-	file, fileError := programfiles.ProgramSandboxFileCreate(prgrm.ProgramSandboxRoot, programPath)
+	file, fileError := sandbox.FileCreate(prgrm.ProgramSandboxRoot, programPath)
 	if fileError != nil {
 		fmt.Fprintln(os.Stderr, fileError.FileErrorMessage)
 		return
@@ -37,7 +37,7 @@ func OpStartProfile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CX
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
-	openProfiles[programPath.ProgramFileSystemPathText()] = stop
+	openProfiles[programPath.Text()] = stop
 }
 
 // VIOLATION STRHOT-140: B, hands a path or text to Go or the OS, #412.
@@ -46,11 +46,11 @@ func OpStopProfile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXV
 	if fileError != nil {
 		return
 	}
-	stop, ok := openProfiles[programPath.ProgramFileSystemPathText()]
+	stop, ok := openProfiles[programPath.Text()]
 	if !ok {
 		return
 	}
-	delete(openProfiles, programPath.ProgramFileSystemPathText())
+	delete(openProfiles, programPath.Text())
 	if err := stop(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}

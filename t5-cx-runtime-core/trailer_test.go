@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-programfiles"
+	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 )
 
 // A program appended with CoreTrailerAppend reads back from the file, and a
@@ -57,7 +57,7 @@ func TestCoreTrailerDamaged(t *testing.T) {
 			t.Fatal(err)
 		}
 		got, fileError := CoreTrailerRead(path)
-		if got != nil || fileError == nil || fileError.FileErrorCode != programfiles.FileErrorCodeContentInvalid {
+		if got != nil || fileError == nil || fileError.FileErrorCode != sandbox.FileErrorCodeContentInvalid {
 			t.Errorf("%s: read %q, %+v, want FileErrorCodeContentInvalid", name, got, fileError)
 		}
 	}

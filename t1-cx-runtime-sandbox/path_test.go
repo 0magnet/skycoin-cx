@@ -1,4 +1,4 @@
-package programfiles
+package sandbox
 
 import (
 	"os"
@@ -14,7 +14,7 @@ func TestProgramFileSystemPathFromBytesRejects(t *testing.T) {
 	}{
 		{"", FileErrorCodePathInvalid},
 		{"a\x00b", FileErrorCodePathInvalid},
-		{strings.Repeat("a", ProgramFileSystemPathLengthMaximum+1), FileErrorCodePathInvalid},
+		{strings.Repeat("a", PathLengthMaximum+1), FileErrorCodePathInvalid},
 		{`C:\x`, FileErrorCodePathInvalid},
 		{`\\server\x`, FileErrorCodePathInvalid},
 		{`a\b`, FileErrorCodePathInvalid},
@@ -28,7 +28,7 @@ func TestProgramFileSystemPathFromBytesRejects(t *testing.T) {
 		{"./../x", FileErrorCodePathOutsideSandbox},
 	}
 	for _, c := range cases {
-		_, fileError := ProgramFileSystemPathFromBytes([]byte(c.path))
+		_, fileError := PathFromBytes([]byte(c.path))
 		if fileError == nil {
 			t.Errorf("%q accepted", c.path)
 			continue
@@ -51,16 +51,16 @@ func TestProgramFileSystemPathFromBytesAccepts(t *testing.T) {
 		"d/..x/y.txt": "d/..x/y.txt",
 	}
 	for path, want := range cases {
-		programPath, fileError := ProgramFileSystemPathFromBytes([]byte(path))
+		programPath, fileError := PathFromBytes([]byte(path))
 		if fileError != nil {
 			t.Errorf("%q rejected: %s", path, fileError.FileErrorMessage)
 			continue
 		}
-		if got := programPath.ProgramFileSystemPathText(); got != want {
+		if got := programPath.Text(); got != want {
 			t.Errorf("%q cleaned to %q, want %q", path, got, want)
 		}
 	}
-	_, fileError := ProgramFileSystemPathFromBytes([]byte(strings.Repeat("a", ProgramFileSystemPathLengthMaximum)))
+	_, fileError := PathFromBytes([]byte(strings.Repeat("a", PathLengthMaximum)))
 	if fileError != nil {
 		t.Errorf("a path of the maximum length rejected: %s", fileError.FileErrorMessage)
 	}
@@ -81,7 +81,7 @@ func programSandboxFixture(t *testing.T) (root *os.Root, sandbox string, outside
 	if err := os.WriteFile(filepath.Join(outside, "secret.txt"), []byte("secret"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	root, fileError := ProgramSandboxRootOpen(sandbox)
+	root, fileError := RootOpen(sandbox)
 	if fileError != nil {
 		t.Fatal(fileError.FileErrorMessage)
 	}
@@ -108,9 +108,9 @@ func programSandboxOutsideCheck(t *testing.T, outside string) {
 	}
 }
 
-func programPathMust(t *testing.T, path string) ProgramFileSystemPath {
+func programPathMust(t *testing.T, path string) Path {
 	t.Helper()
-	programPath, fileError := ProgramFileSystemPathFromBytes([]byte(path))
+	programPath, fileError := PathFromBytes([]byte(path))
 	if fileError != nil {
 		t.Fatal(fileError.FileErrorMessage)
 	}
@@ -131,7 +131,7 @@ func TestProgramSandboxFileOperationsInside(t *testing.T) {
 		t.Fatal(err)
 	}
 	programPath := programPathMust(t, "d/a.txt")
-	file, fileError := ProgramSandboxFileCreate(root, programPath)
+	file, fileError := FileCreate(root, programPath)
 	if fileError != nil {
 		t.Fatal(fileError.FileErrorMessage)
 	}
@@ -140,19 +140,19 @@ func TestProgramSandboxFileOperationsInside(t *testing.T) {
 	if content, err := os.ReadFile(filepath.Join(sandbox, "d", "a.txt")); err != nil || string(content) != "hi" {
 		t.Fatalf("created file holds %q, %v", content, err)
 	}
-	file, fileError = ProgramSandboxFileOpen(root, programPath)
+	file, fileError = FileOpen(root, programPath)
 	if fileError != nil {
 		t.Fatal(fileError.FileErrorMessage)
 	}
 	file.Close()
-	if content, fileError := ProgramSandboxFileRead(root, programPathMust(t, "./d/../d/a.txt")); fileError != nil || string(content) != "hi" {
+	if content, fileError := FileRead(root, programPathMust(t, "./d/../d/a.txt")); fileError != nil || string(content) != "hi" {
 		t.Fatalf("read %q, %v", content, fileError)
 	}
-	_, fileError = ProgramSandboxFileOpen(root, programPathMust(t, "missing.txt"))
+	_, fileError = FileOpen(root, programPathMust(t, "missing.txt"))
 	if fileError == nil || fileError.FileErrorCode != FileErrorCodeNotFound || fileError.FileErrorOperation != FileOperationOpen {
 		t.Errorf("missing file gave %+v", fileError)
 	}
-	_, fileError = ProgramSandboxFileRead(root, programPathMust(t, "missing.txt"))
+	_, fileError = FileRead(root, programPathMust(t, "missing.txt"))
 	if fileError == nil || fileError.FileErrorCode != FileErrorCodeNotFound || fileError.FileErrorOperation != FileOperationRead {
 		t.Errorf("missing file read gave %+v", fileError)
 	}
@@ -160,7 +160,7 @@ func TestProgramSandboxFileOperationsInside(t *testing.T) {
 }
 
 func TestProgramSandboxRootMissing(t *testing.T) {
-	_, fileError := ProgramSandboxFileOpen(nil, programPathMust(t, "a.txt"))
+	_, fileError := FileOpen(nil, programPathMust(t, "a.txt"))
 	if fileError == nil || fileError.FileErrorCode != FileErrorCodeSandboxRootMissing {
 		t.Errorf("open without a root gave %+v", fileError)
 	}
@@ -174,17 +174,17 @@ func TestProgramSandboxSymlinkOut(t *testing.T) {
 
 	for _, path := range []string{"link.txt", "linkdir/secret.txt", "dangling.txt"} {
 		programPath := programPathMust(t, path)
-		if _, fileError := ProgramSandboxFileOpen(root, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
+		if _, fileError := FileOpen(root, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
 			t.Errorf("open %q gave %+v", path, fileError)
 		}
-		if _, fileError := ProgramSandboxFileRead(root, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
+		if _, fileError := FileRead(root, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
 			t.Errorf("read %q gave %+v", path, fileError)
 		}
-		if _, fileError := ProgramSandboxFileCreate(root, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
+		if _, fileError := FileCreate(root, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
 			t.Errorf("create %q gave %+v", path, fileError)
 		}
 	}
-	if _, fileError := ProgramSandboxFileCreate(root, programPathMust(t, "linkdir/new.txt")); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
+	if _, fileError := FileCreate(root, programPathMust(t, "linkdir/new.txt")); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
 		t.Errorf("create linkdir/new.txt gave %+v", fileError)
 	}
 	programSandboxOutsideCheck(t, outside)
@@ -202,7 +202,7 @@ func TestProgramSandboxDirectorySymlinkSwap(t *testing.T) {
 		t.Fatal(err)
 	}
 	programPath := programPathMust(t, "d/secret.txt")
-	content, fileError := ProgramSandboxFileRead(root, programPath)
+	content, fileError := FileRead(root, programPath)
 	if fileError != nil || string(content) != "inside" {
 		t.Fatalf("first read %q, %+v", content, fileError)
 	}
@@ -212,13 +212,13 @@ func TestProgramSandboxDirectorySymlinkSwap(t *testing.T) {
 	}
 	programSandboxSymlink(t, outside, d)
 
-	if content, fileError := ProgramSandboxFileRead(root, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
+	if content, fileError := FileRead(root, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
 		t.Errorf("read after the swap gave %q, %+v", content, fileError)
 	}
-	if _, fileError := ProgramSandboxFileCreate(root, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
+	if _, fileError := FileCreate(root, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
 		t.Errorf("create after the swap gave %+v", fileError)
 	}
-	if _, fileError := ProgramSandboxFileCreate(root, programPathMust(t, "d/new.txt")); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
+	if _, fileError := FileCreate(root, programPathMust(t, "d/new.txt")); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
 		t.Errorf("create of a new file after the swap gave %+v", fileError)
 	}
 	programSandboxOutsideCheck(t, outside)
@@ -229,13 +229,13 @@ func TestProgramSandboxDirectorySymlinkSwap(t *testing.T) {
 func TestProgramSandboxOpenReadWriteAndRemove(t *testing.T) {
 	root, sandbox, outside := programSandboxFixture(t)
 	programPath := programPathMust(t, "rw.bin")
-	file, fileError := ProgramSandboxFileOpenReadWrite(root, programPath)
+	file, fileError := FileOpenReadWrite(root, programPath)
 	if fileError != nil {
 		t.Fatal(fileError.FileErrorMessage)
 	}
 	file.WriteString("abcd")
 	file.Close()
-	file, fileError = ProgramSandboxFileOpenReadWrite(root, programPath)
+	file, fileError = FileOpenReadWrite(root, programPath)
 	if fileError != nil {
 		t.Fatal(fileError.FileErrorMessage)
 	}
@@ -247,13 +247,13 @@ func TestProgramSandboxOpenReadWriteAndRemove(t *testing.T) {
 	if content, err := os.ReadFile(filepath.Join(sandbox, "rw.bin")); err != nil || string(content) != "abXd" {
 		t.Fatalf("read-write file holds %q, %v", content, err)
 	}
-	if fileError := ProgramSandboxFileRemove(root, programPath); fileError != nil {
+	if fileError := FileRemove(root, programPath); fileError != nil {
 		t.Fatal(fileError.FileErrorMessage)
 	}
 	if _, err := os.Stat(filepath.Join(sandbox, "rw.bin")); !os.IsNotExist(err) {
 		t.Fatalf("removed file: %v", err)
 	}
-	fileError = ProgramSandboxFileRemove(root, programPath)
+	fileError = FileRemove(root, programPath)
 	if fileError == nil || fileError.FileErrorCode != FileErrorCodeNotFound || fileError.FileErrorOperation != FileOperationRemove {
 		t.Errorf("removing a missing file gave %+v", fileError)
 	}
@@ -263,16 +263,16 @@ func TestProgramSandboxOpenReadWriteAndRemove(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(sandbox, "d", "x"), nil, 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if fileError := ProgramSandboxFileRemove(root, programPathMust(t, "d")); fileError == nil {
+	if fileError := FileRemove(root, programPathMust(t, "d")); fileError == nil {
 		t.Error("removed a directory that is not empty")
 	}
-	if fileError := ProgramSandboxFileRemove(root, programPathMust(t, ".")); fileError == nil {
+	if fileError := FileRemove(root, programPathMust(t, ".")); fileError == nil {
 		t.Error("removed the sandbox root")
 	}
-	if _, fileError := ProgramSandboxFileOpenReadWrite(nil, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodeSandboxRootMissing {
+	if _, fileError := FileOpenReadWrite(nil, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodeSandboxRootMissing {
 		t.Errorf("read-write open without a root gave %+v", fileError)
 	}
-	if fileError := ProgramSandboxFileRemove(nil, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodeSandboxRootMissing {
+	if fileError := FileRemove(nil, programPath); fileError == nil || fileError.FileErrorCode != FileErrorCodeSandboxRootMissing {
 		t.Errorf("remove without a root gave %+v", fileError)
 	}
 	programSandboxOutsideCheck(t, outside)
@@ -286,16 +286,16 @@ func TestProgramSandboxRemoveAndReadWriteSymlinkOut(t *testing.T) {
 	programSandboxSymlink(t, outside, filepath.Join(sandbox, "linkdir"))
 
 	for _, path := range []string{"link.txt", "linkdir/secret.txt", "linkdir/new.txt"} {
-		if _, fileError := ProgramSandboxFileOpenReadWrite(root, programPathMust(t, path)); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
+		if _, fileError := FileOpenReadWrite(root, programPathMust(t, path)); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
 			t.Errorf("read-write open %q gave %+v", path, fileError)
 		}
 	}
-	if fileError := ProgramSandboxFileRemove(root, programPathMust(t, "linkdir/secret.txt")); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
+	if fileError := FileRemove(root, programPathMust(t, "linkdir/secret.txt")); fileError == nil || fileError.FileErrorCode != FileErrorCodePathOutsideSandbox {
 		t.Errorf("remove linkdir/secret.txt gave %+v", fileError)
 	}
 	programSandboxOutsideCheck(t, outside)
 	for _, path := range []string{"link.txt", "linkdir"} {
-		if fileError := ProgramSandboxFileRemove(root, programPathMust(t, path)); fileError != nil {
+		if fileError := FileRemove(root, programPathMust(t, path)); fileError != nil {
 			t.Errorf("remove the symlink %q: %s", path, fileError.FileErrorMessage)
 		}
 		if _, err := os.Lstat(filepath.Join(sandbox, path)); !os.IsNotExist(err) {

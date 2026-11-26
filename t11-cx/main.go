@@ -5,18 +5,20 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/skycoin/skycoin-cx/t0-programfiles" // thin: only CXCreateFile, CXLogFile, CXOpenFile, ProgramSandboxRootOpen; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-types"
+	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
+	filelog "github.com/skycoin/skycoin-cx/t0-cx-runtime-filelog"
+	types "github.com/skycoin/skycoin-cx/t0-types"
+	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t1-profiling"
-	repl "github.com/skycoin/skycoin-cx/t10-cxrepl" // thin: only Repl, ReplTargetFn; only user of cxrepl, could merge it here, max tier 11 to 10
-	"github.com/skycoin/skycoin-cx/t2-globals"      // thin: only DBG_GOLANG_STACK_TRACE; no depth gain
-	"github.com/skycoin/skycoin-cx/t4-actions"
-	"github.com/skycoin/skycoin-cx/t4-cxnet"                // thin: only InitConstants; no depth gain
+	constants "github.com/skycoin/skycoin-cx/t1-constants"
+	profiling "github.com/skycoin/skycoin-cx/t1-profiling"
+	repl "github.com/skycoin/skycoin-cx/t10-cxrepl"    // thin: only Repl, ReplTargetFn; only user of cxrepl, could merge it here, max tier 11 to 10
+	globals "github.com/skycoin/skycoin-cx/t2-globals" // thin: only DBG_GOLANG_STACK_TRACE; no depth gain
+	actions "github.com/skycoin/skycoin-cx/t4-actions"
+	cxnet "github.com/skycoin/skycoin-cx/t4-cxnet"          // thin: only InitConstants; no depth gain
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core" // thin: only ExecutorRun, ExecutorMemoryLimitsClamp and the executor names; no depth gain
-	"github.com/skycoin/skycoin-cx/t5-cxos"                 // thin: only InitConstants; no depth gain
-	"github.com/skycoin/skycoin-cx/t6-cxfx"                 // thin: only InitConstants; no depth gain
+	cxos "github.com/skycoin/skycoin-cx/t5-cxos"            // thin: only InitConstants; no depth gain
+	cxfx "github.com/skycoin/skycoin-cx/t6-cxfx"            // thin: only InitConstants; no depth gain
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"          // thin: only MakeProgram, RegisterPackages; no depth gain
 )
 
@@ -57,7 +59,7 @@ func Run(args []string) {
 }
 
 func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
-	root, fileError := programfiles.ProgramSandboxRootOpen(options.sandbox)
+	root, fileError := sandbox.RootOpen(options.sandbox)
 	if fileError != nil {
 		fmt.Fprintf(os.Stderr, "cannot open the sandbox: %s\n", fileError.FileErrorMessage)
 		os.Exit(types.CX_COMPILATION_ERROR)
@@ -171,7 +173,7 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 	*/
 	globals.DBG_GOLANG_STACK_TRACE = options.debugGoStack
 	if options.debugFileAccess {
-		programfiles.CXLogFile(true)
+		filelog.Enable(true)
 	}
 
 	/*
@@ -217,7 +219,7 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 	}
 
 	// options, file pointers, filenames
-	cxArgs, sourceCode, fileNames, err := programfiles.ParseArgsForCX(commandLine.Args(), true)
+	cxArgs, sourceCode, fileNames, err := sourceargs.Parse(commandLine.Args(), true)
 	if err != nil {
 		println(err.Error())
 		os.Exit(types.CX_COMPILATION_ERROR)

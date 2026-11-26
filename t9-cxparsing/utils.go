@@ -12,14 +12,14 @@ import (
 	"slices"
 	"strings"
 
+	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
 	cxpackages "github.com/skycoin/skycoin-cx/t0-packages" // thin: only IsBuiltinImport; no depth gain
-	"github.com/skycoin/skycoin-cx/t0-programfiles"
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-profiling" // thin: only CleanupAndExit, StartProfile, StopProfile; no depth gain
+	types "github.com/skycoin/skycoin-cx/t0-types"
+	profiling "github.com/skycoin/skycoin-cx/t1-profiling" // thin: only CleanupAndExit, StartProfile, StopProfile; no depth gain
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
-	"github.com/skycoin/skycoin-cx/t2-globals" // thin: only FoundCompileErrors, SRCPATH; no depth gain
-	"github.com/skycoin/skycoin-cx/t3-ast"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	globals "github.com/skycoin/skycoin-cx/t2-globals" // thin: only FoundCompileErrors, SRCPATH; no depth gain
+	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	actions "github.com/skycoin/skycoin-cx/t4-actions"
 	cxpartialparsing "github.com/skycoin/skycoin-cx/t5-cxpartialparsing" // thin: only CurrentFile, Parse, Program; no depth gain
 )
 
@@ -194,7 +194,7 @@ func Preliminarystage(srcStrs, srcNames []string) (int, []*ast.CXPackage) {
 					// Checking if `pkgName` already exists and if it's not a standard library package.
 					if _, err := cxpartialparsing.Program.GetPackage(preliminaryImportIdent(cxpartialparsing.Program, pkgName)); err != nil && !cxpackages.ImportBuiltin(pkgName) && !cxpartialparsing.Program.CXProgramImportFailed(preliminaryImportIdent(cxpartialparsing.Program, pkgName)) {
 						dir := filepath.Join(globals.SRCPATH, pkgName)
-						_, sourceCode, fileNames, err := programfiles.ParseArgsForCX([]string{dir}, false)
+						_, sourceCode, fileNames, err := sourceargs.Parse([]string{dir}, false)
 						if err != nil {
 							// The column is the opening quote of the path.
 							preliminaryImportFailed(cxpartialparsing.Program, pkgName, srcNames[i], lineno, match[len(match)-2], preliminaryImportReason(dir, err))

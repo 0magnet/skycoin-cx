@@ -9,11 +9,11 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-programfiles"
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t3-ast"
-	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer" // thin: only PrinterCompileErrorsRegister; no depth gain
+	types "github.com/skycoin/skycoin-cx/t0-types"
+	constants "github.com/skycoin/skycoin-cx/t1-constants"
+	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
+	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	printer "github.com/skycoin/skycoin-cx/t4-cx-runtime-printer" // thin: only PrinterCompileErrorsRegister; no depth gain
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
 
@@ -81,7 +81,7 @@ func coreRun(args []string) int32 {
 	if core.CoreLibrariesActive(prgrm)[constants.LibraryNumberFile] {
 		// The file library resolves paths in the working directory, as cx
 		// does without --sandbox. The core has no flags to name another.
-		root, fileError := programfiles.ProgramSandboxRootOpen("")
+		root, fileError := sandbox.RootOpen("")
 		if fileError != nil {
 			fmt.Fprintf(os.Stderr, "cx-core: cannot open the sandbox: %s\n", fileError.FileErrorMessage)
 			return types.CX_COMPILATION_ERROR

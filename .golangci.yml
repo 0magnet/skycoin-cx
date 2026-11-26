@@ -96,7 +96,7 @@ linters:
       - linters:
           - gosec
         text: "G103:"
-        path: (t2-cx-core-stringpool/|t0-programfiles/program_text|t11-cx/run_heap_test\.go)
+        path: (t2-cx-core-stringpool/|t11-cx/run_heap_test\.go)
       # Lint debt from before golangci-lint ran in CI, one rule per file and
       # linter. Fixing a file removes its rule, and the list only shrinks.
       - path: ^t0-benchmarks/compare_test\.go$
@@ -129,13 +129,11 @@ linters:
         linters: [errcheck]
       - path: ^t0-types/types\.go$
         linters: [unconvert, unparam]
-      - path: ^t0-programfiles/args\.go$
+      - path: ^t0-cx-compiler-sourceargs/sourceargs\.go$
         linters: [errcheck, staticcheck]
-      - path: ^t0-programfiles/file_test\.go$
+      - path: ^t1-cx-runtime-sandbox/path\.go$
         linters: [errcheck]
-      - path: ^t0-programfiles/program_path\.go$
-        linters: [errcheck]
-      - path: ^t0-programfiles/program_path_test\.go$
+      - path: ^t1-cx-runtime-sandbox/path_test\.go$
         linters: [errcheck]
       - path: ^t10-cxrepl/repl\.go$
         linters: [errcheck, staticcheck]

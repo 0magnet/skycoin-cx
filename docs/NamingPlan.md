@@ -58,7 +58,11 @@ time with main CI green in between. The names below are the proposal, and a
 pull request may refine one where the mechanical form reads badly, saying so.
 
 1. `make check-names` with all rules, the full allowlist and this plan.
-2. `t0-util` becomes `t0-programfiles`, package `programfiles`.
+2. `t0-util` is split by subject. The sandbox paths and file errors go to
+   `t1-cx-runtime-sandbox` (package `sandbox`), the source arguments to
+   `t0-cx-compiler-sourceargs` (`sourceargs.Parse`), the logged file calls to
+   `t0-cx-runtime-filelog` (`filelog.Open`, `Create`, `Stat`, `Enable`), and
+   `ProgramTextStringView` to `stringpool.StringView`.
 3. Vague words and `is` or `has`, rules 1 and 2: t0 to t2, then t3-ast, then
    t4-actions, then the rest (253 names).
 4. Verbs first, rule 6: t3-ast in two parts, then t4-actions, then the rest
@@ -68,8 +72,78 @@ pull request may refine one where the mechanical form reads badly, saying so.
 6. Underscores, rule 4: t0-types, then t1-constants, then t3-ast, then the
    rest (357).
 7. Abbreviations and single letters, rules 3 and 7 (36).
+8. Package directories, see below (46).
 
 Exported renames get a CHANGELOG line in their pull request.
+
+
+## Package directories
+
+Every package directory reads `t<N>-cx-<layer>-<subject>`, and its Go
+package is the subject, or `main` for a command. The tier N does not
+change. The layers are
+
+- `core`, the language model that the compiler and the runtime share;
+- `compiler`, from source to the IR;
+- `runtime`, running a program;
+- `library`, the system libraries;
+- `tools`, the developer commands and test harnesses;
+- `command`, the binaries that ship, cx, cx-core and mobile.
+
+`make check-names` reports a directory outside this form, or a package
+clause that is not its subject. These renames are step 8, a few
+directories per pull request. They change import paths, so
+skycoin-cx-playground and skycoin-cx-playground-android update their
+imports at their next bump of skycoin-cx. skycoin-cx-forth imports none.
+
+| Old | New | Package | Holds |
+|---|---|---|---|
+| `t0-benchmarks` | `t0-cx-tools-benchmarks` | `benchmarks` | the Go benchmarks and the language comparison |
+| `t0-benchmarks-structser` | `t0-cx-tools-benchmarkserialize` | `main` | the struct serialization benchmark |
+| `t0-cxfiles` | `t0-cx-library-filetable` | `filetable` | the open files of the file library by i32 handle |
+| `t0-cxhash` | `t0-cx-core-digest` | `digest` | the BLAKE3-256 digest of CX |
+| `t0-cxtestrunner` | `t0-cx-tools-testrunner` | `testrunner` | the runner of the CX program tests |
+| `t0-ifacecheck` | `t0-cx-tools-interfacecheck` | `main` | the interface embedding check |
+| `t0-lz4codec` | `t0-cx-core-compression` | `compression` | the LZ4 block codec of serialized programs |
+| `t0-packages` | `t0-cx-core-syspackages` | `syspackages` | the built-in sys/ packages |
+| `t0-plbolt` | `t0-cx-tools-packagestore` | `packagestore` | the bolt store of the package loader |
+| `t0-textsections` | `t0-cx-core-textsections` | `textsections` | the CX text form of stored files |
+| `t0-types` | `t0-cx-core-valuetypes` | `valuetypes` | the CX value types, their sizes and memory form |
+| `t1-cipherstate` | `t1-cx-library-cipherstate` | `cipherstate` | the hash states of the cipher library |
+| `t1-constants` | `t1-cx-core-opcodetable` | `opcodetable` | the opcode and library tables and their constants |
+| `t1-cxtest` | `t1-cx-tools-programtest` | `main` | the command that runs the CX program tests |
+| `t1-netbatch` | `t1-cx-library-networkbatch` | `networkbatch` | the batched runtime of the net library |
+| `t1-plloader` | `t1-cx-tools-packageloader` | `packageloader` | the package loader |
+| `t1-profiling` | `t1-cx-runtime-profiling` | `profiling` | the CPU and memory profiles |
+| `t2-globals` | `t2-cx-core-environment` | `environment` | CXPATH, the debug switches and the error exit |
+| `t2-plencoder` | `t2-cx-tools-packageencoder` | `packageencoder` | writes stored packages to disk |
+| `t2-plgraph` | `t2-cx-tools-packagegraph` | `packagegraph` | the import graph of stored packages |
+| `t2-pltree` | `t2-cx-tools-packagetree` | `packagetree` | the import tree of stored packages |
+| `t3-ast` | `t3-cx-core-ast` | `ast` | the compiler IR of a CX program |
+| `t3-packageloader` | `t3-cx-tools-packagecli` | `main` | the package loader command |
+| `t4-actions` | `t4-cx-compiler-astbuild` | `astbuild` | the parser actions that build the AST |
+| `t4-cipher` | `t4-cx-library-cipher` | `cipher` | the cipher library opcodes |
+| `t4-cxnet` | `t4-cx-library-netopcodes` | `netopcodes` | the net library opcodes |
+| `t4-cxos-core` | `t4-cx-library-osopcodes` | `osopcodes` | the time and os opcodes without a file system |
+| `t4-execute` | `t4-cx-runtime-interpreter` | `interpreter` | the old loop that runs a CXProgram |
+| `t4-opcodes` | `t4-cx-runtime-opcodes` | `opcodes` | the core opcodes |
+| `t4-regexp` | `t4-cx-library-regexp` | `regexp` | the regexp library opcodes |
+| `t5-cxos` | `t5-cx-library-fileopcodes` | `fileopcodes` | the file library opcodes |
+| `t5-cxpartialparsing` | `t5-cx-compiler-partialparsing` | `partialparsing` | the declaration pass parser |
+| `t5-plfileoutput` | `t5-cx-tools-packagefiles` | `packagefiles` | the files of stored packages |
+| `t6-cx-core-run` | `t6-cx-command-core` | `main` | the cx-core command of cx build |
+| `t6-cxfx` | `t6-cx-library-graphics` | `graphics` | the GL, GLFW, AL and gltext libraries |
+| `t6-declextractor` | `t6-cx-compiler-declarationextractor` | `declarationextractor` | the declaration extractor |
+| `t7-cxmobile` | `t7-cx-command-mobile` | `main` | the mobile command |
+| `t7-init` | `t7-cx-runtime-libraries` | `libraries` | registers the libraries of a program |
+| `t8-cxparsingcompletor` | `t8-cx-compiler-fullparsing` | `fullparsing` | the parser of function bodies |
+| `t8-typechecker` | `t8-cx-compiler-typechecker` | `typechecker` | the type checker |
+| `t9-astapi` | `t9-cx-core-astapi` | `astapi` | the AST editing API |
+| `t9-cxparsing` | `t9-cx-compiler-parsing` | `parsing` | the parse driver |
+| `t9-token-fuzzer` | `t9-cx-tools-tokenfuzzer` | `main` | the token fuzzer |
+| `t10-cxrepl` | `t10-cx-tools-repl` | `repl` | the REPL |
+| `t10-generator` | `t10-cx-tools-programgenerator` | `programgenerator` | the random program generator |
+| `t11-cx` | `t11-cx-command-cx` | `main` | the cx command |
 
 ## Renames
 
@@ -279,8 +353,11 @@ Exported renames get a CHANGELOG line in their pull request.
 | 3 | local_variable | `CXStatFile fileInfo` | `fileStat` |
 | 3 | local_variable | `listDir fileInfo` | `entries` |
 | 3 | parameter | `listDirRecursive info` | `entryStat` |
-| 3 | package | `util` | `programfiles` |
-| 4 | function | `ParseArgsForCX` | `ArgsForCXParse` |
+| 2 | package | `util` | `sandbox`, `sourceargs`, `filelog`, `stringpool` |
+| 2 | function | `ParseArgsForCX` | `sourceargs.Parse` |
+| 2 | function | `CXOpenFile`, `CXCreateFile`, `CXStatFile`, `CXLogFile` | `filelog.Open`, `Create`, `Stat`, `Enable` |
+| 2 | function | `ProgramSandbox*`, `ProgramFileSystemPath*` | `sandbox.RootOpen`, `FileOpen`, `FileCreate`, `FileOpenReadWrite`, `FileRemove`, `FileRead`, `Path`, `PathFromBytes`, `PathLengthMaximum` |
+| 2 | function | `ProgramTextStringView` | `stringpool.StringView` |
 
 ### t10-cxrepl
 

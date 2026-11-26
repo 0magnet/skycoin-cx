@@ -7,7 +7,7 @@ import (
 	"runtime/pprof"
 	"time"
 
-	"github.com/skycoin/skycoin-cx/t0-programfiles" // thin: only CXCreateFile; no depth gain
+	filelog "github.com/skycoin/skycoin-cx/t0-cx-runtime-filelog"
 )
 
 // VIOLATION: state outside State. Owner: t1-profiling; moves to ConfigMng in phase 2.
@@ -50,7 +50,7 @@ func StartCPUProfileFile(path string, profRate int) (stop func() error, err erro
 		return func() error { return nil }, nil
 	}
 
-	f, err := programfiles.CXCreateFile(path)
+	f, err := filelog.Create(path)
 	if err != nil {
 		return nil, fmt.Errorf("create CPU profile: %w", err)
 	}
@@ -88,7 +88,7 @@ func StartCPUProfileOnFile(f *os.File, profRate int) (stop func() error, err err
 
 // DumpMemProfile writes a heap profile to <argv0>_<name>_mem.pprof.
 func DumpMemProfile(name string) (err error) {
-	f, err := programfiles.CXCreateFile(fmt.Sprintf("%s_%s_mem.pprof", os.Args[0], name))
+	f, err := filelog.Create(fmt.Sprintf("%s_%s_mem.pprof", os.Args[0], name))
 	if err != nil {
 		return fmt.Errorf("create MEM profile: %w", err)
 	}

@@ -3,13 +3,13 @@ package tree
 import (
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t0-programfiles"
-	"github.com/skycoin/skycoin-cx/t1-plloader"
+	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
+	loader "github.com/skycoin/skycoin-cx/t1-plloader"
 )
 
 func TestTree(t *testing.T) {
 	const want = "main\n|--sys/os\n|--testimport2\n|  |--testimport1\n|  |  `--sys/gl\n|  `--testimport3\n|     `--testimport1\n|        `--sys/gl\n`--testimport1\n   `--sys/gl\n"
-	_, sourceCodes, _, perr := programfiles.ParseArgsForCX([]string{"test_tree"}, true)
+	_, sourceCodes, _, perr := sourceargs.Parse([]string{"test_tree"}, true)
 	if perr != nil {
 		t.Fatal(perr)
 	}

@@ -9,17 +9,17 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/skycoin-cx/t0-types"
-	"github.com/skycoin/skycoin-cx/t4-opcodes" // thin: only AssertFailed; no depth gain
+	filelog "github.com/skycoin/skycoin-cx/t0-cx-runtime-filelog"
+	types "github.com/skycoin/skycoin-cx/t0-types"
+	opcodes "github.com/skycoin/skycoin-cx/t4-opcodes" // thin: only AssertFailed; no depth gain
 
-	"github.com/skycoin/skycoin-cx/t0-programfiles" // thin: only CXCreateFile, CXLogFile, CXOpenFile; no depth gain
-	"github.com/skycoin/skycoin-cx/t1-constants"
-	"github.com/skycoin/skycoin-cx/t1-profiling"
+	constants "github.com/skycoin/skycoin-cx/t1-constants"
+	profiling "github.com/skycoin/skycoin-cx/t1-profiling"
 	repl "github.com/skycoin/skycoin-cx/t10-cxrepl" // thin: only Repl, ReplTargetFn; only user of cxrepl, could merge it here, max tier 11 to 10
-	"github.com/skycoin/skycoin-cx/t2-globals"
-	"github.com/skycoin/skycoin-cx/t3-ast"
-	"github.com/skycoin/skycoin-cx/t4-actions"
-	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
+	globals "github.com/skycoin/skycoin-cx/t2-globals"
+	ast "github.com/skycoin/skycoin-cx/t3-ast"
+	actions "github.com/skycoin/skycoin-cx/t4-actions"
+	printer "github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"             // thin: only MakeProgram, RegisterPackages; no depth gain
 	cxgo "github.com/skycoin/skycoin-cx/t8-cxparsingcompletor" // thin: only Tokenize; no depth gain
 	cxparsing "github.com/skycoin/skycoin-cx/t9-cxparsing"     // thin: only AddInitFunction, ErrCompilation, ParseSourceStrings; no depth gain
@@ -139,7 +139,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		if len(fileNames) > 1 {
 			fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
 		}
-		r, err = programfiles.CXOpenFile(sourceFilename)
+		r, err = filelog.Open(sourceFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ProgramError reading:", sourceFilename, err)
 			return
@@ -160,7 +160,7 @@ func printTokenize(options cxCmdFlags, fileNames []string) {
 		w = os.Stdout
 	} else {
 		tokenFilename := options.lexerOutput
-		w, err = programfiles.CXCreateFile(tokenFilename)
+		w, err = filelog.Create(tokenFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ProgramError writing:", tokenFilename, err)
 			return
