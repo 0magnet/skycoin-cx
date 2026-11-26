@@ -16,7 +16,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	llvm "github.com/skycoin/skycoin-cx/t3-cx-compiler-llvm"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	lower "github.com/skycoin/skycoin-cx/t4-cx-compiler-lower"
 )
 
@@ -267,7 +267,7 @@ func main() {
 	f64.print(ratio)
 }
 `})
-	image, failures := lower.Program(actions.AST)
+	image, failures := lower.Program(astbuild.AST)
 	if len(failures) > 0 {
 		t.Fatalf("does not lower: %+v", failures)
 	}

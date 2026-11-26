@@ -23,7 +23,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	lower "github.com/skycoin/skycoin-cx/t4-cx-compiler-lower"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
@@ -328,12 +328,12 @@ func lowerCompareChild(t *testing.T, program string) {
 	compileRunSources(t, names, sources)
 	lowerCompareEmit(t, lowerCompareResult{Stage: lowerCompareStageCompiled})
 
-	image, failures, outside := core.ExecutorLower(actions.AST)
+	image, failures, outside := core.ExecutorLower(astbuild.AST)
 	if outside != "" {
 		result := lowerCompareResult{Stage: lowerCompareStageOutside}
 		for _, failure := range failures {
 			entry := lowerCompareFailure{
-				Function: actions.AST.CXProgramNameText(actions.AST.CxIrState.CXFunctionMng.CXFunctionGet(actions.AST.CXProgramFunctionSlotGid(failure.FailureFunction)).Name),
+				Function: astbuild.AST.CXProgramNameText(astbuild.AST.CxIrState.CXFunctionMng.CXFunctionGet(astbuild.AST.CXProgramFunctionSlotGid(failure.FailureFunction)).Name),
 				Reason:   lower.ReasonNames[failure.FailureReason],
 			}
 			if failure.FailureReason == lower.ReasonOpcodeOutsideSubset {
@@ -351,8 +351,8 @@ func lowerCompareChild(t *testing.T, program string) {
 
 	// The loader refuses a program that uses a library operation its run
 	// does not enable, before either loop runs (D119).
-	core.LibrariesEnabledResolve(actions.AST)
-	if core.OperationRefused(actions.AST) != 0 {
+	core.LibrariesEnabledResolve(astbuild.AST)
+	if core.OperationRefused(astbuild.AST) != 0 {
 		lowerCompareEmit(t, lowerCompareResult{Stage: lowerCompareStageLowered, VmCode: valuetypes.CXRuntimeLibraryDisabled})
 		return
 	}
@@ -362,7 +362,7 @@ func lowerCompareChild(t *testing.T, program string) {
 	done := make(chan int32, 1)
 	var vmCode int32
 	lowerCompareCaptureStdout(t, func() {
-		go func() { done <- core.ExecutorVmRunMachine(actions.AST, machine) }()
+		go func() { done <- core.ExecutorVmRunMachine(astbuild.AST, machine) }()
 		select {
 		case vmCode = <-done:
 		case <-time.After(time.Minute):
@@ -381,13 +381,13 @@ func lowerCompareChild(t *testing.T, program string) {
 	}
 
 	lowerCompareCaptureStdout(t, func() {
-		if err := execute.RunCompiled(actions.AST, 0, nil); err != nil {
+		if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	result := lowerCompareResult{Stage: lowerCompareStageMatch, VmCode: vmCode}
-	result.Mismatch = lowerCompareDiff(actions.AST, machine)
+	result.Mismatch = lowerCompareDiff(astbuild.AST, machine)
 	if result.Mismatch != "" {
 		result.Stage = lowerCompareStageMismatch
 	}

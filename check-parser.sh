@@ -1,7 +1,7 @@
 #!/bin/sh
 # Checks that the CX parsers are what make build-parser writes from the .y
 # grammars, so a rename in a parser is made in its grammar as well.
-P="t5-cxpartialparsing/cxpartialparsing.go t8-cxparsingcompletor/parsingcompletor.go"
+P="t5-cx-compiler-partialparsing/cxpartialparsing.go t8-cx-compiler-fullparsing/parsingcompletor.go"
 # goyacc on windows writes a few lines of the parsers differently, so the
 # parsers are checked on Linux and macOS.
 if [ "$(go env GOOS)" = windows ]; then

@@ -429,7 +429,6 @@ t11-cx|directory||t11-cx
 t1-cipherstate|directory||t1-cipherstate
 t1-netbatch|directory||t1-netbatch
 t1-profiling|directory||t1-profiling
-t4-actions|directory||t4-actions
 t4-cipher|directory||t4-cipher
 t4-cxnet|directory||t4-cxnet
 t4-cxos-core|directory||t4-cxos-core
@@ -437,14 +436,9 @@ t4-execute|directory||t4-execute
 t4-opcodes|directory||t4-opcodes
 t4-regexp|directory||t4-regexp
 t5-cxos|directory||t5-cxos
-t5-cxpartialparsing|directory||t5-cxpartialparsing
 t6-cxfx|directory||t6-cxfx
-t6-declextractor|directory||t6-declextractor
 t7-cxmobile|directory||t7-cxmobile
 t7-init|directory||t7-init
-t8-cxparsingcompletor|directory||t8-cxparsingcompletor
-t8-typechecker|directory||t8-typechecker
-t9-cxparsing|directory||t9-cxparsing
 
 # FuncDecl and GenDecl are the go/ast types these methods read.
 t0-cx-tools-names/golang.go|method|GoCollector|FuncDeclNames

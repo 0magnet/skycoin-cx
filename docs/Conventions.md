@@ -119,7 +119,7 @@ document or check script.
     result, loop variable or `:=` name never has the name of a global, an
     imported package, a function or a type of its package, or a variable
     of an enclosing block. The compiler keeps the statements in
-    `t4-actions/scope_globals.go`, checks each use where a body resolves
+    `t4-cx-compiler-astbuild/scope_globals.go`, checks each use where a body resolves
     a global (`GlobalSymbolGet`) and each declaration where it enters the
     symbol table (`SymbolsTableUpdate`).
     `import "pkg"` reaches the members of `pkg` only as `pkg.name`. An
@@ -130,7 +130,7 @@ document or check script.
     global, function, type, imported package or name of another import.
     Masking is a compile error, and a warning in a function under a
     `//cx:masking warning` directive on the line before it. The compiler
-    keeps the imports in `t4-actions/scope_imports.go`, resolves a
+    keeps the imports in `t4-cx-compiler-astbuild/scope_imports.go`, resolves a
     shorthand where a body names an identifier (`PrimaryIdentifier`) or
     a type (`DeclarationSpecifiersStruct`), and checks masking once the
     declarations of a package are known (`ImportScopedCheck`) and where a

@@ -9,8 +9,8 @@ import (
 	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"
 	"github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	"github.com/skycoin/skycoin-cx/t4-actions"
-	cxparsing "github.com/skycoin/skycoin-cx/t9-cxparsing"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
+	"github.com/skycoin/skycoin-cx/t9-cx-compiler-parsing"
 )
 
 // affordanceSource declares a package with a struct, a global and two
@@ -25,12 +25,12 @@ func affordanceCompile(t *testing.T, source string) []string {
 	initProgram()
 	environment.FoundCompileErrors = false
 	defer func() { environment.FoundCompileErrors = false }()
-	cxparsing.SourceStringsParse([]string{source}, []string{"aff.cx"})
+	parsing.SourceStringsParse([]string{source}, []string{"aff.cx"})
 	var errors []string
-	for _, record := range actions.AST.CxIrState.CompileErrorList.CompileErrorListRecords {
+	for _, record := range astbuild.AST.CxIrState.CompileErrorList.CompileErrorListRecords {
 		text := fmt.Sprintf("%d", record.CompileErrorRecordCode)
 		if record.CompileErrorRecordCode == ast.CompileErrorCodeAffordanceInvalid || record.CompileErrorRecordCode == ast.CompileErrorCodeSyntax {
-			text = actions.AST.CXProgramNameText(stringpool.StringGid(record.CompileErrorRecordOperands[0]))
+			text = astbuild.AST.CXProgramNameText(stringpool.StringGid(record.CompileErrorRecordOperands[0]))
 		}
 		errors = append(errors, fmt.Sprintf("%d:%d %s", record.CompileErrorRecordLine, record.CompileErrorRecordColumn, text))
 	}
@@ -69,7 +69,7 @@ func TestAffordanceLiteralParse(t *testing.T) {
 			if errors := affordanceCompile(t, affordanceSource("\ta = "+test.literal)); len(errors) > 0 {
 				t.Fatalf("compile errors %q", errors)
 			}
-			prgrm := actions.AST
+			prgrm := astbuild.AST
 			value := ast.AffordanceValueRead(prgrm.Memory, prgrm.Data.StartsAt+prgrm.Data.Size-valuetypes.AffSize)
 			pkg, err := prgrm.PackageGet(prgrm.CxIrState.CxIrStateNameMain)
 			if err != nil {
@@ -85,7 +85,7 @@ func TestAffordanceLiteralParse(t *testing.T) {
 				got.item = prgrm.CXProgramNameText(prgrm.CXStructs[value.AffordanceValueTarget].Name)
 			}
 			if value.AffordanceValueVariable >= 0 {
-				got.variable = prgrm.CXProgramNameText(actions.StripNameNumber(prgrm, prgrm.CXTypeSignatureFromArrayGet(value.AffordanceValueVariable).Name))
+				got.variable = prgrm.CXProgramNameText(astbuild.StripNameNumber(prgrm, prgrm.CXTypeSignatureFromArrayGet(value.AffordanceValueVariable).Name))
 			}
 			if got != test.want {
 				t.Fatalf("value %+v, want %+v", got, test.want)
@@ -154,7 +154,7 @@ func TestAffordanceSerializeDeclarations(t *testing.T) {
 			if errors := affordanceCompile(t, affordanceSource("\ta = "+test.literal)); len(errors) > 0 {
 				t.Fatalf("compile errors %q", errors)
 			}
-			prgrm := actions.AST
+			prgrm := astbuild.AST
 			value := ast.AffordanceValueRead(prgrm.Memory, prgrm.Data.StartsAt+prgrm.Data.Size-valuetypes.AffSize)
 			b, ok := ast.AffordanceSerialize(prgrm, value)
 			if !ok {

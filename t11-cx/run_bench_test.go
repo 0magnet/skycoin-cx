@@ -14,7 +14,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t2-cx-core-environment"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"
@@ -156,15 +156,15 @@ func compileRunProgram(tb testing.TB, p runBenchProgram) {
 func compileRunSources(tb testing.TB, names []string, sources []string) {
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S1780 S1781.
-	actions.AST = cxinit.ProgramMake()
-	cxinit.PackagesRegister(actions.AST)
+	astbuild.AST = cxinit.ProgramMake()
+	cxinit.PackagesRegister(astbuild.AST)
 	environment.FoundCompileErrors = false
 	environment.HeapOffset = 0
 	if err := compileSourceStrings(names, sources); err != nil {
 		tb.Fatalf("%s: %v", names, err)
 	}
-	actions.AST.CxIrState.CxIrStateManagerGrowBoundary()
-	actions.AST.CxIrState.StringPool.StringPoolFreeze()
+	astbuild.AST.CxIrState.CxIrStateManagerGrowBoundary()
+	astbuild.AST.CxIrState.StringPool.StringPoolFreeze()
 }
 
 // discardStdout points os.Stdout at the null device until the test ends.
@@ -192,11 +192,11 @@ func BenchmarkRun(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				b.StopTimer()
-				ast.ProgramMemoryRelease(actions.AST)
+				ast.ProgramMemoryRelease(astbuild.AST)
 				compileRunProgram(b, p)
-				execute.RunPrepare(actions.AST)
+				execute.RunPrepare(astbuild.AST)
 				b.StartTimer()
-				if err := execute.RunCompiled(actions.AST, 0, nil); err != nil {
+				if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
 					b.Fatal(err)
 				}
 			}
@@ -220,8 +220,8 @@ func TestRunAllocs(t *testing.T) {
 			var compiled []*ast.CXProgram
 			for i := 0; i <= runs; i++ {
 				compileRunProgram(t, p)
-				execute.RunPrepare(actions.AST)
-				compiled = append(compiled, actions.AST)
+				execute.RunPrepare(astbuild.AST)
+				compiled = append(compiled, astbuild.AST)
 			}
 			next := 0
 			allocs := testing.AllocsPerRun(runs, func() {
@@ -242,7 +242,7 @@ func TestRunAllocs(t *testing.T) {
 // lower.
 func vmBenchMachine(tb testing.TB, p runBenchProgram) *vm.Machine {
 	compileRunProgram(tb, p)
-	image, _, outside := core.ExecutorLower(actions.AST)
+	image, _, outside := core.ExecutorLower(astbuild.AST)
 	if outside != "" {
 		return nil
 	}
@@ -264,7 +264,7 @@ func BenchmarkRunVm(b *testing.B) {
 			b.ReportAllocs()
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				if code := core.ExecutorVmRunMachine(actions.AST, machine); code != valuetypes.CXSuccess {
+				if code := core.ExecutorVmRunMachine(astbuild.AST, machine); code != valuetypes.CXSuccess {
 					b.Fatalf("%s: code %d", p.name, code)
 				}
 			}
@@ -285,7 +285,7 @@ func TestRunVmAllocs(t *testing.T) {
 		lowered++
 		discardStdout(t)
 		allocs := testing.AllocsPerRun(3, func() {
-			if code := core.ExecutorVmRunMachine(actions.AST, machine); code != valuetypes.CXSuccess {
+			if code := core.ExecutorVmRunMachine(astbuild.AST, machine); code != valuetypes.CXSuccess {
 				t.Fatalf("%s: code %d", p.name, code)
 			}
 		})
@@ -321,13 +321,13 @@ func TestRunVmLibraryCallAllocs(t *testing.T) {
 	initProgram()
 	for _, enabled := range []bool{true, false} {
 		compileRunProgram(t, runBenchProgram{name: "library", source: runLibraryCallSource})
-		actions.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberFile] = enabled
-		actions.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberNet] = enabled
-		core.LibrariesEnabledResolve(actions.AST)
-		if refused := core.OperationRefused(actions.AST) != 0; refused == enabled {
+		astbuild.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberFile] = enabled
+		astbuild.AST.ProgramLibrariesEnabled[opcodetable.LibraryNumberNet] = enabled
+		core.LibrariesEnabledResolve(astbuild.AST)
+		if refused := core.OperationRefused(astbuild.AST) != 0; refused == enabled {
 			t.Fatalf("enabled %v: refused %v", enabled, refused)
 		}
-		image, _, outside := core.ExecutorLower(actions.AST)
+		image, _, outside := core.ExecutorLower(astbuild.AST)
 		if !enabled {
 			if !strings.Contains(outside, "operation not enabled") {
 				t.Fatalf("not enabled: lower gives %q, want the refusal", outside)
@@ -396,11 +396,11 @@ func TestRunNoGC(t *testing.T) {
 		t.Run(p.name, func(t *testing.T) {
 			discardStdout(t)
 			compileRunProgram(t, p)
-			execute.RunPrepare(actions.AST)
+			execute.RunPrepare(astbuild.AST)
 			var before, after runtime.MemStats
 			runtime.GC()
 			runtime.ReadMemStats(&before)
-			if err := execute.RunCompiled(actions.AST, 0, nil); err != nil {
+			if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
 				t.Fatal(err)
 			}
 			runtime.ReadMemStats(&after)
@@ -426,13 +426,13 @@ func BenchmarkLoad(b *testing.B) {
 			b.ReportAllocs()
 			var compile, prepare, run time.Duration
 			for i := 0; i < b.N; i++ {
-				ast.ProgramMemoryRelease(actions.AST)
+				ast.ProgramMemoryRelease(astbuild.AST)
 				compileStart := time.Now()
 				compileRunSources(b, []string{name}, []string{string(source)})
 				prepareStart := time.Now()
-				execute.RunPrepare(actions.AST)
+				execute.RunPrepare(astbuild.AST)
 				runStart := time.Now()
-				if err := execute.RunCompiled(actions.AST, 0, nil); err != nil {
+				if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
 					b.Fatal(err)
 				}
 				runEnd := time.Now()

@@ -7,7 +7,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
@@ -140,8 +140,8 @@ func runPrintAllocs(t *testing.T, p runBenchProgram) float64 {
 	var compiled []*ast.CXProgram
 	for i := 0; i <= runs; i++ {
 		compileRunProgram(t, p)
-		execute.RunPrepare(actions.AST)
-		compiled = append(compiled, actions.AST)
+		execute.RunPrepare(astbuild.AST)
+		compiled = append(compiled, astbuild.AST)
 	}
 	next := 0
 	return testing.AllocsPerRun(runs, func() {
@@ -173,13 +173,13 @@ func TestRunVmPrintAllocs(t *testing.T) {
 	initProgram()
 	discardStdout(t)
 	compileRunProgram(t, runBenchProgram{name: "atomic", source: runPrintAtomicSource})
-	image, _, outside := core.ExecutorLower(actions.AST)
+	image, _, outside := core.ExecutorLower(astbuild.AST)
 	if outside != "" {
 		t.Fatalf("does not lower: %s", outside)
 	}
 	machine := vm.MachineNew(&image, core.ExecutorOutputSize)
 	allocs := testing.AllocsPerRun(3, func() {
-		if code := core.ExecutorVmRunMachine(actions.AST, machine); code != valuetypes.CXSuccess {
+		if code := core.ExecutorVmRunMachine(astbuild.AST, machine); code != valuetypes.CXSuccess {
 			t.Fatalf("code %d", code)
 		}
 	})
@@ -199,9 +199,9 @@ func BenchmarkRunPrint(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				b.StopTimer()
 				compileRunProgram(b, p)
-				execute.RunPrepare(actions.AST)
+				execute.RunPrepare(astbuild.AST)
 				b.StartTimer()
-				if err := execute.RunCompiled(actions.AST, 0, nil); err != nil {
+				if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
 					b.Fatal(err)
 				}
 			}

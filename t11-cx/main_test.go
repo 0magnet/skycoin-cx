@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t4-cxnet"
 	"github.com/skycoin/skycoin-cx/t5-cxos"
 	cxinit "github.com/skycoin/skycoin-cx/t7-init"
@@ -45,11 +45,11 @@ func TestNoArgsStartsRepl(t *testing.T) {
 }
 
 func initProgram() {
-	actions.ConstantsInit()
-	cxos.ConstantsInit(actions.ConstI32Add)
-	cxnet.ConstantsInit(actions.ConstI32Add)
+	astbuild.ConstantsInit()
+	cxos.ConstantsInit(astbuild.ConstI32Add)
+	cxnet.ConstantsInit(astbuild.ConstI32Add)
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Also state.CXProgramMng.CXProgramRelease(gid), phase 4 #371. Site S0064 S0065.
-	actions.AST = cxinit.ProgramMake()
-	cxinit.PackagesRegister(actions.AST)
+	astbuild.AST = cxinit.ProgramMake()
+	cxinit.PackagesRegister(astbuild.AST)
 }

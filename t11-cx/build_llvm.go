@@ -17,7 +17,7 @@ import (
 	llvm "github.com/skycoin/skycoin-cx/t3-cx-compiler-llvm"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
@@ -55,7 +55,7 @@ func buildLlvmOptions() llvm.Options {
 // .exe, and the C runtime. A program outside the vm subset is refused with
 // the message vm gives.
 func buildLlvm(options buildOptions) int {
-	prgrm := actions.AST
+	prgrm := astbuild.AST
 	core.LibrariesEnabledResolve(prgrm)
 	prgrm.CxIrState.CxIrStateManagerGrowBoundary()
 	prgrm.CxIrState.StringPool.StringPoolFreeze()

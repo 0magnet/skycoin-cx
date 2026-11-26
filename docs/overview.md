@@ -14,7 +14,7 @@ See the README for the rule.
 * **t3-cx-core-ast/** the data structures representing a CX program, the memory
 model and the serializer. The root of the tree is the `CXProgram` struct.
 * **t4-opcodes/**, **t4-execute/** the runtime part of CX.
-* **t5-cxpartialparsing/**, **t8-cxparsingcompletor/**, **t9-cxparsing/**
+* **t5-cx-compiler-partialparsing/**, **t8-cx-compiler-fullparsing/**, **t9-cx-compiler-parsing/**
 the parser. It analyzes the source code and builds the tree above.
 * **t11-cx/** the cx binary.
 * **vendor/** 3rd party code needed to build CX. It is not part of the CX
@@ -32,9 +32,9 @@ interpreter, run by `t1-cx-tools-programtest` (`make test`). See the file
 The CX parser analyzes the source code of a CX program and
  works in two passes:
 
-1. The first pass (in `t5-cxpartialparsing`) reads all the types, global variables and
+1. The first pass (in `t5-cx-compiler-partialparsing`) reads all the types, global variables and
 function names and stores them.
-2. The second pass (in `t8-cxparsingcompletor`) reads the full source code of the program and
+2. The second pass (in `t8-cx-compiler-fullparsing`) reads the full source code of the program and
 creates the object tree representing the program. This tree will be passed to
 the interpreter run.
 

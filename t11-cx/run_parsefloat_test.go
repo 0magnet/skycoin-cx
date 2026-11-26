@@ -5,7 +5,7 @@ import (
 	"runtime/debug"
 	"testing"
 
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 )
 
@@ -60,9 +60,9 @@ func BenchmarkRunParseFloat(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 		compileRunProgram(b, p)
-		execute.RunPrepare(actions.AST)
+		execute.RunPrepare(astbuild.AST)
 		b.StartTimer()
-		if err := execute.RunCompiled(actions.AST, 0, nil); err != nil {
+		if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -81,8 +81,8 @@ func TestRunParseFloatOutput(t *testing.T) {
 	defer func() { os.Stdout = stdout }()
 	defer out.Close()
 	compileRunProgram(t, runBenchProgram{name: "parsefloat", source: runParseFloatSource})
-	execute.RunPrepare(actions.AST)
-	if err := execute.RunCompiled(actions.AST, 0, nil); err != nil {
+	execute.RunPrepare(astbuild.AST)
+	if err := execute.RunCompiled(astbuild.AST, 0, nil); err != nil {
 		t.Fatal(err)
 	}
 	os.Stdout = stdout

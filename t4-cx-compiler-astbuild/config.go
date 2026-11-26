@@ -1,0 +1,24 @@
+package astbuild
+
+import (
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
+)
+
+// OBJMODEL: *CxIrState passed as a parameter, owned by main, phase 5 #372.
+// Now a pointer at rest, site S0604.
+var AST *ast.CXProgram
+
+// VIOLATION: state outside State. Owner: t4-cx-compiler-astbuild; moves to ParseMng in phase 2.
+var CurrentFile ast.SourceFileGid
+
+// VIOLATION: state outside State. Owner: t4-cx-compiler-astbuild; moves to ParseMng in phase 2.
+var LineNo int
+
+// VIOLATION: state outside State. Owner: t4-cx-compiler-astbuild; moves to ParseMng in phase 2.
+var LineStr string
+
+// CXLineExpressionCurrentMake makes the CXOperationTypeLine marker of the line the parser
+// is at, interning its text.
+func CXLineExpressionCurrentMake(prgrm *ast.CXProgram) *ast.CXExpression {
+	return ast.CXLineExpressionMake(prgrm, CurrentFile, LineNo, prgrm.CXProgramNameIntern(LineStr))
+}

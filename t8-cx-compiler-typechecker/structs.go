@@ -1,0 +1,76 @@
+package typechecker
+
+import (
+	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader" // thin: only File; no depth gain
+	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
+	"github.com/skycoin/skycoin-cx/t6-cx-compiler-declarationextractor"
+)
+
+// Parse Structs
+// - takes in structs from cx/cmd/declaration_extractor
+// - adds structs to AST
+func StructsParse(files []*packageloader.File, structs []declarationextractor.StructDeclaration) error {
+	prgrm := astbuild.AST
+
+	// Get Package
+	for _, strct := range structs {
+
+		pkgNameGid := astbuild.AST.CXProgramNameIntern(strct.PackageID)
+		pkg, err := astbuild.AST.PackageGet(pkgNameGid)
+
+		// If package is not found
+		if err != nil {
+
+			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
+			// Now a constructor call, site S1522.
+			newPkg := ast.PackageMake(pkgNameGid)
+			// OBJMODEL: state.CXPackageMng.CXPackageAlloc(), phase 4 #361.
+			// Now an arena insert, site S1523.
+			pkgIdx := astbuild.AST.PackageAdd(newPkg)
+			// OBJMODEL: state.CXPackageMng.CXPackageGet(gid), phase 5 #362.
+			// Now an arena getter, site S1524.
+			newPkg, err = astbuild.AST.PackageFromArrayGet(pkgIdx)
+
+			if err != nil {
+				return err
+			}
+
+			pkg = newPkg
+
+		}
+
+		// Select Package to Add to AST
+		astbuild.AST.SelectPackage(pkgNameGid)
+
+		// OBJMODEL: state.CXStructMng.CXStructAlloc(), phase 4 #336.
+		// Now a constructor call, site S1525.
+		structCX := ast.StructMake(astbuild.AST.CXProgramNameIntern(strct.StructName))
+		structCX.Package = ast.CXPackageIndex(pkg.Index)
+
+		pkg = pkg.StructAdd(astbuild.AST, structCX)
+
+		src, err := SourceBytesGet(files, strct.FileID)
+		if err != nil {
+			return err
+		}
+
+		var structFields []*ast.CXArgument
+
+		for _, strctFieldDec := range strct.StructFields {
+
+			structFieldLine := src[strctFieldDec.StartOffset : strctFieldDec.StartOffset+strctFieldDec.Length]
+
+			structFieldSpecifier, err := ParameterDeclarationParse(prgrm, structFieldLine, pkg, prgrm.CXProgramSourceFileIntern(strct.FileID), strctFieldDec.LineNumber)
+			if err != nil {
+				return err
+			}
+
+			structFields = append(structFields, structFieldSpecifier)
+		}
+
+		astbuild.StructDeclare(astbuild.AST, strct.StructName, structFields, prgrm.CXProgramSourceFileIntern(strct.FileID), strct.LineNumber, 0)
+
+	}
+	return nil
+}

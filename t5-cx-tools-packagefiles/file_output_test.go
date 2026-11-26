@@ -5,7 +5,7 @@ import (
 
 	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
 	"github.com/skycoin/skycoin-cx/t1-cx-tools-packageloader"
-	actions "github.com/skycoin/skycoin-cx/t4-actions" // thin: tests use only AST; tests only set actions.AST = nil, could drop it, tier 5 to 2
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild" // thin: tests use only AST; tests only set actions.AST = nil, could drop it, tier 5 to 2
 	"github.com/skycoin/skycoin-cx/t5-cx-tools-packagefiles"
 )
 
@@ -38,7 +38,7 @@ func TestFile_Output_GetImportFiles(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.scenario, func(t *testing.T) {
 
-			actions.AST = nil
+			astbuild.AST = nil
 
 			_, sourceCodes, _, perr := sourceargs.Parse([]string{tc.testDir}, true)
 			if perr != nil {

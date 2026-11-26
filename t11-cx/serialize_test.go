@@ -10,7 +10,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t4-execute"
 )
 
@@ -28,7 +28,7 @@ func serializeCompile(t *testing.T, name string, source string) *ast.CXProgram {
 	t.Helper()
 	initProgram()
 	compileRunSources(t, []string{name}, []string{source})
-	return actions.AST
+	return astbuild.AST
 }
 
 func TestSerializeDeclaration(t *testing.T) {
@@ -45,7 +45,7 @@ func TestSerializeDeclaration(t *testing.T) {
 		if !includeMemory {
 			continue
 		}
-		actions.AST = got
+		astbuild.AST = got
 		out := lowerCompareCaptureStdout(t, func() {
 			if err := execute.RunCompiled(got, 0, nil); err != nil {
 				t.Fatal(err)

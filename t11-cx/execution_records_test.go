@@ -25,7 +25,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-cx-core-textsections"
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
-	"github.com/skycoin/skycoin-cx/t4-actions"
+	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
 	"github.com/skycoin/skycoin-cx/t4-cx-runtime-printer"
 	core "github.com/skycoin/skycoin-cx/t5-cx-runtime-core"
 )
@@ -941,7 +941,7 @@ func executionRecordsImageChild(args []string) {
 		os.Exit(executionRecordsChildFailed)
 	}
 	printer.CompileErrorsRegister(prgrm)
-	actions.AST = prgrm
+	astbuild.AST = prgrm
 	runProgram(options, cxArgs, sourceCode)
 	os.Exit(valuetypes.CXSuccess)
 }

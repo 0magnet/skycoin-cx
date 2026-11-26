@@ -238,17 +238,17 @@ linters:
         linters: [unconvert, unparam]
       - path: ^t3-cx-tools-packagecli/main\.go$
         linters: [errcheck]
-      - path: ^t4-actions/assignment\.go$
+      - path: ^t4-cx-compiler-astbuild/assignment\.go$
         linters: [errcheck, unconvert]
-      - path: ^t4-actions/expressions\.go$
+      - path: ^t4-cx-compiler-astbuild/expressions\.go$
         linters: [nakedret, unconvert]
-      - path: ^t4-actions/functions\.go$
+      - path: ^t4-cx-compiler-astbuild/functions\.go$
         linters: [errcheck, staticcheck, unconvert]
-      - path: ^t4-actions/literals\.go$
+      - path: ^t4-cx-compiler-astbuild/literals\.go$
         linters: [errcheck]
-      - path: ^t4-actions/postfix\.go$
+      - path: ^t4-cx-compiler-astbuild/postfix\.go$
         linters: [errcheck, unconvert]
-      - path: ^t4-actions/variables\.go$
+      - path: ^t4-cx-compiler-astbuild/variables\.go$
         linters: [unconvert]
       - path: ^t4-cipher/op_cipher_test\.go$
         linters: [errcheck]
@@ -274,7 +274,7 @@ linters:
         linters: [errcheck]
       - path: ^t5-cxos/op_os\.go$
         linters: [errcheck, nakedret, unconvert, unparam]
-      - path: ^t5-cxpartialparsing/lex\.go$
+      - path: ^t5-cx-compiler-partialparsing/lex\.go$
         linters: [ineffassign, unconvert]
       - path: ^t5-cx-runtime-core/executor\.go$
         linters: [errcheck]
@@ -286,31 +286,31 @@ linters:
         linters: [errcheck]
       - path: ^t6-cx-core-run/main\.go$
         linters: [errcheck]
-      - path: ^t6-declextractor/declaration_extractor\.go$
+      - path: ^t6-cx-compiler-declarationextractor/declaration_extractor\.go$
         linters: [unparam]
-      - path: ^t6-declextractor/declaration_extractor_test\.go$
+      - path: ^t6-cx-compiler-declarationextractor/declaration_extractor_test\.go$
         linters: [errcheck, staticcheck]
-      - path: ^t6-declextractor/main_test\.go$
+      - path: ^t6-cx-compiler-declarationextractor/main_test\.go$
         linters: [errcheck]
-      - path: ^t8-cxparsingcompletor/lex\.go$
+      - path: ^t8-cx-compiler-fullparsing/lex\.go$
         linters: [ineffassign, unconvert]
-      - path: ^t8-cxparsingcompletor/parseraction\.go$
+      - path: ^t8-cx-compiler-fullparsing/parseraction\.go$
         linters: [staticcheck]
-      - path: ^t8-cxparsingcompletor/tokenize\.go$
+      - path: ^t8-cx-compiler-fullparsing/tokenize\.go$
         linters: [errcheck, staticcheck]
-      - path: ^t8-typechecker/functions\.go$
+      - path: ^t8-cx-compiler-typechecker/functions\.go$
         linters: [errcheck, staticcheck]
-      - path: ^t8-typechecker/globals\.go$
+      - path: ^t8-cx-compiler-typechecker/globals\.go$
         linters: [errcheck]
-      - path: ^t8-typechecker/imports\.go$
+      - path: ^t8-cx-compiler-typechecker/imports\.go$
         linters: [errcheck, ineffassign, staticcheck]
-      - path: ^t8-typechecker/main_test\.go$
+      - path: ^t8-cx-compiler-typechecker/main_test\.go$
         linters: [errcheck]
-      - path: ^t8-typechecker/structs\.go$
+      - path: ^t8-cx-compiler-typechecker/structs\.go$
         linters: [errcheck]
-      - path: ^t8-typechecker/type_checker_test\.go$
+      - path: ^t8-cx-compiler-typechecker/type_checker_test\.go$
         linters: [errcheck, ineffassign, staticcheck, unconvert]
-      - path: ^t8-typechecker/util\.go$
+      - path: ^t8-cx-compiler-typechecker/util\.go$
         linters: [staticcheck]
       - path: ^t9-cx-core-astapi/arguments\.go$
         linters: [unconvert]
@@ -318,7 +318,7 @@ linters:
         linters: [errcheck]
       - path: ^t9-cx-core-astapi/functions\.go$
         linters: [unconvert]
-      - path: ^t9-cxparsing/utils\.go$
+      - path: ^t9-cx-compiler-parsing/utils\.go$
         linters: [errcheck]
       - path: ^t9-cx-tools-tokenfuzzer/main\.go$
         linters: [errcheck, staticcheck, unconvert]
