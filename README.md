@@ -204,12 +204,13 @@ prints what vm prints. See [docs/LlvmTarget.md](docs/LlvmTarget.md).
 ## Performance
 
 `t0-cx-tools-benchmarks/compare` holds twelve long benchmarks, each in CX and
-pure Go with the same algorithm, six of them in Python 3 and Bash too, and
-each prints a hash of its results that `TestCompareExpected` derives from the
-math. `make bench-compare` times them and needs python3, taskset and, for the
-native column, clang. It is not part of `make check`. The numbers below are
-in milliseconds with the start up time taken off, the median of 3 runs pinned
-to one core.
+pure Go with the same algorithm, and each prints a hash of its results that
+`TestCompareExpected` derives from the math. `make bench-compare` times them
+and needs taskset and, for the native column, clang. The same programs in C,
+Lua, Python and more, native and in wasm, are timed by
+[github.com/skycoin/cx-bench](https://github.com/skycoin/cx-bench). It is not
+part of `make check`. The numbers below are in milliseconds with the start up
+time taken off, the median of 3 runs pinned to one core.
 
 | benchmark | cx vm | Go |
 |---|---:|---:|

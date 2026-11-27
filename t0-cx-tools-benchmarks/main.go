@@ -1,7 +1,7 @@
 // Command t0-cx-tools-benchmarks runs one compare/ benchmark in Go, the
 // reference the CX programs are timed against. Usage: t0-cx-tools-benchmarks
 // name. It prints the FNV-1a hash of the results and the pass line, as the
-// CX, Python and Bash programs do. Without a name it lists the names.
+// CX programs do. Without a name it lists the names.
 package main
 
 import (
