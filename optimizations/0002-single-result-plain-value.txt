@@ -1,0 +1,19 @@
+0002 Return a single result as a plain value
+Status: proposed. Measured by hand, not built. Ship with 0003.
+
+Where: t3-cx-compiler-llvm/llvm.go, returnType, instrReturn,
+instrCallResult (lines 789 to 875 at c5db7d2b).
+
+Problem: the CX LLVM compiler returns a single result as a one field struct,
+{ i64 }. LLVM's pass that turns tail recursion into a loop cannot see through
+the struct, so it runs only after the inliner and the loop unroller have
+finished. The C version of factorial becomes a loop, is inlined, and is
+unrolled 8 times.
+
+Change: a function with one result returns that value directly (i64, double,
+pointer). Two or more results keep the struct.
+
+Measured (user cycles, two code layouts):
+  factorialrec  8.23G/8.16G -> 3.23G/3.21G   (C 2.94G/3.14G), about 1.05x C
+  fib           made about 17 percent slower while the fp check of 0003
+                stays, so ship 0002 and 0003 together.

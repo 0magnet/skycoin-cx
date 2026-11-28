@@ -1,0 +1,21 @@
+0001 TinyGo wasm build without a scheduler
+Status: proposed. Measured by hand, not built.
+
+Where: t11-cx-command-cx, buildLlvmTinygoNative. For wasm, cx build
+--target=llvm hands the LLVM output to TinyGo and TinyGo links the .wasm.
+
+Problem: TinyGo's default scheduler for wasip1 is asyncify. Asyncify rewrites
+every function that can reach cx_rt_stop so it can be paused and resumed.
+Every CX function with a stack or depth check can reach cx_rt_stop, so every
+function is rewritten. fib grows from 69 to 314 lines of wasm text.
+
+Change: pass -scheduler=none. The CX LLVM output starts no goroutines and
+needs no scheduler.
+
+Measured (node --no-liftoff, seconds, median of 3, one build each):
+  fib             6.88 -> 3.68   (C wasm 2.46)
+  ackermann       5.31 -> 2.46   (C wasm 1.91)
+  factorialrec    3.64 -> 3.09   (C wasm 1.37)
+  structserialize 3.66 -> 3.41   (C wasm 1.02)
+
+Check before shipping: the other TinyGo targets (boards) and wasmtime.

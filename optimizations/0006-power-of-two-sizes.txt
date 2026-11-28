@@ -1,0 +1,27 @@
+0006 Power of two sizes for one instruction bound checks
+Status: decided by Synth, D146 (all sizes powers of two, the stack size limit
+a power of two). Not built. Open detail: array lengths, see below.
+
+Problem: a bound check written as two compares (below zero, at or above the
+end) costs two compares and two branches.
+
+Change: the stack size limit, frame sizes and buffer sizes are powers of two.
+The same rule covers the internal, heavily used structures of the runtime:
+the call stack kept for stack traces, and the buffers of the built in IR
+interpreter (vm) and the image runner (Synth, messages 778 and 779).
+A check against a power of two size 2^k is one AND with the mask
+NOT(2^k - 1) and one jump if the result is not zero:
+  stack:  (fp + frame) AND NOT(2^20 - 1), jump to stop if not zero
+  index:  index AND NOT(2^k - 1), jump to stop if not zero
+A negative index has its high bits set, so the same test catches it.
+On x86 the test and the jump fuse into one micro-op (test + jnz). On ARM it
+is tst + b.ne.
+
+Open detail: an array declared with a length that is not a power of two,
+for example [100]. Either the length must be a power of two (compile error
+otherwise), or the storage is rounded up to 128 and the mask check tests
+against 128, which misses indexes 100 to 127. 0007 covers any length exactly
+with one unsigned compare.
+
+The compiler writes a comment next to each check in the emitted IR, naming
+the check and its mask.
