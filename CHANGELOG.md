@@ -128,6 +128,8 @@
 
 #### Changed
 
+- The net, regexp, read and str error opcodes build no Go string, decision D139 (#412). `networkbatch.NetTCPListen`, `NetTCPDial`, `NetUDPListen`, `NetUDPDial` and `NetUDPPeerResolve` take the address as bytes, which `networkbatch.NetAddressAppend` joins, and a dialing socket keeps its address in a fixed array. The regexp library keeps its expressions in a string pool and their compiled forms in `regexp.CompiledMng` instead of a map keyed by Go strings, and compiles an expression once. `ast.ErrorBytes` gives the text of an error code as bytes. check-strhot no longer counts `errors.Is`, `errors.As` and `errors.Unwrap`, which build no text
+
 - The os library keeps its text in string pools, decision D139 (#412). `fileopcodes.OsLibrary` is its one state, with a call pool reset by each opcode, a pool for the paths that outlive a call and `OsProfileMng` for the running CPU profiles. `ast.ProgramFileSystemPathRead` and the `ast.ProgramSandboxFile*` calls take the pool to clean the path into, `sandbox.PathClean` cleans a path into bytes without a Go string, `sandbox.Path.Text` returns bytes, and a refused path is a `FileErrorReason` whose text `FileErrorTextOf` builds. A Go string is made only as a view for the os, exec and pprof call that takes one. The string pool finds a string by a hash table over its bytes instead of a map keyed by Go strings
 
 - `cx build --target=llvm --llvm-linker=tinygo` passes `-no-debug` to `tinygo build` unless `--llvm-debug` is given. TinyGo kept DWARF by default, so fib for wasip1 was 1.34 MB instead of 74 KB at the same speed. `CX_TINYGO_FLAGS=-no-debug=false` still keeps it

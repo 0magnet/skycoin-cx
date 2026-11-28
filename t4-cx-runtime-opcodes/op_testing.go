@@ -138,7 +138,6 @@ func OpPanicIfNot(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	panicIf(prgrm, inputs, outputs, false)
 }
 
-// VIOLATION STRHOT-120: B, the text of an error code, #412.
 func OpStrError(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].StrSet(prgrm, ast.ErrorString(int(inputs[0].I32Get(prgrm))))
+	outputs[0].StrBytesSet(prgrm, ast.ErrorBytes(int(inputs[0].I32Get(prgrm))))
 }

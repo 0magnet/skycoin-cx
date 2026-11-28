@@ -2,12 +2,11 @@ package netopcodes
 
 import (
 	"fmt"
-	"net"
-	"strconv"
 
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t1-cx-library-networkbatch"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
@@ -88,24 +87,20 @@ func OpNetTimeoutSet(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	outputs[0].BoolSet(prgrm, networkbatch.NetTimeoutSet(inputs[0].I32Get(prgrm), inputs[1].I32Get(prgrm)))
 }
 
-// VIOLATION STRHOT-329: B, hands an address to Go and the OS, #508.
 func OpNetTCPListen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].I32Set(prgrm, networkbatch.NetTCPListen(netAddress(inputs[0].StrGet(prgrm), inputs[1].I32Get(prgrm))))
+	outputs[0].I32Set(prgrm, networkbatch.NetTCPListen(netAddress(prgrm, inputs)))
 }
 
-// VIOLATION STRHOT-330: B, hands an address to Go and the OS, #508.
 func OpNetTCPDial(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].I32Set(prgrm, networkbatch.NetTCPDial(netAddress(inputs[0].StrGet(prgrm), inputs[1].I32Get(prgrm))))
+	outputs[0].I32Set(prgrm, networkbatch.NetTCPDial(netAddress(prgrm, inputs)))
 }
 
-// VIOLATION STRHOT-331: B, hands an address to Go and the OS, #508.
 func OpNetUDPListen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].I32Set(prgrm, networkbatch.NetUDPListen(netAddress(inputs[0].StrGet(prgrm), inputs[1].I32Get(prgrm))))
+	outputs[0].I32Set(prgrm, networkbatch.NetUDPListen(netAddress(prgrm, inputs)))
 }
 
-// VIOLATION STRHOT-332: B, hands an address to Go and the OS, #508.
 func OpNetUDPDial(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].I32Set(prgrm, networkbatch.NetUDPDial(netAddress(inputs[0].StrGet(prgrm), inputs[1].I32Get(prgrm))))
+	outputs[0].I32Set(prgrm, networkbatch.NetUDPDial(netAddress(prgrm, inputs)))
 }
 
 func OpNetUDPReadFrom(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -120,13 +115,26 @@ func OpNetUDPWriteTo(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	outputs[0].I32Set(prgrm, networkbatch.NetUDPWriteTo(inputs[0].I32Get(prgrm), inputs[1].I32Get(prgrm), buffer))
 }
 
-// VIOLATION STRHOT-333: B, hands an address to Go, #508.
 func OpNetUDPPeerResolve(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].I32Set(prgrm, networkbatch.NetUDPPeerResolve(netAddress(inputs[0].StrGet(prgrm), inputs[1].I32Get(prgrm))))
+	outputs[0].I32Set(prgrm, networkbatch.NetUDPPeerResolve(netAddress(prgrm, inputs)))
 }
 
-// netAddress joins host and port as Go's net package takes them.
-// VIOLATION STRHOT-337: B, builds the address it hands to Go and the OS, #508.
-func netAddress(host string, port int32) string {
-	return net.JoinHostPort(host, strconv.Itoa(int(port)))
+// netAddress joins the host and port of inputs as Go's net package takes
+// them, in the call pool of the net library.
+func netAddress(prgrm *ast.CXProgram, inputs []ast.CXValue) []byte {
+	pool := &NetLibrary.NetLibraryCallPool
+	pool.StringPoolReset()
+	address := networkbatch.NetAddressAppend(pool.StringPoolArenaFree(), inputs[0].StrBytesGet(prgrm), inputs[1].I32Get(prgrm))
+	return pool.StringPoolBytes(pool.StringPoolIntern(address))
 }
+
+// NetLibraryState is the state the net library keeps in this package, its
+// one global beside the sockets of networkbatch, see D139 on #412.
+// NetLibraryCallPool holds the address of one opcode call and is reset when
+// the call starts.
+type NetLibraryState struct {
+	NetLibraryCallPool stringpool.StringPool
+}
+
+// NetLibrary is the state of the net library.
+var NetLibrary NetLibraryState

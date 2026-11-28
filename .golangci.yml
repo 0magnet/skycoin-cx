@@ -97,7 +97,7 @@ linters:
       - linters:
           - gosec
         text: "G103:"
-        path: (t2-cx-core-stringpool/|t11-cx-command-cx/run_heap_test\.go|t1-cx-runtime-sandbox/path\.go|t5-cx-library-fileopcodes/op_os\.go)
+        path: (t2-cx-core-stringpool/|t11-cx-command-cx/run_heap_test\.go|t1-cx-runtime-sandbox/path\.go|t5-cx-library-fileopcodes/op_os\.go|t1-cx-library-networkbatch/socket\.go|t4-cx-library-regexp/op_regexp\.go)
       # Lint debt from before golangci-lint ran in CI, one rule per file and
       # linter. Fixing a file removes its rule, and the list only shrinks.
       - path: ^t0-cx-tools-benchmarks/compare_test\.go$

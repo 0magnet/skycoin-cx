@@ -78,7 +78,7 @@ func TestRegexpFindAfterFailedCompile(t *testing.T) {
 	if errOut.StrGet(prgrm) == "" {
 		t.Fatal("Compile(\"a(\") returned no error")
 	}
-	if _, ok := regexps["a("]; ok {
+	if expression, found := Library.LibraryPool.StringPoolFind([]byte("a(")); found && Library.LibraryCompiledMng.CompiledGet(expression) != nil {
 		t.Error("failed Compile stored a Regexp")
 	}
 

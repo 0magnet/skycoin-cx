@@ -98,9 +98,7 @@ func netRingCopy(destination []byte, ring []byte, start int) {
 
 // netPayloadQuote appends payload as a Go quoted string, printable ASCII as
 // it is and every other byte as \xNN, without a Go string conversion.
-// VIOLATION STRHOT-348: B, writes the replay record of a recorded run, #508.
 func netPayloadQuote(line []byte, payload []byte) []byte {
-	const digits = "0123456789abcdef"
 	line = append(line, '"')
 	for _, b := range payload {
 		switch {
@@ -109,7 +107,7 @@ func netPayloadQuote(line []byte, payload []byte) []byte {
 		case b >= 0x20 && b < 0x7f:
 			line = append(line, b)
 		default:
-			line = append(line, '\\', 'x', digits[b>>4], digits[b&15])
+			line = append(line, '\\', 'x', netHexDigits[b>>4], netHexDigits[b&15])
 		}
 	}
 	return append(line, '"')
@@ -245,3 +243,5 @@ func (replay *netReplay) replayUpdate() int32 {
 func NetReplayUpdatesLeft() int {
 	return len(netState.netReplay.replayUpdates) - netState.netReplay.replayNext
 }
+
+var netHexDigits = [16]byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'}
