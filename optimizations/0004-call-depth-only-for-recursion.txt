@@ -1,0 +1,22 @@
+0004 Call depth parameter and check only for recursive functions
+Status: decided by Synth, D144 (recursion is a compiler warning, not an
+error; finite call depth is preferred). Not built.
+
+Where: t3-cx-compiler-llvm/llvm.go, instrCall, instrCallFrame. Call graph
+analysis in the compiler.
+
+Problem: the CX LLVM compiler gives every CX function an extra parameter
+depth, the number of calls in progress, and checks depth against 999 before
+every call. In ackermann this check is the whole gap to C.
+
+Change: the compiler builds the call graph. A call that closes a cycle (a
+function calling itself, or two functions calling each other) gets a
+warning. Only functions in a cycle keep the depth parameter and the check.
+All other functions drop both, and the compiler reports the deepest call
+chain and the stack size of the program at build time.
+
+Measured (user cycles, two code layouts, ackermann with fp and depth removed):
+  7.27G/7.53G -> 3.97G/3.94G   (C 4.00G/3.95G). The machine code is the same
+  as for C.
+Note: ackermann itself is recursive, so it keeps the check. Its loop version
+(cx-bench D145) gets the gain.

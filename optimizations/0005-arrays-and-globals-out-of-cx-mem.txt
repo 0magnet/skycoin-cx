@@ -1,0 +1,25 @@
+0005 Arrays as locals and one LLVM global per CX global
+Status: proposed. Measured by hand, not built. Ship with 0007.
+
+Where: t3-cx-compiler-llvm/llvm.go, analyze() (line 434) and global layout.
+
+Problem: the CX LLVM compiler keeps every CX global, and every array indexed
+by a run time value, inside one memory block, cx_mem. structserialize
+writes the buffer one byte at a time and reads it back 16 bytes at a time
+every round. Each round the CPU stalls 4 times on a load that overlaps
+recent stores (ld_blocks.store_forward 0.63G over 160M rounds). The C version
+keeps the data in registers.
+
+Change: an array whose address never leaves its function becomes an LLVM
+local (alloca). Each CX global becomes its own LLVM global.
+
+Measured (structserialize, user cycles, two code layouts):
+  as emitted        8.57G/8.48G, 16.3G instructions, 0.63G stalls
+  arrays as locals  4.38G/4.54G,  7.5G instructions, 0 stalls
+  both              2.60G/2.62G,  6.9G instructions, 0 stalls
+  C                 1.78G/1.79G,  4.48G instructions, 0 stalls
+  4.8x C -> about 1.46x C.
+
+Note: today an index past the end of an array writes the next variable in
+cx_mem (see 0007). Moving globals out of cx_mem changes where such a write
+lands, so the index check of 0007 must come first or together.

@@ -1,0 +1,21 @@
+0007 Index check as one unsigned compare
+Status: requested by Synth (message 777). Not built.
+
+Where: the index check in the LLVM output (t3-cx-compiler-llvm) and in the
+vm (OpcodeAddressIndex in the vm loop).
+
+Problem: today the index check tests only index < 0 and the end of all data
+memory (cx_mem), not the end of the array. An index past the end of an
+array is not caught: with an array declared as var a [100]i32, a[100] writes
+into whatever variable comes next in cx_mem. Checking both ends with signed
+compares would take two compares and two branches.
+
+Change: treat the index as an unsigned integer and compare it once with the
+length: (unsigned) index < length. A negative index becomes a very large
+unsigned number, so it fails the same compare. One compare and one branch
+(x86 cmp + jae, ARM cmp + b.hs) check both ends, for any length, not only
+powers of two. With a power of two length, 0006 gives the same result with
+an AND.
+
+Expected cost: no more than today's check, which already does one compare
+for the lower bound and one for the memory end.
