@@ -801,6 +801,8 @@ func CoreOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, ou
 		opcodes.OpStrBytesOfString(prgrm, inputs, outputs)
 	case 794:
 		opcodes.OpStrStringOfBytes(prgrm, inputs, outputs)
+	case 879:
+		opcodes.OpOsOutputFlush(prgrm, inputs, outputs)
 	case 135, 136, 137, 190:
 		return coreOpcodeDispatchOsCore(prgrm, code, inputs, outputs)
 	case 203, 204, 205:

@@ -775,7 +775,7 @@ func (e *emitter) instr(pc uint32, in *ir.Instr) error {
 		ir.OpcodeAddressLoad, ir.OpcodeAddressStore,
 		ir.OpcodeAddressOf, ir.OpcodeAddressPointer:
 		return e.instrAddress(pc, in)
-	case ir.OpcodePrintText, ir.OpcodePrintStr, ir.OpcodePrintValue, ir.OpcodeTestEqual:
+	case ir.OpcodePrintText, ir.OpcodePrintStr, ir.OpcodePrintValue, ir.OpcodeTestEqual, ir.OpcodeOutputHandOff, ir.OpcodeOutputFlush:
 		e.stats.StatsRuntime++
 		return e.instrRuntime(pc, in)
 	}
@@ -977,9 +977,17 @@ func (e *emitter) instrAddress(pc uint32, in *ir.Instr) error {
 }
 
 // instrRuntime emits the instructions that only the runtime runs: the
-// prints and test.
+// prints, test and the output hand off and flush.
 func (e *emitter) instrRuntime(pc uint32, in *ir.Instr) error {
 	switch in.InstrOpcode {
+	case ir.OpcodeOutputHandOff:
+		e.declare("cx_rt_output_hand_off", "declare void @cx_rt_output_hand_off() nounwind")
+		e.line("call void @cx_rt_output_hand_off()")
+		return nil
+	case ir.OpcodeOutputFlush:
+		e.declare("cx_rt_output_flush", "declare void @cx_rt_output_flush() nounwind")
+		e.line("call void @cx_rt_output_flush()")
+		return nil
 	case ir.OpcodePrintText:
 		e.declare("cx_rt_print_text", "declare void @cx_rt_print_text(ptr, i32) nounwind")
 		p := e.localNew()

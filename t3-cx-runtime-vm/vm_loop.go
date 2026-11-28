@@ -900,6 +900,10 @@ func (machine *Machine) slow() Stop {
 			return machine.slowStop(StopAddressInvalid)
 		}
 		return machine.printBytes(str, ir.PrintStrMode(in.InstrN))
+	case ir.OpcodeOutputHandOff:
+		return StopOutputFull
+	case ir.OpcodeOutputFlush:
+		return StopOutputFlush
 	case ir.OpcodeCipherHashStateNew:
 		wI32(mem, machine.MachineStackPointer, cipherstate.HashStateNew())
 	case ir.OpcodeCipherHashStateRelease:
@@ -912,7 +916,7 @@ func (machine *Machine) slow() Stop {
 		// A prompt printed before the read reaches the terminal first.
 		if len(machine.MachineOutput) > 0 {
 			machine.machineResumePc = machine.MachinePc
-			return StopOutputFull
+			return StopOutputFlush
 		}
 		terminalOpcodeRun(in.InstrOpcode, mem, machine.MachineStackPointer)
 	case ir.OpcodeTerminalArgCount, ir.OpcodeTerminalArgRead:

@@ -870,6 +870,11 @@ as `execute.RunCompiled` does.
   `Machine.TestMessage`, the str bytes read from memory, then calls `Resume`.
 * A str print that does not fit the output keeps its place and stops with
   `StopOutputFull`, and the same instruction goes on after `Resume`.
+* `OpcodeOutputHandOff` stops with `StopOutputFull` and `OpcodeOutputFlush`
+  with the resumable `StopOutputFlush`, after which the caller waits until
+  the output is written. The lowering adds a hand off after every print in
+  the output modes `instant` and `thread`, and `ImageOutputMode` tells the
+  caller which writer to use (decision D142).
 * `StopIndexNegative` is a negative index, `CX_RUNTIME_INVALID_CAST` as in
   `types.I32ToPtrCast`. `StopAddressInvalid` is a computed address or str
   outside the stack and data segment, where the old loop would read the heap.

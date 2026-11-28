@@ -6,6 +6,7 @@ package ir
 
 import (
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t0-cx-runtime-output"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 )
 
@@ -118,6 +119,11 @@ type Image struct {
 	// CXProgram.ProgramOperationsEnabled. The loader refuses an image that
 	// uses one outside it, so no instruction checks it (decision D119).
 	ImageOperationsEnabled opcodetable.OpcodeSet
+
+	// ImageOutputMode is how the prints reach the terminal. The lowering
+	// adds OpcodeOutputHandOff for it, and the runner picks the writer of it
+	// before the run, so no print tests it (decision D142).
+	ImageOutputMode output.Mode
 }
 
 // ImageDataEnd returns the first byte after the data segment, where the
@@ -227,6 +233,12 @@ const (
 	// OpcodePrintStr writes the bytes of the str at A to the output. N is a
 	// PrintStrMode.
 	OpcodePrintStr
+	// OpcodeOutputHandOff passes the output of the prints before it on, which
+	// the lowering adds after every print in ModeInstant and ModeThread.
+	// OpcodeOutputFlush writes the output and waits until it is written, the
+	// flush of the program (decision D142).
+	OpcodeOutputHandOff
+	OpcodeOutputFlush
 	// The opcodes of the system libraries that run on vm, decision D119.
 	// Each runs on the block at sp, its inputs then its outputs at the
 	// offsets of its native function, as a call does. The loader refuses a

@@ -4,6 +4,7 @@ import (
 	"bufio"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t0-cx-runtime-output"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
@@ -46,6 +47,9 @@ type CXProgram struct {
 	// those --enable names one by one and, once loaded, every opcode of an
 	// enabled library (decision D119).
 	ProgramOperationsEnabled opcodetable.OpcodeSet
+	// ProgramOutputMode is how the prints of a vm run reach the terminal, set
+	// from --output-mode and stored in a built program (decision D142).
+	ProgramOutputMode output.Mode
 
 	// RuntimeError is the runtime error that ended the old loop, printed by
 	// the printer package once the loop has returned.

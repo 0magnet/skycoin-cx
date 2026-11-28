@@ -9,6 +9,7 @@ import (
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t0-cx-library-terminal"
 	filelog "github.com/skycoin/skycoin-cx/t0-cx-runtime-filelog"
+	"github.com/skycoin/skycoin-cx/t0-cx-runtime-output"
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
@@ -261,6 +262,12 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 	}
 	astbuild.AST.ProgramLibrariesEnabled = enabled
 	astbuild.AST.ProgramOperationsEnabled = operations
+	mode, found := output.ModeByName(options.outputMode)
+	if !found {
+		fmt.Fprintf(os.Stderr, "unknown --output-mode %q, want batch, instant or thread\n", options.outputMode)
+		os.Exit(valuetypes.CXCompilationError)
+	}
+	astbuild.AST.ProgramOutputMode = mode
 	if problem := netModeSet(options); problem != "" {
 		fmt.Fprintln(os.Stderr, problem)
 		os.Exit(valuetypes.CXCompilationError)

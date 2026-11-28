@@ -28,3 +28,8 @@ func OpReadStdin(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	text = strings.Replace(text, "\r", "", -1)
 	outputs[0].StrSet(prgrm, text)
 }
+
+// OpOsOutputFlush writes the buffered output. The old loop writes every
+// print as it runs, so it has nothing to write (decision D142).
+func OpOsOutputFlush(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
+}

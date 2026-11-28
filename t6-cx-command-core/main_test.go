@@ -17,6 +17,7 @@ var coreImportsAllowed = map[string]bool{
 	"t0-cx-core-syspackages":        true,
 	"t0-cx-core-valuetypes":         true,
 	"t0-cx-library-terminal":        true,
+	"t0-cx-runtime-output":          true,
 	"t1-cx-library-cipherstate":     true,
 	"t1-cx-core-opcodetable":        true,
 	"t1-cx-core-objmodel":           true,

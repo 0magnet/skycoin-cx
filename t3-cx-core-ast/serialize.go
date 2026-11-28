@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t0-cx-runtime-output"
 	objmodel "github.com/skycoin/skycoin-cx/t1-cx-core-objmodel"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
@@ -442,6 +443,7 @@ func serializeProgramFields(prgrm *CXProgram, encoder *serializeEncoder) error {
 	serializeLibraries(encoder, &prgrm.ProgramLibrariesUsed)
 	serializeLibraries(encoder, &prgrm.ProgramLibrariesEnabled)
 	serializeOpcodeSet(encoder, &prgrm.ProgramOperationsEnabled)
+	encoder.serializeEncoderUint(uint64(prgrm.ProgramOutputMode))
 
 	encoder.serializeEncoderLength(len(prgrm.SysInitExpressions), prgrm.SysInitExpressions == nil)
 	for i := range prgrm.SysInitExpressions {
@@ -501,6 +503,7 @@ func deserializeProgramFields(prgrm *CXProgram, decoder *serializeDecoder) []ser
 	deserializeLibraries(decoder, &prgrm.ProgramLibrariesUsed)
 	deserializeLibraries(decoder, &prgrm.ProgramLibrariesEnabled)
 	deserializeOpcodeSet(decoder, &prgrm.ProgramOperationsEnabled)
+	deserializeOutputMode(decoder, &prgrm.ProgramOutputMode)
 
 	if length := decoder.serializeDecoderLength(5); length >= 0 {
 		prgrm.SysInitExpressions = make([]CXExpression, length)
@@ -1283,4 +1286,17 @@ func serializeFunctionGidValid(prgrm *CXProgram, gid CXFunctionGid) bool {
 	index := objmodel.GidIndex(int64(gid))
 	return objmodel.GidTypeTag(int64(gid)) == CXFunctionGidTypeTag && index < functionMng.CXFunctionMngNext &&
 		functionMng.CXFunctionMngLive[index] && functionMng.CXFunctionMngGenerations[index] == objmodel.GidGeneration(int64(gid))
+}
+
+// deserializeOutputMode reads the output mode of a program. A mode this cx
+// does not have fails.
+// VIOLATION STRHOT-356: B, the serializer, compiler code run by an opcode, #412.
+func deserializeOutputMode(decoder *serializeDecoder, mode *output.Mode) {
+	if value := decoder.serializeDecoderUint(); decoder.serializeDecoderError == nil {
+		if value >= uint64(output.ModeCount) {
+			decoder.serializeDecoderFailf("output mode %d, this cx has %d", value, output.ModeCount)
+			return
+		}
+		*mode = output.Mode(value)
+	}
 }

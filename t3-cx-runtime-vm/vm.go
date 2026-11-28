@@ -37,6 +37,9 @@ const (
 	// StopAddressInvalid is a computed address or a str outside the stack
 	// and data segment. The machine has no heap.
 	StopAddressInvalid
+	// StopOutputFlush asks the caller to write MachineOutput and wait until
+	// it is written, the flush of the program, then Resume (decision D142).
+	StopOutputFlush
 	// StopCount is one past the last Stop.
 	StopCount
 )
@@ -56,6 +59,7 @@ var StopExitCodes = [StopCount]int32{
 	StopOpcodeInvalid:  valuetypes.CXRuntimeNotImplemented,
 	StopIndexNegative:  valuetypes.CXRuntimeInvalidCast,
 	StopAddressInvalid: valuetypes.CXRuntimeError,
+	StopOutputFlush:    valuetypes.CXSuccess,
 }
 
 // StopMessages is what vm prints after the error string for each error
@@ -70,7 +74,7 @@ var StopMessages = [StopCount]string{
 
 // Resumable reports whether the caller may Resume after stop.
 func Resumable(stop Stop) bool {
-	return stop == StopOutputFull || stop == StopTestFailed
+	return stop == StopOutputFull || stop == StopTestFailed || stop == StopOutputFlush
 }
 
 // Frame is a caller saved by a call. FramePc is where it continues.
