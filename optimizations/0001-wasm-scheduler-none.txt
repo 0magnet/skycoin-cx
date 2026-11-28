@@ -18,4 +18,6 @@ Measured (node --no-liftoff, seconds, median of 3, one build each):
   factorialrec    3.64 -> 3.09   (C wasm 1.37)
   structserialize 3.66 -> 3.41   (C wasm 1.02)
 
-Check before shipping: the other TinyGo targets (boards) and wasmtime.
+Built for wasm targets only. Board targets keep their scheduler, as no board
+run was tested (pico links with -scheduler=none). Checked under node, not
+wasmtime.
