@@ -40,8 +40,8 @@ free number, and a fixed one is marked removed, never deleted.
   opcode runs: file and process opcodes, regexp, tcp, the CPU
   profile, read and serialize.
 
-A B code is fixed or becomes a `boundary` code, see [Boundaries](#boundaries).
-No I, O, P or E code is open, apart from one E code of the cxfx build. The str to f32 and f64 opcodes parse with
+No code is open. Every string operation left on the run path is a `boundary`
+code, see [Boundaries](#boundaries), and a new one is fixed or becomes one. The str to f32 and f64 opcodes parse with
 t0-cx-core-floatparse, a port of strconv.ParseFloat that reads bytes and
 returns the same bits and errors (D92). Printing appends to the format buffer
 of the program, names viewed from the string pool and the byte tables of the
@@ -71,7 +71,8 @@ string exists only at the call into Go or the OS that takes one, such as
 `os.Root.Open` or `net.Dial`. It is a view of the pool or program bytes made
 with `unsafe.String` and held for that call only, so it does not allocate.
 That call keeps its VIOLATION comment and its code has the status
-`boundary` in strhot-codes.txt, with the reason in the note. Where Go has a
+`boundary` in strhot-codes.txt, with the reason in the note, or
+`boundary-cxfx` when only the cxfx build reaches it. Where Go has a
 `[]byte` API the call uses it and no code is needed.
 
 ## Reporters

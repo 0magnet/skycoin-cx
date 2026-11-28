@@ -3,6 +3,8 @@
 package graphics
 
 import (
+	"unsafe"
+
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"golang.org/x/mobile/exp/audio/al"
@@ -50,10 +52,10 @@ func OpAlError(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue
 	outputs[0].I32Set(prgrm, err)
 }
 
-// VIOLATION STRHOT-192: B, OpenAL returns text, #432.
+// VIOLATION STRHOT-192: B, OpenAL gives the text only as a Go string, viewed for the copy into the str, #432.
 func OpAlExtensions(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	extensions := al.Extensions()
-	outputs[0].StrSet(prgrm, extensions)
+	outputs[0].StrBytesSet(prgrm, unsafe.Slice(unsafe.StringData(extensions), len(extensions)))
 }
 
 func OpAlOpenDevice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -72,10 +74,10 @@ func OpAlPlaySources(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	al.PlaySources(sources...)
 }
 
-// VIOLATION STRHOT-193: B, OpenAL returns text, #432.
+// VIOLATION STRHOT-193: B, OpenAL gives the text only as a Go string, viewed for the copy into the str, #432.
 func OpAlRenderer(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	renderer := al.Renderer()
-	outputs[0].StrSet(prgrm, renderer)
+	outputs[0].StrBytesSet(prgrm, unsafe.Slice(unsafe.StringData(renderer), len(renderer)))
 }
 
 func OpAlRewindSources(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -88,16 +90,16 @@ func OpAlStopSources(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 	al.StopSources(sources...)
 }
 
-// VIOLATION STRHOT-194: B, OpenAL returns text, #432.
+// VIOLATION STRHOT-194: B, OpenAL gives the text only as a Go string, viewed for the copy into the str, #432.
 func OpAlVendor(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	vendor := al.Vendor()
-	outputs[0].StrSet(prgrm, vendor)
+	outputs[0].StrBytesSet(prgrm, unsafe.Slice(unsafe.StringData(vendor), len(vendor)))
 }
 
-// VIOLATION STRHOT-195: B, OpenAL returns text, #432.
+// VIOLATION STRHOT-195: B, OpenAL gives the text only as a Go string, viewed for the copy into the str, #432.
 func OpAlVersion(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	version := al.Version()
-	outputs[0].StrSet(prgrm, version)
+	outputs[0].StrBytesSet(prgrm, unsafe.Slice(unsafe.StringData(version), len(version)))
 }
 
 func OpAlGenBuffers(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {

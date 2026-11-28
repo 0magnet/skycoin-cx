@@ -138,8 +138,9 @@ type codeEntry struct {
 
 // readCodes reads the code table, one "STRHOT-nnn CLASS STATUS file function"
 // line per code. STATUS is open, removed, cxfx, open in the build with the
-// cxfx tag only, or boundary. A boundary code in t6-cx-library-graphics is
-// checked in the build with the cxfx tag only. # starts a comment line.
+// cxfx tag only, boundary, or boundary-cxfx, a boundary reached in the build
+// with the cxfx tag only. A boundary code in t6-cx-library-graphics is
+// checked in that build only too. # starts a comment line.
 func readCodes(path string) (map[string]codeEntry, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -154,20 +155,20 @@ func readCodes(path string) (map[string]codeEntry, error) {
 			continue
 		}
 		if len(fields) < 5 || !strings.Contains("IOPEB", fields[1]) || len(fields[1]) != 1 || !codeStatusKnown(fields[2]) {
-			return nil, fmt.Errorf("%s:%d: want STRHOT-nnn CLASS open|removed|cxfx|boundary file function", path, n)
+			return nil, fmt.Errorf("%s:%d: want STRHOT-nnn CLASS open|removed|cxfx|boundary|boundary-cxfx file function", path, n)
 		}
 		if _, dup := codes[fields[0]]; dup {
 			return nil, fmt.Errorf("%s:%d: %s listed twice", path, n, fields[0])
 		}
-		boundary := fields[2] == "boundary"
-		cxfx := fields[2] == "cxfx" || boundary && strings.HasPrefix(fields[3], "t6-cx-library-graphics/")
+		boundary := fields[2] == "boundary" || fields[2] == "boundary-cxfx"
+		cxfx := fields[2] == "cxfx" || fields[2] == "boundary-cxfx" || boundary && strings.HasPrefix(fields[3], "t6-cx-library-graphics/")
 		codes[fields[0]] = codeEntry{class: fields[1], removed: fields[2] == "removed", cxfx: cxfx, boundary: boundary}
 	}
 	return codes, scanner.Err()
 }
 
 func codeStatusKnown(status string) bool {
-	return status == "open" || status == "removed" || status == "cxfx" || status == "boundary"
+	return status == "open" || status == "removed" || status == "cxfx" || status == "boundary" || status == "boundary-cxfx"
 }
 
 // load type checks the module packages of the cx build and returns its

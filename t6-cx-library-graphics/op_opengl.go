@@ -14,12 +14,10 @@ import (
 	"io"
 	"math"
 	"os"
-	"path/filepath"
 	"runtime"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
-	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 
 	"unsafe"
@@ -244,7 +242,7 @@ func hdrDecimal(field []byte) (int, bool) {
 	return sign * value, true
 }
 
-// VIOLATION STRHOT-197: E, prints why an HDR file does not decode, on a failure branch only, #432.
+// VIOLATION STRHOT-197: E, prints why an HDR file does not decode and goes on without the texture, on a failure branch only, #432.
 func decodeHdr(file *os.File) (pixelBytes []byte, i32Width int32, i32Height int32) {
 	pixelBytes = nil
 	i32Width = 0
@@ -332,21 +330,19 @@ func decodeHdr(file *os.File) (pixelBytes []byte, i32Width int32, i32Height int3
 // uploadTexture loads the program path in pathBytes from the sandbox into the
 // bound texture. With cpuCopy it keeps the pixels and returns their handle
 // into State.CxfxTexturePixelsTable, otherwise -1.
-// VIOLATION STRHOT-198: B, reads the file at a program path and names it in the error text, #432.
 func uploadTexture(prgrm *ast.CXProgram, pathBytes []byte, target uint32, level uint32, cpuCopy bool) int32 {
-	path := stringpool.StringView(pathBytes)
 	programPath, fileError := sandbox.PathClean(cxfxCallPoolReset().StringPoolArenaFree(), pathBytes)
 	if fileError != nil {
-		panic(fmt.Sprintf("texture %q: %s\n", path, fileError.FileErrorTextOf(pathBytes)))
+		cxfxFileFailureReport(cxfxFileFailureTexturePath, pathBytes, fileError, nil)
 	}
 	file, fileError := sandbox.FileOpen(prgrm.ProgramSandboxRoot, programPath)
 	if fileError != nil {
-		panic(fmt.Sprintf("texture %q not found on disk: %s\n", path, fileError.FileErrorTextOf(pathBytes)))
+		cxfxFileFailureReport(cxfxFileFailureTextureOpen, pathBytes, fileError, nil)
 	}
 	defer file.Close()
 
 	pixelsHandle := int32(-1)
-	ext := filepath.Ext(path)
+	ext := texturePathExtension(pathBytes)
 	var pixelBytes []byte
 	var internalFormat int32
 	var inputFormat uint32
@@ -354,7 +350,7 @@ func uploadTexture(prgrm *ast.CXProgram, pathBytes []byte, target uint32, level 
 	var width int32
 	var height int32
 	var pixels []float32
-	if ext == ".png" || ext == ".jpeg" || ext == ".jpg" {
+	if bytes.Equal(ext, textureExtensionPng) || bytes.Equal(ext, textureExtensionJpeg) || bytes.Equal(ext, textureExtensionJpg) {
 		internalFormat = cxglRGBA8
 		inputFormat = cxglRGBA
 		inputType = cxglUNSIGNED_BYTE
@@ -367,7 +363,7 @@ func uploadTexture(prgrm *ast.CXProgram, pathBytes []byte, target uint32, level 
 				TexturePixelsValues: pixels,
 			})
 		}
-	} else if ext == ".hdr" {
+	} else if bytes.Equal(ext, textureExtensionHdr) {
 		internalFormat = cxglRGB16F
 		inputFormat = cxglRGB
 		inputType = cxglFLOAT
@@ -444,18 +440,16 @@ func OpGlUploadImageToTexture(prgrm *ast.CXProgram, inputs []ast.CXValue, output
 
 // OpGlNewGIF decodes the gif at a program path and returns its handle into
 // State.CxfxGifTable with its frame count, loop count and size.
-// VIOLATION STRHOT-204: B, reads the file at a program path and names it in the error text, #432.
 func OpGlNewGIF(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	path := stringpool.StringView(ast.ProgramStringBytesRead(prgrm, &inputs[0]))
 	file, fileError := ast.ProgramSandboxFileOpen(prgrm, &inputs[0], cxfxCallPoolReset())
 	if fileError != nil {
-		panic(fmt.Sprintf("file not found %q, %s", path, fileError.FileErrorTextOf(ast.ProgramStringBytesRead(prgrm, &inputs[0]))))
+		cxfxFileFailureReport(cxfxFileFailureGifOpen, ast.ProgramStringBytesRead(prgrm, &inputs[0]), fileError, nil)
 	}
 	defer file.Close()
 
 	animation, err := gif.DecodeAll(bufio.NewReader(file))
 	if err != nil {
-		panic(fmt.Sprintf("failed to decode file %q, %v", path, err))
+		cxfxFileFailureReport(cxfxFileFailureGifDecode, ast.ProgramStringBytesRead(prgrm, &inputs[0]), nil, err)
 	}
 
 	outputs[0].I32Set(prgrm, cxfxGifAdd(animation))
@@ -842,4 +836,22 @@ func OpGlGenVertexArraysCore(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs
 	inpV1 := uint32(inputs[1].I32Get(prgrm))
 	cxglGenVertexArrays(inputs[0].I32Get(prgrm), &inpV1) // will panic if inp0 > 1
 	outputs[0].I32Set(prgrm, int32(inpV1))
+}
+
+var (
+	textureExtensionPng  = []byte(".png")
+	textureExtensionJpeg = []byte(".jpeg")
+	textureExtensionJpg  = []byte(".jpg")
+	textureExtensionHdr  = []byte(".hdr")
+)
+
+// texturePathExtension returns the extension of the last element of path,
+// from its last dot, as filepath.Ext does with '/' as the separator.
+func texturePathExtension(path []byte) []byte {
+	for i := len(path) - 1; i >= 0 && path[i] != '/'; i-- {
+		if path[i] == '.' {
+			return path[i:]
+		}
+	}
+	return nil
 }
