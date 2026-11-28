@@ -12,6 +12,7 @@ import (
 
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
@@ -260,4 +261,37 @@ func cxfxCallbackInputsF64(index int, value float64) {
 func cxfxCallPoolReset() *stringpool.StringPool {
 	cxfxState.CxfxCallPool.StringPoolReset()
 	return &cxfxState.CxfxCallPool
+}
+
+// cxfxFileFailure is why a cxfx opcode could not load the file at a program
+// path, with the format cxfxFileFailureReport builds its text from.
+type cxfxFileFailure uint8
+
+const (
+	cxfxFileFailureWavOpen cxfxFileFailure = iota
+	cxfxFileFailureTexturePath
+	cxfxFileFailureTextureOpen
+	cxfxFileFailureGifOpen
+	cxfxFileFailureGifDecode
+)
+
+// cxfxFileFailureReport ends the program that could not load the file at
+// pathBytes, with the text of fileError or of the Go error cause.
+// STRHOT REPORTER: builds the text of a file a cxfx opcode could not load, #412.
+func cxfxFileFailureReport(failure cxfxFileFailure, pathBytes []byte, fileError *sandbox.FileError, cause error) {
+	var reason string
+	if fileError != nil {
+		reason = fileError.FileErrorTextOf(pathBytes)
+	}
+	switch failure {
+	case cxfxFileFailureWavOpen:
+		panic(reason)
+	case cxfxFileFailureTexturePath:
+		panic(fmt.Sprintf("texture %q: %s\n", pathBytes, reason))
+	case cxfxFileFailureTextureOpen:
+		panic(fmt.Sprintf("texture %q not found on disk: %s\n", pathBytes, reason))
+	case cxfxFileFailureGifOpen:
+		panic(fmt.Sprintf("file not found %q, %s", pathBytes, reason))
+	}
+	panic(fmt.Sprintf("failed to decode file %q, %v", pathBytes, cause))
 }

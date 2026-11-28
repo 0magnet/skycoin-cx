@@ -10,9 +10,10 @@
 # libraries, serialize, affordances).
 # STATUS is open (a VIOLATION comment marks it), removed (no longer on the run
 # path), cxfx (open in t6-cx-library-graphics, which only the build with the cxfx tag has,
-# checked by ./check-strhot.sh -tags cxfx, #432) or boundary (accepted: the one
+# checked by ./check-strhot.sh -tags cxfx, #432), boundary (accepted: the one
 # call that hands a view of pool or program bytes to a Go or OS API that takes
-# a string, with the reason in the note, D139 #412).
+# a string, with the reason in the note, D139 #412) or boundary-cxfx (a
+# boundary that only the build with the cxfx tag reaches).
 STRHOT-001 I removed t1-cx-core-objmodel/gid.go GidCheck not on the run path at dfcc46ab
 STRHOT-002 E removed t3-cx-core-ast/cxargumentdebug_mng.go *CXArgumentDebugMng.CXArgumentDebugGet the check passes the Gid and the slot arrays to objmodel.GidGetFailureReport, a STRHOT REPORTER, #412
 STRHOT-003 E removed t3-cx-core-ast/cxargument_mng.go *CXArgumentMng.CXArgumentGet the check passes the Gid and the slot arrays to objmodel.GidGetFailureReport, a STRHOT REPORTER, #412
@@ -42,7 +43,7 @@ STRHOT-026 O removed t3-cx-core-ast/ast_cxstruct.go *CXStruct.FieldGet not on th
 STRHOT-027 O removed t3-cx-core-ast/ast_cxstruct.go *CXStruct.FieldTypeSignatureAdd not on the run path at dfcc46ab
 STRHOT-028 O removed t3-cx-core-ast/ast_cxstruct.go *CXStruct.FieldGlobalsCXAtomicOpsAdd not on the run path at dfcc46ab
 STRHOT-029 B removed t3-cx-core-ast/ast_cxvalue.go *CXValue.StrGet no opcode reads a str as a Go string, D139 #621
-STRHOT-030 B cxfx t3-cx-core-ast/ast_cxvalue.go *CXValue.StrSet open in the cxfx build only, where the OpenAL text opcodes still write a Go string, D139 #621
+STRHOT-030 B removed t3-cx-core-ast/ast_cxvalue.go *CXValue.StrSet no opcode writes a str from a Go string, D139 #623
 STRHOT-031 O removed t3-cx-core-ast/error.go CompilationError not on the run path at dfcc46ab
 STRHOT-032 O removed t3-cx-core-ast/serialized_cx_program_skyencoder.go EncodeSerializedCXProgramToBuffer not on the run path at dfcc46ab
 STRHOT-033 O removed t3-cx-core-ast/serialized_cx_program_skyencoder.go DecodeSerializedCXProgram not on the run path at dfcc46ab
@@ -182,7 +183,7 @@ STRHOT-166 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwMakeContext
 STRHOT-167 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwSetInputMode handles and byte views, #432
 STRHOT-168 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwGetCursorPos handles and byte views, #432
 STRHOT-169 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwGetKey handles and byte views, #432
-STRHOT-170 B cxfx t6-cx-library-graphics/op_glfw_desktop.go OpGlfwCreateWindow O fixed, hands the window title to GLFW, #432
+STRHOT-170 B boundary t6-cx-library-graphics/op_glfw_desktop.go OpGlfwCreateWindow glfw.CreateWindow takes the title as a string, a view of program memory, D139 #623
 STRHOT-171 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwGetWindowContentScale handles and byte views, #432
 STRHOT-172 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwSetWindowPos handles and byte views, #432
 STRHOT-173 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwShouldClose handles and byte views, #432
@@ -197,26 +198,26 @@ STRHOT-181 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwSetWindowSi
 STRHOT-182 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwSetWindowPosCallback handles and byte views, #432
 STRHOT-183 O removed t6-cx-library-graphics/op_glfw_desktop.go OpGlfwSetShouldClose handles and byte views, #432
 STRHOT-184 O removed t6-cx-library-graphics/op_gltext.go loadTrueType handles and byte views, #432
-STRHOT-185 B cxfx t6-cx-library-graphics/op_gltext.go OpGltextPrintf O fixed, text to gltext as a view, #432
-STRHOT-186 B cxfx t6-cx-library-graphics/op_gltext.go OpGltextMetrics O fixed, text to gltext as a view, #432
+STRHOT-185 B boundary t6-cx-library-graphics/op_gltext.go OpGltextPrintf gltext Printf takes the text as a string, a view of program memory, D139 #623
+STRHOT-186 B boundary t6-cx-library-graphics/op_gltext.go OpGltextMetrics gltext Metrics takes the text as a string, a view of program memory, D139 #623
 STRHOT-187 O removed t6-cx-library-graphics/op_gltext.go OpGltextTexture handles and byte views, #432
 STRHOT-188 O removed t6-cx-library-graphics/op_gltext.go OpGltextNextGlyph handles and byte views, #432
 STRHOT-189 O removed t6-cx-library-graphics/op_gltext.go OpGltextGlyphBounds handles and byte views, #432
 STRHOT-190 O removed t6-cx-library-graphics/op_gltext.go OpGltextGlyphMetrics handles and byte views, #432
 STRHOT-191 O removed t6-cx-library-graphics/op_gltext.go OpGltextGlyphInfo handles and byte views, #432
-STRHOT-192 B cxfx t6-cx-library-graphics/op_openal_desktop.go OpAlExtensions O fixed, OpenAL returns text, #432
-STRHOT-193 B cxfx t6-cx-library-graphics/op_openal_desktop.go OpAlRenderer O fixed, OpenAL returns text, #432
-STRHOT-194 B cxfx t6-cx-library-graphics/op_openal_desktop.go OpAlVendor O fixed, OpenAL returns text, #432
-STRHOT-195 B cxfx t6-cx-library-graphics/op_openal_desktop.go OpAlVersion O fixed, OpenAL returns text, #432
-STRHOT-196 B cxfx t6-cx-library-graphics/op_openal.go OpAlLoadWav O fixed, reads the file at a program path, #432
-STRHOT-197 E cxfx t6-cx-library-graphics/op_opengl.go decodeHdr B fixed, reads the HDR header as bytes and prints only on a failure branch, #432
-STRHOT-198 B cxfx t6-cx-library-graphics/op_opengl.go uploadTexture O fixed, reads the file at a program path, #432
+STRHOT-192 B boundary t6-cx-library-graphics/op_openal_desktop.go OpAlExtensions OpenAL gives the text only as a Go string, viewed for the copy into the str, D139 #623
+STRHOT-193 B boundary t6-cx-library-graphics/op_openal_desktop.go OpAlRenderer OpenAL gives the text only as a Go string, viewed for the copy into the str, D139 #623
+STRHOT-194 B boundary t6-cx-library-graphics/op_openal_desktop.go OpAlVendor OpenAL gives the text only as a Go string, viewed for the copy into the str, D139 #623
+STRHOT-195 B boundary t6-cx-library-graphics/op_openal_desktop.go OpAlVersion OpenAL gives the text only as a Go string, viewed for the copy into the str, D139 #623
+STRHOT-196 B removed t6-cx-library-graphics/op_openal.go OpAlLoadWav a failed open ends through cxfxFileFailureReport, a STRHOT REPORTER, D139 #623
+STRHOT-197 E boundary t6-cx-library-graphics/op_opengl.go decodeHdr prints why an HDR file does not decode and goes on without the texture, failure branch only, D139 #623
+STRHOT-198 B removed t6-cx-library-graphics/op_opengl.go uploadTexture the extension is compared as bytes, failures end through cxfxFileFailureReport, D139 #623
 STRHOT-199 O removed t6-cx-library-graphics/op_opengl.go OpGlNewTexture handles and byte views, #432
 STRHOT-200 O removed t6-cx-library-graphics/op_opengl.go OpGlNewTextureCube handles and byte views, #432
 STRHOT-201 O removed t6-cx-library-graphics/op_opengl.go OpCxReleaseTexture handles and byte views, #432
 STRHOT-202 O removed t6-cx-library-graphics/op_opengl.go OpCxTextureGetPixel handles and byte views, #432
 STRHOT-203 O removed t6-cx-library-graphics/op_opengl.go OpGlUploadImageToTexture handles and byte views, #432
-STRHOT-204 B cxfx t6-cx-library-graphics/op_opengl.go OpGlNewGIF O fixed, reads the file at a program path, #432
+STRHOT-204 B removed t6-cx-library-graphics/op_opengl.go OpGlNewGIF failures end through cxfxFileFailureReport, D139 #623
 STRHOT-205 O removed t6-cx-library-graphics/op_opengl.go OpGlFreeGIF handles and byte views, #432
 STRHOT-206 O removed t6-cx-library-graphics/op_opengl.go OpGlGIFFrameToTexture handles and byte views, #432
 STRHOT-207 O removed t6-cx-library-graphics/op_opengl.go OpGlBindAttribLocation handles and byte views, #432
@@ -293,8 +294,8 @@ STRHOT-277 B removed t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolI
 STRHOT-278 B removed t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolText not on the run path since the struct reference error and the failed assert stopped building text, #412
 STRHOT-279 P removed t3-cx-core-ast/ast_cxtype_signature.go *CXTypeSignature.TypeStringGet not on the run path, printing appends with ValueTypeNameAppend, #412
 STRHOT-280 P removed t3-cx-core-ast/ast_cxtype_signature.go *CXTypeSignature.ValueTypeNameGet not on the run path, printing appends with ValueTypeNameAppend, #412
-STRHOT-281 B cxfx t3-cx-core-ast/ast_memory.go StrAllocate open in the cxfx build only, where the OpenAL text opcodes still write a Go string, D139 #621
-STRHOT-282 B cxfx t3-cx-core-ast/ast_memory.go StrAllocateAt open in the cxfx build only, where the OpenAL text opcodes still write a Go string, D139 #621
+STRHOT-281 B removed t3-cx-core-ast/ast_memory.go StrAllocate no opcode writes a str from a Go string, D139 #623
+STRHOT-282 B removed t3-cx-core-ast/ast_memory.go StrAllocateAt no opcode writes a str from a Go string, D139 #623
 STRHOT-283 B removed t3-cx-core-ast/ast_names.go *CXProgram.CXProgramNameFind not on the run path since op_aff.go was deleted, D5 #500
 STRHOT-284 B removed t3-cx-core-ast/ast_names.go *CXProgram.CXProgramNameText not on the run path since serializeStructReference keeps the name bytes, #412
 STRHOT-285 E removed t3-cx-core-ast/ast_names.go *CXProgram.CXProgramSourceFileText not on the run path, the failed assert prints the file with CXProgramSourceFileBytes, #412
@@ -334,7 +335,7 @@ STRHOT-318 O removed t4-cx-runtime-opcodes/op_str.go OpStrBytesOfString fixed, b
 STRHOT-319 O removed t4-cx-runtime-opcodes/op_str.go OpStrStringOfBytes fixed, byte views of CX memory and the format buffer
 STRHOT-320 P removed t4-cx-runtime-printer/stack.go printerStackValueLine appends names viewed from the string pool, #412
 STRHOT-321 E removed t4-cx-library-regexp/op_regexp.go OpRegexpMustCompile a failed compile calls regexpMustCompileFailureReport, a STRHOT REPORTER, #412
-STRHOT-322 B cxfx t2-cx-core-stringpool/string_view.go StringView O fixed, only the t6-cx-library-graphics GLFW, gltext and file boundaries call it, D92
+STRHOT-322 B boundary-cxfx t2-cx-core-stringpool/string_view.go StringView the view of program bytes that the GLFW title and gltext calls take, D139 #623
 STRHOT-323 E removed t6-cx-library-graphics/state.go cxfxHandleAssertFailure a STRHOT REPORTER, its callers pass integers only, #412
 STRHOT-324 E removed t6-cx-library-graphics/state.go cxfxTableFullAssertFailure a STRHOT REPORTER, its callers pass integers only, #412
 STRHOT-325 B removed t6-cx-library-graphics/op_opengl.go decodeImg fixed, picks the decoder by the first bytes of the file, #432

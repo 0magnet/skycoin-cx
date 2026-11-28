@@ -151,7 +151,7 @@ func TestReporterNotWalked(t *testing.T) {
 
 func TestReadCodesBoundary(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "codes.txt")
-	table := "STRHOT-001 B boundary t1-x/a.go A\nSTRHOT-002 B boundary t6-cx-library-graphics/b.go B\nSTRHOT-003 B shut t1-x/c.go C\n"
+	table := "STRHOT-001 B boundary t1-x/a.go A\nSTRHOT-002 B boundary t6-cx-library-graphics/b.go B\nSTRHOT-004 B boundary-cxfx t2-x/d.go D\nSTRHOT-003 B shut t1-x/c.go C\n"
 	if err := os.WriteFile(path, []byte(table[:strings.LastIndex(table[:len(table)-1], "\n")+1]), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -164,6 +164,9 @@ func TestReadCodesBoundary(t *testing.T) {
 	}
 	if entry := codes["STRHOT-002"]; !entry.boundary || !entry.cxfx {
 		t.Errorf("STRHOT-002 = %+v, want a boundary code of the cxfx build", entry)
+	}
+	if entry := codes["STRHOT-004"]; !entry.boundary || !entry.cxfx {
+		t.Errorf("STRHOT-004 = %+v, want a boundary code of the cxfx build", entry)
 	}
 	if err := os.WriteFile(path, []byte(table), 0o644); err != nil {
 		t.Fatal(err)
