@@ -44,8 +44,10 @@ func TestStringPoolIntern(t *testing.T) {
 		gids[i] = pool.StringPoolIntern([]byte(fmt.Sprintf("name%d", i)))
 	}
 	pool.StringPoolFreeze()
-	if pool.StringPoolIndex != nil {
-		t.Error("the index survives StringPoolFreeze")
+	for i, gid := range gids {
+		if got, found := pool.StringPoolFind([]byte(fmt.Sprintf("name%d", i))); !found || got != gid {
+			t.Errorf("frozen Find(name%d) = %#x, %v, want %#x", i, got, found, gid)
+		}
 	}
 	for i, gid := range gids {
 		if got := pool.StringPoolBytes(gid); string(got) != fmt.Sprintf("name%d", i) {

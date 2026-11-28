@@ -127,16 +127,19 @@ func codesCxfxOpen(codes map[string]codeEntry) {
 	}
 }
 
-// codeEntry is one line of the code table.
+// codeEntry is one line of the code table. A boundary code is an accepted
+// site where a Go or OS call takes a string, see docs/StringsHotPath.md.
 type codeEntry struct {
-	class   string
-	removed bool
-	cxfx    bool
+	class    string
+	removed  bool
+	cxfx     bool
+	boundary bool
 }
 
 // readCodes reads the code table, one "STRHOT-nnn CLASS STATUS file function"
-// line per code. STATUS is open, removed or cxfx, open in the build with the
-// cxfx tag only. # starts a comment line.
+// line per code. STATUS is open, removed, cxfx, open in the build with the
+// cxfx tag only, or boundary. A boundary code in t6-cx-library-graphics is
+// checked in the build with the cxfx tag only. # starts a comment line.
 func readCodes(path string) (map[string]codeEntry, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -150,15 +153,21 @@ func readCodes(path string) (map[string]codeEntry, error) {
 		if len(fields) == 0 || strings.HasPrefix(fields[0], "#") {
 			continue
 		}
-		if len(fields) < 5 || !strings.Contains("IOPEB", fields[1]) || len(fields[1]) != 1 || (fields[2] != "open" && fields[2] != "removed" && fields[2] != "cxfx") {
-			return nil, fmt.Errorf("%s:%d: want STRHOT-nnn CLASS open|removed|cxfx file function", path, n)
+		if len(fields) < 5 || !strings.Contains("IOPEB", fields[1]) || len(fields[1]) != 1 || !codeStatusKnown(fields[2]) {
+			return nil, fmt.Errorf("%s:%d: want STRHOT-nnn CLASS open|removed|cxfx|boundary file function", path, n)
 		}
 		if _, dup := codes[fields[0]]; dup {
 			return nil, fmt.Errorf("%s:%d: %s listed twice", path, n, fields[0])
 		}
-		codes[fields[0]] = codeEntry{class: fields[1], removed: fields[2] == "removed", cxfx: fields[2] == "cxfx"}
+		boundary := fields[2] == "boundary"
+		cxfx := fields[2] == "cxfx" || boundary && strings.HasPrefix(fields[3], "t6-cx-library-graphics/")
+		codes[fields[0]] = codeEntry{class: fields[1], removed: fields[2] == "removed", cxfx: cxfx, boundary: boundary}
 	}
 	return codes, scanner.Err()
+}
+
+func codeStatusKnown(status string) bool {
+	return status == "open" || status == "removed" || status == "cxfx" || status == "boundary"
 }
 
 // load type checks the module packages of the cx build and returns its
@@ -656,13 +665,18 @@ func report(w io.Writer, functions map[string]*function, codes map[string]codeEn
 		rc = 1
 	}
 	counts := map[string]int{}
+	boundaries := 0
 	for _, entry := range codes {
-		if !entry.removed && !entry.cxfx {
+		switch {
+		case entry.removed || entry.cxfx:
+		case entry.boundary:
+			boundaries++
+		default:
 			counts[entry.class]++
 		}
 	}
-	fmt.Fprintf(w, "%d string operation lines on the run path, open codes I %d, O %d, P %d, E %d, B %d\n",
-		len(lines), counts["I"], counts["O"], counts["P"], counts["E"], counts["B"])
+	fmt.Fprintf(w, "%d string operation lines on the run path, open codes I %d, O %d, P %d, E %d, B %d, boundary codes %d\n",
+		len(lines), counts["I"], counts["O"], counts["P"], counts["E"], counts["B"], boundaries)
 	return rc
 }
 

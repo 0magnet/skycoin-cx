@@ -7,6 +7,8 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -141,5 +143,29 @@ func TestReporterNotWalked(t *testing.T) {
 	}
 	if problem := functions["x.reported"].reporterProblem; problem != "" {
 		t.Errorf("x.reported breaks the reporter rule: %s", problem)
+	}
+}
+
+func TestReadCodesBoundary(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "codes.txt")
+	table := "STRHOT-001 B boundary t1-x/a.go A\nSTRHOT-002 B boundary t6-cx-library-graphics/b.go B\nSTRHOT-003 B shut t1-x/c.go C\n"
+	if err := os.WriteFile(path, []byte(table[:strings.LastIndex(table[:len(table)-1], "\n")+1]), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	codes, err := readCodes(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if entry := codes["STRHOT-001"]; !entry.boundary || entry.cxfx || entry.removed {
+		t.Errorf("STRHOT-001 = %+v, want a boundary code of the default build", entry)
+	}
+	if entry := codes["STRHOT-002"]; !entry.boundary || !entry.cxfx {
+		t.Errorf("STRHOT-002 = %+v, want a boundary code of the cxfx build", entry)
+	}
+	if err := os.WriteFile(path, []byte(table), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := readCodes(path); err == nil {
+		t.Error("readCodes took the unknown status shut")
 	}
 }

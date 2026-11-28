@@ -9,8 +9,10 @@
 # the string to Go, the OS or compiler code run by an opcode (I/O, system
 # libraries, serialize, affordances).
 # STATUS is open (a VIOLATION comment marks it), removed (no longer on the run
-# path) or cxfx (open in t6-cx-library-graphics, which only the build with the cxfx tag has,
-# checked by ./check-strhot.sh -tags cxfx, #432).
+# path), cxfx (open in t6-cx-library-graphics, which only the build with the cxfx tag has,
+# checked by ./check-strhot.sh -tags cxfx, #432) or boundary (accepted: the one
+# call that hands a view of pool or program bytes to a Go or OS API that takes
+# a string, with the reason in the note, D139 #412).
 STRHOT-001 I removed t1-cx-core-objmodel/gid.go GidCheck not on the run path at dfcc46ab
 STRHOT-002 E removed t3-cx-core-ast/cxargumentdebug_mng.go *CXArgumentDebugMng.CXArgumentDebugGet the check passes the Gid and the slot arrays to objmodel.GidGetFailureReport, a STRHOT REPORTER, #412
 STRHOT-003 E removed t3-cx-core-ast/cxargument_mng.go *CXArgumentMng.CXArgumentGet the check passes the Gid and the slot arrays to objmodel.GidGetFailureReport, a STRHOT REPORTER, #412
@@ -285,9 +287,9 @@ STRHOT-271 B open t1-cx-runtime-sandbox/path.go pathFileError
 STRHOT-272 B open t1-cx-runtime-sandbox/path.go FileOpen
 STRHOT-273 E removed t1-cx-core-objmodel/gid.go GidAssertFailure only STRHOT REPORTERs and Release call it, #412
 STRHOT-274 E removed t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolBytes the check passes the Gid to objmodel.GidFirstGenerationFailureReport, a STRHOT REPORTER, #412
-STRHOT-275 B open t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolFind
-STRHOT-276 B open t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolInit
-STRHOT-277 B open t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolIntern
+STRHOT-275 B removed t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolFind the pool index is a hash table over the arena bytes, no Go string key, D139 #619
+STRHOT-276 B removed t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolInit the pool index is a hash table over the arena bytes, no Go string key, D139 #619
+STRHOT-277 B removed t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolIntern the pool index is a hash table over the arena bytes, no Go string key, D139 #619
 STRHOT-278 B removed t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolText not on the run path since the struct reference error and the failed assert stopped building text, #412
 STRHOT-279 P removed t3-cx-core-ast/ast_cxtype_signature.go *CXTypeSignature.TypeStringGet not on the run path, printing appends with ValueTypeNameAppend, #412
 STRHOT-280 P removed t3-cx-core-ast/ast_cxtype_signature.go *CXTypeSignature.ValueTypeNameGet not on the run path, printing appends with ValueTypeNameAppend, #412

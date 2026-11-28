@@ -39,8 +39,8 @@ free number, and a fixed one is marked removed, never deleted.
   opcode runs: file and process opcodes, regexp, tcp, the CPU
   profile, read and serialize.
 
-B codes may stay with their comment. No I, O, P or E code is open, apart
-from one E code of the cxfx build. The str to f32 and f64 opcodes parse with
+A B code is fixed or becomes a `boundary` code, see [Boundaries](#boundaries).
+No I, O, P or E code is open, apart from one E code of the cxfx build. The str to f32 and f64 opcodes parse with
 t0-cx-core-floatparse, a port of strconv.ParseFloat that reads bytes and
 returns the same bits and errors (D92). Printing appends to the format buffer
 of the program, names viewed from the string pool and the byte tables of the
@@ -54,6 +54,24 @@ its statement or above its function, which then covers every site in it.
 // VIOLATION STRHOT-234: E, error or assert text, built on a failure branch only, #412.
 func (cxprogram *CXProgram) CXArgGet(index CXArgumentIndex) *CXArgument {
 ```
+
+## Boundaries
+
+D139 sets how the system libraries hold text. Each library has one state
+struct, a single global, that holds managers with fixed size slots in a
+backing array, like the managers of t3-cx-core-ast. A string field is a
+`stringpool.StringGid`, never a Go string, and every allocation names the
+pool it goes to. The pool keeps the bytes of every string in one arena with
+the offset and length of each slot, and finds a string by a hash table over
+those bytes, so interning takes no Go string either.
+
+An opcode passes Gids, fixed structs and byte views of program memory. A Go
+string exists only at the call into Go or the OS that takes one, such as
+`os.Root.Open` or `net.Dial`. It is a view of the pool or program bytes made
+with `unsafe.String` and held for that call only, so it does not allocate.
+That call keeps its VIOLATION comment and its code has the status
+`boundary` in strhot-codes.txt, with the reason in the note. Where Go has a
+`[]byte` API the call uses it and no code is needed.
 
 ## Reporters
 
