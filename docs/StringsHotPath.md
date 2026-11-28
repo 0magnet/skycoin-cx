@@ -22,8 +22,9 @@ build only. `./check-strhot.sh -tags cxfx` checks it (#432).
 A string operation is a comparison, concatenation, switch, index, slice or
 range on a string, a conversion between a string and bytes, a lookup in a
 map keyed by strings, a call into `fmt`, `strings`, `errors` or `log`, and a
-call that passes or returns a string. A constant expression and `panic` of a
-constant are not operations.
+call that passes or returns a string. A constant expression, `panic` of a
+constant and `errors.Is`, `errors.As` and `errors.Unwrap`, which compare error
+values and build no text, are not operations.
 
 ## Codes
 

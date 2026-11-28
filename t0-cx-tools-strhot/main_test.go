@@ -16,6 +16,7 @@ import (
 const testSource = `package x
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -27,6 +28,8 @@ func plain(s string, b []byte, m map[string]int) {
 	_ = m[s]
 	fmt.Println(1)
 	_ = strings.ToUpper(s)
+	_ = errors.Is(nil, nil)
+	_ = errors.New("x")
 	_ = len(b)
 	panic("constant")
 	_ = append(b, "constant"...)
@@ -86,7 +89,7 @@ func TestScanFile(t *testing.T) {
 	for _, s := range functions["x.plain"].sites {
 		got = append(got, s.category)
 	}
-	want := "concat compare conv maplookup fmt strings"
+	want := "concat compare conv maplookup fmt strings errors"
 	if strings.Join(got, " ") != want {
 		t.Errorf("plain sites %q, want %q", strings.Join(got, " "), want)
 	}
@@ -109,8 +112,8 @@ func TestReport(t *testing.T) {
 		t.Errorf("report returned %d, want 1", rc)
 	}
 	for _, want := range []string{
-		"x.go:9: plain: concat on the run path without a STRHOT code",
-		`x.go:27: STRHOT-002 says class "E", strhot-codes.txt O`,
+		"x.go:10: plain: concat on the run path without a STRHOT code",
+		`x.go:30: STRHOT-002 says class "E", strhot-codes.txt O`,
 		"STRHOT-003 has no site on the run path",
 		"x.reportedText: a STRHOT reporter takes a string parameter",
 	} {

@@ -6,40 +6,88 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"unsafe"
 
-	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes" // thin: only StrRead, STR, Write_str; no depth gain
+	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes" // thin: only StrBytesRead, STR, CXRuntimeError; no depth gain
+	objmodel "github.com/skycoin/skycoin-cx/t1-cx-core-objmodel"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
-// VIOLATION: state outside State. Owner: t4-cx-library-regexp; moves to RegexpMng in phase 1.
-var regexps map[string]*regexp.Regexp = make(map[string]*regexp.Regexp, 0)
+// LibraryState is the state of the regexp library, its one global,
+// see D139 on #412. LibraryPool interns every expression a program
+// compiles, and LibraryCompiledMng holds the compiled form of each.
+type LibraryState struct {
+	LibraryPool        stringpool.StringPool
+	LibraryCompiledMng CompiledMng
+}
+
+// Library is the state of the regexp library.
+var Library LibraryState
+
+// CompiledMng holds the compiled expressions in a backing array, by the slot
+// of the Gid of their expression plus one, and the empty expression at 0. A
+// slot is nil for an expression that did not compile.
+type CompiledMng struct {
+	CompiledMngSlots []*regexp.Regexp
+}
+
+func compiledMngIndex(expression stringpool.StringGid) int {
+	if expression == stringpool.StringGidNil {
+		return 0
+	}
+	return int(objmodel.GidIndex(int64(expression))) + 1
+}
+
+// CompiledGet returns the compiled form of expression, nil when it has none.
+func (regexps *CompiledMng) CompiledGet(expression stringpool.StringGid) *regexp.Regexp {
+	if index := compiledMngIndex(expression); index < len(regexps.CompiledMngSlots) {
+		return regexps.CompiledMngSlots[index]
+	}
+	return nil
+}
+
+// CompiledSet records compiled as the compiled form of expression.
+func (regexps *CompiledMng) CompiledSet(expression stringpool.StringGid, compiled *regexp.Regexp) {
+	index := compiledMngIndex(expression)
+	for len(regexps.CompiledMngSlots) <= index {
+		regexps.CompiledMngSlots = append(regexps.CompiledMngSlots, nil)
+	}
+	regexps.CompiledMngSlots[index] = compiled
+}
 
 // expOffset returns the offset of the `exp` field of the CX `regexp.Regexp`
-// held by value. The field holds the expression, which keys `regexps`. exp is
-// the only field PackageRegister gives Regexp, so it starts the struct.
+// held by value. The field holds the expression, which finds its compiled
+// form. exp is the only field PackageRegister gives Regexp, so it starts the
+// struct.
 func expOffset(value ast.CXValue) valuetypes.Pointer {
 	return value.Offset
 }
 
 // regexpCompile is a helper function for `OpRegexpMustCompile` and
-// `OpRegexpCompile`. `regexpCompile` compiles a `regexp.Regexp` structure
-// and adds it to global `regexps`. It also writes CX structure `regexp.Regexp`.
+// `OpRegexpCompile`. It writes the CX structure `regexp.Regexp` and compiles
+// its expression once, interned in LibraryPool.
 // GCREACH: allocates the expression str, which adds to the GC pressure,
 // see docs/GarbageCollector.md.
-// VIOLATION STRHOT-142: B, hands a path or text to Go or the OS, #412.
+// VIOLATION STRHOT-142: B, regexp.Compile takes the expression as a string, a view of pool bytes, #412.
 // VIOLATION VMALLOC-017: compiles and matches with the Go regexp package, #407.
 func regexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) error {
-	exp := inputs[0].StrGet(prgrm)
+	exp := inputs[0].StrBytesGet(prgrm)
 
 	// The CX Regexp only holds the expression. The same expression in two
 	// parts of a program shares one compiled instance.
-	ast.StrAllocateAt(prgrm, expOffset(outputs[0]), exp)
+	ast.StrBytesAllocateAt(prgrm, expOffset(outputs[0]), exp, nil)
 
-	r, err := regexp.Compile(exp)
+	expression := Library.LibraryPool.StringPoolIntern(exp)
+	if Library.LibraryCompiledMng.CompiledGet(expression) != nil {
+		return nil
+	}
+	text := Library.LibraryPool.StringPoolBytes(expression)
+	r, err := regexp.Compile(unsafe.String(unsafe.SliceData(text), len(text)))
 	if err != nil {
 		return err
 	}
-	regexps[exp] = r
+	Library.LibraryCompiledMng.CompiledSet(expression, r)
 	return nil
 }
 
@@ -60,31 +108,36 @@ func regexpMustCompileFailureReport(err error) {
 	panic(valuetypes.CXRuntimeError)
 }
 
-// OpRegexpCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-// VIOLATION STRHOT-143: B, hands a path or text to Go or the OS, #412.
+// OpRegexpCompile is a wrapper for golang's `regexp`'s `Compile`. Its second
+// output is the text of the error, empty on success.
+// VIOLATION STRHOT-143: B, Go gives the regexp error only as text, copied into the str, #412.
 func OpRegexpCompile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	// We're only interested in `out1`, which represents the
-	// returned error.
 	err := regexpCompile(prgrm, inputs, outputs)
 
-	// Writing error message to `out1`.
-	var errStr string
+	var errText []byte
 	if err != nil {
-		errStr = err.Error()
+		message := err.Error()
+		errText = unsafe.Slice(unsafe.StringData(message), len(message))
 	}
-	outputs[1].StrSet(prgrm, errStr)
+	outputs[1].StrBytesSet(prgrm, errText)
 }
 
 // OpRegexpFind is a wrapper for golang's `regexp`'s `Find`.
-// VIOLATION STRHOT-144: B, hands a path or text to Go or the OS, #412.
 // VIOLATION VMALLOC-017: compiles and matches with the Go regexp package, #407.
 func OpRegexpFind(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	exp := valuetypes.StrRead(prgrm.Memory, expOffset(inputs[0]))
-	r, ok := regexps[exp]
-	if !ok {
-		fmt.Fprintln(os.Stderr, "regexp: Find on a Regexp that did not compile: "+exp)
-		panic(valuetypes.CXRuntimeError)
+	exp := valuetypes.StrBytesRead(prgrm.Memory, expOffset(inputs[0]))
+	expression, found := Library.LibraryPool.StringPoolFind(exp)
+	r := Library.LibraryCompiledMng.CompiledGet(expression)
+	if !found || r == nil {
+		regexpFindFailureReport(exp)
 	}
+	outputs[0].StrBytesSet(prgrm, r.Find(inputs[1].StrBytesGet(prgrm)))
+}
 
-	outputs[0].StrSet(prgrm, string(r.Find([]byte(inputs[1].StrGet(prgrm)))))
+// regexpFindFailureReport writes that Find ran on a Regexp whose expression
+// exp did not compile and stops the program with CXRuntimeError.
+// STRHOT REPORTER: builds the text from the expression bytes, #412.
+func regexpFindFailureReport(exp []byte) {
+	fmt.Fprintln(os.Stderr, "regexp: Find on a Regexp that did not compile: "+string(exp))
+	panic(valuetypes.CXRuntimeError)
 }

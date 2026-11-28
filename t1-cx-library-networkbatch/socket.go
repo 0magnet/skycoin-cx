@@ -1,20 +1,23 @@
 package networkbatch
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
 	"net"
 	"net/netip"
 	"os"
+	"strconv"
+	"unsafe"
 )
 
 // NetTCPListen opens a TCP listener on address and returns its handle, or
 // 0 when the handle table is full. The bind result is the listening entry,
 // with the port, or an error entry of the next update.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
-// VIOLATION STRHOT-339: B, hands an address to Go and the OS, #508.
-func NetTCPListen(address string) int32 {
+// VIOLATION STRHOT-339: B, net.Listen takes the address as a string, a view of the program bytes, #508.
+func NetTCPListen(address []byte) int32 {
 	handle := netHandleTake()
 	if handle == 0 {
 		return 0
@@ -25,7 +28,7 @@ func NetTCPListen(address string) int32 {
 	if netState.netMode == NetModeReplay {
 		return handle
 	}
-	listener, err := net.Listen("tcp", address)
+	listener, err := net.Listen("tcp", unsafe.String(unsafe.SliceData(address), len(address)))
 	if err != nil {
 		netLocalPost(netArrival{arrivalSocket: socket, arrivalTrigger: NetTriggerError, arrivalDetail: int32(netErrorOf(err))})
 		return handle
@@ -40,8 +43,7 @@ func NetTCPListen(address string) int32 {
 // when the handle table is full. The result is the connected entry or an
 // error entry of a later update.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
-// VIOLATION STRHOT-340: B, hands an address to Go and the OS, #508.
-func NetTCPDial(address string) int32 {
+func NetTCPDial(address []byte) int32 {
 	handle := netHandleTake()
 	if handle == 0 {
 		return 0
@@ -52,7 +54,12 @@ func NetTCPDial(address string) int32 {
 	if netState.netMode == NetModeReplay {
 		return handle
 	}
-	go netTCPDialRun(socket, address)
+	if len(address) > len(socket.socketAddress) {
+		netLocalPost(netArrival{arrivalSocket: socket, arrivalTrigger: NetTriggerError, arrivalDetail: int32(NetErrorAddress)})
+		return handle
+	}
+	socket.socketAddressLength = copy(socket.socketAddress[:], address)
+	go netTCPDialRun(socket)
 	return handle
 }
 
@@ -60,8 +67,7 @@ func NetTCPDial(address string) int32 {
 // 0 when the handle table is full. The bind result is the listening entry or
 // an error entry of the next update.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
-// VIOLATION STRHOT-341: B, hands an address to Go and the OS, #508.
-func NetUDPListen(address string) int32 {
+func NetUDPListen(address []byte) int32 {
 	return netUDPOpen(address, false)
 }
 
@@ -69,14 +75,13 @@ func NetUDPListen(address string) int32 {
 // and returns its handle, or 0 when the handle table is full. The result is
 // the connected entry or an error entry of the next update.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
-// VIOLATION STRHOT-342: B, hands an address to Go and the OS, #508.
-func NetUDPDial(address string) int32 {
+func NetUDPDial(address []byte) int32 {
 	return netUDPOpen(address, true)
 }
 
 // netUDPOpen is NetUDPListen and NetUDPDial.
-// VIOLATION STRHOT-343: B, hands an address to Go and the OS, #508.
-func netUDPOpen(address string, dial bool) int32 {
+// VIOLATION STRHOT-343: B, net.ResolveUDPAddr takes the address as a string, a view of the program bytes, #508.
+func netUDPOpen(address []byte, dial bool) int32 {
 	handle := netHandleTake()
 	if handle == 0 {
 		return 0
@@ -89,14 +94,15 @@ func netUDPOpen(address string, dial bool) int32 {
 	}
 	var packet *net.UDPConn
 	var err error
+	view := unsafe.String(unsafe.SliceData(address), len(address))
 	if dial {
 		var remote *net.UDPAddr
-		if remote, err = net.ResolveUDPAddr("udp", address); err == nil {
+		if remote, err = net.ResolveUDPAddr("udp", view); err == nil {
 			packet, err = net.DialUDP("udp", nil, remote)
 		}
 	} else {
 		var local *net.UDPAddr
-		if local, err = net.ResolveUDPAddr("udp", address); err == nil {
+		if local, err = net.ResolveUDPAddr("udp", view); err == nil {
 			packet, err = net.ListenUDP("udp", local)
 		}
 	}
@@ -118,9 +124,9 @@ func netUDPOpen(address string, dial bool) int32 {
 // NetUDPPeerResolve returns the peer of the numeric address, such as
 // 127.0.0.1:9000, adding it to the peer table, or 0 when it does not parse or
 // the table is full.
-// VIOLATION STRHOT-344: B, parses an address, #508.
-func NetUDPPeerResolve(address string) int32 {
-	parsed, err := netip.ParseAddrPort(address)
+// VIOLATION STRHOT-344: B, netip.ParseAddrPort takes the address as a string, a view of the program bytes, #508.
+func NetUDPPeerResolve(address []byte) int32 {
+	parsed, err := netip.ParseAddrPort(unsafe.String(unsafe.SliceData(address), len(address)))
 	if err != nil {
 		return 0
 	}
@@ -139,7 +145,6 @@ func netPortOf(address net.Addr) int {
 }
 
 // netErrorOf returns the NetError of err.
-// VIOLATION STRHOT-345: B, reads the error Go returned, outside the update, #508.
 func netErrorOf(err error) NetError {
 	var addressError *net.AddrError
 	var dnsError *net.DNSError
@@ -161,10 +166,10 @@ func netErrorOf(err error) NetError {
 
 // netTCPDialRun connects socket, then reads it. The writer starts before
 // the connected entry is posted, so it runs when the program can write.
-// VIOLATION STRHOT-347: B, hands an address to Go and the OS, in the dial goroutine, #508.
-func netTCPDialRun(socket *netSocket, address string) {
+// VIOLATION STRHOT-347: B, net.Dialer.Dial takes the address as a string, a view of the socket's address bytes, in the dial goroutine, #508.
+func netTCPDialRun(socket *netSocket) {
 	dialer := net.Dialer{Timeout: netDialTimeout}
-	stream, err := dialer.Dial("tcp", address)
+	stream, err := dialer.Dial("tcp", unsafe.String(&socket.socketAddress[0], socket.socketAddressLength))
 	if err != nil {
 		netArrivalSend(socket, netArrival{arrivalSocket: socket, arrivalTrigger: NetTriggerError, arrivalDetail: int32(netErrorOf(err))})
 		return
@@ -210,7 +215,6 @@ func netTCPAcceptLoop(listener *netSocket) {
 
 // netTCPReadLoop reads socket into its ring until it closes. A full ring
 // stops it until an update frees bytes, and TCP then slows the peer.
-// VIOLATION STRHOT-338: B, compares the error of a socket read, in the reader goroutine of the socket and not the run loop, #508.
 func netTCPReadLoop(socket *netSocket) {
 	s := &netState
 	for {
@@ -251,7 +255,6 @@ func netTCPReadLoop(socket *netSocket) {
 // netUDPReadLoop reads datagrams into the ring until the socket closes. A
 // datagram that does not fit in the ring or the channel is dropped and
 // counted for the dropped entry of the next update.
-// VIOLATION STRHOT-335: B, compares the error of a socket read, in the reader goroutine of the socket and not the run loop, #508.
 func netUDPReadLoop(socket *netSocket) {
 	s := &netState
 	ring := socket.socketRing
@@ -382,4 +385,22 @@ func netDatagramsWrite(packet *net.UDPConn, frames []byte) error {
 		frames = frames[netDatagramHeaderSize+length:]
 	}
 	return nil
+}
+
+// NetAddressLengthMaximum is the longest address a dialing socket keeps.
+const NetAddressLengthMaximum = 320
+
+// NetAddressAppend appends host and port to dst joined as Go's net package
+// takes them, as net.JoinHostPort does, with a host that holds a colon in
+// brackets.
+func NetAddressAppend(dst []byte, host []byte, port int32) []byte {
+	if bytes.IndexByte(host, ':') >= 0 {
+		dst = append(dst, '[')
+		dst = append(dst, host...)
+		dst = append(dst, ']')
+	} else {
+		dst = append(dst, host...)
+	}
+	dst = append(dst, ':')
+	return strconv.AppendInt(dst, int64(port), 10)
 }

@@ -457,8 +457,13 @@ func stringOperation(typeFacts *types.Info, n ast.Node) string {
 		}
 		if callee := calleeOf(typeFacts, e); callee != nil && callee.Pkg() != nil {
 			switch callee.Pkg().Path() {
-			case "fmt", "strings", "errors", "log":
+			case "fmt", "strings", "log":
 				return callee.Pkg().Path()
+			case "errors":
+				// errors.Is, As and Unwrap compare error values and build no text.
+				if callee.Name() != "Is" && callee.Name() != "As" && callee.Name() != "Unwrap" {
+					return callee.Pkg().Path()
+				}
 			}
 		}
 		sig, ok := typeFacts.TypeOf(e.Fun).Underlying().(*types.Signature)

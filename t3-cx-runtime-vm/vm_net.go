@@ -4,8 +4,6 @@ package vm
 
 import (
 	"fmt"
-	"net"
-	"strconv"
 
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
@@ -53,11 +51,11 @@ func (block *netBlock) blockBuffer() []byte {
 }
 
 // blockAddress returns the host of a str input and the i32 port after it,
-// joined as Go's net package takes them.
-func (block *netBlock) blockAddress() string {
+// joined as Go's net package takes them, in new bytes.
+func (block *netBlock) blockAddress() []byte {
 	text, _ := memoryStrRead(block.blockMemory, block.blockOffset, uint32(len(block.blockMemory)))
 	block.blockOffset += machinePointerSize
-	return net.JoinHostPort(string(text), strconv.Itoa(int(block.blockI32())))
+	return networkbatch.NetAddressAppend(nil, text, block.blockI32())
 }
 
 // netBufferLength clamps a length the program passes to the buffer.

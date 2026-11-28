@@ -23,7 +23,7 @@ STRHOT-007 E removed t3-cx-core-ast/cxtypesignaturestruct_mng.go *CXTypeSignatur
 STRHOT-008 O removed t0-cx-core-valuetypes/types_string.go AllocWrite_str_data not on the run path at dfcc46ab
 STRHOT-009 B removed t0-cx-core-valuetypes/types_string.go Read_str_data deleted, only the affordance opcodes used it, D5 #500
 STRHOT-010 O removed t0-cx-core-valuetypes/types_string.go Write_str not on the run path at dfcc46ab
-STRHOT-011 B open t0-cx-core-valuetypes/types_string.go StrRead O fixed, boundary opcodes only
+STRHOT-011 B removed t0-cx-core-valuetypes/types_string.go StrRead no opcode reads a str as a Go string, D139 #621
 STRHOT-012 O removed t0-util/file.go CXOpenFile not on the run path at dfcc46ab
 STRHOT-013 O removed t0-util/file.go CXCreateFile not on the run path at dfcc46ab
 STRHOT-014 O removed t0-util/file.go CXReadFile not on the run path at dfcc46ab
@@ -41,8 +41,8 @@ STRHOT-025 O removed t3-cx-core-ast/ast_cxprogram.go *CXProgram.FunctionGet not 
 STRHOT-026 O removed t3-cx-core-ast/ast_cxstruct.go *CXStruct.FieldGet not on the run path at dfcc46ab
 STRHOT-027 O removed t3-cx-core-ast/ast_cxstruct.go *CXStruct.FieldTypeSignatureAdd not on the run path at dfcc46ab
 STRHOT-028 O removed t3-cx-core-ast/ast_cxstruct.go *CXStruct.FieldGlobalsCXAtomicOpsAdd not on the run path at dfcc46ab
-STRHOT-029 B open t3-cx-core-ast/ast_cxvalue.go *CXValue.StrGet O fixed, boundary opcodes only
-STRHOT-030 B open t3-cx-core-ast/ast_cxvalue.go *CXValue.StrSet O fixed, boundary opcodes only
+STRHOT-029 B removed t3-cx-core-ast/ast_cxvalue.go *CXValue.StrGet no opcode reads a str as a Go string, D139 #621
+STRHOT-030 B cxfx t3-cx-core-ast/ast_cxvalue.go *CXValue.StrSet open in the cxfx build only, where the OpenAL text opcodes still write a Go string, D139 #621
 STRHOT-031 O removed t3-cx-core-ast/error.go CompilationError not on the run path at dfcc46ab
 STRHOT-032 O removed t3-cx-core-ast/serialized_cx_program_skyencoder.go EncodeSerializedCXProgramToBuffer not on the run path at dfcc46ab
 STRHOT-033 O removed t3-cx-core-ast/serialized_cx_program_skyencoder.go DecodeSerializedCXProgram not on the run path at dfcc46ab
@@ -110,7 +110,7 @@ STRHOT-094 O removed t4-cx-runtime-opcodes/op_i64.go OpI64ToStr fixed, byte view
 STRHOT-095 O removed t4-cx-runtime-opcodes/op_i64.go OpI64Print fixed, byte views of CX memory and the format buffer
 STRHOT-096 O removed t4-cx-runtime-opcodes/op_i8.go OpI8ToStr fixed, byte views of CX memory and the format buffer
 STRHOT-097 O removed t4-cx-runtime-opcodes/op_i8.go OpI8Print fixed, byte views of CX memory and the format buffer
-STRHOT-098 B open t4-cx-runtime-opcodes/op_stdin.go OpReadStdin
+STRHOT-098 B removed t4-cx-runtime-opcodes/op_stdin.go OpReadStdin reads the line as bytes, D139 #621
 STRHOT-099 O removed t4-cx-runtime-opcodes/op_str.go OpStrToI8 fixed, byte views of CX memory and the format buffer
 STRHOT-100 O removed t4-cx-runtime-opcodes/op_str.go OpStrToI16 fixed, byte views of CX memory and the format buffer
 STRHOT-101 O removed t4-cx-runtime-opcodes/op_str.go OpStrToI32 fixed, byte views of CX memory and the format buffer
@@ -132,7 +132,7 @@ STRHOT-116 O removed t4-cx-runtime-opcodes/op_str.go OpStrCompareByValue fixed, 
 STRHOT-117 O removed t4-cx-runtime-opcodes/op_str.go OpStrByteLength fixed, byte views of CX memory and the format buffer
 STRHOT-118 E removed t4-cx-runtime-opcodes/op_testing.go assert appends the failure line to the format buffer, assertFailurePrint, #412
 STRHOT-119 O removed t4-cx-runtime-opcodes/op_testing.go panicIf not on the run path at dfcc46ab
-STRHOT-120 B open t4-cx-runtime-opcodes/op_testing.go OpStrError
+STRHOT-120 B removed t4-cx-runtime-opcodes/op_testing.go OpStrError writes ast.ErrorBytes, D139 #621
 STRHOT-121 O removed t4-cx-runtime-opcodes/op_ui16.go OpUI16ToStr fixed, byte views of CX memory and the format buffer
 STRHOT-122 O removed t4-cx-runtime-opcodes/op_ui16.go OpUI16Print fixed, byte views of CX memory and the format buffer
 STRHOT-123 O removed t4-cx-runtime-opcodes/op_ui32.go OpUI32ToStr fixed, byte views of CX memory and the format buffer
@@ -154,9 +154,9 @@ STRHOT-138 B removed t5-cx-library-fileopcodes/op_os.go splitCommand osCommandSp
 STRHOT-139 B removed t5-cx-library-fileopcodes/op_profile.go OpStartProfile the path is a Gid in the os pool, failures print through osProfileFailurePrint, D139 #620
 STRHOT-140 B removed t5-cx-library-fileopcodes/op_profile.go OpStopProfile OsProfileMng finds the profile by the Gid of its path, D139 #620
 STRHOT-141 O removed t4-cx-library-regexp/op_regexp.go expOffset not on the run path at dfcc46ab
-STRHOT-142 B open t4-cx-library-regexp/op_regexp.go regexpCompile
-STRHOT-143 B open t4-cx-library-regexp/op_regexp.go OpRegexpCompile
-STRHOT-144 B open t4-cx-library-regexp/op_regexp.go OpRegexpFind
+STRHOT-142 B boundary t4-cx-library-regexp/op_regexp.go regexpCompile regexp.Compile takes only a string, a view of the expression in the regexp pool, D139 #621
+STRHOT-143 B boundary t4-cx-library-regexp/op_regexp.go OpRegexpCompile Go gives the regexp error only as text, copied into the str, D139 #621
+STRHOT-144 B removed t4-cx-library-regexp/op_regexp.go OpRegexpFind finds the compiled form by the Gid of the expression, matches bytes, D139 #621
 STRHOT-145 B removed t5-tcp/op_tcp.go errString deleted with the blocking tcp functions, #508
 STRHOT-146 B removed t5-tcp/op_tcp.go opTCPDial deleted with the blocking tcp functions, #508
 STRHOT-147 B removed t5-tcp/op_tcp.go opTCPAccept deleted with the blocking tcp functions, #508
@@ -293,8 +293,8 @@ STRHOT-277 B removed t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolI
 STRHOT-278 B removed t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolText not on the run path since the struct reference error and the failed assert stopped building text, #412
 STRHOT-279 P removed t3-cx-core-ast/ast_cxtype_signature.go *CXTypeSignature.TypeStringGet not on the run path, printing appends with ValueTypeNameAppend, #412
 STRHOT-280 P removed t3-cx-core-ast/ast_cxtype_signature.go *CXTypeSignature.ValueTypeNameGet not on the run path, printing appends with ValueTypeNameAppend, #412
-STRHOT-281 B open t3-cx-core-ast/ast_memory.go StrAllocate O fixed, boundary opcodes only
-STRHOT-282 B open t3-cx-core-ast/ast_memory.go StrAllocateAt O fixed, boundary opcodes only
+STRHOT-281 B cxfx t3-cx-core-ast/ast_memory.go StrAllocate open in the cxfx build only, where the OpenAL text opcodes still write a Go string, D139 #621
+STRHOT-282 B cxfx t3-cx-core-ast/ast_memory.go StrAllocateAt open in the cxfx build only, where the OpenAL text opcodes still write a Go string, D139 #621
 STRHOT-283 B removed t3-cx-core-ast/ast_names.go *CXProgram.CXProgramNameFind not on the run path since op_aff.go was deleted, D5 #500
 STRHOT-284 B removed t3-cx-core-ast/ast_names.go *CXProgram.CXProgramNameText not on the run path since serializeStructReference keeps the name bytes, #412
 STRHOT-285 E removed t3-cx-core-ast/ast_names.go *CXProgram.CXProgramSourceFileText not on the run path, the failed assert prints the file with CXProgramSourceFileBytes, #412
@@ -341,26 +341,26 @@ STRHOT-325 B removed t6-cx-library-graphics/op_opengl.go decodeImg fixed, picks 
 STRHOT-326 E removed t1-cx-library-cipherstate/cipherstate.go hashStateAssertFailure a STRHOT REPORTER, its callers pass integers only, #412
 STRHOT-327 E removed t1-cx-library-cipherstate/cipherstate.go hashStateFullAssertFailure a STRHOT REPORTER, its callers pass integers only, #412
 STRHOT-328 E removed t4-cx-library-netopcodes/op_net.go netReplayEndAssertFailure a STRHOT REPORTER, its callers pass integers only, #412
-STRHOT-329 B open t4-cx-library-netopcodes/op_net.go OpNetTCPListen
-STRHOT-330 B open t4-cx-library-netopcodes/op_net.go OpNetTCPDial
-STRHOT-331 B open t4-cx-library-netopcodes/op_net.go OpNetUDPListen
-STRHOT-332 B open t4-cx-library-netopcodes/op_net.go OpNetUDPDial
-STRHOT-333 B open t4-cx-library-netopcodes/op_net.go OpNetUDPPeerResolve
+STRHOT-329 B removed t4-cx-library-netopcodes/op_net.go OpNetTCPListen passes the address as bytes in the net call pool, D139 #621
+STRHOT-330 B removed t4-cx-library-netopcodes/op_net.go OpNetTCPDial passes the address as bytes in the net call pool, D139 #621
+STRHOT-331 B removed t4-cx-library-netopcodes/op_net.go OpNetUDPListen passes the address as bytes in the net call pool, D139 #621
+STRHOT-332 B removed t4-cx-library-netopcodes/op_net.go OpNetUDPDial passes the address as bytes in the net call pool, D139 #621
+STRHOT-333 B removed t4-cx-library-netopcodes/op_net.go OpNetUDPPeerResolve passes the address as bytes in the net call pool, D139 #621
 STRHOT-334 B removed t4-cx-library-netopcodes/op_net.go blockStr a vm form, not on the run path of the old loop
-STRHOT-335 B open t1-cx-library-networkbatch/socket.go netUDPReadLoop
+STRHOT-335 B removed t1-cx-library-networkbatch/socket.go netUDPReadLoop errors.Is compares error values, no text, D139 #621
 STRHOT-336 E removed t4-cx-library-netopcodes/op_net.go netBufferAssertFailure a STRHOT REPORTER, its callers pass integers only, #412
-STRHOT-337 B open t4-cx-library-netopcodes/op_net.go netAddress
-STRHOT-338 B open t1-cx-library-networkbatch/socket.go netTCPReadLoop
-STRHOT-339 B open t1-cx-library-networkbatch/socket.go NetTCPListen
-STRHOT-340 B open t1-cx-library-networkbatch/socket.go NetTCPDial
-STRHOT-341 B open t1-cx-library-networkbatch/socket.go NetUDPListen
-STRHOT-342 B open t1-cx-library-networkbatch/socket.go NetUDPDial
-STRHOT-343 B open t1-cx-library-networkbatch/socket.go netUDPOpen
-STRHOT-344 B open t1-cx-library-networkbatch/socket.go NetUDPPeerResolve
-STRHOT-345 B open t1-cx-library-networkbatch/socket.go netErrorOf
+STRHOT-337 B removed t4-cx-library-netopcodes/op_net.go netAddress networkbatch.NetAddressAppend joins the bytes, D139 #621
+STRHOT-338 B removed t1-cx-library-networkbatch/socket.go netTCPReadLoop errors.Is compares error values, no text, D139 #621
+STRHOT-339 B boundary t1-cx-library-networkbatch/socket.go NetTCPListen net.Listen takes a string, a view of the address bytes, D139 #621
+STRHOT-340 B removed t1-cx-library-networkbatch/socket.go NetTCPDial copies the address bytes into the socket for the dial goroutine, D139 #621
+STRHOT-341 B removed t1-cx-library-networkbatch/socket.go NetUDPListen passes the address bytes, D139 #621
+STRHOT-342 B removed t1-cx-library-networkbatch/socket.go NetUDPDial passes the address bytes, D139 #621
+STRHOT-343 B boundary t1-cx-library-networkbatch/socket.go netUDPOpen net.ResolveUDPAddr takes a string, a view of the address bytes, D139 #621
+STRHOT-344 B boundary t1-cx-library-networkbatch/socket.go NetUDPPeerResolve netip.ParseAddrPort takes a string, a view of the address bytes, D139 #621
+STRHOT-345 B removed t1-cx-library-networkbatch/socket.go netErrorOf errors.Is and errors.As compare error values, no text, D139 #621
 STRHOT-346 B removed t1-cx-library-networkbatch/errno_unix.go netErrorOfSystem folded into netErrorOf, whose code covers it on every system
-STRHOT-347 B open t1-cx-library-networkbatch/socket.go netTCPDialRun
-STRHOT-348 B open t1-cx-library-networkbatch/replay.go netPayloadQuote
+STRHOT-347 B boundary t1-cx-library-networkbatch/socket.go netTCPDialRun net.Dialer.Dial takes a string, a view of the socket address bytes, in the dial goroutine, D139 #621
+STRHOT-348 B removed t1-cx-library-networkbatch/replay.go netPayloadQuote the hex digits are a byte array, D139 #621
 STRHOT-349 B boundary t1-cx-runtime-sandbox/path.go FileOpenReadWrite os.Root.OpenFile takes a string, the path is a view of pool bytes, D139 #620
 STRHOT-350 B boundary t1-cx-runtime-sandbox/path.go FileRemove os.Root.Remove takes a string, the path is a view of pool bytes, D139 #620
 STRHOT-351 B open t3-cx-core-ast/serialize.go deserializeOpcodeSet

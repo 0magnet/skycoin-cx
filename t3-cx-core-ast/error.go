@@ -42,6 +42,25 @@ func ErrorString(code int) string {
 	return opcodetable.ErrorStrings[valuetypes.CXRuntimeError]
 }
 
+// ErrorBytes returns the bytes of ErrorString(code) from a table built once,
+// for the opcode that writes them to a str without a Go string (#412).
+func ErrorBytes(code int) []byte {
+	if text, found := errorBytesTable[code]; found {
+		return text
+	}
+	return errorBytesTable[valuetypes.CXRuntimeError]
+}
+
+var errorBytesTable = errorBytesTableMake()
+
+func errorBytesTableMake() map[int][]byte {
+	table := make(map[int][]byte, len(opcodetable.ErrorStrings))
+	for code, text := range opcodetable.ErrorStrings {
+		table[code] = []byte(text)
+	}
+	return table
+}
+
 // RuntimeOutOfMemory is the panic value of an allocation of
 // RuntimeOutOfMemoryRequest bytes that does not fit the heap cap. Its
 // message is what the runtime error prints.

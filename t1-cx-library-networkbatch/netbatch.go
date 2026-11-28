@@ -133,6 +133,10 @@ const (
 type netSocket struct {
 	socketKind   netSocketKind
 	socketHandle int32
+	// socketAddress holds the address a TCP socket dials, socketAddressLength
+	// bytes of it, for the dial goroutine.
+	socketAddress       [NetAddressLengthMaximum]byte
+	socketAddressLength int
 
 	socketStream   net.Conn
 	socketListener net.Listener

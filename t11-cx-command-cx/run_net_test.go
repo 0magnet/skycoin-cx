@@ -66,7 +66,7 @@ func runNetPeers(t *testing.T, count int) []net.Conn {
 	defer listener.Close()
 	address := listener.Addr().(*net.TCPAddr)
 	for i := 0; i < count; i++ {
-		networkbatch.NetTCPDial(net.JoinHostPort("127.0.0.1", strconv.Itoa(address.Port)))
+		networkbatch.NetTCPDial([]byte(net.JoinHostPort("127.0.0.1", strconv.Itoa(address.Port))))
 	}
 	var peers []net.Conn
 	for len(peers) < count {

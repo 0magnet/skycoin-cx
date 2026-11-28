@@ -105,7 +105,7 @@ func testRunStart(t *testing.T, mode NetMode, path string) {
 // and port.
 func testListen(t *testing.T) (int32, int32) {
 	t.Helper()
-	listener := NetTCPListen("127.0.0.1:0")
+	listener := NetTCPListen([]byte("127.0.0.1:0"))
 	entries := testUpdate(t, 0)
 	listening, found := testFind(entries, listener, NetTriggerListening)
 	if !found {
@@ -118,7 +118,7 @@ func testListen(t *testing.T) (int32, int32) {
 // server answers world and closes.
 func testEcho(t *testing.T) []testEntry {
 	listener, port := testListen(t)
-	client := NetTCPDial("127.0.0.1:" + strconv.Itoa(int(port)))
+	client := NetTCPDial([]byte("127.0.0.1:" + strconv.Itoa(int(port))))
 	var all []testEntry
 	var server int32
 	all = append(all, testUpdateUntil(t, func(entries []testEntry) bool {
@@ -152,7 +152,7 @@ func TestNetTCPEcho(t *testing.T) {
 func TestNetWriteBeforeConnected(t *testing.T) {
 	testRunStart(t, NetModeLive, "")
 	_, port := testListen(t)
-	client := NetTCPDial("127.0.0.1:" + strconv.Itoa(int(port)))
+	client := NetTCPDial([]byte("127.0.0.1:" + strconv.Itoa(int(port))))
 	if queued := NetWrite(client, []byte("early")); queued != 0 {
 		t.Fatalf("write before the connected entry queued %d bytes", queued)
 	}
@@ -162,7 +162,7 @@ func TestNetDialRefused(t *testing.T) {
 	testRunStart(t, NetModeLive, "")
 	listener, port := testListen(t)
 	NetClose(listener)
-	client := NetTCPDial("127.0.0.1:" + strconv.Itoa(int(port)))
+	client := NetTCPDial([]byte("127.0.0.1:" + strconv.Itoa(int(port))))
 	entries := testUpdateUntil(t, func(entries []testEntry) bool {
 		_, found := testFind(entries, client, NetTriggerError)
 		return found
@@ -175,12 +175,12 @@ func TestNetDialRefused(t *testing.T) {
 
 func TestNetUDP(t *testing.T) {
 	testRunStart(t, NetModeLive, "")
-	server := NetUDPListen("127.0.0.1:0")
+	server := NetUDPListen([]byte("127.0.0.1:0"))
 	listening, found := testFind(testUpdate(t, 0), server, NetTriggerListening)
 	if !found {
 		t.Fatal("no listening entry")
 	}
-	client := NetUDPDial("127.0.0.1:" + strconv.Itoa(int(listening.detail)))
+	client := NetUDPDial([]byte("127.0.0.1:" + strconv.Itoa(int(listening.detail))))
 	if _, found := testFind(testUpdate(t, 0), client, NetTriggerConnected); !found {
 		t.Fatal("no connected entry")
 	}
@@ -198,7 +198,7 @@ func TestNetUDP(t *testing.T) {
 	testUpdateUntil(t, func(entries []testEntry) bool {
 		return testPayload(entries, client) == "pong"
 	})
-	if peer := NetUDPPeerResolve("not an address"); peer != 0 {
+	if peer := NetUDPPeerResolve([]byte("not an address")); peer != 0 {
 		t.Fatalf("peer of a bad address is %d", peer)
 	}
 }
@@ -207,7 +207,7 @@ func TestNetUDP(t *testing.T) {
 // drops the rest and says how many in a dropped entry.
 func TestNetUDPDropped(t *testing.T) {
 	testRunStart(t, NetModeLive, "")
-	server := NetUDPListen("127.0.0.1:0")
+	server := NetUDPListen([]byte("127.0.0.1:0"))
 	listening, _ := testFind(testUpdate(t, 0), server, NetTriggerListening)
 	sender, err := net.Dial("udp", "127.0.0.1:"+strconv.Itoa(int(listening.detail)))
 	if err != nil {
@@ -332,11 +332,11 @@ func TestNetRecordReplay(t *testing.T) {
 		t.Fatalf("record holds %d updates, the run made %d", NetReplayUpdatesLeft(), updates)
 	}
 	var replayed []testEntry
-	listener := NetTCPListen("127.0.0.1:0")
+	listener := NetTCPListen([]byte("127.0.0.1:0"))
 	replayed = append(replayed, testUpdate(t, 0)...)
 	listening, _ := testFind(replayed, listener, NetTriggerListening)
 	replayed = nil
-	client := NetTCPDial("127.0.0.1:" + strconv.Itoa(int(listening.detail)))
+	client := NetTCPDial([]byte("127.0.0.1:" + strconv.Itoa(int(listening.detail))))
 	for NetReplayUpdatesLeft() > 0 {
 		entries := testUpdate(t, 0)
 		replayed = append(replayed, entries...)
@@ -394,7 +394,7 @@ func testPairs(t testing.TB, count int) map[int32]net.Conn {
 	deadline := time.Now().Add(20 * time.Second)
 	for connected < count && time.Now().Before(deadline) {
 		for dialing < min(count-connected, dialBatch) {
-			NetTCPDial(address)
+			NetTCPDial([]byte(address))
 			dialing++
 		}
 		NetUpdate(20)
@@ -551,6 +551,17 @@ func BenchmarkNetUpdate(b *testing.B) {
 					peer.Close()
 				}
 			})
+		}
+	}
+}
+
+func TestNetAddressAppend(t *testing.T) {
+	for _, host := range []string{"127.0.0.1", "localhost", "::1", "fe80::1%eth0", ""} {
+		for _, port := range []int32{0, 80, 65535, -1} {
+			want := net.JoinHostPort(host, strconv.Itoa(int(port)))
+			if got := string(NetAddressAppend([]byte("x"), []byte(host), port)); got != "x"+want {
+				t.Errorf("NetAddressAppend(%q, %d) = %q, want %q", host, port, got, "x"+want)
+			}
 		}
 	}
 }
