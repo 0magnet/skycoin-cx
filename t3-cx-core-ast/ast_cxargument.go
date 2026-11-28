@@ -209,7 +209,7 @@ func StructParameterMake(prgrm *CXProgram, pkgName, strctName, argName string) *
 		panic(err)
 	}
 
-	// Natives are shared by every program, so this argument belongs to none.
+	// Native function arguments are shared by every program, so this argument belongs to none.
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S0073.
 	arg := nativeArgument(prgrm.CXProgramNameIntern(argName)).TypeSet(valuetypes.STRUCT)
@@ -251,7 +251,7 @@ func Slice(typeCode valuetypes.Code) *CXArgument {
 // OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 // Now a constructor, site S0076.
 func Param(typeCode valuetypes.Code) *CXArgument {
-	// Natives are shared by every program, so this argument belongs to none.
+	// Native function arguments are shared by every program, so this argument belongs to none.
 	// OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 	// Now a constructor call, site S0077.
 	arg := nativeArgument(stringpool.StringGidNil).TypeSet(typeCode)

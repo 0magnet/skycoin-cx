@@ -17,7 +17,7 @@ func TestASTAPI_Arguments(t *testing.T) {
 	var cxprogram *ast.CXProgram
 
 	// Needed for FunctionNativeExpressionAdd
-	// because of dependency on cxast.OpNames
+	// because it reads the native function names in ast.NativeNames
 	fullparsing.CXCoreInit()
 
 	t.Run("make program", func(t *testing.T) {

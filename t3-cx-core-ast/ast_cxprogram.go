@@ -176,7 +176,7 @@ func CXFunctionGidSlot(gid CXFunctionGid) uint32 {
 }
 
 // nativeArgCopy returns a copy of a native argument for one program.
-// Natives are shared by every program, so their Index must stay unset.
+// Native function arguments are shared by every program, so their Index must stay unset.
 // OBJMODEL: state.CXArgumentMng.CXArgumentAlloc(), phase 4 #326.
 // Now a constructor, site S0192.
 func nativeArgCopy(arg *CXArgument) *CXArgument {

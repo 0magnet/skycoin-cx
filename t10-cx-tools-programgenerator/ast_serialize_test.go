@@ -82,7 +82,7 @@ func generateSampleProgramFromCXEvolves(t *testing.T, withLiteral bool) *ast.CXP
 	var cxProgram *ast.CXProgram
 
 	// Needed for FunctionNativeExpressionAdd
-	// because of dependency on cxast.OpNames
+	// because it reads the native function names in ast.NativeNames
 	fullparsing.CXCoreInit()
 	// OBJMODEL: state.CXProgramMng.CXProgramAlloc(), phase 4 #371.
 	// Now a constructor call, site S0013.
