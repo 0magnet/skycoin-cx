@@ -23,30 +23,36 @@ const (
 )
 
 // StringPool holds every interned string in one byte arena, with the offset
-// and length of each slot. No Go string is stored. StringPoolIndex finds the
-// slot of a string while compiling and is nil once the pool is frozen.
+// and length of each slot. No Go string is stored. StringPoolBuckets is an
+// open addressed hash table of slot+1 by the FNV-1a hash of the bytes, 0 for
+// an empty bucket, with a power of two length, see D139 on #412.
 type StringPool struct {
 	StringPoolArena   []byte
 	StringPoolOffsets []uint32
 	StringPoolLengths []uint32
-	StringPoolIndex   map[string]StringGid
+	StringPoolBuckets []uint32
 	StringPoolFrozen  bool
 }
 
+// stringPoolBucketsMinimum is the smallest hash table, in buckets.
+const stringPoolBucketsMinimum = 16
+
 // StringPoolInit sets up an empty pool with room for slotCap strings and
 // arenaCap bytes before the first growth.
-// VIOLATION STRHOT-276: B, name text for compiler code run by an opcode, #412.
 func (pool *StringPool) StringPoolInit(slotCap int, arenaCap int) {
 	pool.StringPoolArena = make([]byte, 0, arenaCap)
 	pool.StringPoolOffsets = make([]uint32, 0, slotCap)
 	pool.StringPoolLengths = make([]uint32, 0, slotCap)
-	pool.StringPoolIndex = make(map[string]StringGid, slotCap)
+	buckets := stringPoolBucketsMinimum
+	for buckets < 2*slotCap {
+		buckets *= 2
+	}
+	pool.StringPoolBuckets = make([]uint32, buckets)
 	pool.StringPoolFrozen = false
 }
 
 // StringPoolIntern returns the Gid of bytes, interning them on first use.
 // The empty string is StringGidNil. It asserts on a frozen pool.
-// VIOLATION STRHOT-277: B, name text for compiler code run by an opcode, #412.
 func (pool *StringPool) StringPoolIntern(bytes []byte) StringGid {
 	if pool.StringPoolFrozen {
 		stringPoolInternFrozenReport(bytes)
@@ -54,48 +60,95 @@ func (pool *StringPool) StringPoolIntern(bytes []byte) StringGid {
 	if len(bytes) == 0 {
 		return StringGidNil
 	}
-	if gid, ok := pool.StringPoolIndex[string(bytes)]; ok {
-		return gid
+	if len(pool.StringPoolBuckets) == 0 {
+		pool.StringPoolBuckets = make([]uint32, stringPoolBucketsMinimum)
+	}
+	bucket, found := pool.stringPoolBucketFind(bytes)
+	if found {
+		return stringPoolGidOf(pool.StringPoolBuckets[bucket] - 1)
 	}
 	slot := len(pool.StringPoolOffsets)
 	if uint64(slot) >= objmodel.GidCapMax || uint64(len(pool.StringPoolArena))+uint64(len(bytes)) > uint64(^uint32(0)) {
 		stringPoolFullReport(slot, len(pool.StringPoolArena))
 	}
-	offset := len(pool.StringPoolArena)
-	pool.StringPoolArena = append(pool.StringPoolArena, bytes...)
-	pool.StringPoolOffsets = append(pool.StringPoolOffsets, uint32(offset))
+	pool.StringPoolOffsets = append(pool.StringPoolOffsets, uint32(len(pool.StringPoolArena)))
 	pool.StringPoolLengths = append(pool.StringPoolLengths, uint32(len(bytes)))
-	gid := StringGid(objmodel.GidCompose(StringGidTypeTag, objmodel.GidGenerationFirst, uint32(slot)))
-	// The key views the arena. Arena bytes are never written again, and an
-	// array left behind by a growing append stays alive while the map holds it.
-	pool.StringPoolIndex[unsafe.String(&pool.StringPoolArena[offset], len(bytes))] = gid
-	return gid
+	pool.StringPoolArena = append(pool.StringPoolArena, bytes...)
+	pool.StringPoolBuckets[bucket] = uint32(slot) + 1
+	if 2*(slot+1) > len(pool.StringPoolBuckets) {
+		pool.stringPoolBucketsGrow()
+	}
+	return stringPoolGidOf(uint32(slot))
 }
 
-// StringPoolFind returns the Gid of bytes without interning them, and false
-// when they were never interned. On a frozen pool it scans every slot, so it is
-// for rare run time lookups by text.
-// VIOLATION STRHOT-275: B, name text for compiler code run by an opcode, #412.
+// StringPoolFind returns the Gid of text without interning it, and false
+// when it was never interned.
 func (pool *StringPool) StringPoolFind(text []byte) (StringGid, bool) {
 	if len(text) == 0 {
 		return StringGidNil, true
 	}
-	if pool.StringPoolIndex != nil {
-		gid, found := pool.StringPoolIndex[string(text)]
-		return gid, found
+	if len(pool.StringPoolBuckets) == 0 {
+		return StringGidNil, false
 	}
-	for slot, offset := range pool.StringPoolOffsets {
-		if bytes.Equal(pool.StringPoolArena[offset:offset+pool.StringPoolLengths[slot]], text) {
-			return StringGid(objmodel.GidCompose(StringGidTypeTag, objmodel.GidGenerationFirst, uint32(slot))), true
+	bucket, found := pool.stringPoolBucketFind(text)
+	if !found {
+		return StringGidNil, false
+	}
+	return stringPoolGidOf(pool.StringPoolBuckets[bucket] - 1), true
+}
+
+// stringPoolBucketFind returns the bucket that holds text, or the empty
+// bucket where it goes and false.
+func (pool *StringPool) stringPoolBucketFind(text []byte) (int, bool) {
+	mask := uint32(len(pool.StringPoolBuckets) - 1)
+	for bucket := stringPoolHash(text) & mask; ; bucket = (bucket + 1) & mask {
+		entry := pool.StringPoolBuckets[bucket]
+		if entry == 0 {
+			return int(bucket), false
+		}
+		if bytes.Equal(pool.stringPoolSlotBytes(entry-1), text) {
+			return int(bucket), true
 		}
 	}
-	return StringGidNil, false
+}
+
+// stringPoolBucketsGrow doubles the hash table and places every slot again.
+func (pool *StringPool) stringPoolBucketsGrow() {
+	pool.StringPoolBuckets = make([]uint32, 2*len(pool.StringPoolBuckets))
+	mask := uint32(len(pool.StringPoolBuckets) - 1)
+	for slot := range pool.StringPoolOffsets {
+		bucket := stringPoolHash(pool.stringPoolSlotBytes(uint32(slot))) & mask
+		for pool.StringPoolBuckets[bucket] != 0 {
+			bucket = (bucket + 1) & mask
+		}
+		pool.StringPoolBuckets[bucket] = uint32(slot) + 1
+	}
+}
+
+// stringPoolHash is the 32 bit FNV-1a hash of text,
+// see https://datatracker.ietf.org/doc/html/draft-eastlake-fnv section 2.
+func stringPoolHash(text []byte) uint32 {
+	hash := uint32(2166136261)
+	for _, b := range text {
+		hash ^= uint32(b)
+		hash *= 16777619
+	}
+	return hash
+}
+
+func (pool *StringPool) stringPoolSlotBytes(slot uint32) []byte {
+	offset := pool.StringPoolOffsets[slot]
+	end := offset + pool.StringPoolLengths[slot]
+	return pool.StringPoolArena[offset:end:end]
+}
+
+func stringPoolGidOf(slot uint32) StringGid {
+	return StringGid(objmodel.GidCompose(StringGidTypeTag, objmodel.GidGenerationFirst, slot))
 }
 
 // StringPoolFreeze ends interning. It is called when compilation ends, and the
 // VM runs only on a frozen pool.
 func (pool *StringPool) StringPoolFreeze() {
-	pool.StringPoolIndex = nil
 	pool.StringPoolFrozen = true
 }
 
@@ -109,8 +162,7 @@ func (pool *StringPool) StringPoolBytes(gid StringGid) []byte {
 	if objmodel.GidTypeTag(int64(gid)) != StringGidTypeTag || objmodel.GidGeneration(int64(gid)) != objmodel.GidGenerationFirst || uint64(slot) >= uint64(len(pool.StringPoolOffsets)) {
 		objmodel.GidFirstGenerationFailureReport(int64(gid), StringGidTypeTag, len(pool.StringPoolOffsets))
 	}
-	offset := pool.StringPoolOffsets[slot]
-	return pool.StringPoolArena[offset : offset+pool.StringPoolLengths[slot] : offset+pool.StringPoolLengths[slot]]
+	return pool.stringPoolSlotBytes(slot)
 }
 
 // StringPoolEqual reports whether a and b name equal strings.
