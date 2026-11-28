@@ -34,7 +34,8 @@ adds flags after it, so `CX_TINYGO_FLAGS=-no-debug=false` keeps the DWARF.
 and links no LLVM.
 
 * Each function of the image becomes an LLVM function that takes the frame
-  pointer, the call depth and its inputs, and returns its outputs.
+  pointer and the call depth when it needs them, and its inputs, and
+  returns its outputs.
 * Memory is one global, `cx_mem`, laid out as the vm memory: the stack, the
   data segment, then the scratch. The data segment starts as the image data.
 * A frame variable of `ImageLocals` whose address is never taken becomes an
@@ -44,6 +45,14 @@ and links no LLVM.
   hold. A byte no variable covers whose address is taken keeps the whole
   frame in memory.
 * A load of a literal of `ImageReadOnly` becomes a constant.
+* A function takes the call depth and checks it before each call only when
+  it is in a cycle of calls or calls a function that is (decision D144,
+  optimizations/0004). Every other function has neither, so a program
+  without recursion has no depth check at all. A recursive call sees the
+  depth vm counts, as the functions on the way to it count it too. A
+  program whose deepest chain without recursion could reach the limit
+  checks the depth everywhere. Without recursion the stack check is left
+  out when the stack the call graph gives fits `-stack-size`.
 * Every check of vm stops the native run the same way: the call depth and
   stack size of a call, an index outside its array, an address outside the
   stack and data segment, and an integer division by zero. An index check is
@@ -115,6 +124,12 @@ After a runtime error vm prints the call stack with the value of every
 variable, read from its memory. A native program keeps most variables in
 registers, so it prints the error line alone. The execution records check
 the native output up to the call stack.
+
+A function outside a cycle of calls does not check the call depth. When a
+recursive program is at the depth limit and calls a chain of two or more
+such functions, vm stops with a stack overflow inside the chain, and the
+native run finishes the chain and stops only at a later depth check, if
+it reaches one.
 
 ## Execution records
 

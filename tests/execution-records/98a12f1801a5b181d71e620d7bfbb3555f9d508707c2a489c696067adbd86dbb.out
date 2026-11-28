@@ -1,0 +1,6497 @@
+1
+error: test-vm-call-depth-mutual.cx:14, CX_RUNTIME_STACK_OVERFLOW_ERROR, stack overflow
+===Callstack===
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 998
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 0
+	test-vm-call-depth-mutual.cx:5 : step() : 0
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 997
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 998
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 996
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 997
+	test-vm-call-depth-mutual.cx:5 : step() : 997
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 995
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 996
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 994
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 995
+	test-vm-call-depth-mutual.cx:5 : step() : 995
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 993
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 994
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 992
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 993
+	test-vm-call-depth-mutual.cx:5 : step() : 993
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 991
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 992
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 990
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 991
+	test-vm-call-depth-mutual.cx:5 : step() : 991
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 989
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 990
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 988
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 989
+	test-vm-call-depth-mutual.cx:5 : step() : 989
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 987
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 988
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 986
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 987
+	test-vm-call-depth-mutual.cx:5 : step() : 987
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 985
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 986
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 984
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 985
+	test-vm-call-depth-mutual.cx:5 : step() : 985
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 983
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 984
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 982
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 983
+	test-vm-call-depth-mutual.cx:5 : step() : 983
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 981
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 982
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 980
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 981
+	test-vm-call-depth-mutual.cx:5 : step() : 981
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 979
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 980
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 978
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 979
+	test-vm-call-depth-mutual.cx:5 : step() : 979
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 977
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 978
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 976
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 977
+	test-vm-call-depth-mutual.cx:5 : step() : 977
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 975
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 976
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 974
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 975
+	test-vm-call-depth-mutual.cx:5 : step() : 975
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 973
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 974
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 972
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 973
+	test-vm-call-depth-mutual.cx:5 : step() : 973
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 971
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 972
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 970
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 971
+	test-vm-call-depth-mutual.cx:5 : step() : 971
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 969
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 970
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 968
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 969
+	test-vm-call-depth-mutual.cx:5 : step() : 969
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 967
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 968
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 966
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 967
+	test-vm-call-depth-mutual.cx:5 : step() : 967
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 965
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 966
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 964
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 965
+	test-vm-call-depth-mutual.cx:5 : step() : 965
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 963
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 964
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 962
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 963
+	test-vm-call-depth-mutual.cx:5 : step() : 963
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 961
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 962
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 960
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 961
+	test-vm-call-depth-mutual.cx:5 : step() : 961
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 959
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 960
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 958
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 959
+	test-vm-call-depth-mutual.cx:5 : step() : 959
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 957
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 958
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 956
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 957
+	test-vm-call-depth-mutual.cx:5 : step() : 957
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 955
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 956
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 954
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 955
+	test-vm-call-depth-mutual.cx:5 : step() : 955
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 953
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 954
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 952
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 953
+	test-vm-call-depth-mutual.cx:5 : step() : 953
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 951
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 952
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 950
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 951
+	test-vm-call-depth-mutual.cx:5 : step() : 951
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 949
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 950
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 948
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 949
+	test-vm-call-depth-mutual.cx:5 : step() : 949
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 947
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 948
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 946
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 947
+	test-vm-call-depth-mutual.cx:5 : step() : 947
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 945
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 946
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 944
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 945
+	test-vm-call-depth-mutual.cx:5 : step() : 945
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 943
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 944
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 942
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 943
+	test-vm-call-depth-mutual.cx:5 : step() : 943
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 941
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 942
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 940
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 941
+	test-vm-call-depth-mutual.cx:5 : step() : 941
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 939
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 940
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 938
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 939
+	test-vm-call-depth-mutual.cx:5 : step() : 939
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 937
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 938
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 936
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 937
+	test-vm-call-depth-mutual.cx:5 : step() : 937
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 935
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 936
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 934
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 935
+	test-vm-call-depth-mutual.cx:5 : step() : 935
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 933
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 934
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 932
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 933
+	test-vm-call-depth-mutual.cx:5 : step() : 933
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 931
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 932
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 930
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 931
+	test-vm-call-depth-mutual.cx:5 : step() : 931
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 929
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 930
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 928
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 929
+	test-vm-call-depth-mutual.cx:5 : step() : 929
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 927
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 928
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 926
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 927
+	test-vm-call-depth-mutual.cx:5 : step() : 927
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 925
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 926
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 924
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 925
+	test-vm-call-depth-mutual.cx:5 : step() : 925
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 923
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 924
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 922
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 923
+	test-vm-call-depth-mutual.cx:5 : step() : 923
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 921
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 922
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 920
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 921
+	test-vm-call-depth-mutual.cx:5 : step() : 921
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 919
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 920
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 918
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 919
+	test-vm-call-depth-mutual.cx:5 : step() : 919
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 917
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 918
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 916
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 917
+	test-vm-call-depth-mutual.cx:5 : step() : 917
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 915
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 916
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 914
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 915
+	test-vm-call-depth-mutual.cx:5 : step() : 915
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 913
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 914
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 912
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 913
+	test-vm-call-depth-mutual.cx:5 : step() : 913
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 911
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 912
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 910
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 911
+	test-vm-call-depth-mutual.cx:5 : step() : 911
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 909
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 910
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 908
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 909
+	test-vm-call-depth-mutual.cx:5 : step() : 909
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 907
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 908
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 906
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 907
+	test-vm-call-depth-mutual.cx:5 : step() : 907
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 905
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 906
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 904
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 905
+	test-vm-call-depth-mutual.cx:5 : step() : 905
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 903
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 904
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 902
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 903
+	test-vm-call-depth-mutual.cx:5 : step() : 903
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 901
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 902
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 900
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 901
+	test-vm-call-depth-mutual.cx:5 : step() : 901
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 899
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 900
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 898
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 899
+	test-vm-call-depth-mutual.cx:5 : step() : 899
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 897
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 898
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 896
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 897
+	test-vm-call-depth-mutual.cx:5 : step() : 897
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 895
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 896
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 894
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 895
+	test-vm-call-depth-mutual.cx:5 : step() : 895
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 893
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 894
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 892
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 893
+	test-vm-call-depth-mutual.cx:5 : step() : 893
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 891
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 892
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 890
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 891
+	test-vm-call-depth-mutual.cx:5 : step() : 891
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 889
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 890
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 888
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 889
+	test-vm-call-depth-mutual.cx:5 : step() : 889
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 887
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 888
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 886
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 887
+	test-vm-call-depth-mutual.cx:5 : step() : 887
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 885
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 886
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 884
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 885
+	test-vm-call-depth-mutual.cx:5 : step() : 885
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 883
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 884
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 882
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 883
+	test-vm-call-depth-mutual.cx:5 : step() : 883
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 881
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 882
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 880
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 881
+	test-vm-call-depth-mutual.cx:5 : step() : 881
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 879
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 880
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 878
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 879
+	test-vm-call-depth-mutual.cx:5 : step() : 879
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 877
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 878
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 876
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 877
+	test-vm-call-depth-mutual.cx:5 : step() : 877
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 875
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 876
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 874
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 875
+	test-vm-call-depth-mutual.cx:5 : step() : 875
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 873
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 874
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 872
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 873
+	test-vm-call-depth-mutual.cx:5 : step() : 873
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 871
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 872
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 870
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 871
+	test-vm-call-depth-mutual.cx:5 : step() : 871
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 869
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 870
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 868
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 869
+	test-vm-call-depth-mutual.cx:5 : step() : 869
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 867
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 868
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 866
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 867
+	test-vm-call-depth-mutual.cx:5 : step() : 867
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 865
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 866
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 864
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 865
+	test-vm-call-depth-mutual.cx:5 : step() : 865
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 863
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 864
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 862
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 863
+	test-vm-call-depth-mutual.cx:5 : step() : 863
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 861
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 862
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 860
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 861
+	test-vm-call-depth-mutual.cx:5 : step() : 861
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 859
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 860
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 858
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 859
+	test-vm-call-depth-mutual.cx:5 : step() : 859
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 857
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 858
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 856
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 857
+	test-vm-call-depth-mutual.cx:5 : step() : 857
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 855
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 856
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 854
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 855
+	test-vm-call-depth-mutual.cx:5 : step() : 855
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 853
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 854
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 852
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 853
+	test-vm-call-depth-mutual.cx:5 : step() : 853
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 851
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 852
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 850
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 851
+	test-vm-call-depth-mutual.cx:5 : step() : 851
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 849
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 850
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 848
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 849
+	test-vm-call-depth-mutual.cx:5 : step() : 849
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 847
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 848
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 846
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 847
+	test-vm-call-depth-mutual.cx:5 : step() : 847
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 845
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 846
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 844
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 845
+	test-vm-call-depth-mutual.cx:5 : step() : 845
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 843
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 844
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 842
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 843
+	test-vm-call-depth-mutual.cx:5 : step() : 843
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 841
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 842
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 840
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 841
+	test-vm-call-depth-mutual.cx:5 : step() : 841
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 839
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 840
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 838
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 839
+	test-vm-call-depth-mutual.cx:5 : step() : 839
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 837
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 838
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 836
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 837
+	test-vm-call-depth-mutual.cx:5 : step() : 837
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 835
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 836
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 834
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 835
+	test-vm-call-depth-mutual.cx:5 : step() : 835
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 833
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 834
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 832
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 833
+	test-vm-call-depth-mutual.cx:5 : step() : 833
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 831
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 832
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 830
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 831
+	test-vm-call-depth-mutual.cx:5 : step() : 831
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 829
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 830
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 828
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 829
+	test-vm-call-depth-mutual.cx:5 : step() : 829
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 827
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 828
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 826
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 827
+	test-vm-call-depth-mutual.cx:5 : step() : 827
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 825
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 826
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 824
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 825
+	test-vm-call-depth-mutual.cx:5 : step() : 825
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 823
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 824
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 822
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 823
+	test-vm-call-depth-mutual.cx:5 : step() : 823
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 821
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 822
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 820
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 821
+	test-vm-call-depth-mutual.cx:5 : step() : 821
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 819
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 820
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 818
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 819
+	test-vm-call-depth-mutual.cx:5 : step() : 819
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 817
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 818
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 816
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 817
+	test-vm-call-depth-mutual.cx:5 : step() : 817
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 815
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 816
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 814
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 815
+	test-vm-call-depth-mutual.cx:5 : step() : 815
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 813
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 814
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 812
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 813
+	test-vm-call-depth-mutual.cx:5 : step() : 813
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 811
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 812
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 810
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 811
+	test-vm-call-depth-mutual.cx:5 : step() : 811
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 809
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 810
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 808
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 809
+	test-vm-call-depth-mutual.cx:5 : step() : 809
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 807
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 808
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 806
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 807
+	test-vm-call-depth-mutual.cx:5 : step() : 807
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 805
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 806
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 804
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 805
+	test-vm-call-depth-mutual.cx:5 : step() : 805
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 803
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 804
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 802
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 803
+	test-vm-call-depth-mutual.cx:5 : step() : 803
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 801
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 802
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 800
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 801
+	test-vm-call-depth-mutual.cx:5 : step() : 801
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 799
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 800
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 798
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 799
+	test-vm-call-depth-mutual.cx:5 : step() : 799
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 797
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 798
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 796
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 797
+	test-vm-call-depth-mutual.cx:5 : step() : 797
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 795
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 796
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 794
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 795
+	test-vm-call-depth-mutual.cx:5 : step() : 795
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 793
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 794
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 792
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 793
+	test-vm-call-depth-mutual.cx:5 : step() : 793
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 791
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 792
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 790
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 791
+	test-vm-call-depth-mutual.cx:5 : step() : 791
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 789
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 790
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 788
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 789
+	test-vm-call-depth-mutual.cx:5 : step() : 789
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 787
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 788
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 786
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 787
+	test-vm-call-depth-mutual.cx:5 : step() : 787
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 785
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 786
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 784
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 785
+	test-vm-call-depth-mutual.cx:5 : step() : 785
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 783
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 784
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 782
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 783
+	test-vm-call-depth-mutual.cx:5 : step() : 783
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 781
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 782
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 780
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 781
+	test-vm-call-depth-mutual.cx:5 : step() : 781
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 779
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 780
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 778
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 779
+	test-vm-call-depth-mutual.cx:5 : step() : 779
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 777
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 778
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 776
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 777
+	test-vm-call-depth-mutual.cx:5 : step() : 777
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 775
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 776
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 774
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 775
+	test-vm-call-depth-mutual.cx:5 : step() : 775
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 773
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 774
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 772
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 773
+	test-vm-call-depth-mutual.cx:5 : step() : 773
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 771
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 772
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 770
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 771
+	test-vm-call-depth-mutual.cx:5 : step() : 771
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 769
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 770
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 768
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 769
+	test-vm-call-depth-mutual.cx:5 : step() : 769
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 767
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 768
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 766
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 767
+	test-vm-call-depth-mutual.cx:5 : step() : 767
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 765
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 766
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 764
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 765
+	test-vm-call-depth-mutual.cx:5 : step() : 765
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 763
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 764
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 762
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 763
+	test-vm-call-depth-mutual.cx:5 : step() : 763
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 761
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 762
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 760
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 761
+	test-vm-call-depth-mutual.cx:5 : step() : 761
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 759
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 760
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 758
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 759
+	test-vm-call-depth-mutual.cx:5 : step() : 759
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 757
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 758
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 756
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 757
+	test-vm-call-depth-mutual.cx:5 : step() : 757
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 755
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 756
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 754
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 755
+	test-vm-call-depth-mutual.cx:5 : step() : 755
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 753
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 754
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 752
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 753
+	test-vm-call-depth-mutual.cx:5 : step() : 753
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 751
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 752
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 750
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 751
+	test-vm-call-depth-mutual.cx:5 : step() : 751
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 749
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 750
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 748
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 749
+	test-vm-call-depth-mutual.cx:5 : step() : 749
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 747
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 748
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 746
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 747
+	test-vm-call-depth-mutual.cx:5 : step() : 747
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 745
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 746
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 744
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 745
+	test-vm-call-depth-mutual.cx:5 : step() : 745
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 743
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 744
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 742
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 743
+	test-vm-call-depth-mutual.cx:5 : step() : 743
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 741
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 742
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 740
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 741
+	test-vm-call-depth-mutual.cx:5 : step() : 741
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 739
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 740
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 738
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 739
+	test-vm-call-depth-mutual.cx:5 : step() : 739
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 737
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 738
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 736
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 737
+	test-vm-call-depth-mutual.cx:5 : step() : 737
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 735
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 736
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 734
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 735
+	test-vm-call-depth-mutual.cx:5 : step() : 735
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 733
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 734
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 732
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 733
+	test-vm-call-depth-mutual.cx:5 : step() : 733
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 731
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 732
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 730
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 731
+	test-vm-call-depth-mutual.cx:5 : step() : 731
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 729
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 730
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 728
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 729
+	test-vm-call-depth-mutual.cx:5 : step() : 729
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 727
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 728
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 726
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 727
+	test-vm-call-depth-mutual.cx:5 : step() : 727
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 725
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 726
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 724
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 725
+	test-vm-call-depth-mutual.cx:5 : step() : 725
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 723
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 724
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 722
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 723
+	test-vm-call-depth-mutual.cx:5 : step() : 723
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 721
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 722
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 720
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 721
+	test-vm-call-depth-mutual.cx:5 : step() : 721
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 719
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 720
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 718
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 719
+	test-vm-call-depth-mutual.cx:5 : step() : 719
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 717
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 718
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 716
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 717
+	test-vm-call-depth-mutual.cx:5 : step() : 717
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 715
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 716
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 714
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 715
+	test-vm-call-depth-mutual.cx:5 : step() : 715
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 713
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 714
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 712
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 713
+	test-vm-call-depth-mutual.cx:5 : step() : 713
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 711
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 712
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 710
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 711
+	test-vm-call-depth-mutual.cx:5 : step() : 711
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 709
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 710
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 708
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 709
+	test-vm-call-depth-mutual.cx:5 : step() : 709
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 707
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 708
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 706
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 707
+	test-vm-call-depth-mutual.cx:5 : step() : 707
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 705
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 706
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 704
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 705
+	test-vm-call-depth-mutual.cx:5 : step() : 705
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 703
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 704
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 702
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 703
+	test-vm-call-depth-mutual.cx:5 : step() : 703
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 701
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 702
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 700
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 701
+	test-vm-call-depth-mutual.cx:5 : step() : 701
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 699
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 700
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 698
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 699
+	test-vm-call-depth-mutual.cx:5 : step() : 699
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 697
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 698
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 696
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 697
+	test-vm-call-depth-mutual.cx:5 : step() : 697
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 695
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 696
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 694
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 695
+	test-vm-call-depth-mutual.cx:5 : step() : 695
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 693
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 694
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 692
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 693
+	test-vm-call-depth-mutual.cx:5 : step() : 693
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 691
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 692
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 690
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 691
+	test-vm-call-depth-mutual.cx:5 : step() : 691
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 689
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 690
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 688
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 689
+	test-vm-call-depth-mutual.cx:5 : step() : 689
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 687
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 688
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 686
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 687
+	test-vm-call-depth-mutual.cx:5 : step() : 687
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 685
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 686
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 684
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 685
+	test-vm-call-depth-mutual.cx:5 : step() : 685
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 683
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 684
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 682
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 683
+	test-vm-call-depth-mutual.cx:5 : step() : 683
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 681
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 682
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 680
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 681
+	test-vm-call-depth-mutual.cx:5 : step() : 681
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 679
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 680
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 678
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 679
+	test-vm-call-depth-mutual.cx:5 : step() : 679
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 677
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 678
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 676
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 677
+	test-vm-call-depth-mutual.cx:5 : step() : 677
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 675
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 676
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 674
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 675
+	test-vm-call-depth-mutual.cx:5 : step() : 675
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 673
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 674
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 672
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 673
+	test-vm-call-depth-mutual.cx:5 : step() : 673
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 671
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 672
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 670
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 671
+	test-vm-call-depth-mutual.cx:5 : step() : 671
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 669
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 670
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 668
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 669
+	test-vm-call-depth-mutual.cx:5 : step() : 669
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 667
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 668
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 666
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 667
+	test-vm-call-depth-mutual.cx:5 : step() : 667
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 665
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 666
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 664
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 665
+	test-vm-call-depth-mutual.cx:5 : step() : 665
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 663
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 664
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 662
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 663
+	test-vm-call-depth-mutual.cx:5 : step() : 663
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 661
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 662
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 660
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 661
+	test-vm-call-depth-mutual.cx:5 : step() : 661
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 659
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 660
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 658
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 659
+	test-vm-call-depth-mutual.cx:5 : step() : 659
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 657
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 658
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 656
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 657
+	test-vm-call-depth-mutual.cx:5 : step() : 657
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 655
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 656
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 654
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 655
+	test-vm-call-depth-mutual.cx:5 : step() : 655
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 653
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 654
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 652
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 653
+	test-vm-call-depth-mutual.cx:5 : step() : 653
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 651
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 652
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 650
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 651
+	test-vm-call-depth-mutual.cx:5 : step() : 651
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 649
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 650
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 648
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 649
+	test-vm-call-depth-mutual.cx:5 : step() : 649
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 647
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 648
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 646
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 647
+	test-vm-call-depth-mutual.cx:5 : step() : 647
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 645
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 646
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 644
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 645
+	test-vm-call-depth-mutual.cx:5 : step() : 645
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 643
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 644
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 642
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 643
+	test-vm-call-depth-mutual.cx:5 : step() : 643
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 641
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 642
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 640
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 641
+	test-vm-call-depth-mutual.cx:5 : step() : 641
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 639
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 640
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 638
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 639
+	test-vm-call-depth-mutual.cx:5 : step() : 639
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 637
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 638
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 636
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 637
+	test-vm-call-depth-mutual.cx:5 : step() : 637
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 635
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 636
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 634
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 635
+	test-vm-call-depth-mutual.cx:5 : step() : 635
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 633
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 634
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 632
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 633
+	test-vm-call-depth-mutual.cx:5 : step() : 633
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 631
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 632
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 630
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 631
+	test-vm-call-depth-mutual.cx:5 : step() : 631
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 629
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 630
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 628
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 629
+	test-vm-call-depth-mutual.cx:5 : step() : 629
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 627
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 628
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 626
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 627
+	test-vm-call-depth-mutual.cx:5 : step() : 627
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 625
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 626
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 624
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 625
+	test-vm-call-depth-mutual.cx:5 : step() : 625
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 623
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 624
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 622
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 623
+	test-vm-call-depth-mutual.cx:5 : step() : 623
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 621
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 622
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 620
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 621
+	test-vm-call-depth-mutual.cx:5 : step() : 621
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 619
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 620
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 618
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 619
+	test-vm-call-depth-mutual.cx:5 : step() : 619
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 617
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 618
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 616
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 617
+	test-vm-call-depth-mutual.cx:5 : step() : 617
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 615
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 616
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 614
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 615
+	test-vm-call-depth-mutual.cx:5 : step() : 615
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 613
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 614
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 612
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 613
+	test-vm-call-depth-mutual.cx:5 : step() : 613
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 611
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 612
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 610
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 611
+	test-vm-call-depth-mutual.cx:5 : step() : 611
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 609
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 610
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 608
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 609
+	test-vm-call-depth-mutual.cx:5 : step() : 609
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 607
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 608
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 606
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 607
+	test-vm-call-depth-mutual.cx:5 : step() : 607
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 605
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 606
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 604
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 605
+	test-vm-call-depth-mutual.cx:5 : step() : 605
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 603
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 604
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 602
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 603
+	test-vm-call-depth-mutual.cx:5 : step() : 603
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 601
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 602
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 600
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 601
+	test-vm-call-depth-mutual.cx:5 : step() : 601
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 599
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 600
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 598
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 599
+	test-vm-call-depth-mutual.cx:5 : step() : 599
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 597
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 598
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 596
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 597
+	test-vm-call-depth-mutual.cx:5 : step() : 597
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 595
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 596
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 594
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 595
+	test-vm-call-depth-mutual.cx:5 : step() : 595
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 593
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 594
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 592
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 593
+	test-vm-call-depth-mutual.cx:5 : step() : 593
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 591
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 592
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 590
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 591
+	test-vm-call-depth-mutual.cx:5 : step() : 591
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 589
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 590
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 588
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 589
+	test-vm-call-depth-mutual.cx:5 : step() : 589
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 587
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 588
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 586
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 587
+	test-vm-call-depth-mutual.cx:5 : step() : 587
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 585
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 586
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 584
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 585
+	test-vm-call-depth-mutual.cx:5 : step() : 585
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 583
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 584
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 582
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 583
+	test-vm-call-depth-mutual.cx:5 : step() : 583
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 581
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 582
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 580
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 581
+	test-vm-call-depth-mutual.cx:5 : step() : 581
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 579
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 580
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 578
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 579
+	test-vm-call-depth-mutual.cx:5 : step() : 579
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 577
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 578
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 576
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 577
+	test-vm-call-depth-mutual.cx:5 : step() : 577
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 575
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 576
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 574
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 575
+	test-vm-call-depth-mutual.cx:5 : step() : 575
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 573
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 574
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 572
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 573
+	test-vm-call-depth-mutual.cx:5 : step() : 573
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 571
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 572
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 570
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 571
+	test-vm-call-depth-mutual.cx:5 : step() : 571
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 569
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 570
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 568
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 569
+	test-vm-call-depth-mutual.cx:5 : step() : 569
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 567
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 568
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 566
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 567
+	test-vm-call-depth-mutual.cx:5 : step() : 567
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 565
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 566
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 564
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 565
+	test-vm-call-depth-mutual.cx:5 : step() : 565
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 563
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 564
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 562
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 563
+	test-vm-call-depth-mutual.cx:5 : step() : 563
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 561
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 562
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 560
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 561
+	test-vm-call-depth-mutual.cx:5 : step() : 561
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 559
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 560
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 558
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 559
+	test-vm-call-depth-mutual.cx:5 : step() : 559
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 557
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 558
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 556
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 557
+	test-vm-call-depth-mutual.cx:5 : step() : 557
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 555
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 556
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 554
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 555
+	test-vm-call-depth-mutual.cx:5 : step() : 555
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 553
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 554
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 552
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 553
+	test-vm-call-depth-mutual.cx:5 : step() : 553
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 551
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 552
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 550
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 551
+	test-vm-call-depth-mutual.cx:5 : step() : 551
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 549
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 550
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 548
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 549
+	test-vm-call-depth-mutual.cx:5 : step() : 549
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 547
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 548
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 546
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 547
+	test-vm-call-depth-mutual.cx:5 : step() : 547
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 545
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 546
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 544
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 545
+	test-vm-call-depth-mutual.cx:5 : step() : 545
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 543
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 544
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 542
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 543
+	test-vm-call-depth-mutual.cx:5 : step() : 543
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 541
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 542
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 540
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 541
+	test-vm-call-depth-mutual.cx:5 : step() : 541
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 539
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 540
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 538
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 539
+	test-vm-call-depth-mutual.cx:5 : step() : 539
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 537
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 538
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 536
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 537
+	test-vm-call-depth-mutual.cx:5 : step() : 537
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 535
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 536
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 534
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 535
+	test-vm-call-depth-mutual.cx:5 : step() : 535
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 533
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 534
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 532
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 533
+	test-vm-call-depth-mutual.cx:5 : step() : 533
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 531
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 532
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 530
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 531
+	test-vm-call-depth-mutual.cx:5 : step() : 531
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 529
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 530
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 528
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 529
+	test-vm-call-depth-mutual.cx:5 : step() : 529
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 527
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 528
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 526
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 527
+	test-vm-call-depth-mutual.cx:5 : step() : 527
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 525
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 526
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 524
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 525
+	test-vm-call-depth-mutual.cx:5 : step() : 525
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 523
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 524
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 522
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 523
+	test-vm-call-depth-mutual.cx:5 : step() : 523
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 521
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 522
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 520
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 521
+	test-vm-call-depth-mutual.cx:5 : step() : 521
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 519
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 520
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 518
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 519
+	test-vm-call-depth-mutual.cx:5 : step() : 519
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 517
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 518
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 516
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 517
+	test-vm-call-depth-mutual.cx:5 : step() : 517
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 515
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 516
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 514
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 515
+	test-vm-call-depth-mutual.cx:5 : step() : 515
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 513
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 514
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 512
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 513
+	test-vm-call-depth-mutual.cx:5 : step() : 513
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 511
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 512
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 510
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 511
+	test-vm-call-depth-mutual.cx:5 : step() : 511
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 509
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 510
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 508
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 509
+	test-vm-call-depth-mutual.cx:5 : step() : 509
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 507
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 508
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 506
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 507
+	test-vm-call-depth-mutual.cx:5 : step() : 507
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 505
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 506
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 504
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 505
+	test-vm-call-depth-mutual.cx:5 : step() : 505
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 503
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 504
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 502
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 503
+	test-vm-call-depth-mutual.cx:5 : step() : 503
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 501
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 502
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 500
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 501
+	test-vm-call-depth-mutual.cx:5 : step() : 501
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 499
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 500
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 498
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 499
+	test-vm-call-depth-mutual.cx:5 : step() : 499
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 497
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 498
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 496
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 497
+	test-vm-call-depth-mutual.cx:5 : step() : 497
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 495
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 496
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 494
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 495
+	test-vm-call-depth-mutual.cx:5 : step() : 495
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 493
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 494
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 492
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 493
+	test-vm-call-depth-mutual.cx:5 : step() : 493
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 491
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 492
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 490
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 491
+	test-vm-call-depth-mutual.cx:5 : step() : 491
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 489
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 490
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 488
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 489
+	test-vm-call-depth-mutual.cx:5 : step() : 489
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 487
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 488
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 486
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 487
+	test-vm-call-depth-mutual.cx:5 : step() : 487
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 485
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 486
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 484
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 485
+	test-vm-call-depth-mutual.cx:5 : step() : 485
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 483
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 484
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 482
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 483
+	test-vm-call-depth-mutual.cx:5 : step() : 483
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 481
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 482
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 480
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 481
+	test-vm-call-depth-mutual.cx:5 : step() : 481
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 479
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 480
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 478
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 479
+	test-vm-call-depth-mutual.cx:5 : step() : 479
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 477
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 478
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 476
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 477
+	test-vm-call-depth-mutual.cx:5 : step() : 477
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 475
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 476
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 474
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 475
+	test-vm-call-depth-mutual.cx:5 : step() : 475
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 473
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 474
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 472
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 473
+	test-vm-call-depth-mutual.cx:5 : step() : 473
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 471
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 472
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 470
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 471
+	test-vm-call-depth-mutual.cx:5 : step() : 471
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 469
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 470
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 468
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 469
+	test-vm-call-depth-mutual.cx:5 : step() : 469
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 467
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 468
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 466
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 467
+	test-vm-call-depth-mutual.cx:5 : step() : 467
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 465
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 466
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 464
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 465
+	test-vm-call-depth-mutual.cx:5 : step() : 465
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 463
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 464
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 462
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 463
+	test-vm-call-depth-mutual.cx:5 : step() : 463
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 461
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 462
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 460
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 461
+	test-vm-call-depth-mutual.cx:5 : step() : 461
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 459
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 460
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 458
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 459
+	test-vm-call-depth-mutual.cx:5 : step() : 459
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 457
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 458
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 456
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 457
+	test-vm-call-depth-mutual.cx:5 : step() : 457
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 455
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 456
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 454
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 455
+	test-vm-call-depth-mutual.cx:5 : step() : 455
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 453
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 454
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 452
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 453
+	test-vm-call-depth-mutual.cx:5 : step() : 453
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 451
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 452
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 450
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 451
+	test-vm-call-depth-mutual.cx:5 : step() : 451
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 449
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 450
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 448
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 449
+	test-vm-call-depth-mutual.cx:5 : step() : 449
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 447
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 448
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 446
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 447
+	test-vm-call-depth-mutual.cx:5 : step() : 447
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 445
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 446
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 444
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 445
+	test-vm-call-depth-mutual.cx:5 : step() : 445
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 443
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 444
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 442
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 443
+	test-vm-call-depth-mutual.cx:5 : step() : 443
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 441
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 442
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 440
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 441
+	test-vm-call-depth-mutual.cx:5 : step() : 441
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 439
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 440
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 438
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 439
+	test-vm-call-depth-mutual.cx:5 : step() : 439
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 437
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 438
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 436
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 437
+	test-vm-call-depth-mutual.cx:5 : step() : 437
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 435
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 436
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 434
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 435
+	test-vm-call-depth-mutual.cx:5 : step() : 435
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 433
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 434
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 432
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 433
+	test-vm-call-depth-mutual.cx:5 : step() : 433
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 431
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 432
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 430
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 431
+	test-vm-call-depth-mutual.cx:5 : step() : 431
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 429
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 430
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 428
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 429
+	test-vm-call-depth-mutual.cx:5 : step() : 429
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 427
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 428
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 426
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 427
+	test-vm-call-depth-mutual.cx:5 : step() : 427
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 425
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 426
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 424
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 425
+	test-vm-call-depth-mutual.cx:5 : step() : 425
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 423
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 424
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 422
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 423
+	test-vm-call-depth-mutual.cx:5 : step() : 423
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 421
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 422
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 420
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 421
+	test-vm-call-depth-mutual.cx:5 : step() : 421
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 419
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 420
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 418
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 419
+	test-vm-call-depth-mutual.cx:5 : step() : 419
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 417
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 418
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 416
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 417
+	test-vm-call-depth-mutual.cx:5 : step() : 417
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 415
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 416
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 414
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 415
+	test-vm-call-depth-mutual.cx:5 : step() : 415
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 413
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 414
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 412
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 413
+	test-vm-call-depth-mutual.cx:5 : step() : 413
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 411
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 412
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 410
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 411
+	test-vm-call-depth-mutual.cx:5 : step() : 411
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 409
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 410
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 408
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 409
+	test-vm-call-depth-mutual.cx:5 : step() : 409
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 407
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 408
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 406
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 407
+	test-vm-call-depth-mutual.cx:5 : step() : 407
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 405
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 406
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 404
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 405
+	test-vm-call-depth-mutual.cx:5 : step() : 405
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 403
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 404
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 402
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 403
+	test-vm-call-depth-mutual.cx:5 : step() : 403
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 401
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 402
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 400
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 401
+	test-vm-call-depth-mutual.cx:5 : step() : 401
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 399
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 400
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 398
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 399
+	test-vm-call-depth-mutual.cx:5 : step() : 399
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 397
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 398
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 396
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 397
+	test-vm-call-depth-mutual.cx:5 : step() : 397
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 395
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 396
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 394
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 395
+	test-vm-call-depth-mutual.cx:5 : step() : 395
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 393
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 394
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 392
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 393
+	test-vm-call-depth-mutual.cx:5 : step() : 393
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 391
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 392
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 390
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 391
+	test-vm-call-depth-mutual.cx:5 : step() : 391
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 389
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 390
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 388
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 389
+	test-vm-call-depth-mutual.cx:5 : step() : 389
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 387
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 388
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 386
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 387
+	test-vm-call-depth-mutual.cx:5 : step() : 387
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 385
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 386
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 384
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 385
+	test-vm-call-depth-mutual.cx:5 : step() : 385
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 383
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 384
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 382
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 383
+	test-vm-call-depth-mutual.cx:5 : step() : 383
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 381
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 382
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 380
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 381
+	test-vm-call-depth-mutual.cx:5 : step() : 381
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 379
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 380
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 378
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 379
+	test-vm-call-depth-mutual.cx:5 : step() : 379
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 377
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 378
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 376
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 377
+	test-vm-call-depth-mutual.cx:5 : step() : 377
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 375
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 376
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 374
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 375
+	test-vm-call-depth-mutual.cx:5 : step() : 375
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 373
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 374
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 372
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 373
+	test-vm-call-depth-mutual.cx:5 : step() : 373
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 371
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 372
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 370
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 371
+	test-vm-call-depth-mutual.cx:5 : step() : 371
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 369
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 370
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 368
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 369
+	test-vm-call-depth-mutual.cx:5 : step() : 369
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 367
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 368
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 366
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 367
+	test-vm-call-depth-mutual.cx:5 : step() : 367
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 365
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 366
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 364
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 365
+	test-vm-call-depth-mutual.cx:5 : step() : 365
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 363
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 364
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 362
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 363
+	test-vm-call-depth-mutual.cx:5 : step() : 363
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 361
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 362
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 360
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 361
+	test-vm-call-depth-mutual.cx:5 : step() : 361
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 359
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 360
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 358
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 359
+	test-vm-call-depth-mutual.cx:5 : step() : 359
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 357
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 358
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 356
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 357
+	test-vm-call-depth-mutual.cx:5 : step() : 357
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 355
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 356
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 354
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 355
+	test-vm-call-depth-mutual.cx:5 : step() : 355
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 353
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 354
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 352
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 353
+	test-vm-call-depth-mutual.cx:5 : step() : 353
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 351
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 352
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 350
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 351
+	test-vm-call-depth-mutual.cx:5 : step() : 351
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 349
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 350
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 348
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 349
+	test-vm-call-depth-mutual.cx:5 : step() : 349
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 347
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 348
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 346
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 347
+	test-vm-call-depth-mutual.cx:5 : step() : 347
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 345
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 346
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 344
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 345
+	test-vm-call-depth-mutual.cx:5 : step() : 345
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 343
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 344
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 342
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 343
+	test-vm-call-depth-mutual.cx:5 : step() : 343
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 341
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 342
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 340
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 341
+	test-vm-call-depth-mutual.cx:5 : step() : 341
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 339
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 340
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 338
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 339
+	test-vm-call-depth-mutual.cx:5 : step() : 339
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 337
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 338
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 336
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 337
+	test-vm-call-depth-mutual.cx:5 : step() : 337
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 335
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 336
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 334
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 335
+	test-vm-call-depth-mutual.cx:5 : step() : 335
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 333
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 334
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 332
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 333
+	test-vm-call-depth-mutual.cx:5 : step() : 333
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 331
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 332
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 330
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 331
+	test-vm-call-depth-mutual.cx:5 : step() : 331
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 329
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 330
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 328
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 329
+	test-vm-call-depth-mutual.cx:5 : step() : 329
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 327
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 328
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 326
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 327
+	test-vm-call-depth-mutual.cx:5 : step() : 327
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 325
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 326
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 324
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 325
+	test-vm-call-depth-mutual.cx:5 : step() : 325
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 323
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 324
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 322
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 323
+	test-vm-call-depth-mutual.cx:5 : step() : 323
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 321
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 322
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 320
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 321
+	test-vm-call-depth-mutual.cx:5 : step() : 321
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 319
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 320
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 318
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 319
+	test-vm-call-depth-mutual.cx:5 : step() : 319
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 317
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 318
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 316
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 317
+	test-vm-call-depth-mutual.cx:5 : step() : 317
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 315
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 316
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 314
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 315
+	test-vm-call-depth-mutual.cx:5 : step() : 315
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 313
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 314
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 312
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 313
+	test-vm-call-depth-mutual.cx:5 : step() : 313
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 311
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 312
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 310
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 311
+	test-vm-call-depth-mutual.cx:5 : step() : 311
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 309
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 310
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 308
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 309
+	test-vm-call-depth-mutual.cx:5 : step() : 309
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 307
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 308
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 306
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 307
+	test-vm-call-depth-mutual.cx:5 : step() : 307
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 305
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 306
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 304
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 305
+	test-vm-call-depth-mutual.cx:5 : step() : 305
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 303
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 304
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 302
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 303
+	test-vm-call-depth-mutual.cx:5 : step() : 303
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 301
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 302
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 300
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 301
+	test-vm-call-depth-mutual.cx:5 : step() : 301
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 299
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 300
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 298
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 299
+	test-vm-call-depth-mutual.cx:5 : step() : 299
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 297
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 298
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 296
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 297
+	test-vm-call-depth-mutual.cx:5 : step() : 297
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 295
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 296
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 294
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 295
+	test-vm-call-depth-mutual.cx:5 : step() : 295
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 293
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 294
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 292
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 293
+	test-vm-call-depth-mutual.cx:5 : step() : 293
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 291
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 292
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 290
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 291
+	test-vm-call-depth-mutual.cx:5 : step() : 291
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 289
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 290
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 288
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 289
+	test-vm-call-depth-mutual.cx:5 : step() : 289
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 287
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 288
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 286
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 287
+	test-vm-call-depth-mutual.cx:5 : step() : 287
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 285
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 286
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 284
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 285
+	test-vm-call-depth-mutual.cx:5 : step() : 285
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 283
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 284
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 282
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 283
+	test-vm-call-depth-mutual.cx:5 : step() : 283
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 281
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 282
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 280
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 281
+	test-vm-call-depth-mutual.cx:5 : step() : 281
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 279
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 280
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 278
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 279
+	test-vm-call-depth-mutual.cx:5 : step() : 279
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 277
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 278
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 276
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 277
+	test-vm-call-depth-mutual.cx:5 : step() : 277
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 275
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 276
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 274
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 275
+	test-vm-call-depth-mutual.cx:5 : step() : 275
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 273
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 274
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 272
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 273
+	test-vm-call-depth-mutual.cx:5 : step() : 273
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 271
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 272
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 270
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 271
+	test-vm-call-depth-mutual.cx:5 : step() : 271
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 269
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 270
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 268
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 269
+	test-vm-call-depth-mutual.cx:5 : step() : 269
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 267
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 268
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 266
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 267
+	test-vm-call-depth-mutual.cx:5 : step() : 267
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 265
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 266
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 264
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 265
+	test-vm-call-depth-mutual.cx:5 : step() : 265
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 263
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 264
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 262
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 263
+	test-vm-call-depth-mutual.cx:5 : step() : 263
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 261
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 262
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 260
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 261
+	test-vm-call-depth-mutual.cx:5 : step() : 261
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 259
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 260
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 258
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 259
+	test-vm-call-depth-mutual.cx:5 : step() : 259
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 257
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 258
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 256
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 257
+	test-vm-call-depth-mutual.cx:5 : step() : 257
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 255
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 256
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 254
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 255
+	test-vm-call-depth-mutual.cx:5 : step() : 255
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 253
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 254
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 252
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 253
+	test-vm-call-depth-mutual.cx:5 : step() : 253
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 251
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 252
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 250
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 251
+	test-vm-call-depth-mutual.cx:5 : step() : 251
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 249
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 250
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 248
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 249
+	test-vm-call-depth-mutual.cx:5 : step() : 249
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 247
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 248
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 246
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 247
+	test-vm-call-depth-mutual.cx:5 : step() : 247
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 245
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 246
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 244
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 245
+	test-vm-call-depth-mutual.cx:5 : step() : 245
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 243
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 244
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 242
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 243
+	test-vm-call-depth-mutual.cx:5 : step() : 243
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 241
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 242
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 240
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 241
+	test-vm-call-depth-mutual.cx:5 : step() : 241
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 239
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 240
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 238
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 239
+	test-vm-call-depth-mutual.cx:5 : step() : 239
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 237
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 238
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 236
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 237
+	test-vm-call-depth-mutual.cx:5 : step() : 237
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 235
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 236
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 234
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 235
+	test-vm-call-depth-mutual.cx:5 : step() : 235
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 233
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 234
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 232
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 233
+	test-vm-call-depth-mutual.cx:5 : step() : 233
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 231
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 232
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 230
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 231
+	test-vm-call-depth-mutual.cx:5 : step() : 231
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 229
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 230
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 228
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 229
+	test-vm-call-depth-mutual.cx:5 : step() : 229
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 227
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 228
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 226
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 227
+	test-vm-call-depth-mutual.cx:5 : step() : 227
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 225
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 226
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 224
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 225
+	test-vm-call-depth-mutual.cx:5 : step() : 225
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 223
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 224
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 222
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 223
+	test-vm-call-depth-mutual.cx:5 : step() : 223
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 221
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 222
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 220
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 221
+	test-vm-call-depth-mutual.cx:5 : step() : 221
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 219
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 220
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 218
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 219
+	test-vm-call-depth-mutual.cx:5 : step() : 219
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 217
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 218
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 216
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 217
+	test-vm-call-depth-mutual.cx:5 : step() : 217
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 215
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 216
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 214
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 215
+	test-vm-call-depth-mutual.cx:5 : step() : 215
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 213
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 214
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 212
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 213
+	test-vm-call-depth-mutual.cx:5 : step() : 213
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 211
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 212
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 210
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 211
+	test-vm-call-depth-mutual.cx:5 : step() : 211
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 209
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 210
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 208
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 209
+	test-vm-call-depth-mutual.cx:5 : step() : 209
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 207
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 208
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 206
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 207
+	test-vm-call-depth-mutual.cx:5 : step() : 207
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 205
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 206
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 204
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 205
+	test-vm-call-depth-mutual.cx:5 : step() : 205
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 203
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 204
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 202
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 203
+	test-vm-call-depth-mutual.cx:5 : step() : 203
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 201
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 202
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 200
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 201
+	test-vm-call-depth-mutual.cx:5 : step() : 201
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 199
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 200
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 198
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 199
+	test-vm-call-depth-mutual.cx:5 : step() : 199
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 197
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 198
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 196
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 197
+	test-vm-call-depth-mutual.cx:5 : step() : 197
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 195
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 196
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 194
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 195
+	test-vm-call-depth-mutual.cx:5 : step() : 195
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 193
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 194
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 192
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 193
+	test-vm-call-depth-mutual.cx:5 : step() : 193
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 191
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 192
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 190
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 191
+	test-vm-call-depth-mutual.cx:5 : step() : 191
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 189
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 190
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 188
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 189
+	test-vm-call-depth-mutual.cx:5 : step() : 189
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 187
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 188
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 186
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 187
+	test-vm-call-depth-mutual.cx:5 : step() : 187
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 185
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 186
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 184
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 185
+	test-vm-call-depth-mutual.cx:5 : step() : 185
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 183
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 184
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 182
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 183
+	test-vm-call-depth-mutual.cx:5 : step() : 183
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 181
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 182
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 180
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 181
+	test-vm-call-depth-mutual.cx:5 : step() : 181
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 179
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 180
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 178
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 179
+	test-vm-call-depth-mutual.cx:5 : step() : 179
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 177
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 178
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 176
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 177
+	test-vm-call-depth-mutual.cx:5 : step() : 177
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 175
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 176
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 174
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 175
+	test-vm-call-depth-mutual.cx:5 : step() : 175
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 173
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 174
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 172
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 173
+	test-vm-call-depth-mutual.cx:5 : step() : 173
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 171
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 172
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 170
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 171
+	test-vm-call-depth-mutual.cx:5 : step() : 171
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 169
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 170
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 168
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 169
+	test-vm-call-depth-mutual.cx:5 : step() : 169
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 167
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 168
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 166
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 167
+	test-vm-call-depth-mutual.cx:5 : step() : 167
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 165
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 166
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 164
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 165
+	test-vm-call-depth-mutual.cx:5 : step() : 165
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 163
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 164
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 162
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 163
+	test-vm-call-depth-mutual.cx:5 : step() : 163
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 161
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 162
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 160
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 161
+	test-vm-call-depth-mutual.cx:5 : step() : 161
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 159
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 160
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 158
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 159
+	test-vm-call-depth-mutual.cx:5 : step() : 159
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 157
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 158
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 156
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 157
+	test-vm-call-depth-mutual.cx:5 : step() : 157
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 155
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 156
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 154
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 155
+	test-vm-call-depth-mutual.cx:5 : step() : 155
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 153
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 154
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 152
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 153
+	test-vm-call-depth-mutual.cx:5 : step() : 153
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 151
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 152
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 150
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 151
+	test-vm-call-depth-mutual.cx:5 : step() : 151
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 149
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 150
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 148
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 149
+	test-vm-call-depth-mutual.cx:5 : step() : 149
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 147
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 148
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 146
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 147
+	test-vm-call-depth-mutual.cx:5 : step() : 147
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 145
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 146
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 144
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 145
+	test-vm-call-depth-mutual.cx:5 : step() : 145
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 143
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 144
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 142
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 143
+	test-vm-call-depth-mutual.cx:5 : step() : 143
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 141
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 142
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 140
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 141
+	test-vm-call-depth-mutual.cx:5 : step() : 141
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 139
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 140
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 138
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 139
+	test-vm-call-depth-mutual.cx:5 : step() : 139
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 137
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 138
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 136
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 137
+	test-vm-call-depth-mutual.cx:5 : step() : 137
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 135
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 136
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 134
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 135
+	test-vm-call-depth-mutual.cx:5 : step() : 135
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 133
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 134
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 132
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 133
+	test-vm-call-depth-mutual.cx:5 : step() : 133
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 131
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 132
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 130
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 131
+	test-vm-call-depth-mutual.cx:5 : step() : 131
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 129
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 130
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 128
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 129
+	test-vm-call-depth-mutual.cx:5 : step() : 129
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 127
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 128
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 126
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 127
+	test-vm-call-depth-mutual.cx:5 : step() : 127
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 125
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 126
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 124
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 125
+	test-vm-call-depth-mutual.cx:5 : step() : 125
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 123
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 124
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 122
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 123
+	test-vm-call-depth-mutual.cx:5 : step() : 123
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 121
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 122
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 120
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 121
+	test-vm-call-depth-mutual.cx:5 : step() : 121
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 119
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 120
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 118
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 119
+	test-vm-call-depth-mutual.cx:5 : step() : 119
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 117
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 118
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 116
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 117
+	test-vm-call-depth-mutual.cx:5 : step() : 117
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 115
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 116
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 114
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 115
+	test-vm-call-depth-mutual.cx:5 : step() : 115
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 113
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 114
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 112
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 113
+	test-vm-call-depth-mutual.cx:5 : step() : 113
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 111
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 112
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 110
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 111
+	test-vm-call-depth-mutual.cx:5 : step() : 111
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 109
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 110
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 108
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 109
+	test-vm-call-depth-mutual.cx:5 : step() : 109
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 107
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 108
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 106
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 107
+	test-vm-call-depth-mutual.cx:5 : step() : 107
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 105
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 106
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 104
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 105
+	test-vm-call-depth-mutual.cx:5 : step() : 105
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 103
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 104
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 102
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 103
+	test-vm-call-depth-mutual.cx:5 : step() : 103
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 101
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 102
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 100
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 101
+	test-vm-call-depth-mutual.cx:5 : step() : 101
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 99
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 100
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 98
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 99
+	test-vm-call-depth-mutual.cx:5 : step() : 99
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 97
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 98
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 96
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 97
+	test-vm-call-depth-mutual.cx:5 : step() : 97
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 95
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 96
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 94
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 95
+	test-vm-call-depth-mutual.cx:5 : step() : 95
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 93
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 94
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 92
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 93
+	test-vm-call-depth-mutual.cx:5 : step() : 93
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 91
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 92
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 90
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 91
+	test-vm-call-depth-mutual.cx:5 : step() : 91
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 89
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 90
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 88
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 89
+	test-vm-call-depth-mutual.cx:5 : step() : 89
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 87
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 88
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 86
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 87
+	test-vm-call-depth-mutual.cx:5 : step() : 87
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 85
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 86
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 84
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 85
+	test-vm-call-depth-mutual.cx:5 : step() : 85
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 83
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 84
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 82
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 83
+	test-vm-call-depth-mutual.cx:5 : step() : 83
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 81
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 82
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 80
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 81
+	test-vm-call-depth-mutual.cx:5 : step() : 81
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 79
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 80
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 78
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 79
+	test-vm-call-depth-mutual.cx:5 : step() : 79
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 77
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 78
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 76
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 77
+	test-vm-call-depth-mutual.cx:5 : step() : 77
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 75
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 76
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 74
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 75
+	test-vm-call-depth-mutual.cx:5 : step() : 75
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 73
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 74
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 72
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 73
+	test-vm-call-depth-mutual.cx:5 : step() : 73
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 71
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 72
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 70
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 71
+	test-vm-call-depth-mutual.cx:5 : step() : 71
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 69
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 70
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 68
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 69
+	test-vm-call-depth-mutual.cx:5 : step() : 69
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 67
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 68
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 66
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 67
+	test-vm-call-depth-mutual.cx:5 : step() : 67
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 65
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 66
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 64
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 65
+	test-vm-call-depth-mutual.cx:5 : step() : 65
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 63
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 64
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 62
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 63
+	test-vm-call-depth-mutual.cx:5 : step() : 63
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 61
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 62
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 60
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 61
+	test-vm-call-depth-mutual.cx:5 : step() : 61
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 59
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 60
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 58
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 59
+	test-vm-call-depth-mutual.cx:5 : step() : 59
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 57
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 58
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 56
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 57
+	test-vm-call-depth-mutual.cx:5 : step() : 57
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 55
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 56
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 54
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 55
+	test-vm-call-depth-mutual.cx:5 : step() : 55
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 53
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 54
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 52
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 53
+	test-vm-call-depth-mutual.cx:5 : step() : 53
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 51
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 52
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 50
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 51
+	test-vm-call-depth-mutual.cx:5 : step() : 51
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 49
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 50
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 48
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 49
+	test-vm-call-depth-mutual.cx:5 : step() : 49
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 47
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 48
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 46
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 47
+	test-vm-call-depth-mutual.cx:5 : step() : 47
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 45
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 46
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 44
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 45
+	test-vm-call-depth-mutual.cx:5 : step() : 45
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 43
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 44
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 42
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 43
+	test-vm-call-depth-mutual.cx:5 : step() : 43
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 41
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 42
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 40
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 41
+	test-vm-call-depth-mutual.cx:5 : step() : 41
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 39
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 40
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 38
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 39
+	test-vm-call-depth-mutual.cx:5 : step() : 39
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 37
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 38
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 36
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 37
+	test-vm-call-depth-mutual.cx:5 : step() : 37
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 35
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 36
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 34
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 35
+	test-vm-call-depth-mutual.cx:5 : step() : 35
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 33
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 34
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 32
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 33
+	test-vm-call-depth-mutual.cx:5 : step() : 33
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 31
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 32
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 30
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 31
+	test-vm-call-depth-mutual.cx:5 : step() : 31
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 29
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 30
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 28
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 29
+	test-vm-call-depth-mutual.cx:5 : step() : 29
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 27
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 28
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 26
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 27
+	test-vm-call-depth-mutual.cx:5 : step() : 27
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 25
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 26
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 24
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 25
+	test-vm-call-depth-mutual.cx:5 : step() : 25
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 23
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 24
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 22
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 23
+	test-vm-call-depth-mutual.cx:5 : step() : 23
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 21
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 22
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 20
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 21
+	test-vm-call-depth-mutual.cx:5 : step() : 21
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 19
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 20
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 18
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 19
+	test-vm-call-depth-mutual.cx:5 : step() : 19
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 17
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 18
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 16
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 17
+	test-vm-call-depth-mutual.cx:5 : step() : 17
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 15
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 16
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 14
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 15
+	test-vm-call-depth-mutual.cx:5 : step() : 15
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 13
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 14
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 12
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 13
+	test-vm-call-depth-mutual.cx:5 : step() : 13
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 11
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 12
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 10
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 11
+	test-vm-call-depth-mutual.cx:5 : step() : 11
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 9
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 10
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 8
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 9
+	test-vm-call-depth-mutual.cx:5 : step() : 9
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 7
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 8
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 6
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 7
+	test-vm-call-depth-mutual.cx:5 : step() : 7
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 5
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 6
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 4
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 5
+	test-vm-call-depth-mutual.cx:5 : step() : 5
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 3
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 4
+
+>>> pong()
+ProgramInput
+	test-vm-call-depth-mutual.cx:13 : pong() : 2
+Expressions
+ 	test-vm-call-depth-mutual.cx:6 : i32.add() : 3
+	test-vm-call-depth-mutual.cx:5 : step() : 3
+
+>>> ping()
+ProgramInput
+	test-vm-call-depth-mutual.cx:9 : ping() : 1
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : step() : 2
+
+>>> start()
+ProgramInput
+	test-vm-call-depth-mutual.cx:17 : start() : 1
+Expressions
+ 	test-vm-call-depth-mutual.cx:5 : pong() : 1
+
+>>> main()

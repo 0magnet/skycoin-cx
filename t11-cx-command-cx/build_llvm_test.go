@@ -417,8 +417,8 @@ func main() {
 	}{
 		{&image, []string{
 			`define internal i32 @"cx\.\d+\.[^"]*fib"\(i32 %depth, i32 %in0\)`,
-			`define internal \{ i32, i64 \} @"cx\.\d+\.[^"]*pair"\(i32 %depth, i32 %in0\)`,
-			`define internal i32 @"cx\.\d+\.[^"]*addressed"\(i32 %fp, i32 %depth, i32 %in0\)`,
+			`define internal \{ i32, i64 \} @"cx\.\d+\.[^"]*pair"\(i32 %in0\)`,
+			`define internal i32 @"cx\.\d+\.[^"]*addressed"\(i32 %fp, i32 %in0\)`,
 		}},
 		{&small, []string{
 			`define internal i32 @"cx\.\d+\.[^"]*fib"\(i32 %fp, i32 %depth, i32 %in0\)`,
@@ -494,10 +494,10 @@ func main() {
 		t.Fatal(err)
 	}
 	for _, want := range []string{
-		`define internal i32 @"cx\.\d+\.[^"]*fill"\(i32 %depth, i32 %in0\)`,
+		`define internal i32 @"cx\.\d+\.[^"]*fill"\(i32 %in0\)`,
 		`%"local\.f\d+" = alloca \[64 x i8\]`,
 		`@cx_global\.\d+ = internal global \[32 x i8\] zeroinitializer`,
-		`define internal i32 @"cx\.\d+\.[^"]*escape"\(i32 %fp, i32 %depth, i32 %in0\)`,
+		`define internal i32 @"cx\.\d+\.[^"]*escape"\(i32 %fp, i32 %in0\)`,
 	} {
 		if !regexp.MustCompile(want).Match(module) {
 			t.Errorf("module has no %s", want)
@@ -505,6 +505,65 @@ func main() {
 	}
 	if regexp.MustCompile(`@cx_global\.\d+ = internal global \[16 x i8\]`).Match(module) {
 		t.Errorf("pointed, whose address is taken, is its own global")
+	}
+	cc := llvmTestClang(t)
+	if got, want := llvmTestNative(t, cc, &image, buildLlvmOptions()), llvmTestVm(t, &image); !bytes.Equal(got, want) {
+		t.Errorf("native prints %q, vm %q", got, want)
+	}
+}
+
+// TestLlvmCallDepth checks that only a function in a cycle of calls, or one
+// that calls into a cycle, takes the call depth (optimization 0004).
+func TestLlvmCallDepth(t *testing.T) {
+	initProgram()
+	compileRunSources(t, []string{"calldepth.cx"}, []string{`package main
+
+func twice(n i32) (out i32) {
+	out = n * 2
+}
+
+func even(n i32) (out bool) {
+	if n <= 0 {
+		out = true
+	} else {
+		out = odd(twice(n) / 2 - 1)
+	}
+}
+
+func odd(n i32) (out bool) {
+	if n <= 0 {
+		out = false
+	} else {
+		out = even(n - 1)
+	}
+}
+
+func parity(n i32) (out bool) {
+	out = even(n)
+}
+
+func main() {
+	bool.print(parity(7))
+	i32.print(twice(4))
+}
+`})
+	image, failures := lower.Program(astbuild.AST)
+	if len(failures) > 0 {
+		t.Fatalf("does not lower: %+v", failures)
+	}
+	module, _, err := llvm.Emit(&image, buildLlvmOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		`define internal i32 @"cx\.\d+\.[^"]*twice"\(i32 %in0\)`,
+		`define internal i8 @"cx\.\d+\.[^"]*even"\(i32 %depth, i32 %in0\)`,
+		`define internal i8 @"cx\.\d+\.[^"]*odd"\(i32 %depth, i32 %in0\)`,
+		`define internal i8 @"cx\.\d+\.[^"]*parity"\(i32 %depth, i32 %in0\)`,
+	} {
+		if !regexp.MustCompile(want).Match(module) {
+			t.Errorf("module has no %s", want)
+		}
 	}
 	cc := llvmTestClang(t)
 	if got, want := llvmTestNative(t, cc, &image, buildLlvmOptions()), llvmTestVm(t, &image); !bytes.Equal(got, want) {

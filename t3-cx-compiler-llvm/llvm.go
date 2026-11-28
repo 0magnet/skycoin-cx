@@ -140,6 +140,8 @@ type emitter struct {
 	layouts []funcLayout
 	// framePointerCheck says that a call checks fp against the stack end.
 	framePointerCheck bool
+	// callGraph is the call graph of the image, see framePointerPlan.
+	callGraph ir.CallGraph
 	// globals are the regions of the data segment that the instructions
 	// name, each its own LLVM global unless it stays in cx_mem.
 	globals []region
@@ -150,12 +152,13 @@ type emitter struct {
 }
 
 // funcLayout is the frame and scratch regions of a function, whether it
-// takes the frame pointer fp, and its address slots that hold an offset
+// takes the frame pointer fp and the call depth, and its address slots that hold an offset
 // into a region kept out of cx_mem, by the pc that writes or reads them.
 type funcLayout struct {
 	funcLayoutFrame        []region
 	funcLayoutScratch      []region
 	funcLayoutFramePointer bool
+	funcLayoutDepth        bool
 	funcLayoutProducers    map[uint32]addressProducer
 	funcLayoutUses         map[uint32]addressProducer
 }
@@ -284,10 +287,14 @@ func (e *emitter) entry() {
 
 // entryCall calls function id from main at depth 0 with its frame at fp.
 func (e *emitter) entryCall(id uint32, fp uint32) {
-	args := "i32 0"
+	var params []string
 	if e.layouts[id].funcLayoutFramePointer {
-		args = fmt.Sprintf("i32 %d, i32 0", fp)
+		params = append(params, fmt.Sprintf("i32 %d", fp))
 	}
+	if e.layouts[id].funcLayoutDepth {
+		params = append(params, "i32 0")
+	}
+	args := strings.Join(params, ", ")
 	e.line("call %s %s(%s)", e.returnType(&e.image.ImageFuncs[id]), e.funcName(id), args)
 }
 
@@ -300,15 +307,32 @@ func (e *emitter) framePointerEntry() uint32 {
 	return e.image.ImageFuncs[e.image.ImageEntryInit].FuncFrameSize
 }
 
-// framePointerPlan decides which functions take the frame pointer fp and
-// whether a call checks fp against the stack end (optimizations/0003). The
-// check is left out when the deepest chain the depth check allows fits the
-// stack with every frame as large as the largest, as the depth check then
-// stops the run first. Without the check, a function takes fp only when a
-// region of its frame stays in cx_mem, it calls a library opcode, whose
-// block lies at sp, or it calls a function that takes fp.
+// framePointerPlan decides which functions take the call depth and the
+// frame pointer fp, and whether a call checks fp against the stack end
+// (optimizations 0003 and 0004). A function takes the depth and checks it
+// when it is in a cycle of calls or calls into one, so a recursive call
+// sees the depth vm counts. A program that may reach the depth limit
+// without recursion checks it everywhere.
+//
+// The fp check is left out when the stack fits: without recursion the
+// stack the call graph gives, with recursion the deepest chain the depth
+// check allows with every frame as large as the largest, plus the stack of
+// the functions that call no cycle, as the depth check then stops the run
+// first. Without the check, a function takes fp only when a region of its
+// frame stays in cx_mem, it calls a library opcode, whose block lies at sp,
+// or it calls a function that takes fp.
 func (e *emitter) framePointerPlan() {
 	image := e.image
+	e.callGraph = ir.CallGraphBuild(image)
+	graph := &e.callGraph
+	depthEverywhere := graph.CallGraphBounded && graph.CallGraphDepth+2 >= ir.ImageCallDepthMax
+	stackFree := uint32(0)
+	for id := range image.ImageFuncs {
+		e.layouts[id].funcLayoutDepth = depthEverywhere || graph.CallGraphReachesCycle[id]
+		if !graph.CallGraphReachesCycle[id] {
+			stackFree = max(stackFree, graph.CallGraphStackOf[id])
+		}
+	}
 	frameMax := uint32(0)
 	for id := range image.ImageFuncs {
 		fn := &image.ImageFuncs[id]
@@ -322,7 +346,11 @@ func (e *emitter) framePointerPlan() {
 			}
 		}
 	}
-	e.framePointerCheck = uint64(e.framePointerEntry())+uint64(ir.ImageCallDepthMax)*uint64(frameMax) > uint64(image.ImageStackSize)
+	if graph.CallGraphBounded {
+		e.framePointerCheck = graph.CallGraphStack > image.ImageStackSize
+	} else {
+		e.framePointerCheck = uint64(e.framePointerEntry())+uint64(ir.ImageCallDepthMax)*uint64(frameMax)+uint64(stackFree) > uint64(image.ImageStackSize)
+	}
 	for id := range image.ImageFuncs {
 		fn := &image.ImageFuncs[id]
 		if len(fn.FuncCode) == 0 {
@@ -787,9 +815,12 @@ func (e *emitter) emitFunction(id uint32, fn *ir.Func) error {
 	e.call = pendingCall{}
 	layout := &e.layouts[id]
 	e.frame, e.scratch = layout.funcLayoutFrame, layout.funcLayoutScratch
-	params := []string{"i32 %depth"}
+	var params []string
 	if layout.funcLayoutFramePointer {
-		params = []string{"i32 %fp", "i32 %depth"}
+		params = append(params, "i32 %fp")
+	}
+	if layout.funcLayoutDepth {
+		params = append(params, "i32 %depth")
 	}
 	for i, slot := range fn.FuncInputs {
 		params = append(params, fmt.Sprintf("%s %%in%d", valueType(slot.SlotSize), i))
@@ -1004,9 +1035,11 @@ func (e *emitter) instrCallFrame(pc uint32, in *ir.Instr) error {
 		return fmt.Errorf("nested call")
 	}
 	e.call = pendingCall{pendingCallActive: true, pendingCallFrame: in.InstrN, pendingCallArgs: map[uint32]string{}, pendingCallSizes: map[uint32]uint32{}}
-	d := e.localNew()
-	e.line("%s = icmp uge i32 %%depth, %d", d, ir.ImageCallDepthMax-1)
-	e.check(d, StopStackOverflow, pc)
+	if e.layouts[e.function].funcLayoutDepth {
+		d := e.localNew()
+		e.line("%s = icmp uge i32 %%depth, %d", d, ir.ImageCallDepthMax-1)
+		e.check(d, StopStackOverflow, pc)
+	}
 	if !e.framePointerCheck {
 		return nil
 	}
@@ -1026,11 +1059,14 @@ func (e *emitter) instrCall(in *ir.Instr) error {
 	if callee.FuncFrameSize != e.call.pendingCallFrame {
 		return fmt.Errorf("call frame %d, callee frame %d", e.call.pendingCallFrame, callee.FuncFrameSize)
 	}
-	d := e.localNew()
-	e.line("%s = add i32 %%depth, 1", d)
-	args := []string{"i32 " + d}
+	var args []string
 	if e.layouts[in.InstrM].funcLayoutFramePointer {
-		args = []string{"i32 %sp", "i32 " + d}
+		args = append(args, "i32 %sp")
+	}
+	if e.layouts[in.InstrM].funcLayoutDepth {
+		d := e.localNew()
+		e.line("%s = add i32 %%depth, 1", d)
+		args = append(args, "i32 "+d)
 	}
 	used := 0
 	for _, slot := range callee.FuncInputs {

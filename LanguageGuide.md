@@ -687,7 +687,9 @@ cx build: call depth 2 (main -> run -> fnv), stack 105 of 1048576 bytes
 The depth counts the calls in progress below `main`. The stack is the
 bytes of the vm stack the frames take, out of `-stack-size`. A run stops
 with a stack overflow error when the calls in progress reach 999 or the
-frames fill the stack.
+frames fill the stack. A native build of `--target=llvm` checks the depth
+only in the functions that are in a cycle of calls or call into one, see
+[docs/LlvmTarget.md](docs/LlvmTarget.md).
 
 ### [Custom Types](#table-of-contents)
 
