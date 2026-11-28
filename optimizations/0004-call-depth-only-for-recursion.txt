@@ -1,6 +1,7 @@
 0004 Call depth parameter and check only for recursive functions
 Status: decided by Synth, D144 (recursion is a compiler warning, not an
-error; finite call depth is preferred). Not built.
+error; finite call depth is preferred). Built in #625, the warning and
+the depth report in #624.
 
 Where: t3-cx-compiler-llvm/llvm.go, instrCall, instrCallFrame. Call graph
 analysis in the compiler.
@@ -20,3 +21,25 @@ Measured (user cycles, two code layouts, ackermann with fp and depth removed):
   as for C.
 Note: ackermann itself is recursive, so it keeps the check. Its loop version
 (cx-bench D145) gets the gain.
+
+Built (#625): a function keeps the depth parameter and check when it is in
+a cycle or calls into one, so a recursive call sees the depth vm counts.
+vm and the image runner are unchanged. cx-bench, user cycles, median of 5,
+layouts a/b, before -> after:
+  cx-llvm, no recursion (no depth check left):
+    primes           7.29G/8.83G -> 6.83G/6.79G
+    digitalroot      8.53G/8.37G -> 8.20G/7.94G
+    structserialize  2.47G/2.45G -> 2.33G/2.41G
+    array            3.92G/3.98G -> 3.86G/3.90G
+    count            6.04G/6.05G -> 5.99G/6.01G
+  cx-llvm, recursive (keep the check):
+    fib              7.95G/8.19G -> 7.62G/7.51G
+    ackermann        6.11G/5.80G -> 5.74G/5.76G
+    factorialrec     3.16G/3.07G -> 2.99G/2.97G
+  cx-llvm-wasm (TinyGo wasip1, node, one layout): every benchmark within
+    +-3% except structserialize 3.72G -> 3.96G and fib 11.33G -> 10.87G,
+    which is noise of this setup.
+The gain is in call heavy code without recursion, primes most. The
+recursive benchmarks keep their check, their few percent come from the
+calls around the recursion and from noise, the desktop ran a browser.
+ackermann's loop version (cx-bench D145) was not measured here.

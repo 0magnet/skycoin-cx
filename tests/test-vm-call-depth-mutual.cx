@@ -1,0 +1,24 @@
+// Mutual recursion reached through a function outside the cycle stops at
+// the call depth limit with the depth vm counts, in every form (D144).
+package main
+
+func step(n i32) (out i32) {
+	out = n + 1
+}
+
+func ping(n i32) {
+	pong(step(n))
+}
+
+func pong(n i32) {
+	ping(step(n))
+}
+
+func start(n i32) {
+	i32.print(n)
+	ping(n)
+}
+
+func main() {
+	start(1)
+}
