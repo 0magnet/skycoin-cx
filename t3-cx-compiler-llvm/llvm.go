@@ -209,9 +209,9 @@ func (e *emitter) entry() {
 	if entryName == "" {
 		entryName = "main"
 	}
-	fmt.Fprintf(&e.body, "define i32 @%s()%s {\nentry:\n", entryName, attachment)
-	e.declare("cx_rt_start", "declare void @cx_rt_start(i32)")
-	e.line("call void @cx_rt_start(i32 %d)", e.options.StopCodes[StopDivideByZero])
+	fmt.Fprintf(&e.body, "define i32 @%s(i32 %%argc, ptr %%argv)%s {\nentry:\n", entryName, attachment)
+	e.declare("cx_rt_start", "declare void @cx_rt_start(i32, i32, ptr)")
+	e.line("call void @cx_rt_start(i32 %d, i32 %%argc, ptr %%argv)", e.options.StopCodes[StopDivideByZero])
 	if e.options.RefusalLine != "" {
 		e.declare("cx_rt_stop", "declare void @cx_rt_stop(i32, ptr) noreturn cold nounwind")
 		e.line("call void @cx_rt_stop(i32 %d, ptr %s)", e.options.RefusalCode, e.str(e.options.RefusalLine))

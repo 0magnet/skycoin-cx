@@ -1,0 +1,26 @@
+package main
+
+import "sys/os"
+
+// Reads the program arguments and the lines of standard input through the
+// terminal library (decision D142).
+func main() {
+	var buffer [8]ui8
+	var count i32
+	var length i32
+	var index i32
+	count = os.ArgCount()
+	printf("args %d\n", count)
+	for index = 0; index < count; index++ {
+		length = os.ArgRead(index, buffer)
+		printf("arg %d length %d first %d\n", index, length, ui8.i32(buffer[0]))
+	}
+	printf("past the last argument %d\n", os.ArgRead(count, buffer))
+	printf("prompt: ")
+	length = os.InputLineRead(buffer)
+	for length >= 0 {
+		printf("line length %d first %d last %d\n", length, ui8.i32(buffer[0]), ui8.i32(buffer[7]))
+		length = os.InputLineRead(buffer)
+	}
+	printf("end of input %d\n", length)
+}

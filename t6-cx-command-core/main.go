@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t0-cx-library-terminal"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
@@ -27,9 +28,10 @@ var coreLibraryRegisters []func(prgrm *ast.CXProgram)
 // coreLibraryOpcodesLinked marks the libraries whose functions are opcodes
 // that this core links, by the same build tags (decision D119).
 var coreLibraryOpcodesLinked = [opcodetable.LibraryCount]bool{
-	opcodetable.LibraryNumberCipher: coreLibraryCipherLinked,
-	opcodetable.LibraryNumberNet:    coreLibraryNetLinked,
-	opcodetable.LibraryNumberFile:   coreLibraryFileLinked,
+	opcodetable.LibraryNumberCipher:   coreLibraryCipherLinked,
+	opcodetable.LibraryNumberNet:      coreLibraryNetLinked,
+	opcodetable.LibraryNumberFile:     coreLibraryFileLinked,
+	opcodetable.LibraryNumberTerminal: true,
 }
 
 // coreOpcodeDispatch is the opcode switch of this core, the switch of
@@ -84,6 +86,7 @@ func coreRun(args []string) int32 {
 	}
 	printer.CompileErrorsRegister(prgrm)
 	prgrm.ProgramStdinInit(os.Stdin)
+	terminal.ArgsSet(args)
 	return core.ExecutorRun(prgrm, core.ExecutorAuto, args)
 }
 

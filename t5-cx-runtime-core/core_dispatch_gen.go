@@ -805,6 +805,8 @@ func CoreOpcodeDispatch(prgrm *ast.CXProgram, code int, inputs []ast.CXValue, ou
 		return coreOpcodeDispatchOsCore(prgrm, code, inputs, outputs)
 	case 203, 204, 205:
 		return coreOpcodeDispatchRegexp(prgrm, code, inputs, outputs)
+	case 876, 877, 878:
+		return coreOpcodeDispatchTerminal(prgrm, code, inputs, outputs)
 	default:
 		return false
 	}

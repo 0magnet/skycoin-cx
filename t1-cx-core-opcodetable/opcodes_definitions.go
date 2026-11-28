@@ -725,6 +725,9 @@ var OpcodeDefinitionTable = [...]OpcodeDefinition{
 	{873, "os.OpenReadWrite", "fileopcodes.OpOsOpenReadWrite", "str", "i32", ""},
 	{874, "os.Sync", "fileopcodes.OpOsSync", "i32", "bool", ""},
 	{875, "os.Remove", "fileopcodes.OpOsRemove", "str", "bool", ""},
+	{876, "os.ArgCount", "terminalopcodes.OpOsArgCount", "", "i32", ""},
+	{877, "os.ArgRead", "terminalopcodes.OpOsArgRead", "i32 und", "i32", ""},
+	{878, "os.InputLineRead", "terminalopcodes.OpOsInputLineRead", "und", "i32", ""},
 }
 
 // OpcodeDefinition is one row of OpcodeDefinitionTable.

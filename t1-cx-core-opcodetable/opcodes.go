@@ -823,6 +823,9 @@ var OpcodeLifecycleTable = [...]OpcodeLifecycle{
 	{873, "os.OpenReadWrite", 2611250005, 0, 0},
 	{874, "os.Sync", 2611250005, 0, 0},
 	{875, "os.Remove", 2611250005, 0, 0},
+	{876, "os.ArgCount", 2611270001, 0, 0},
+	{877, "os.ArgRead", 2611270001, 0, 0},
+	{878, "os.InputLineRead", 2611270001, 0, 0},
 }
 
 // OpcodeLifecycle is one row of OpcodeLifecycleTable.
@@ -1071,6 +1074,11 @@ const (
 	OpcodeFileOpenReadWrite       = 873
 	OpcodeFileSync                = 874
 	OpcodeFileRemove              = 875
+
+	// The terminal library, decision D142.
+	OpcodeTerminalArgCount      = 876
+	OpcodeTerminalArgRead       = 877
+	OpcodeTerminalInputLineRead = 878
 
 	// The slice built-ins after append, which the compiler checks by number.
 	OpResize = 210

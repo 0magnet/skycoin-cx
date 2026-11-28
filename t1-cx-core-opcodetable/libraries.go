@@ -20,11 +20,12 @@ package opcodetable
 // Library numbers. LibraryCount is one past the highest and sizes the per
 // library tables.
 const (
-	LibraryNumberFile    = 1
-	LibraryNumberNet     = 2
-	LibraryNumberProcess = 3
-	LibraryNumberCipher  = 4
-	LibraryCount         = 5
+	LibraryNumberFile     = 1
+	LibraryNumberNet      = 2
+	LibraryNumberProcess  = 3
+	LibraryNumberCipher   = 4
+	LibraryNumberTerminal = 5
+	LibraryCount          = 6
 )
 
 // LibraryPolicyEnabledWhenImported is the default policy for a library that
@@ -33,20 +34,25 @@ const (
 // enables every library the program calls. Decision D17 on skycoin-cx#492.
 const LibraryPolicyEnabledWhenImported = false
 
-// Library is one row of LibraryTable.
+// Library is one row of LibraryTable. LibraryEnabledDefault enables the
+// library unless --disable names it, and LibraryLinkedEveryCore links it into
+// every cx build core with no cxcorelibrary tag.
 type Library struct {
-	LibraryNumber       int
-	LibraryName         string
-	LibraryVersionAdded int64
+	LibraryNumber          int
+	LibraryName            string
+	LibraryVersionAdded    int64
+	LibraryEnabledDefault  bool
+	LibraryLinkedEveryCore bool
 }
 
 // LibraryTable is every system library, in number order. LibraryName is the
-// name --enable takes. Read only.
+// name --enable and --disable take. Read only.
 var LibraryTable = [...]Library{
-	{LibraryNumberFile, "file", 2611230001},
-	{LibraryNumberNet, "net", 2611230001},
-	{LibraryNumberProcess, "process", 2611230001},
-	{LibraryNumberCipher, "cipher", 2611240003},
+	{LibraryNumberFile, "file", 2611230001, false, false},
+	{LibraryNumberNet, "net", 2611230001, false, false},
+	{LibraryNumberProcess, "process", 2611230001, false, false},
+	{LibraryNumberCipher, "cipher", 2611240003, false, false},
+	{LibraryNumberTerminal, "terminal", 2611270001, true, true},
 }
 
 // LibraryByName returns the library named name.
@@ -230,4 +236,10 @@ func libraryFunctionLifecycleNamesMake() [][]byte {
 		names[i] = names[i][:len(names[i]):len(names[i])]
 	}
 	return names
+}
+
+// LibraryLinkedEveryCoreOf reports whether every cx build core links library
+// number, so no core is named after it.
+func LibraryLinkedEveryCoreOf(number int) bool {
+	return number > 0 && number < LibraryCount && LibraryTable[number-1].LibraryLinkedEveryCore
 }

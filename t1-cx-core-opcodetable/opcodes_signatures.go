@@ -29,6 +29,9 @@ const (
 	// OpcodeGroupFile is the file library in t5-cx-library-fileopcodes, left out by the nocxos
 	// tag.
 	OpcodeGroupFile
+	// OpcodeGroupTerminal is the terminal library in t4-cx-library-terminalopcodes, in
+	// every build and every core.
+	OpcodeGroupTerminal
 	OpcodeGroupCount
 )
 
@@ -155,21 +158,23 @@ func LibraryFunctionKeyParts(key int) (library int, function int) {
 
 // opcodeGroupLinked says which groups this build links, by its build tags.
 var opcodeGroupLinked = [OpcodeGroupCount]bool{
-	OpcodeGroupCore:   true,
-	OpcodeGroupOsCore: opcodeGroupOsCoreLinked,
-	OpcodeGroupRegexp: opcodeGroupRegexpLinked,
-	OpcodeGroupCxfx:   opcodeGroupCxfxLinked,
-	OpcodeGroupCipher: opcodeGroupCipherLinked,
-	OpcodeGroupNet:    true,
-	OpcodeGroupFile:   opcodeGroupFileLinked,
+	OpcodeGroupCore:     true,
+	OpcodeGroupOsCore:   opcodeGroupOsCoreLinked,
+	OpcodeGroupRegexp:   opcodeGroupRegexpLinked,
+	OpcodeGroupCxfx:     opcodeGroupCxfxLinked,
+	OpcodeGroupCipher:   opcodeGroupCipherLinked,
+	OpcodeGroupNet:      true,
+	OpcodeGroupFile:     opcodeGroupFileLinked,
+	OpcodeGroupTerminal: true,
 }
 
 // opcodeGroupLibrary is the system library of each group whose opcodes are
 // the functions of a library, 0 for the other groups.
 var opcodeGroupLibrary = [OpcodeGroupCount]int{
-	OpcodeGroupCipher: LibraryNumberCipher,
-	OpcodeGroupNet:    LibraryNumberNet,
-	OpcodeGroupFile:   LibraryNumberFile,
+	OpcodeGroupCipher:   LibraryNumberCipher,
+	OpcodeGroupNet:      LibraryNumberNet,
+	OpcodeGroupFile:     LibraryNumberFile,
+	OpcodeGroupTerminal: LibraryNumberTerminal,
 }
 
 // OpcodeLibraryOf returns the system library whose function opcode code is,

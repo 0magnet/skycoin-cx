@@ -32,6 +32,7 @@ type cxCmdFlags struct {
 	sandbox          string
 	executor         string
 	enable           string
+	disable          string
 	netRecord        string
 	netReplay        string
 
@@ -98,7 +99,8 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	commandLine.StringVar(&options.cxpath, "cxpath", options.cxpath, "Workspace directory, used instead of the CXPATH environment variable")
 	commandLine.StringVar(&options.sandbox, "sandbox", options.sandbox, "Directory a running program's file opcodes are confined to. Program paths must be relative and stay inside it. Defaults to the working directory.")
 	commandLine.StringVar(&options.executor, "executor", options.executor, "Loop that runs the program: auto runs it on the flat vm when every function lowers and on the old loop otherwise, old and vm force one loop. vm fails on a program that does not lower.")
-	commandLine.StringVar(&options.enable, "enable", options.enable, "System libraries and library operations the program may call, a comma separated list of the libraries file, net, process and cipher and of single operations such as cipher.HashStateNew. A program that uses a cipher operation that is not enabled is refused before it runs, and a call into another library that is not enabled is the runtime error CX_RUNTIME_LIBRARY_DISABLED. See System libraries in LanguageGuide.md.")
+	commandLine.StringVar(&options.enable, "enable", options.enable, "System libraries and library operations the program may call, a comma separated list of the libraries file, net, process, cipher and terminal and of single operations such as cipher.HashStateNew. terminal is enabled by default. A program that uses a cipher, file, net or terminal operation that is not enabled is refused before it runs, and a call into process that is not enabled is the runtime error CX_RUNTIME_LIBRARY_DISABLED. See System libraries in LanguageGuide.md.")
+	commandLine.StringVar(&options.disable, "disable", options.disable, "System libraries and library operations the program may not call, in the form of --enable, applied after it, such as terminal or terminal.InputLineRead. See System libraries in LanguageGuide.md.")
 	commandLine.StringVar(&options.netRecord, "net-record", options.netRecord, "Write every batch of the net library to this replay record, see docs/Networking.md")
 	commandLine.StringVar(&options.netReplay, "net-replay", options.netReplay, "Run the net library from this replay record and open no socket, see docs/Networking.md")
 
@@ -185,10 +187,14 @@ func command(arg, name string) bool {
 }
 
 // librariesEnabledParse returns the system libraries and the library
-// operations the --enable list names, or the problem with it. An entry is a
-// library name, which enables every operation of the library, or one
-// operation, cipher.HashStateNew (decision D119).
+// operations the --enable list names, with the libraries enabled by default,
+// or the problem with it. An entry is a library name, which enables every
+// operation of the library, or one operation, cipher.HashStateNew (decision
+// D119).
 func librariesEnabledParse(list string) (enabled [opcodetable.LibraryCount]bool, operations opcodetable.OpcodeSet, problem string) {
+	for _, library := range opcodetable.LibraryTable {
+		enabled[library.LibraryNumber] = library.LibraryEnabledDefault
+	}
 	for _, name := range strings.Split(list, ",") {
 		name = strings.TrimSpace(name)
 		if name == "" {
@@ -202,11 +208,7 @@ func librariesEnabledParse(list string) (enabled [opcodetable.LibraryCount]bool,
 			operations.OpcodeSetAdd(code)
 			continue
 		}
-		var names []string
-		for _, known := range opcodetable.LibraryTable {
-			names = append(names, known.LibraryName)
-		}
-		return enabled, operations, fmt.Sprintf("unknown library or operation %q in --enable, the libraries are %s, and an operation is a library and a function, as cipher.HashStateNew", name, strings.Join(names, ", "))
+		return enabled, operations, fmt.Sprintf("unknown library or operation %q in --enable, the libraries are %s, and an operation is a library and a function, as cipher.HashStateNew", name, strings.Join(libraryNames(), ", "))
 	}
 	return enabled, operations, ""
 }
@@ -224,4 +226,42 @@ func netModeSet(options cxCmdFlags) string {
 		networkbatch.NetRunMode, networkbatch.NetRunRecordPath = networkbatch.NetModeReplay, options.netReplay
 	}
 	return ""
+}
+
+// librariesDisabledApply takes the libraries and operations the --disable
+// list names out of enabled and operations, or returns the problem with it.
+// Disabling one operation of a library enabled whole keeps its other
+// operations (decision D142).
+func librariesDisabledApply(list string, enabled *[opcodetable.LibraryCount]bool, operations *opcodetable.OpcodeSet) string {
+	for _, name := range strings.Split(list, ",") {
+		name = strings.TrimSpace(name)
+		if name == "" {
+			continue
+		}
+		if library, found := opcodetable.LibraryByName(name); found {
+			enabled[library.LibraryNumber] = false
+			operations.OpcodeSetLibraryRemove(library.LibraryNumber)
+			continue
+		}
+		if code, found := opcodetable.LibraryOperationByName(name); found {
+			library := opcodetable.OpcodeLibraryOf(code)
+			if enabled[library] {
+				enabled[library] = false
+				operations.OpcodeSetLibraryAdd(library)
+			}
+			operations.OpcodeSetRemove(code)
+			continue
+		}
+		return fmt.Sprintf("unknown library or operation %q in --disable, the libraries are %s, and an operation is a library and a function, as terminal.InputLineRead", name, strings.Join(libraryNames(), ", "))
+	}
+	return ""
+}
+
+// libraryNames returns the names of every system library.
+func libraryNames() []string {
+	var names []string
+	for _, known := range opcodetable.LibraryTable {
+		names = append(names, known.LibraryName)
+	}
+	return names
 }

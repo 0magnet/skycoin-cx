@@ -1,12 +1,12 @@
 package ast
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t0-cx-library-terminal"
 	objmodel "github.com/skycoin/skycoin-cx/t1-cx-core-objmodel"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
@@ -846,9 +846,10 @@ func (cxprogram *CXProgram) ProgramPrint() {
 	fmt.Println(ToString(cxprogram))
 }
 
-// ProgramStdinInit makes reader the input of read() for the rest of the run.
+// ProgramStdinInit makes reader the input of read() and of the terminal
+// library for the rest of the run, one buffered reader for both.
 func (prgrm *CXProgram) ProgramStdinInit(reader io.Reader) {
-	prgrm.ProgramStdin = bufio.NewReader(reader)
+	prgrm.ProgramStdin = terminal.InputSet(reader)
 }
 
 // CXProgramFunctionLiveSlots returns which slots of the program's

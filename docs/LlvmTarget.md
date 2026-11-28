@@ -95,6 +95,10 @@ loaded from outside. A program that uses a library the build does not
 enable becomes an executable that prints the refusal cx prints and exits
 with `CX_RUNTIME_LIBRARY_DISABLED` (12).
 
+The terminal functions read the `argc` and `argv` of `main`, which the
+entry passes to `cx_rt_start`, and standard input with `getchar`. Linked
+by TinyGo they call back into the Go side for `os.Args` and `os.Stdin`.
+
 ## Differences from vm
 
 After a runtime error vm prints the call stack with the value of every

@@ -19,6 +19,7 @@
     * [Packages](#packages)
     * [Imports into scope](#imports-into-scope)
     * [System libraries](#system-libraries)
+    * [The terminal library](#the-terminal-library)
     * [The cipher library](#the-cipher-library)
     * [The net library](#the-net-library)
   * [Statements](#statements)
@@ -969,6 +970,7 @@ cx --enable=file,net program.cx
 | `net` | every function of `sys/net`, see [The net library](#the-net-library) |
 | `process` | `os.Run` |
 | `cipher` | every function of `sys/cipher`, see [The cipher library](#the-cipher-library) |
+| `terminal` | `os.ArgCount`, `os.ArgRead` and `os.InputLineRead`, see [The terminal library](#the-terminal-library). Enabled by default |
 
 `os.Exit`, `sys/time`, `sys/regexp` and `sys/string` are not system
 libraries. They end the program, read the clock or compute, and always
@@ -982,7 +984,7 @@ message names the library.
 error: main.cx:7, CX_RUNTIME_LIBRARY_DISABLED, library file is not enabled, enable it with --enable=file
 ```
 
-A program that uses a function of `file`, `net` or `cipher` and does not
+A program that uses a function of `file`, `net`, `cipher` or `terminal` and does not
 enable it is refused before it runs, with the same code and message and no position.
 The run loop never checks a library (decision D119).
 
@@ -1007,20 +1009,62 @@ The enabled operations are a fixed size bit set over the opcode table,
 carry. A native executable of `cx build --target=llvm` takes the set when
 it is built, so it never runs an operation that is not enabled.
 
-Libraries are disabled unless `--enable` names them. The setting
+Libraries other than `terminal` are disabled unless `--enable` names them. The setting
 `constants.LibraryPolicyEnabledWhenImported` in
 `t1-cx-core-opcodetable/libraries.go` holds this default. Set to `true`, it
 enables every library the program calls. See
 [skycoin-cx#492](https://github.com/skycoin/skycoin-cx/issues/492),
 decision D17.
 
+`terminal` is enabled unless `--disable` names it. `--disable` takes the
+entries of `--enable` and applies after it, so `--disable=terminal` refuses
+a program that reads its arguments or input, and
+`--disable=terminal.InputLineRead` refuses only one that reads its input
+(decision D142).
+
 Every function of `cipher` is its own opcode, 796 to 804, and every
-function of `net`, 805 to 819, and every function of `file`, 820 to 875
-(decision D119). The compiler turns every call of `os.Run`, the one
+function of `net`, 805 to 819, every function of `file`, 820 to 875,
+and every function of `terminal`, 876 to 878 (decision D119). The compiler turns every call of `os.Run`, the one
 function of `process`, into the opcode `LibraryCall` (795), which carries the library
 number and the function number. The numbers are in `constants.LibraryTable` and
 `constants.LibraryFunctionLifecycleTable` and follow the rules of opcode
 numbers, see [Language versions](#language-versions).
+
+### [The terminal library](#table-of-contents)
+
+The functions of the system library `terminal` read what the program was
+started with: its arguments and its standard input. They are part of
+`sys/os` and run on the old loop, on vm, in an image and in a native
+executable. A buffer is a `ui8` array, which the function fills in place.
+
+| function | returns |
+|---|---|
+| `os.ArgCount()` | the number of program arguments, an `i32` |
+| `os.ArgRead(index i32, buffer [N]ui8)` | the bytes of argument `index` copied into `buffer`, or -1 when there is no such argument |
+| `os.InputLineRead(buffer [N]ui8)` | the bytes of the next line of standard input copied into `buffer`, without its new line or carriage return, or -1 at the end of the input |
+
+The part of an argument or a line longer than the buffer is dropped.
+`cx program.cx ++5` passes the argument `++5`, and every form drops a
+leading `++`, so `cx program.cx ++5`, `./program ++5` and `./program 5`
+all read `5`. `os.InputLineRead` writes the buffered output before it
+reads, so a prompt shows first.
+
+```cx
+package main
+
+import "sys/os"
+
+func main() {
+	var buffer [16]ui8
+	var length i32 = os.ArgRead(0, buffer)
+	var size i32
+	var index i32
+	for index = 0; index < length; index++ {
+		size = size*10 + ui8.i32(buffer[index]) - 48
+	}
+	printf("size %d\n", size)
+}
+```
 
 ### [The cipher library](#table-of-contents)
 

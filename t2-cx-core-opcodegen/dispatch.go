@@ -25,6 +25,7 @@ type dispatchGroup struct {
 var dispatchGroups = []dispatchGroup{
 	{opcodetable.OpcodeGroupOsCore, "t5-cx-runtime-core/core_dispatch_oscore", "core", "coreOpcodeDispatchOsCore", "!nocxos", "nocxos", "github.com/skycoin/skycoin-cx/t4-cx-library-osopcodes", "osopcodes"},
 	{opcodetable.OpcodeGroupRegexp, "t5-cx-runtime-core/core_dispatch_regexp", "core", "coreOpcodeDispatchRegexp", "!noregexp", "noregexp", "github.com/skycoin/skycoin-cx/t4-cx-library-regexp", "regexp"},
+	{opcodetable.OpcodeGroupTerminal, "t5-cx-runtime-core/core_dispatch_terminal", "core", "coreOpcodeDispatchTerminal", "", "", "github.com/skycoin/skycoin-cx/t4-cx-library-terminalopcodes", "terminalopcodes"},
 	{opcodetable.OpcodeGroupCxfx, "t6-cx-library-graphics/cxfx_dispatch", "graphics", "CxfxOpcodeDispatch", "cxfx", "!cxfx", "", ""},
 	{opcodetable.OpcodeGroupCipher, "t4-cx-library-cipher/cipher_dispatch", "cipher", "CipherOpcodeDispatch", "!nocipher", "nocipher", "", ""},
 	{opcodetable.OpcodeGroupNet, "t4-cx-library-netopcodes/net_dispatch", "netopcodes", "NetOpcodeDispatch", "", "", "", ""},
@@ -60,7 +61,7 @@ func (gen *generated) dispatchFiles() map[string][]byte {
 			fmt.Fprintf(&b, "\tcase %d:\n\t\t%s.%s(prgrm, inputs, outputs)\n", row.Number, pkg, function)
 		}
 	}
-	for _, group := range dispatchGroups[:2] {
+	for _, group := range dispatchGroups[:3] {
 		numbers := gen.groupNumbers(group.group)
 		fmt.Fprintf(&b, "\tcase %s:\n\t\treturn %s(prgrm, code, inputs, outputs)\n", strings.Join(numbers, ", "), group.function)
 	}

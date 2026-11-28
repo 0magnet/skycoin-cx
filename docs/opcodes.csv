@@ -784,3 +784,6 @@ number,name,version_assigned,version_deprecated,version_reassignment_allowed,for
 873,os.OpenReadWrite,2611250005,0,0,
 874,os.Sync,2611250005,0,0,
 875,os.Remove,2611250005,0,0,
+876,os.ArgCount,2611270001,0,0,
+877,os.ArgRead,2611270001,0,0,
+878,os.InputLineRead,2611270001,0,0,

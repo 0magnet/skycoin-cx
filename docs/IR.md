@@ -819,8 +819,9 @@ one loop, and vm fails on a program that does not lower.
   opcode (D119).
 * The library opcodes that run on vm, `cipher.HashStateNew`,
   `cipher.HashStateRelease`, every function of `sys/net`, `os.Close`,
-  `os.Seek` and `os.Sync`, each lower to their own image opcode,
-  `OpcodeCipherHashStateNew` to `OpcodeFileSync`. A block at sp holds the
+  `os.Seek`, `os.Sync` and the three of `terminal` (D142), each lower to
+  their own image opcode, `OpcodeCipherHashStateNew` to
+  `OpcodeTerminalInputLineRead`. A block at sp holds the
   inputs then the outputs, packed as `ast.NativeFunctionOf` lays them out,
   with `OpcodeCallFrame`, one `OpcodeCallArg` per input, the opcode, then
   `OpcodeCallResult` per output. A `str` input is a pointer read from the

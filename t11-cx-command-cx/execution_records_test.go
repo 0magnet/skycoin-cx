@@ -651,10 +651,10 @@ func TestExecutionRecords(t *testing.T) {
 				forms[executionRecordFormImageCore] = executionRecordFormOutcome{note: "does not lower"}
 			case executionRecordRunFlag(record.name) != "":
 				forms[executionRecordFormImageCore] = executionRecordFormOutcome{note: "passes the run time flag " + executionRecordRunFlag(record.name)}
-			case len(input.arguments) > 0 || input.stdin != "":
-				forms[executionRecordFormImageCore] = executionRecordFormOutcome{note: "takes arguments or stdin"}
+			case (len(input.arguments) > 0 || input.stdin != "") && os.Getenv(executionRecordsImageCoreEnv) != "":
+				forms[executionRecordFormImageCore] = executionRecordFormOutcome{note: "takes arguments or stdin, which " + executionRecordsImageCoreEnv + " may not pass on"}
 			default:
-				forms[executionRecordFormImageCore] = harness.imageCore(dir, i, imageCore, record.name)
+				forms[executionRecordFormImageCore] = harness.imageCore(dir, i, imageCore, record.name, input)
 			}
 
 			if flag := executionRecordRunFlag(record.name); flag != "" {
@@ -1006,7 +1006,7 @@ func executionRecordImageCore(t *testing.T, dir string) string {
 
 // imageCore writes the image of name with cx build --target=image and runs
 // it with runner, the image-core form.
-func (harness executionRecordHarness) imageCore(dir string, index int, runner string, name string) executionRecordFormOutcome {
+func (harness executionRecordHarness) imageCore(dir string, index int, runner string, name string, input executionRecordInput) executionRecordFormOutcome {
 	output := filepath.Join(dir, fmt.Sprintf("image-%d.cximage", index))
 	buildArgs := append([]string{buildCommand, "--target=" + buildTargetImage}, strings.Fields(os.Getenv(executionRecordsImageFlagsEnv))...)
 	buildArgs = append(buildArgs, strings.Fields(name)...)
@@ -1021,5 +1021,5 @@ func (harness executionRecordHarness) imageCore(dir string, index int, runner st
 		return executionRecordFormOutcome{run: build, applicable: true, note: "cx build --target=image failed"}
 	}
 	defer os.Remove(output)
-	return executionRecordFormOutcome{run: executionRecordProcess(harness.t, runner, nil, harness.tests, "", output), applicable: true}
+	return executionRecordFormOutcome{run: executionRecordProcess(harness.t, runner, nil, harness.tests, input.stdin, append([]string{output}, input.arguments...)...), applicable: true}
 }

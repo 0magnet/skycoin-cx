@@ -9,6 +9,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	filelog "github.com/skycoin/skycoin-cx/t0-cx-runtime-filelog"
+	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 	"github.com/skycoin/skycoin-cx/t4-cx-compiler-astbuild"
@@ -94,7 +95,7 @@ func buildRun(args []string) int {
 	}
 	active := core.LibrariesActive(astbuild.AST)
 	for library, used := range astbuild.AST.ProgramLibrariesUsed {
-		active[library] = active[library] && used
+		active[library] = active[library] && used && !opcodetable.LibraryLinkedEveryCoreOf(library)
 	}
 	libraries := core.LibraryNames(active)
 	corePath, problem := buildCorePath(options.buildOptionsCore, libraries)
