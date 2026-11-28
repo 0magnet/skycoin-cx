@@ -85,6 +85,9 @@ func buildLlvm(options buildOptions) int {
 	if tinygoLink && image.ImageOperationsEnabled.OpcodeSetLibraryAny(opcodetable.LibraryNumberNet) {
 		return buildFail("the program uses the net library, which --llvm-linker=tinygo leaves out")
 	}
+	if llvmOptions.RefusalLine == "" {
+		fmt.Fprint(os.Stderr, buildCallGraphReport(&image, options.buildOptionsDepthQuiet))
+	}
 	module, stats, err := llvm.Emit(&image, llvmOptions)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "cx build: cannot build for llvm: %v\n", err)

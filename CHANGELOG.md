@@ -83,6 +83,7 @@
 
 #### Added
 
+- `cx build --target=llvm` and `--target=image` build the call graph of the program and warn at each call that closes a cycle, a recursive call, which is allowed (decision D144). A program without recursion gets its deepest call chain and the stack it needs, `call depth 2 (main -> run -> fnv), stack 105 of 1048576 bytes`, which `--depth-quiet` leaves out. `ir.CallGraphBuild` gives the graph
 - Lua versions of the twelve `t0-cx-tools-benchmarks/compare` programs in `compare/lua`, for Lua 5.4 and later. They print the hashes of `compare/expected.txt`, `TestCompareLua` checks them when a Lua 5.4 or later is on PATH, the ubuntu check jobs install `lua5.4`, and `compare/run.sh` times them in a `lua` column
 - `cx build --target=llvm` links with TinyGo when there is no clang but a `tinygo`, or with `--llvm-linker=tinygo`, and `--llvm-tinygo-target` cross compiles for a TinyGo target such as `pico`, with its C library, startup code and linker script. The C runtime prints numbers without printf, which the C library of TinyGo cannot format (decision D131)
 - `cx build --target=image` writes the image vm runs to a file, and `t4-cx-core-image` runs it on vm with no parser, compiler or AST, so it builds with TinyGo for a microcontroller. `make build-mcu` and `make run-mcu` embed an image in it for a TinyGo target and run it in QEMU or wasmtime, and the new `image-core` form of the execution records checks it (decision D129). See docs/Microcontrollers.md

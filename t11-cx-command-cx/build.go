@@ -33,6 +33,7 @@ type buildOptions struct {
 	buildOptionsTarget           string
 	buildOptionsStats            bool
 	buildOptionsDebug            bool
+	buildOptionsDepthQuiet       bool
 	buildOptionsLlvmLinker       string
 	buildOptionsLlvmTinygoTarget string
 	buildOptionsCompile          []string
@@ -174,6 +175,9 @@ func buildOptionsParse(args []string) (options buildOptions, problem string) {
 			continue
 		case "llvm-debug":
 			options.buildOptionsDebug = true
+			continue
+		case "depth-quiet":
+			options.buildOptionsDepthQuiet = true
 			continue
 		default:
 			options.buildOptionsCompile = append(options.buildOptionsCompile, arg)
@@ -322,6 +326,10 @@ and passes its own command line arguments to it as os.Args.
                     cx-core-image, the vm runner for microcontrollers. Give
                     -stack-size to fit the board, see
                     docs/Microcontrollers.md.
+--depth-quiet       With --target=llvm or image, leave out the line that
+                    gives the deepest call chain and the stack a program
+                    without recursion needs. A recursive call is a
+                    warning, which stays.
 --llvm-stats        With --target=llvm, print how each scalar opcode was
                     emitted, inline or as a call into the runtime.
 --llvm-debug        With --target=llvm, add DWARF debug information: the
