@@ -1,5 +1,5 @@
 0005 Arrays as locals and one LLVM global per CX global
-Status: proposed. Measured by hand, not built. Ship with 0007.
+Status: built in #617.
 
 Where: t3-cx-compiler-llvm/llvm.go, analyze() (line 434) and global layout.
 
@@ -23,3 +23,14 @@ Measured (structserialize, user cycles, two code layouts):
 Note: today an index past the end of an array writes the next variable in
 cx_mem (see 0007). Moving globals out of cx_mem changes where such a write
 lands, so the index check of 0007 must come first or together.
+
+Built (#617, user cycles, layouts a/b):
+  structserialize  8.48G/8.47G -> 2.50G/2.48G, 6.88G instructions, 0 stalls
+                   (C 1.77G/1.78G)
+  array            7.55G/7.50G -> 3.76G/3.75G   (C 7.47G/7.60G)
+
+A read through an offset slot keeps a check against the region end, though
+the build proved it inside. Without it LLVM hoisted the constant zero byte
+stores of encode out of the round loop, could not forward them to the i32
+reloads of decode, and structserialize took 2.97G cycles per 20M rounds
+with store forward stalls instead of 0.65G.

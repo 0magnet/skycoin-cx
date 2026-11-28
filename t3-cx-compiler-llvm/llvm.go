@@ -6,7 +6,9 @@
 // the runtime too. A frame variable whose address is never taken becomes an
 // alloca that LLVM keeps in registers, with its extent from ImageLocals. A
 // variable whose address is taken stays in a shadow stack inside cx_mem at
-// its vm offset, so every pointer keeps its vm value. A load of a literal of
+// its vm offset, so every pointer keeps its vm value. An indexed array whose
+// address stays in its function is an alloca too, and a global whose address
+// is never taken is its own LLVM global, see address.go. A load of a literal of
 // ImageReadOnly becomes a constant. Stack, depth, index, address and divide
 // checks stop the run with the exit code and message of the vm.
 package llvm
@@ -138,14 +140,24 @@ type emitter struct {
 	layouts []funcLayout
 	// framePointerCheck says that a call checks fp against the stack end.
 	framePointerCheck bool
+	// globals are the regions of the data segment that the instructions
+	// name, each its own LLVM global unless it stays in cx_mem.
+	globals []region
+	// globalRanges and globalAddressed collect the global accesses and the
+	// global addresses taken while analyze runs.
+	globalRanges    []region
+	globalAddressed []uint32
 }
 
-// funcLayout is the frame and scratch regions of a function and whether it
-// takes the frame pointer fp.
+// funcLayout is the frame and scratch regions of a function, whether it
+// takes the frame pointer fp, and its address slots that hold an offset
+// into a region kept out of cx_mem, by the pc that writes or reads them.
 type funcLayout struct {
 	funcLayoutFrame        []region
 	funcLayoutScratch      []region
 	funcLayoutFramePointer bool
+	funcLayoutProducers    map[uint32]addressProducer
+	funcLayoutUses         map[uint32]addressProducer
 }
 
 // Emit returns the LLVM IR module of image, or an error for an instruction
@@ -174,6 +186,17 @@ func Emit(image *ir.Image, options Options) ([]byte, Stats, error) {
 			return nil, e.stats, fmt.Errorf("%s: %w", image.ImageFuncNames[id], err)
 		}
 		e.layouts[id] = funcLayout{funcLayoutFrame: e.frame, funcLayoutScratch: e.scratch}
+	}
+	e.globalsPartition()
+	for id := range image.ImageFuncs {
+		if len(image.ImageFuncs[id].FuncCode) > 0 {
+			e.addressAnalyze(&image.ImageFuncs[id], &e.layouts[id])
+		}
+	}
+	for id := range image.ImageFuncs {
+		if len(image.ImageFuncs[id].FuncCode) > 0 {
+			e.regionsName(&image.ImageFuncs[id], &e.layouts[id])
+		}
 	}
 	e.framePointerPlan()
 	for id := range image.ImageFuncs {
@@ -209,6 +232,7 @@ func (e *emitter) header() {
 	e.out.WriteString("; CX program image as LLVM IR, written by cx build --target=llvm\n")
 	size := e.dataEnd + image.ImageScratchSize
 	fmt.Fprintf(&e.out, "@cx_mem = internal global [%d x i8] zeroinitializer, align 16\n", size)
+	e.globalsDefine()
 	for i, run := range e.dataRuns() {
 		segmentBytes := image.ImageData[run[0]:run[1]]
 		fmt.Fprintf(&e.out, "@cx_init.%d = private unnamed_addr constant [%d x i8] %s\n", i, len(segmentBytes), llvmBytes(segmentBytes))
@@ -542,8 +566,9 @@ func find(regions []region, offset uint32) int {
 
 // analyze splits the frame of fn into regions, one per variable of
 // ImageLocals joined with the operands outside them, and the scratch into
-// the ranges its instructions use. A region whose address is taken stays in
-// cx_mem.
+// the ranges its instructions use. An indexed array is one region. A region
+// whose address is taken stays in cx_mem. The global accesses and addresses
+// go to globalRanges and globalAddressed.
 func (e *emitter) analyze(fn *ir.Func) error {
 	var frame, scratch []region
 	var addressed []uint32
@@ -561,6 +586,18 @@ func (e *emitter) analyze(fn *ir.Func) error {
 		in := &fn.FuncCode[pc]
 		for _, ac := range accesses(in) {
 			offset, inFrame := operand(in, ac.accessWhich)
+			if in.InstrOpcode == ir.OpcodeAddressIndexStatic && ac.accessWhich == 0 {
+				array := region{regionStart: offset, regionEnd: offset + in.InstrAux*in.InstrN}
+				switch {
+				case inFrame:
+					frame = append(frame, array)
+				case offset >= e.dataEnd:
+					return fmt.Errorf("pc %d takes the address of scratch", pc)
+				case offset >= e.image.ImageDataStart:
+					e.globalRanges = append(e.globalRanges, array)
+				}
+				continue
+			}
 			switch {
 			case inFrame && ac.accessAddress:
 				addressed = append(addressed, offset)
@@ -570,8 +607,13 @@ func (e *emitter) analyze(fn *ir.Func) error {
 				if offset >= e.dataEnd {
 					return fmt.Errorf("pc %d takes the address of scratch", pc)
 				}
+				if offset >= e.image.ImageDataStart {
+					e.globalAddressed = append(e.globalAddressed, offset)
+				}
 			case offset >= e.dataEnd:
 				scratch = append(scratch, region{regionStart: offset, regionEnd: offset + ac.accessSize})
+			case offset >= e.image.ImageDataStart:
+				e.globalRanges = append(e.globalRanges, region{regionStart: offset, regionEnd: offset + ac.accessSize})
 			}
 		}
 	}
@@ -587,8 +629,15 @@ func (e *emitter) analyze(fn *ir.Func) error {
 		}
 		e.frame[i].regionShadow = true
 	}
-	for i := range e.frame {
-		r := &e.frame[i]
+	return nil
+}
+
+// regionsName counts the frame regions of a function and names each kept
+// in an alloca, after addressAnalyze decided which stay in cx_mem.
+func (e *emitter) regionsName(fn *ir.Func, layout *funcLayout) {
+	locals := e.image.ImageLocals[fn.FuncLocalFirst : fn.FuncLocalFirst+fn.FuncLocalCount]
+	for i := range layout.funcLayoutFrame {
+		r := &layout.funcLayoutFrame[i]
 		if r.regionShadow {
 			e.stats.StatsShadow++
 			continue
@@ -602,10 +651,9 @@ func (e *emitter) analyze(fn *ir.Func) error {
 			}
 		}
 	}
-	for i := range e.scratch {
-		e.scratch[i].regionName = fmt.Sprintf("%%s%d", e.scratch[i].regionStart-e.dataEnd)
+	for i := range layout.funcLayoutScratch {
+		layout.funcLayoutScratch[i].regionName = fmt.Sprintf("%%s%d", layout.funcLayoutScratch[i].regionStart-e.dataEnd)
 	}
-	return nil
 }
 
 // ptr returns a pointer to operand which of in, size bytes.
@@ -620,6 +668,10 @@ func (e *emitter) ptrAt(offset uint32, inFrame bool, size uint32) (string, error
 		regions = e.frame
 	} else if offset < e.dataEnd {
 		t := e.localNew()
+		if i := find(e.globals, offset); i >= 0 && !e.globals[i].regionShadow && offset+size <= e.globals[i].regionEnd {
+			e.line("%s = getelementptr inbounds i8, ptr %s, i64 %d", t, e.globals[i].regionName, offset-e.globals[i].regionStart)
+			return t, nil
+		}
 		e.line("%s = getelementptr inbounds i8, ptr @cx_mem, i64 %d", t, offset)
 		return t, nil
 	}
@@ -775,21 +827,7 @@ func (e *emitter) emitFunction(id uint32, fn *ir.Func) error {
 	}
 	e.line("br label %%pc0")
 
-	leaders := map[uint32]bool{0: true}
-	for pc := range fn.FuncCode {
-		in := &fn.FuncCode[pc]
-		switch in.InstrOpcode {
-		case ir.OpcodeJump:
-			leaders[in.InstrM] = true
-			leaders[uint32(pc)+1] = true
-		case ir.OpcodeJumpIf:
-			leaders[in.InstrM] = true
-			leaders[in.InstrN] = true
-			leaders[uint32(pc)+1] = true
-		case ir.OpcodeReturn:
-			leaders[uint32(pc)+1] = true
-		}
-	}
+	leaders := funcLeaders(fn)
 	terminated := true
 	for pc := range fn.FuncCode {
 		upc := uint32(pc)
@@ -1051,7 +1089,11 @@ func (e *emitter) instrAddress(pc uint32, in *ir.Instr) error {
 	switch op {
 	case ir.OpcodeAddressIndexStatic, ir.OpcodeAddressIndex:
 		var base string
-		if op == ir.OpcodeAddressIndexStatic {
+		if producer, local := e.addressProducerLocal(pc); local && op == ir.OpcodeAddressIndexStatic {
+			offset, _ := operand(in, 0)
+			r := e.addressRegionOf(&e.layouts[e.function], producer.addressProducerRegion)
+			base = strconv.FormatUint(uint64(offset-r.regionStart), 10)
+		} else if op == ir.OpcodeAddressIndexStatic {
 			base = e.vmAddress(in, 0)
 		} else {
 			slot, err := e.load(in, 0, "i32", 4)
@@ -1083,7 +1125,7 @@ func (e *emitter) instrAddress(pc uint32, in *ir.Instr) error {
 			if err != nil {
 				return err
 			}
-			p = e.memAt(slot, in.InstrM, pointerSize, pc)
+			p = e.addressAt(slot, in.InstrM, pointerSize, pc)
 		}
 		v := e.localNew()
 		e.line("%s = load %s, ptr %s, align 1", v, valueType(pointerSize), p)
@@ -1096,7 +1138,7 @@ func (e *emitter) instrAddress(pc uint32, in *ir.Instr) error {
 		if err != nil {
 			return err
 		}
-		src := e.memAt(slot, in.InstrM, in.InstrN, pc)
+		src := e.addressAt(slot, in.InstrM, in.InstrN, pc)
 		dst, err := e.ptr(in, 2, in.InstrN)
 		if err != nil {
 			return err
@@ -1108,7 +1150,7 @@ func (e *emitter) instrAddress(pc uint32, in *ir.Instr) error {
 		if err != nil {
 			return err
 		}
-		dst := e.memAt(slot, in.InstrM, in.InstrN, pc)
+		dst := e.addressAt(slot, in.InstrM, in.InstrN, pc)
 		src, err := e.ptr(in, 0, in.InstrN)
 		if err != nil {
 			return err

@@ -442,3 +442,72 @@ func main() {
 		}
 	}
 }
+
+// TestLlvmArraysGlobals checks that an array whose address stays in its
+// function is an alloca and a global its own LLVM global, while an array or
+// global whose address is taken stays in cx_mem (optimization 0005).
+func TestLlvmArraysGlobals(t *testing.T) {
+	initProgram()
+	compileRunSources(t, []string{"arrays.cx"}, []string{`package main
+
+var table [8]i32
+var count i32
+var pointed [4]i32
+
+func fill(n i32) (sum i32) {
+	global table
+	var local [16]i32
+	var i i32
+	for i = 0; i < 16; i++ {
+		local[i] = i * n
+	}
+	for i = 0; i < 8; i++ {
+		table[i] = local[i+8]
+		sum = sum + table[i]
+	}
+}
+
+func escape(n i32) (out i32) {
+	global pointed
+	var kept [4]i32
+	var p *i32
+	p = &kept[1]
+	*p = n
+	p = &pointed[2]
+	*p = n + 1
+	out = kept[1] + pointed[2]
+}
+
+func main() {
+	global count
+	count = fill(3)
+	i32.print(count)
+	i32.print(escape(5))
+}
+`})
+	image, failures := lower.Program(astbuild.AST)
+	if len(failures) > 0 {
+		t.Fatalf("does not lower: %+v", failures)
+	}
+	module, _, err := llvm.Emit(&image, buildLlvmOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		`define internal i32 @"cx\.\d+\.[^"]*fill"\(i32 %depth, i32 %in0\)`,
+		`%"local\.f\d+" = alloca \[64 x i8\]`,
+		`@cx_global\.\d+ = internal global \[32 x i8\] zeroinitializer`,
+		`define internal i32 @"cx\.\d+\.[^"]*escape"\(i32 %fp, i32 %depth, i32 %in0\)`,
+	} {
+		if !regexp.MustCompile(want).Match(module) {
+			t.Errorf("module has no %s", want)
+		}
+	}
+	if regexp.MustCompile(`@cx_global\.\d+ = internal global \[16 x i8\]`).Match(module) {
+		t.Errorf("pointed, whose address is taken, is its own global")
+	}
+	cc := llvmTestClang(t)
+	if got, want := llvmTestNative(t, cc, &image, buildLlvmOptions()), llvmTestVm(t, &image); !bytes.Equal(got, want) {
+		t.Errorf("native prints %q, vm %q", got, want)
+	}
+}
