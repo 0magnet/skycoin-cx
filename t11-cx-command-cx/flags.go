@@ -33,6 +33,7 @@ type cxCmdFlags struct {
 	executor         string
 	enable           string
 	disable          string
+	outputMode       string
 	netRecord        string
 	netReplay        string
 
@@ -101,6 +102,7 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	commandLine.StringVar(&options.executor, "executor", options.executor, "Loop that runs the program: auto runs it on the flat vm when every function lowers and on the old loop otherwise, old and vm force one loop. vm fails on a program that does not lower.")
 	commandLine.StringVar(&options.enable, "enable", options.enable, "System libraries and library operations the program may call, a comma separated list of the libraries file, net, process, cipher and terminal and of single operations such as cipher.HashStateNew. terminal is enabled by default. A program that uses a cipher, file, net or terminal operation that is not enabled is refused before it runs, and a call into process that is not enabled is the runtime error CX_RUNTIME_LIBRARY_DISABLED. See System libraries in LanguageGuide.md.")
 	commandLine.StringVar(&options.disable, "disable", options.disable, "System libraries and library operations the program may not call, in the form of --enable, applied after it, such as terminal or terminal.InputLineRead. See System libraries in LanguageGuide.md.")
+	commandLine.StringVar(&options.outputMode, "output-mode", "batch", "How the prints of a vm run, an image or a native executable reach the terminal: batch writes when the output buffer fills, at os.OutputFlush and at exit, instant writes every print, thread hands every print to a second thread that writes it. cx build stores it in the program. The old loop writes every print. See Output modes in LanguageGuide.md.")
 	commandLine.StringVar(&options.netRecord, "net-record", options.netRecord, "Write every batch of the net library to this replay record, see docs/Networking.md")
 	commandLine.StringVar(&options.netReplay, "net-replay", options.netReplay, "Run the net library from this replay record and open no socket, see docs/Networking.md")
 

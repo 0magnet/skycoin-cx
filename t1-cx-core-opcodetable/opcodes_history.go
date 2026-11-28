@@ -197,6 +197,7 @@ package opcodetable
 // 2611270001  assigned      876 os.ArgCount
 // 2611270001  assigned      877 os.ArgRead
 // 2611270001  assigned      878 os.InputLineRead
+// 2611270002  assigned      879 os.OutputFlush
 // 2711200001  reassignable  559 str.eq
 // 2711200001  reassignable  560 str.uneq
 // 2711200001  reassignable  582 str.lt

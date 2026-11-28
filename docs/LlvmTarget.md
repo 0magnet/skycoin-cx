@@ -99,6 +99,13 @@ The terminal functions read the `argc` and `argv` of `main`, which the
 entry passes to `cx_rt_start`, and standard input with `getchar`. Linked
 by TinyGo they call back into the Go side for `os.Args` and `os.Stdin`.
 
+`OpcodeOutputHandOff` and `OpcodeOutputFlush` call `cx_rt_output_hand_off`
+and `cx_rt_output_flush`. For `--output-mode=thread` cx build compiles the
+runtime with `CX_RT_OUTPUT_THREAD` and `-pthread`, and the hand off copies
+the output to a ring that a POSIX thread writes. On Windows and with
+`--llvm-linker=tinygo` the runtime has no second thread and writes at the
+hand off, as `instant` does.
+
 ## Differences from vm
 
 After a runtime error vm prints the call stack with the value of every

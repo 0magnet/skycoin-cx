@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t0-cx-runtime-output"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. ExecutorRun runs vm, which has no
@@ -77,14 +78,15 @@ func ExecutorVmRun(prgrm *ast.CXProgram, image *ir.Image) int32 {
 func ExecutorVmRunMachine(prgrm *ast.CXProgram, machine *vm.Machine) int32 {
 	image := machine.MachineImage
 	machine.Reset()
+	writer := executorWriter(image.ImageOutputMode)
 	framePointer := uint32(0)
 	if image.ImageEntryInit != ir.ImageFuncNone {
-		if code := executorVmRunEntry(prgrm, machine, image.ImageEntryInit, 0); code != valuetypes.CXSuccess {
+		if code := executorVmRunEntry(prgrm, machine, writer, image.ImageEntryInit, 0); code != valuetypes.CXSuccess {
 			return code
 		}
 		framePointer = image.ImageFuncs[image.ImageEntryInit].FuncFrameSize
 	}
-	if code := executorVmRunEntry(prgrm, machine, image.ImageEntryMain, framePointer); code != valuetypes.CXSuccess {
+	if code := executorVmRunEntry(prgrm, machine, writer, image.ImageEntryMain, framePointer); code != valuetypes.CXSuccess {
 		return code
 	}
 	if machine.MachineTestFailures > 0 {
@@ -94,10 +96,17 @@ func ExecutorVmRunMachine(prgrm *ast.CXProgram, machine *vm.Machine) int32 {
 }
 
 // executorVmRunEntry runs one entry function, serving the resumable stops.
-func executorVmRunEntry(prgrm *ast.CXProgram, machine *vm.Machine, entry uint32, framePointer uint32) int32 {
+// A full output is handed to writer, and every other stop waits until the
+// output is written, so an error or a failed test prints after it.
+func executorVmRunEntry(prgrm *ast.CXProgram, machine *vm.Machine, writer *output.Writer, entry uint32, framePointer uint32) int32 {
 	stop, _ := machine.Run(entry, framePointer)
 	for {
-		executorOutputFlush(machine)
+		if stop == vm.StopOutputFull {
+			writer.WriterHandOff(machine.MachineOutput)
+		} else {
+			writer.WriterFlush(machine.MachineOutput)
+		}
+		machine.MachineOutput = machine.MachineOutput[:0]
 		switch {
 		case stop == vm.StopReturn:
 			return valuetypes.CXSuccess
@@ -111,15 +120,26 @@ func executorVmRunEntry(prgrm *ast.CXProgram, machine *vm.Machine, entry uint32,
 	}
 }
 
-// executorOutputFlush writes and empties the output of machine.
-func executorOutputFlush(machine *vm.Machine) {
-	if len(machine.MachineOutput) == 0 {
-		return
+// executorStdout writes to the os.Stdout of the moment, which a test may
+// replace.
+type executorStdout struct{}
+
+// Write writes text to os.Stdout. A failed write is ignored, as fmt.Println
+// in the old loop ignores it.
+func (executorStdout) Write(text []byte) (int, error) {
+	return os.Stdout.Write(text)
+}
+
+// VIOLATION: state outside State. Owner: t5-cx-runtime-core; moves to the run state in phase 1.
+var executorWriters [output.ModeCount]*output.Writer
+
+// executorWriter returns the writer of mode, made at the first run in mode,
+// so a run allocates nothing (decision D142).
+func executorWriter(mode output.Mode) *output.Writer {
+	if executorWriters[mode] == nil {
+		executorWriters[mode] = output.WriterNew(executorStdout{}, mode)
 	}
-	// A failed write to stdout is ignored, as fmt.Println in the old loop
-	// ignores it.
-	os.Stdout.Write(machine.MachineOutput)
-	machine.MachineOutput = machine.MachineOutput[:0]
+	return executorWriters[mode]
 }
 
 // ExecutorMemoryLimitsClamp keeps the heap and stack sizes below

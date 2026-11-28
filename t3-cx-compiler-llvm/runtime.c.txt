@@ -127,9 +127,121 @@ static size_t outLen;
 static uint32_t testFailures;
 static int32_t divideCode;
 
+// The output modes of decision D142. flush passes the output buffer on and
+// outputWait returns once it is written. CX_RT_OUTPUT_THREAD, which cx build
+// --output=thread defines for a native POSIX program, passes it to a ring
+// that a second thread writes. Without it, and on Windows, wasm and TinyGo,
+// flush writes it to stdout at once.
+#if defined(CX_RT_OUTPUT_THREAD) && !defined(_WIN32) && !defined(CX_RT_TINYGO) && !defined(__wasm__)
+#include <pthread.h>
+#include <stdatomic.h>
+#define CX_RT_RING_SIZE (1u << 16)
+// The program thread copies into ring and advances ringWritten with an
+// atomic store. The writing thread writes up to it and advances ringDrained.
+static uint8_t ring[CX_RT_RING_SIZE];
+static _Atomic uint64_t ringWritten, ringDrained;
+static _Atomic int ringSleeping;
+static pthread_mutex_t ringLock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t ringWake = PTHREAD_COND_INITIALIZER, ringSpace = PTHREAD_COND_INITIALIZER;
+static int ringStarted;
+
+static void *ringRun(void *unused) {
+	(void)unused;
+	for (;;) {
+		pthread_mutex_lock(&ringLock);
+		atomic_store(&ringSleeping, 1);
+		while (atomic_load(&ringDrained) == atomic_load(&ringWritten))
+			pthread_cond_wait(&ringWake, &ringLock);
+		atomic_store(&ringSleeping, 0);
+		pthread_mutex_unlock(&ringLock);
+		uint64_t drained = atomic_load(&ringDrained), written = atomic_load(&ringWritten);
+		uint64_t start = drained % CX_RT_RING_SIZE, count = written - drained;
+		if (count > CX_RT_RING_SIZE - start)
+			count = CX_RT_RING_SIZE - start;
+		fwrite(ring + start, 1, (size_t)count, stdout);
+		fflush(stdout);
+		pthread_mutex_lock(&ringLock);
+		atomic_store(&ringDrained, drained + count);
+		pthread_cond_broadcast(&ringSpace);
+		pthread_mutex_unlock(&ringLock);
+	}
+	return NULL;
+}
+
+// ringPush waits only while the ring is full, and takes the lock only to
+// wake a writing thread that sleeps.
+static void ringPush(const uint8_t *s, size_t n) {
+	if (!ringStarted) {
+		pthread_t thread;
+		pthread_create(&thread, NULL, ringRun, NULL);
+		pthread_detach(thread);
+		ringStarted = 1;
+	}
+	uint64_t written = atomic_load(&ringWritten);
+	while (n > 0) {
+		uint64_t room = CX_RT_RING_SIZE - (written - atomic_load(&ringDrained));
+		if (room == 0) {
+			pthread_mutex_lock(&ringLock);
+			pthread_cond_signal(&ringWake);
+			while (CX_RT_RING_SIZE - (written - atomic_load(&ringDrained)) == 0)
+				pthread_cond_wait(&ringSpace, &ringLock);
+			pthread_mutex_unlock(&ringLock);
+			continue;
+		}
+		size_t count = n < room ? n : (size_t)room;
+		size_t start = (size_t)(written % CX_RT_RING_SIZE);
+		size_t first = CX_RT_RING_SIZE - start < count ? CX_RT_RING_SIZE - start : count;
+		memcpy(ring + start, s, first);
+		memcpy(ring, s + first, count - first);
+		written += count;
+		atomic_store(&ringWritten, written);
+		s += count;
+		n -= count;
+	}
+	if (atomic_load(&ringSleeping)) {
+		pthread_mutex_lock(&ringLock);
+		pthread_cond_signal(&ringWake);
+		pthread_mutex_unlock(&ringLock);
+	}
+}
+
+static void flush(void) {
+	ringPush((const uint8_t *)out, outLen);
+	outLen = 0;
+}
+
+static void outputWait(void) {
+	uint64_t target = atomic_load(&ringWritten);
+	pthread_mutex_lock(&ringLock);
+	if (atomic_load(&ringDrained) < target)
+		pthread_cond_signal(&ringWake);
+	while (atomic_load(&ringDrained) < target)
+		pthread_cond_wait(&ringSpace, &ringLock);
+	pthread_mutex_unlock(&ringLock);
+}
+
+// cx_rt_output_hand_off ends a print in thread mode: the ring takes it.
+void cx_rt_output_hand_off(void) { flush(); }
+#else
 static void flush(void) {
 	fwrite(out, 1, outLen, stdout);
 	outLen = 0;
+}
+
+static void outputWait(void) { fflush(stdout); }
+
+// cx_rt_output_hand_off ends a print in instant mode, and in thread mode
+// where the program has one thread: it is written at once.
+void cx_rt_output_hand_off(void) {
+	flush();
+	outputWait();
+}
+#endif
+
+// cx_rt_output_flush is os.OutputFlush, in every mode.
+void cx_rt_output_flush(void) {
+	flush();
+	outputWait();
 }
 
 static void put(const char *s, size_t n) {
@@ -360,13 +472,13 @@ void cx_rt_stop(int32_t code, const char *text) {
 	put(text, strlen(text));
 	putc1('\n');
 	flush();
-	fflush(stdout);
+	outputWait();
 	CX_RT_EXIT(code);
 }
 
 int32_t cx_rt_finish(int32_t assertCode) {
 	flush();
-	fflush(stdout);
+	outputWait();
 	return testFailures > 0 ? assertCode : 0;
 }
 
@@ -1711,7 +1823,7 @@ void cx_rt_terminal_input_line_read(uint8_t *mem, uint64_t size, uint32_t ptrSiz
 	int32_t room, copied;
 	uint8_t *buffer = terminalBuffer(mem, size, ptrSize, block, &room);
 	flush();
-	fflush(stdout);
+	outputWait();
 #ifdef CX_RT_TINYGO
 	copied = cx_rt_tinygo_input_line_read(buffer, room);
 #else

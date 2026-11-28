@@ -13,6 +13,7 @@ import (
 
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t0-cx-runtime-output"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	// GCREACH: t3-cx-core-ast owns the heap and the GC roots. Lowering rejects heap operands,
@@ -143,6 +144,7 @@ type state struct {
 	stateFrameSize   uint32
 	statePrintf      int
 	statePrintLine   int
+	stateHandOff     bool
 	stateImage       ir.Image
 	stateFiles       map[ast.SourceFileGid]uint32
 	stateLocals      []ir.Local
@@ -188,6 +190,8 @@ func Program(prgrm *ast.CXProgram) (ir.Image, []Failure) {
 	image.ImageEntryMain = ir.ImageFuncNone
 
 	image.ImageOperationsEnabled = prgrm.ProgramOperationsEnabled
+	image.ImageOutputMode = prgrm.ProgramOutputMode
+	s.stateHandOff = prgrm.ProgramOutputMode != output.ModeBatch
 
 	if packageIndex, found := prgrm.Packages[prgrm.CxIrState.CxIrStateNameMain]; found {
 		mainPackage, err := prgrm.PackageFromArrayGet(packageIndex)
@@ -292,6 +296,9 @@ func (s *state) function(functionIndex uint32, fn *ast.CXFunction) (Failure, boo
 			code, fixup, jump, reason, failure.FailureOpcode = s.builtIn(code, line, cxAtomicOp, operator)
 			if jump {
 				fixups = append(fixups, fixup)
+			}
+			if reason == ReasonNone && s.stateHandOff && s.opcodePrints(operator.AtomicOPCode) {
+				code = append(code, ir.Instr{InstrOpcode: ir.OpcodeOutputHandOff})
 			}
 		default:
 			code, reason = s.call(code, cxAtomicOp, operator)
@@ -420,6 +427,8 @@ func (s *state) builtIn(code []ir.Instr, line int, cxAtomicOp *ast.CXAtomicOpera
 		in := ir.Instr{InstrOpcode: ir.OpcodePrintStr, InstrN: uint32(ir.PrintStrModeLine)}
 		operandSet(&in, 0, str)
 		return append(code, in), noFixup, false, ReasonNone, 0
+	case opcodetable.OpcodeOutputFlush:
+		return append(code, ir.Instr{InstrOpcode: ir.OpcodeOutputFlush}), noFixup, false, ReasonNone, 0
 	case s.statePrintf:
 		code, reason := s.printf(code, inputs, outputs)
 		return code, noFixup, false, reason, 0
@@ -1212,4 +1221,22 @@ func (s *state) libraryCall(code []ir.Instr, cxAtomicOp *ast.CXAtomicOperator, c
 	}
 	code = append(code, call)
 	return s.callResults(code, outputs, outputSlots[:len(outputs)])
+}
+
+// opcodePrints reports whether the built-in opcode prints, printf,
+// string.PrintLine or a typed print. In ModeInstant and ModeThread an
+// OpcodeOutputHandOff follows it (decision D142).
+func (s *state) opcodePrints(opcode int) bool {
+	if opcode == s.statePrintf || opcode == s.statePrintLine {
+		return true
+	}
+	if opcode <= 0 || opcode >= opcodeTableSize {
+		return false
+	}
+	switch s.stateTable[opcode].opcodeEntryOpcode {
+	case ir.OpcodeBoolPrint, ir.OpcodeI8Print, ir.OpcodeI16Print, ir.OpcodeI32Print, ir.OpcodeI64Print,
+		ir.OpcodeUI8Print, ir.OpcodeUI16Print, ir.OpcodeUI32Print, ir.OpcodeUI64Print, ir.OpcodeF32Print, ir.OpcodeF64Print:
+		return true
+	}
+	return false
 }

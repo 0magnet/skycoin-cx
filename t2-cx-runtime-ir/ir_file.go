@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t0-cx-runtime-output"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 )
 
@@ -13,7 +14,7 @@ const ImageFileMagic = "CXIMAGE\x00"
 // ImageFileVersion is the layout version of an image file. Opcode numbers
 // change from one cx version to the next, so a file also stores OpcodeCount
 // and InstrSize, and ImageFileDecode refuses a file whose values differ.
-const ImageFileVersion = 1
+const ImageFileVersion = 2
 
 // ImageFileEncode returns image as bytes that ImageFileDecode reads back,
 // every field little endian in declaration order.
@@ -73,6 +74,7 @@ func ImageFileEncode(image *Image) []byte {
 	for _, word := range image.ImageOperationsEnabled {
 		file = binary.LittleEndian.AppendUint64(file, word)
 	}
+	file = binary.LittleEndian.AppendUint32(file, uint32(image.ImageOutputMode))
 	return file
 }
 
@@ -248,6 +250,11 @@ func ImageFileDecode(file []byte) (Image, ImageFileProblem) {
 	}
 	for i := range image.ImageOperationsEnabled {
 		image.ImageOperationsEnabled[i] = reader.uint64Read()
+	}
+	if mode := reader.uint32Read(); mode < uint32(output.ModeCount) {
+		image.ImageOutputMode = output.Mode(mode)
+	} else if !reader.imageFileReaderShort {
+		return Image{}, ImageFileProblemVersion
 	}
 	if reader.imageFileReaderShort || len(reader.imageFileReaderBytes) != 0 {
 		return Image{}, ImageFileProblemTruncated

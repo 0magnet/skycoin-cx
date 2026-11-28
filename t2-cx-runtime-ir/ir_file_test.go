@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t0-cx-runtime-output"
 )
 
 func irFileTestImage() Image {
@@ -31,6 +32,7 @@ func irFileTestImage() Image {
 		ImageLocals:      []Local{{LocalOffset: 0, LocalSize: 4, LocalName: 0, LocalTypeName: 1, LocalType: valuetypes.I32}, {LocalOffset: 4, LocalSize: 8, LocalType: valuetypes.UNDEFINED}},
 		ImageLocalNames:  []string{"x", "i32", ""},
 		ImageReadOnly:    []Span{{SpanStart: 4096, SpanEnd: 4098}},
+		ImageOutputMode:  output.ModeThread,
 	}
 	image.ImageOperationsEnabled[0] = 0x8000000000000001
 	return image

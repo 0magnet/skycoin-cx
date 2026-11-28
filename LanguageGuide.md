@@ -20,6 +20,7 @@
     * [Imports into scope](#imports-into-scope)
     * [System libraries](#system-libraries)
     * [The terminal library](#the-terminal-library)
+    * [Output modes](#output-modes)
     * [The cipher library](#the-cipher-library)
     * [The net library](#the-net-library)
   * [Statements](#statements)
@@ -1065,6 +1066,45 @@ func main() {
 	printf("size %d\n", size)
 }
 ```
+
+### [Output modes](#table-of-contents)
+
+The prints of a run on vm, in an image and in a native executable reach
+the terminal in one of three modes, chosen once with `--output-mode`
+(decision D142). `cx build` stores the mode in the program, the image or
+the executable.
+
+| mode | a print |
+|---|---|
+| `batch`, the default | goes to the output buffer, which is written when it fills, at `os.OutputFlush()` and at the end of the run |
+| `instant` | is written to the terminal before the program goes on |
+| `thread` | is copied to a ring that a second thread writes, so the program does not wait for the terminal |
+
+`os.OutputFlush()` of `sys/os` writes what the program printed and returns
+once it is written, in every mode. A runtime error, a failed test and
+`os.InputLineRead` write the output first as well, so no output is lost
+and a prompt shows before the read.
+
+```cx
+package main
+
+import "sys/os"
+
+func main() {
+	var index i32
+	for index = 0; index < 3; index++ {
+		printf("step %d\n", index)
+		os.OutputFlush()
+	}
+}
+```
+
+The mode is bound before the run. In `instant` and `thread` the compiler
+follows every print with a hand off, and the runner picks the writer of
+the mode, so no print tests the mode. `thread` needs a second thread. In a
+TinyGo build, under js or wasip1, and in a native executable for Windows or
+one linked by TinyGo, it writes as `instant`. The old loop writes every
+print as `instant` does, in every mode.
 
 ### [The cipher library](#table-of-contents)
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t0-cx-library-terminal"
+	"github.com/skycoin/skycoin-cx/t0-cx-runtime-output"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
@@ -45,21 +46,21 @@ func coreImageRun() int32 {
 			return valuetypes.CXRuntimeLibraryDisabled
 		}
 	}
-	return coreImageMachineRun(vm.MachineNew(&image, coreImageOutputSize))
+	return coreImageMachineRun(vm.MachineNew(&image, coreImageOutputSize), output.WriterNew(os.Stdout, image.ImageOutputMode))
 }
 
 // coreImageMachineRun runs the init entry and then main, as
 // ExecutorVmRunMachine of t5-cx-runtime-core does.
-func coreImageMachineRun(machine *vm.Machine) int32 {
+func coreImageMachineRun(machine *vm.Machine, writer *output.Writer) int32 {
 	image := machine.MachineImage
 	framePointer := uint32(0)
 	if image.ImageEntryInit != ir.ImageFuncNone {
-		if code := coreImageEntryRun(machine, image.ImageEntryInit, 0); code != valuetypes.CXSuccess {
+		if code := coreImageEntryRun(machine, writer, image.ImageEntryInit, 0); code != valuetypes.CXSuccess {
 			return code
 		}
 		framePointer = image.ImageFuncs[image.ImageEntryInit].FuncFrameSize
 	}
-	if code := coreImageEntryRun(machine, image.ImageEntryMain, framePointer); code != valuetypes.CXSuccess {
+	if code := coreImageEntryRun(machine, writer, image.ImageEntryMain, framePointer); code != valuetypes.CXSuccess {
 		return code
 	}
 	if machine.MachineTestFailures > 0 {
@@ -68,13 +69,19 @@ func coreImageMachineRun(machine *vm.Machine) int32 {
 	return valuetypes.CXSuccess
 }
 
-// coreImageEntryRun runs one entry, draining the output at every stop. An
-// error prints the line a native program prints, with no call stack, as
-// the image holds no variable values to print.
-func coreImageEntryRun(machine *vm.Machine, entry uint32, framePointer uint32) int32 {
+// coreImageEntryRun runs one entry, passing the output to writer at every
+// stop, and waiting until it is written at every stop but a full output.
+// An error prints the line a native program prints, with no call stack,
+// as the image holds no variable values to print.
+func coreImageEntryRun(machine *vm.Machine, writer *output.Writer, entry uint32, framePointer uint32) int32 {
 	stop, _ := machine.Run(entry, framePointer)
 	for {
-		coreImageOutputFlush(machine)
+		if stop == vm.StopOutputFull {
+			writer.WriterHandOff(machine.MachineOutput)
+		} else {
+			writer.WriterFlush(machine.MachineOutput)
+		}
+		machine.MachineOutput = machine.MachineOutput[:0]
 		switch {
 		case stop == vm.StopReturn:
 			return valuetypes.CXSuccess
@@ -85,18 +92,6 @@ func coreImageEntryRun(machine *vm.Machine, entry uint32, framePointer uint32) i
 			return vm.StopExitCodes[stop]
 		}
 		stop, _ = machine.Resume()
-	}
-}
-
-func coreImageOutputFlush(machine *vm.Machine) {
-	if len(machine.MachineOutput) == 0 {
-		return
-	}
-	// A failed write is dropped, as cx drops a failed write to stdout.
-	_, err := os.Stdout.Write(machine.MachineOutput)
-	machine.MachineOutput = machine.MachineOutput[:0]
-	if err != nil {
-		return
 	}
 }
 

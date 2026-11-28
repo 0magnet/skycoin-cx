@@ -12,6 +12,7 @@ import (
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-digest"
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t0-cx-runtime-output"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	llvm "github.com/skycoin/skycoin-cx/t3-cx-compiler-llvm"
@@ -105,7 +106,7 @@ func buildLlvm(options buildOptions) int {
 	if tinygoLink {
 		return buildLlvmTinygoNative(modulePath, output, options.buildOptionsLlvmTinygoTarget, options.buildOptionsDebug)
 	}
-	return buildLlvmNative(modulePath, output, options.buildOptionsDebug)
+	return buildLlvmNative(modulePath, output, options.buildOptionsDebug, buildLlvmOutputThread(image.ImageOutputMode))
 }
 
 // buildLlvmExtension ends the file name of LLVM IR.
@@ -130,7 +131,7 @@ func buildLlvmClang() string {
 
 // buildLlvmNative compiles the module at modulePath and links it with the
 // C runtime into the executable output.
-func buildLlvmNative(modulePath string, output string, debug bool) int {
+func buildLlvmNative(modulePath string, output string, debug bool, thread bool) int {
 	clang := buildLlvmClang()
 	if clang == "" {
 		return buildFail(fmt.Sprintf("wrote %s but found no clang to compile it into %s, install clang or TinyGo, set %s or give an output ending in .ll", modulePath, output, buildLlvmClangEnv))
@@ -140,11 +141,17 @@ func buildLlvmNative(modulePath string, output string, debug bool) int {
 		return buildFail(err.Error())
 	}
 	defer os.RemoveAll(directory)
-	runtimePath, err := buildLlvmRuntime(clang, directory)
+	var defines []string
+	if thread && runtime.GOOS != "windows" {
+		// The writing thread of thread mode, see runtime.c.txt. Windows
+		// writes as instant mode.
+		defines = append(defines, "-DCX_RT_OUTPUT_THREAD", "-pthread")
+	}
+	runtimePath, err := buildLlvmRuntime(clang, directory, defines)
 	if err != nil {
 		return buildFail(err.Error())
 	}
-	args := []string{"-O2", "-w", "-o", output, modulePath, runtimePath}
+	args := append([]string{"-O2", "-w", "-o", output, modulePath, runtimePath}, defines...)
 	if debug {
 		args = append(args, "-g")
 	}
@@ -193,7 +200,7 @@ func buildLlvmStatsPrint(stats llvm.Stats) {
 // the user cache under the hash of the runtime and the path of clang, so
 // only the first native build compiles it. Without a cache it returns the C
 // source written to directory, which clang then compiles with the module.
-func buildLlvmRuntime(clang string, directory string) (string, error) {
+func buildLlvmRuntime(clang string, directory string, defines []string) (string, error) {
 	source := filepath.Join(directory, llvm.RuntimeFileName)
 	if err := os.WriteFile(source, llvm.RuntimeC, 0o644); err != nil {
 		return "", err
@@ -202,7 +209,11 @@ func buildLlvmRuntime(clang string, directory string) (string, error) {
 	if err != nil {
 		return source, nil
 	}
-	hash := digest.CxHashOfBytes(append(append([]byte(clang), 0), llvm.RuntimeC...))
+	key := append([]byte(clang), 0)
+	for _, define := range defines {
+		key = append(append(key, define...), 0)
+	}
+	hash := digest.CxHashOfBytes(append(key, llvm.RuntimeC...))
 	object := filepath.Join(cache, "cx", "llvm-runtime-"+hex.EncodeToString(hash[:8])+".o")
 	if _, err := os.Stat(object); err == nil {
 		return object, nil
@@ -218,7 +229,7 @@ func buildLlvmRuntime(clang string, directory string) (string, error) {
 	}
 	partial := partialFile.Name()
 	partialFile.Close()
-	command := exec.Command(clang, "-O2", "-w", "-c", "-o", partial, source)
+	command := exec.Command(clang, append(append([]string{"-O2", "-w", "-c"}, defines...), "-o", partial, source)...)
 	command.Stdout, command.Stderr = os.Stderr, os.Stderr
 	if err := command.Run(); err != nil {
 		os.Remove(partial)
@@ -229,4 +240,10 @@ func buildLlvmRuntime(clang string, directory string) (string, error) {
 		return source, nil
 	}
 	return object, nil
+}
+
+// buildLlvmOutputThread reports whether mode writes the output from a
+// second thread, which a native program starts (decision D142).
+func buildLlvmOutputThread(mode output.Mode) bool {
+	return mode == output.ModeThread
 }

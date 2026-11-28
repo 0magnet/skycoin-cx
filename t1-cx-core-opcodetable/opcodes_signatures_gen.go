@@ -7,7 +7,7 @@ import (
 )
 
 // OpcodeSignatureTableSize is one past the highest live opcode number.
-const OpcodeSignatureTableSize = 879
+const OpcodeSignatureTableSize = 880
 
 // OpcodeParameterTable holds the parameters of every opcode signature. Read only.
 var OpcodeParameterTable = [...]OpcodeParameter{
@@ -2544,6 +2544,7 @@ var OpcodeSignatureTable = [OpcodeSignatureTableSize]OpcodeSignature{
 	876: {OpcodeGroupTerminal, true, 1811, 0, 1},
 	877: {OpcodeGroupTerminal, true, 1812, 2, 1},
 	878: {OpcodeGroupTerminal, true, 1815, 1, 1},
+	879: {OpcodeGroupCore, true, 1817, 0, 0},
 }
 
 // OpcodeOperatorTable is the typed form of each untyped operator by operand
@@ -3454,6 +3455,7 @@ var OpcodeNameRowTable = [OpcodeSignatureTableSize]uint16{
 	876: 786,
 	877: 787,
 	878: 788,
+	879: 789,
 }
 
 // NativeNameTable is every name a program calls a built-in by, the opcodes of
@@ -3951,6 +3953,7 @@ var NativeNameTable = [...]NativeName{
 	{"os.LogFile", 821},
 	{"os.Open", 822},
 	{"os.OpenReadWrite", 873},
+	{"os.OutputFlush", 879},
 	{"os.ReadAllText", 848},
 	{"os.ReadBOOL", 837},
 	{"os.ReadF32", 828},

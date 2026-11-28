@@ -366,3 +366,4 @@ STRHOT-352 E removed t3-cx-core-ast/cxfunction_mng.go *CXFunctionMng.CXFunctionG
 STRHOT-353 B open t3-cx-core-ast/serialize.go deserializeFunctions
 STRHOT-354 B open t1-cx-runtime-sandbox/root.go rootFileOpen
 STRHOT-355 B removed t1-cx-runtime-profiling/profiling_stderr_unix.go profilingStderrMute mutes stderr with a pipe, not a path, #606
+STRHOT-356 B open t3-cx-core-ast/serialize.go deserializeOutputMode

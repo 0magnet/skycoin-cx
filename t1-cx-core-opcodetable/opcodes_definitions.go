@@ -728,6 +728,7 @@ var OpcodeDefinitionTable = [...]OpcodeDefinition{
 	{876, "os.ArgCount", "terminalopcodes.OpOsArgCount", "", "i32", ""},
 	{877, "os.ArgRead", "terminalopcodes.OpOsArgRead", "i32 und", "i32", ""},
 	{878, "os.InputLineRead", "terminalopcodes.OpOsInputLineRead", "und", "i32", ""},
+	{879, "os.OutputFlush", "opcodes.OpOsOutputFlush", "", "", ""},
 }
 
 // OpcodeDefinition is one row of OpcodeDefinitionTable.

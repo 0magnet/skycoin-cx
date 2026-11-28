@@ -826,6 +826,7 @@ var OpcodeLifecycleTable = [...]OpcodeLifecycle{
 	{876, "os.ArgCount", 2611270001, 0, 0},
 	{877, "os.ArgRead", 2611270001, 0, 0},
 	{878, "os.InputLineRead", 2611270001, 0, 0},
+	{879, "os.OutputFlush", 2611270002, 0, 0},
 }
 
 // OpcodeLifecycle is one row of OpcodeLifecycleTable.
@@ -1079,6 +1080,9 @@ const (
 	OpcodeTerminalArgCount      = 876
 	OpcodeTerminalArgRead       = 877
 	OpcodeTerminalInputLineRead = 878
+
+	// The flush of the output modes, decision D142.
+	OpcodeOutputFlush = 879
 
 	// The slice built-ins after append, which the compiler checks by number.
 	OpResize = 210
