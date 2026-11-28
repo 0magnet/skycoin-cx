@@ -48,6 +48,7 @@ func buildImage(options buildOptions) int {
 			return buildFail(fmt.Sprintf("the program uses the %s library, which cx-core-image does not link", opcodetable.LibraryTable[library-1].LibraryName))
 		}
 	}
+	fmt.Fprint(os.Stderr, buildCallGraphReport(&image, options.buildOptionsDepthQuiet))
 	if err := os.WriteFile(options.buildOptionsOutput, ir.ImageFileEncode(&image), 0o644); err != nil {
 		return buildFail(err.Error())
 	}

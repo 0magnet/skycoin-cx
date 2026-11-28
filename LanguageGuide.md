@@ -14,6 +14,7 @@
     * [Slices](#slices)
     * [Literals](#literals)
     * [Functions](#functions)
+    * [Recursion and call depth](#recursion-and-call-depth)
     * [Custom Types](#custom-types)
     * [Methods](#methods)
     * [Packages](#packages)
@@ -662,6 +663,31 @@ func main () {
 	i32.print(3 + 4) // prints 7
 }
 ```
+
+### [Recursion and call depth](#table-of-contents)
+
+A function may call itself, or two or more functions may call each other.
+That is recursion, and CX allows it, but finite call depth is preferred: a
+loop in place of a recursive call (decision D144). `cx build` with
+`--target=llvm` or `--target=image` warns at each call that closes a cycle
+of calls, and the program still builds and runs.
+
+```
+cx build: warning: fib.cx:7: recursive call of fib from fib, the call depth of this program is not known at build time
+```
+
+A program without recursion has a call depth known at build time. `cx
+build` prints its deepest call chain and the stack it needs, which
+`--depth-quiet` leaves out.
+
+```
+cx build: call depth 2 (main -> run -> fnv), stack 105 of 1048576 bytes
+```
+
+The depth counts the calls in progress below `main`. The stack is the
+bytes of the vm stack the frames take, out of `-stack-size`. A run stops
+with a stack overflow error when the calls in progress reach 999 or the
+frames fill the stack.
 
 ### [Custom Types](#table-of-contents)
 
