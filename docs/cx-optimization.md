@@ -8,8 +8,8 @@ number, and the measurement behind it.
 | # | optimization | status |
 |---|---|---|
 | 0001 | [TinyGo wasm build without a scheduler](../optimizations/0001-wasm-scheduler-none.txt) | built in #615 |
-| 0002 | [Return a single result as a plain value](../optimizations/0002-single-result-plain-value.txt) | proposed |
-| 0003 | [Pass the frame pointer only to functions that need it](../optimizations/0003-frame-pointer-only-when-needed.txt) | proposed |
+| 0002 | [Return a single result as a plain value](../optimizations/0002-single-result-plain-value.txt) | built in #616 |
+| 0003 | [Pass the frame pointer only to functions that need it](../optimizations/0003-frame-pointer-only-when-needed.txt) | built in #616 |
 | 0004 | [Call depth only for recursive functions](../optimizations/0004-call-depth-only-for-recursion.txt) | decided, D144 |
 | 0005 | [Arrays as locals and one LLVM global per CX global](../optimizations/0005-arrays-and-globals-out-of-cx-mem.txt) | proposed |
 | 0006 | [Power of two sizes for one instruction bound checks, fast and slow path](../optimizations/0006-power-of-two-sizes.txt) | index check built in #614, D146 |
