@@ -5,17 +5,17 @@ package fileopcodes
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"math"
 	"os"
 	"os/exec"
-	"strings"
 	"syscall"
 	"time"
+	"unsafe"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
 	"github.com/skycoin/skycoin-cx/t0-cx-library-filetable"
 	filelog "github.com/skycoin/skycoin-cx/t0-cx-runtime-filelog"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
@@ -34,12 +34,11 @@ func OpOsLogFile(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVal
 	filelog.Enable(inputs[0].BoolGet(prgrm))
 }
 
-// VIOLATION STRHOT-131: B, hands a path or text to Go or the OS, #412.
 func OpOsReadAllText(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 
-	if byts, fileError := ast.ProgramSandboxFileRead(prgrm, &inputs[0]); fileError == nil {
-		outputs[0].StrSet(prgrm, string(byts))
+	if byts, fileError := ast.ProgramSandboxFileRead(prgrm, &inputs[0], OsLibrary.OsLibraryCallPoolReset()); fileError == nil {
+		outputs[0].StrBytesSet(prgrm, byts)
 		success = true
 	}
 
@@ -49,7 +48,7 @@ func OpOsReadAllText(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.C
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsOpen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	handle := int32(-1)
-	if file, fileError := ast.ProgramSandboxFileOpen(prgrm, &inputs[0]); fileError == nil {
+	if file, fileError := ast.ProgramSandboxFileOpen(prgrm, &inputs[0], OsLibrary.OsLibraryCallPoolReset()); fileError == nil {
 		handle = filetable.FileHandleTake(file)
 	}
 
@@ -59,7 +58,7 @@ func OpOsOpen(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsCreate(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	handle := int32(-1)
-	if file, fileError := ast.ProgramSandboxFileCreate(prgrm, &inputs[0]); fileError == nil {
+	if file, fileError := ast.ProgramSandboxFileCreate(prgrm, &inputs[0], OsLibrary.OsLibraryCallPoolReset()); fileError == nil {
 		handle = filetable.FileHandleTake(file)
 	}
 
@@ -71,7 +70,7 @@ func OpOsCreate(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValu
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsOpenReadWrite(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	handle := int32(-1)
-	if file, fileError := ast.ProgramSandboxFileOpenReadWrite(prgrm, &inputs[0]); fileError == nil {
+	if file, fileError := ast.ProgramSandboxFileOpenReadWrite(prgrm, &inputs[0], OsLibrary.OsLibraryCallPoolReset()); fileError == nil {
 		handle = filetable.FileHandleTake(file)
 	}
 	outputs[0].I32Set(prgrm, handle)
@@ -81,7 +80,7 @@ func OpOsOpenReadWrite(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast
 // directory at path inside the sandbox.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsRemove(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	outputs[0].BoolSet(prgrm, ast.ProgramSandboxFileRemove(prgrm, &inputs[0]) == nil)
+	outputs[0].BoolSet(prgrm, ast.ProgramSandboxFileRemove(prgrm, &inputs[0], OsLibrary.OsLibraryCallPoolReset()) == nil)
 }
 
 func OpOsClose(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
@@ -98,22 +97,21 @@ func OpOsSeek(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue)
 	outputs[0].I64Set(prgrm, filetable.FileHandleSeek(inputs[0].I32Get(prgrm), inputs[1].I64Get(prgrm), inputs[2].I32Get(prgrm)))
 }
 
-// VIOLATION STRHOT-134: B, hands a path or text to Go or the OS, #412.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsReadStr(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var len uint64
-	var value string
+	var value []byte
 	success := false
 	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
 		if err := binary.Read(file, binary.LittleEndian, &len); err == nil {
 			bytes := make([]byte, len)
 			if err := binary.Read(file, binary.LittleEndian, &bytes); err == nil {
-				value = string(bytes)
+				value = bytes
 				success = true
 			}
 		}
 	}
-	outputs[0].StrSet(prgrm, value)
+	outputs[0].StrBytesSet(prgrm, value)
 	outputs[1].BoolSet(prgrm, success)
 }
 
@@ -271,15 +269,14 @@ func OpOsReadBOOL(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXVa
 	outputs[1].BoolSet(prgrm, success)
 }
 
-// VIOLATION STRHOT-135: B, hands a path or text to Go or the OS, #412.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsWriteStr(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	success := false
 	if file := ValidFile(inputs[0].I32Get(prgrm)); file != nil {
-		value := inputs[1].StrGet(prgrm)
+		value := inputs[1].StrBytesGet(prgrm)
 		len := len(value)
 		if err := binary.Write(file, binary.LittleEndian, uint64(len)); err == nil {
-			if err := binary.Write(file, binary.LittleEndian, []byte(value)); err == nil {
+			if err := binary.Write(file, binary.LittleEndian, value); err == nil {
 				success = true
 			}
 		}
@@ -820,36 +817,48 @@ func OpOsWriteI8Slice(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.
 	outputs[0].BoolSet(prgrm, success)
 }
 
-// VIOLATION STRHOT-136: B, hands a path or text to Go or the OS, #412.
+// OpOsGetWorkingDirectory is os.GetWorkingDirectory() (dir str): the working
+// directory, ending in the path separator, or the empty str.
+// VIOLATION STRHOT-136: B, os.Getwd gives the directory only as a Go string, viewed for the copy into program memory, #412.
 func OpOsGetWorkingDirectory(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	wd, err := os.Getwd()
-	if err == nil && !strings.HasSuffix(wd, string(os.PathSeparator)) {
-		wd += string(os.PathSeparator)
+	dir := unsafe.Slice(unsafe.StringData(wd), len(wd))
+	separator := osPathSeparator[:]
+	if err != nil || len(dir) > 0 && dir[len(dir)-1] == os.PathSeparator {
+		separator = nil
 	}
-	outputs[0].StrSet(prgrm, wd)
+	outputs[0].StrConcatSet(prgrm, dir, separator)
 }
 
-// VIOLATION STRHOT-137: B, hands a path or text to Go or the OS, #412.
+var osPathSeparator = [1]byte{os.PathSeparator}
+
+// VIOLATION STRHOT-137: B, the command words and directory to exec.Command as views of pool bytes, #412.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func OpOsRun(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	var runError int32 = OsRunSuccess
 
-	command := inputs[0].StrGet(prgrm)
-	dir := inputs[3].StrGet(prgrm)
-	args, err := splitCommand(command)
-	if err != nil || len(args) == 0 {
+	pool := OsLibrary.OsLibraryCallPoolReset()
+	words, closed := osCommandSplit(pool, inputs[0].StrBytesGet(prgrm), OsLibrary.OsLibraryCommandWords[:0])
+	OsLibrary.OsLibraryCommandWords = words
+	if !closed || len(words) == 0 {
 		runError = OsRunEmptyCommand
-		if err != nil {
+		if !closed {
 			runError = OsRunStartFailed
 		}
 		outputs[0].I32Set(prgrm, runError)
 		outputs[1].I32Set(prgrm, 0)
-		outputs[2].StrSet(prgrm, "")
+		outputs[2].StrBytesSet(prgrm, nil)
 		return
+	}
+	dir := pool.StringPoolBytes(pool.StringPoolIntern(inputs[3].StrBytesGet(prgrm)))
+	args := make([]string, len(words))
+	for i, word := range words {
+		text := pool.StringPoolBytes(word)
+		args[i] = unsafe.String(unsafe.SliceData(text), len(text))
 	}
 
 	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Dir = dir
+	cmd.Dir = unsafe.String(unsafe.SliceData(dir), len(dir))
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out
@@ -899,46 +908,49 @@ func OpOsRun(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) 
 
 	outputs[0].I32Set(prgrm, runError)
 	outputs[1].I32Set(prgrm, cmdError)
-	outputs[2].StrSet(prgrm, string(stdOutBytes))
+	outputs[2].StrBytesSet(prgrm, stdOutBytes)
 }
 
-// splitCommand splits an os.Run command into words at spaces and tabs.
-// Single or double quotes group a word. Backslashes are literal, so
-// Windows paths need no escaping.
-// VIOLATION STRHOT-138: B, hands a path or text to Go or the OS, #412.
-// VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
-func splitCommand(command string) ([]string, error) {
-	var args []string
-	var word strings.Builder
+// osCommandSplit splits an os.Run command into words at spaces, tabs and
+// line ends, interns each in pool and appends its Gid to words. Single or
+// double quotes group a word. Backslashes are literal, so Windows paths need
+// no escaping. It returns false for an unterminated quote.
+func osCommandSplit(pool *stringpool.StringPool, command []byte, words []stringpool.StringGid) ([]stringpool.StringGid, bool) {
+	var word []byte
 	inWord := false
-	var quote rune
+	var quote byte
 	for _, c := range command {
 		switch {
 		case quote != 0:
 			if c == quote {
 				quote = 0
 			} else {
-				word.WriteRune(c)
+				word = append(word, c)
 			}
 		case c == '\'' || c == '"':
+			if !inWord {
+				word = pool.StringPoolArenaFree()
+			}
 			quote = c
 			inWord = true
 		case c == ' ' || c == '\t' || c == '\n' || c == '\r':
 			if inWord {
-				args = append(args, word.String())
-				word.Reset()
+				words = append(words, pool.StringPoolIntern(word))
 				inWord = false
 			}
 		default:
-			word.WriteRune(c)
+			if !inWord {
+				word = pool.StringPoolArenaFree()
+			}
+			word = append(word, c)
 			inWord = true
 		}
 	}
 	if quote != 0 {
-		return nil, fmt.Errorf("unterminated %c quote", quote)
+		return words, false
 	}
 	if inWord {
-		args = append(args, word.String())
+		words = append(words, pool.StringPoolIntern(word))
 	}
-	return args, nil
+	return words, true
 }

@@ -5,10 +5,12 @@ package fileopcodes
 import (
 	"reflect"
 	"testing"
+
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 )
 
 // os.Run split the command on single spaces. See #118.
-func TestSplitCommand(t *testing.T) {
+func TestOsCommandSplit(t *testing.T) {
 	cases := []struct {
 		in   string
 		want []string
@@ -26,13 +28,18 @@ func TestSplitCommand(t *testing.T) {
 		{"echo 'a", nil, false},
 	}
 	for _, c := range cases {
-		got, err := splitCommand(c.in)
-		if (err == nil) != c.ok {
-			t.Errorf("splitCommand(%q) error %v, want ok=%v", c.in, err, c.ok)
+		var pool stringpool.StringPool
+		words, closed := osCommandSplit(&pool, []byte(c.in), nil)
+		if closed != c.ok {
+			t.Errorf("osCommandSplit(%q) closed %v, want %v", c.in, closed, c.ok)
 			continue
 		}
+		var got []string
+		for _, word := range words {
+			got = append(got, string(pool.StringPoolBytes(word)))
+		}
 		if c.ok && !reflect.DeepEqual(got, c.want) {
-			t.Errorf("splitCommand(%q) = %q, want %q", c.in, got, c.want)
+			t.Errorf("osCommandSplit(%q) = %q, want %q", c.in, got, c.want)
 		}
 	}
 }

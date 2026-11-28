@@ -12,6 +12,7 @@ import (
 
 	assert "github.com/skycoin/skycoin-cx/t0-cx-core-assert"
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	stringpool "github.com/skycoin/skycoin-cx/t2-cx-core-stringpool"
 	"github.com/skycoin/skycoin-cx/t3-cx-core-ast"
 )
 
@@ -96,6 +97,10 @@ type State struct {
 	// CxfxShaderSourcePinner pins program memory while GL reads the source.
 	CxfxShaderSource       *ShaderSourceArgument
 	CxfxShaderSourcePinner runtime.Pinner
+
+	// CxfxCallPool holds the text of one opcode call, a cleaned program path,
+	// and is reset when the call starts, see D139 on #412.
+	CxfxCallPool stringpool.StringPool
 
 	// CxfxGlfwInitialized is set once glfw.Init has run.
 	CxfxGlfwInitialized bool
@@ -248,4 +253,11 @@ func cxfxCallbackInputsI64(index int, value int64) {
 func cxfxCallbackInputsF64(index int, value float64) {
 	valuetypes.F64Write(cxfxState.CxfxCallbackInputBytes[index][:], 0, value)
 	cxfxState.CxfxCallbackInputs[index] = cxfxState.CxfxCallbackInputBytes[index][:8]
+}
+
+// cxfxCallPoolReset empties the call pool for a new opcode call and returns
+// it.
+func cxfxCallPoolReset() *stringpool.StringPool {
+	cxfxState.CxfxCallPool.StringPoolReset()
+	return &cxfxState.CxfxCallPool
 }

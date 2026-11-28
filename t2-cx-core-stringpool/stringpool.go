@@ -205,3 +205,20 @@ func stringPoolInternFrozenReport(text []byte) {
 func stringPoolFullReport(slots int, arenaLength int) {
 	assert.InvariantTrue(false, fmt.Sprintf("StringPool full at %d strings and %d bytes", slots, arenaLength))
 }
+
+// StringPoolReset empties the pool and keeps its arrays, for a pool that
+// holds the text of one call. No Gid it gave names a string afterwards.
+func (pool *StringPool) StringPoolReset() {
+	pool.StringPoolArena = pool.StringPoolArena[:0]
+	pool.StringPoolOffsets = pool.StringPoolOffsets[:0]
+	pool.StringPoolLengths = pool.StringPoolLengths[:0]
+	clear(pool.StringPoolBuckets)
+	pool.StringPoolFrozen = false
+}
+
+// StringPoolArenaFree returns the empty slice at the end of the arena. A
+// caller may append the bytes of its next StringPoolIntern to it, so that
+// building them takes no other buffer.
+func (pool *StringPool) StringPoolArenaFree() []byte {
+	return pool.StringPoolArena[len(pool.StringPoolArena):]
+}

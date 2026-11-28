@@ -49,6 +49,7 @@ const (
 type FileError struct {
 	FileErrorCode      FileErrorCode
 	FileErrorOperation FileOperationCode
+	FileErrorReason    FilePathReason
 	FileErrorMessage   string
 	FileErrorPath      string
 }

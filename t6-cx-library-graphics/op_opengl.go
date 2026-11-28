@@ -335,13 +335,13 @@ func decodeHdr(file *os.File) (pixelBytes []byte, i32Width int32, i32Height int3
 // VIOLATION STRHOT-198: B, reads the file at a program path and names it in the error text, #432.
 func uploadTexture(prgrm *ast.CXProgram, pathBytes []byte, target uint32, level uint32, cpuCopy bool) int32 {
 	path := stringpool.StringView(pathBytes)
-	programPath, fileError := sandbox.PathFromBytes(pathBytes)
+	programPath, fileError := sandbox.PathClean(cxfxCallPoolReset().StringPoolArenaFree(), pathBytes)
 	if fileError != nil {
-		panic(fmt.Sprintf("texture %q: %s\n", path, fileError.FileErrorMessage))
+		panic(fmt.Sprintf("texture %q: %s\n", path, fileError.FileErrorTextOf(pathBytes)))
 	}
 	file, fileError := sandbox.FileOpen(prgrm.ProgramSandboxRoot, programPath)
 	if fileError != nil {
-		panic(fmt.Sprintf("texture %q not found on disk: %s\n", path, fileError.FileErrorMessage))
+		panic(fmt.Sprintf("texture %q not found on disk: %s\n", path, fileError.FileErrorTextOf(pathBytes)))
 	}
 	defer file.Close()
 
@@ -447,9 +447,9 @@ func OpGlUploadImageToTexture(prgrm *ast.CXProgram, inputs []ast.CXValue, output
 // VIOLATION STRHOT-204: B, reads the file at a program path and names it in the error text, #432.
 func OpGlNewGIF(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
 	path := stringpool.StringView(ast.ProgramStringBytesRead(prgrm, &inputs[0]))
-	file, fileError := ast.ProgramSandboxFileOpen(prgrm, &inputs[0])
+	file, fileError := ast.ProgramSandboxFileOpen(prgrm, &inputs[0], cxfxCallPoolReset())
 	if fileError != nil {
-		panic(fmt.Sprintf("file not found %q, %s", path, fileError.FileErrorMessage))
+		panic(fmt.Sprintf("file not found %q, %s", path, fileError.FileErrorTextOf(ast.ProgramStringBytesRead(prgrm, &inputs[0]))))
 	}
 	defer file.Close()
 

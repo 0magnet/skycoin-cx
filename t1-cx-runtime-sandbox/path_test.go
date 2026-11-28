@@ -2,6 +2,7 @@ package sandbox
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -53,16 +54,16 @@ func TestProgramFileSystemPathFromBytesAccepts(t *testing.T) {
 	for path, want := range cases {
 		programPath, fileError := PathFromBytes([]byte(path))
 		if fileError != nil {
-			t.Errorf("%q rejected: %s", path, fileError.FileErrorMessage)
+			t.Errorf("%q rejected: %s", path, fileError.FileErrorTextOf(nil))
 			continue
 		}
-		if got := programPath.Text(); got != want {
+		if got := string(programPath.Text()); got != want {
 			t.Errorf("%q cleaned to %q, want %q", path, got, want)
 		}
 	}
 	_, fileError := PathFromBytes([]byte(strings.Repeat("a", PathLengthMaximum)))
 	if fileError != nil {
-		t.Errorf("a path of the maximum length rejected: %s", fileError.FileErrorMessage)
+		t.Errorf("a path of the maximum length rejected: %s", fileError.FileErrorTextOf(nil))
 	}
 }
 
@@ -83,7 +84,7 @@ func programSandboxFixture(t *testing.T) (root *Root, sandbox string, outside st
 	}
 	root, fileError := RootOpen(sandbox)
 	if fileError != nil {
-		t.Fatal(fileError.FileErrorMessage)
+		t.Fatal(fileError.FileErrorTextOf(nil))
 	}
 	t.Cleanup(func() { root.Close() })
 	return root, sandbox, outside
@@ -112,7 +113,7 @@ func programPathMust(t *testing.T, path string) Path {
 	t.Helper()
 	programPath, fileError := PathFromBytes([]byte(path))
 	if fileError != nil {
-		t.Fatal(fileError.FileErrorMessage)
+		t.Fatal(fileError.FileErrorTextOf(nil))
 	}
 	return programPath
 }
@@ -133,7 +134,7 @@ func TestProgramSandboxFileOperationsInside(t *testing.T) {
 	programPath := programPathMust(t, "d/a.txt")
 	file, fileError := FileCreate(root, programPath)
 	if fileError != nil {
-		t.Fatal(fileError.FileErrorMessage)
+		t.Fatal(fileError.FileErrorTextOf(nil))
 	}
 	file.WriteString("hi")
 	file.Close()
@@ -142,7 +143,7 @@ func TestProgramSandboxFileOperationsInside(t *testing.T) {
 	}
 	file, fileError = FileOpen(root, programPath)
 	if fileError != nil {
-		t.Fatal(fileError.FileErrorMessage)
+		t.Fatal(fileError.FileErrorTextOf(nil))
 	}
 	file.Close()
 	if content, fileError := FileRead(root, programPathMust(t, "./d/../d/a.txt")); fileError != nil || string(content) != "hi" {
@@ -231,13 +232,13 @@ func TestProgramSandboxOpenReadWriteAndRemove(t *testing.T) {
 	programPath := programPathMust(t, "rw.bin")
 	file, fileError := FileOpenReadWrite(root, programPath)
 	if fileError != nil {
-		t.Fatal(fileError.FileErrorMessage)
+		t.Fatal(fileError.FileErrorTextOf(nil))
 	}
 	file.WriteString("abcd")
 	file.Close()
 	file, fileError = FileOpenReadWrite(root, programPath)
 	if fileError != nil {
-		t.Fatal(fileError.FileErrorMessage)
+		t.Fatal(fileError.FileErrorTextOf(nil))
 	}
 	file.WriteAt([]byte("X"), 2)
 	if err := file.Sync(); err != nil {
@@ -248,7 +249,7 @@ func TestProgramSandboxOpenReadWriteAndRemove(t *testing.T) {
 		t.Fatalf("read-write file holds %q, %v", content, err)
 	}
 	if fileError := FileRemove(root, programPath); fileError != nil {
-		t.Fatal(fileError.FileErrorMessage)
+		t.Fatal(fileError.FileErrorTextOf(nil))
 	}
 	if _, err := os.Stat(filepath.Join(sandbox, "rw.bin")); !os.IsNotExist(err) {
 		t.Fatalf("removed file: %v", err)
@@ -296,11 +297,36 @@ func TestProgramSandboxRemoveAndReadWriteSymlinkOut(t *testing.T) {
 	programSandboxOutsideCheck(t, outside)
 	for _, path := range []string{"link.txt", "linkdir"} {
 		if fileError := FileRemove(root, programPathMust(t, path)); fileError != nil {
-			t.Errorf("remove the symlink %q: %s", path, fileError.FileErrorMessage)
+			t.Errorf("remove the symlink %q: %s", path, fileError.FileErrorTextOf(nil))
 		}
 		if _, err := os.Lstat(filepath.Join(sandbox, path)); !os.IsNotExist(err) {
 			t.Errorf("symlink %q still there: %v", path, err)
 		}
 	}
 	programSandboxOutsideCheck(t, outside)
+}
+
+// pathCleanAppend gives what path.Clean gives, after any bytes already in dst.
+func TestPathCleanAppendMatchesPathClean(t *testing.T) {
+	parts := []string{"a", "bc", ".", "..", "", "...", ".x", "x."}
+	var names []string
+	for _, p := range parts {
+		for _, q := range parts {
+			for _, r := range parts {
+				names = append(names, p+"/"+q+"/"+r, p+"//"+q+"/"+r+"/", p+q+"/"+r)
+			}
+		}
+	}
+	for _, name := range names {
+		if name == "" || name[0] == '/' {
+			continue
+		}
+		want := path.Clean(name)
+		if got := string(pathCleanAppend(nil, []byte(name))); got != want {
+			t.Errorf("pathCleanAppend(%q) = %q, want %q", name, got, want)
+		}
+		if got := string(pathCleanAppend([]byte("pre"), []byte(name))); got != "pre"+want {
+			t.Errorf("pathCleanAppend(pre, %q) = %q, want %q", name, got, "pre"+want)
+		}
+	}
 }
