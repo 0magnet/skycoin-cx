@@ -28,7 +28,7 @@ STRHOT-012 O removed t0-util/file.go CXOpenFile not on the run path at dfcc46ab
 STRHOT-013 O removed t0-util/file.go CXCreateFile not on the run path at dfcc46ab
 STRHOT-014 O removed t0-util/file.go CXReadFile not on the run path at dfcc46ab
 STRHOT-015 O removed t0-util/file.go cxPath not on the run path at dfcc46ab
-STRHOT-016 B open t1-cx-runtime-profiling/profiling.go CPUProfileStartOnFile
+STRHOT-016 B removed t1-cx-runtime-profiling/profiling.go CPUProfileStartOnFile returns the pprof error, the opcode prints it, D139 #620
 STRHOT-017 O removed t3-cx-core-ast/ast_cxfunction.go *CXFunction.InputAdd not on the run path at dfcc46ab
 STRHOT-018 O removed t3-cx-core-ast/ast_cxfunction.go *CXFunction.OutputAdd not on the run path at dfcc46ab
 STRHOT-019 O removed t3-cx-core-ast/ast_cxfunction.go *CXFunction.LocalVariableNameAdd not on the run path at dfcc46ab
@@ -143,16 +143,16 @@ STRHOT-127 O removed t4-cx-runtime-opcodes/op_ui8.go OpUI8ToStr fixed, byte view
 STRHOT-128 O removed t4-cx-runtime-opcodes/op_ui8.go OpUI8Print fixed, byte views of CX memory and the format buffer
 STRHOT-129 O removed t5-cx-library-fileopcodes/op_json.go opJsonOpen not on the run path at dfcc46ab
 STRHOT-130 B removed t5-cx-library-fileopcodes/op_json.go opJsonTokenStr deleted with the json functions, #509
-STRHOT-131 B open t5-cx-library-fileopcodes/op_os.go OpOsReadAllText
+STRHOT-131 B removed t5-cx-library-fileopcodes/op_os.go OpOsReadAllText writes the file bytes to the str, D139 #620
 STRHOT-132 O removed t5-cx-library-fileopcodes/op_os.go OpOsOpen not on the run path at dfcc46ab
 STRHOT-133 O removed t5-cx-library-fileopcodes/op_os.go OpOsCreate not on the run path at dfcc46ab
-STRHOT-134 B open t5-cx-library-fileopcodes/op_os.go OpOsReadStr
-STRHOT-135 B open t5-cx-library-fileopcodes/op_os.go OpOsWriteStr
-STRHOT-136 B open t5-cx-library-fileopcodes/op_os.go OpOsGetWorkingDirectory
-STRHOT-137 B open t5-cx-library-fileopcodes/op_os.go OpOsRun
-STRHOT-138 B open t5-cx-library-fileopcodes/op_os.go splitCommand
-STRHOT-139 B open t5-cx-library-fileopcodes/op_profile.go OpStartProfile
-STRHOT-140 B open t5-cx-library-fileopcodes/op_profile.go OpStopProfile
+STRHOT-134 B removed t5-cx-library-fileopcodes/op_os.go OpOsReadStr writes the read bytes to the str, D139 #620
+STRHOT-135 B removed t5-cx-library-fileopcodes/op_os.go OpOsWriteStr writes the str bytes, D139 #620
+STRHOT-136 B boundary t5-cx-library-fileopcodes/op_os.go OpOsGetWorkingDirectory os.Getwd returns only a Go string, viewed for the copy into program memory, D139 #620
+STRHOT-137 B boundary t5-cx-library-fileopcodes/op_os.go OpOsRun exec.Command takes strings, the command words and directory are views of the os call pool, D139 #620
+STRHOT-138 B removed t5-cx-library-fileopcodes/op_os.go splitCommand osCommandSplit splits the bytes into the os call pool, D139 #620
+STRHOT-139 B removed t5-cx-library-fileopcodes/op_profile.go OpStartProfile the path is a Gid in the os pool, failures print through osProfileFailurePrint, D139 #620
+STRHOT-140 B removed t5-cx-library-fileopcodes/op_profile.go OpStopProfile OsProfileMng finds the profile by the Gid of its path, D139 #620
 STRHOT-141 O removed t4-cx-library-regexp/op_regexp.go expOffset not on the run path at dfcc46ab
 STRHOT-142 B open t4-cx-library-regexp/op_regexp.go regexpCompile
 STRHOT-143 B open t4-cx-library-regexp/op_regexp.go OpRegexpCompile
@@ -280,11 +280,11 @@ STRHOT-264 E removed t3-cx-core-ast/error.go RuntimeErrorInfo not on the run pat
 STRHOT-265 B open t3-cx-core-ast/serialize.go Deserialize
 STRHOT-266 P removed t4-cx-runtime-printer/stack.go printerStackValueHeader folded into printerStackValueLine, which appends bytes
 STRHOT-267 P removed t4-cx-runtime-printer/stack.go StackPrint appends names viewed from the string pool and the built-in name tables, #412
-STRHOT-268 B open t1-cx-runtime-sandbox/file_error.go fileErrorFromFileSystemError
-STRHOT-269 B open t1-cx-runtime-sandbox/path.go PathFromBytes
-STRHOT-270 B open t1-cx-runtime-sandbox/path.go FileCreate
-STRHOT-271 B open t1-cx-runtime-sandbox/path.go pathFileError
-STRHOT-272 B open t1-cx-runtime-sandbox/path.go FileOpen
+STRHOT-268 B boundary t1-cx-runtime-sandbox/file_error.go fileErrorFromFileSystemError a failed os call, os.Root tells a path escape only by the text of an unexported error, D139 #620
+STRHOT-269 B removed t1-cx-runtime-sandbox/path.go PathFromBytes validates and cleans the bytes into the pool of the calling library, reasons are codes, D139 #620
+STRHOT-270 B boundary t1-cx-runtime-sandbox/path.go FileCreate os.Root.Create takes a string, the path is a view of pool bytes, D139 #620
+STRHOT-271 B removed t1-cx-runtime-sandbox/path.go pathFileError passes the path bytes, D139 #620
+STRHOT-272 B boundary t1-cx-runtime-sandbox/path.go FileOpen os.Root.Open takes a string, the path is a view of pool bytes, D139 #620
 STRHOT-273 E removed t1-cx-core-objmodel/gid.go GidAssertFailure only STRHOT REPORTERs and Release call it, #412
 STRHOT-274 E removed t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolBytes the check passes the Gid to objmodel.GidFirstGenerationFailureReport, a STRHOT REPORTER, #412
 STRHOT-275 B removed t2-cx-core-stringpool/stringpool.go *StringPool.StringPoolFind the pool index is a hash table over the arena bytes, no Go string key, D139 #619
@@ -361,11 +361,14 @@ STRHOT-345 B open t1-cx-library-networkbatch/socket.go netErrorOf
 STRHOT-346 B removed t1-cx-library-networkbatch/errno_unix.go netErrorOfSystem folded into netErrorOf, whose code covers it on every system
 STRHOT-347 B open t1-cx-library-networkbatch/socket.go netTCPDialRun
 STRHOT-348 B open t1-cx-library-networkbatch/replay.go netPayloadQuote
-STRHOT-349 B open t1-cx-runtime-sandbox/path.go FileOpenReadWrite
-STRHOT-350 B open t1-cx-runtime-sandbox/path.go FileRemove
+STRHOT-349 B boundary t1-cx-runtime-sandbox/path.go FileOpenReadWrite os.Root.OpenFile takes a string, the path is a view of pool bytes, D139 #620
+STRHOT-350 B boundary t1-cx-runtime-sandbox/path.go FileRemove os.Root.Remove takes a string, the path is a view of pool bytes, D139 #620
 STRHOT-351 B open t3-cx-core-ast/serialize.go deserializeOpcodeSet
 STRHOT-352 E removed t3-cx-core-ast/cxfunction_mng.go *CXFunctionMng.CXFunctionGet the check passes the Gid and the slot arrays to objmodel.GidGetFailureReport, a STRHOT REPORTER, #412
 STRHOT-353 B open t3-cx-core-ast/serialize.go deserializeFunctions
-STRHOT-354 B open t1-cx-runtime-sandbox/root.go rootFileOpen
+STRHOT-354 B boundary t1-cx-runtime-sandbox/root.go rootFileOpen os.Root.OpenFile takes a string, D139 #620
 STRHOT-355 B removed t1-cx-runtime-profiling/profiling_stderr_unix.go profilingStderrMute mutes stderr with a pipe, not a path, #606
 STRHOT-356 B open t3-cx-core-ast/serialize.go deserializeOutputMode
+STRHOT-357 B boundary t1-cx-runtime-sandbox/path.go fileLogPrint the file log to stdout, only while os.LogFile has turned it on, D139 #620
+STRHOT-358 B boundary t1-cx-runtime-sandbox/file_error.go *FileError.FileErrorTextOf builds the failure text for the file log and the callers that print it, D139 #620
+STRHOT-359 B boundary t5-cx-library-fileopcodes/op_profile.go osProfileFailurePrint Go gives the CPU profile failure only as error text, printed to stderr, D139 #620

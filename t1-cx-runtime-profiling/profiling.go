@@ -54,17 +54,20 @@ func CPUProfileStartFile(path string, profRate int) (stop func() error, err erro
 	if err != nil {
 		return nil, fmt.Errorf("create CPU profile: %w", err)
 	}
-	return CPUProfileStartOnFile(f, profRate)
+	stop, err = CPUProfileStartOnFile(f, profRate)
+	if err != nil {
+		return nil, fmt.Errorf("start CPU profile: %w", err)
+	}
+	return stop, nil
 }
 
 // CPUProfileStartOnFile is CPUProfileStart writing to f at a nonzero profRate.
-// It closes f on stop or failure.
-// VIOLATION STRHOT-016: B, hands a path or text to Go or the OS, #412.
+// It closes f on stop or failure, and returns the error of pprof unwrapped.
 // VIOLATION VMALLOC-018: a system library call allocates in Go and the OS, #407.
 func CPUProfileStartOnFile(f *os.File, profRate int) (stop func() error, err error) {
 	if err := profilingCPUStartAtRate(f, profRate); err != nil {
 		f.Close()
-		return nil, fmt.Errorf("start CPU profile: %w", err)
+		return nil, err
 	}
 
 	stopped := false

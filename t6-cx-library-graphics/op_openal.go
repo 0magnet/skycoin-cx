@@ -15,9 +15,9 @@ import (
 // see docs/GarbageCollector.md.
 // VIOLATION STRHOT-196: B, reads the file at a program path, #432.
 func OpAlLoadWav(prgrm *ast.CXProgram, inputs []ast.CXValue, outputs []ast.CXValue) {
-	file, fileError := ast.ProgramSandboxFileOpen(prgrm, &inputs[0])
+	file, fileError := ast.ProgramSandboxFileOpen(prgrm, &inputs[0], cxfxCallPoolReset())
 	if fileError != nil {
-		panic(fileError.FileErrorMessage)
+		panic(fileError.FileErrorTextOf(ast.ProgramStringBytesRead(prgrm, &inputs[0])))
 	}
 	defer file.Close()
 	reader := bufio.NewReader(file)

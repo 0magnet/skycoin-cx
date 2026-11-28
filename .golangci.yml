@@ -92,12 +92,12 @@ linters:
           - gosec
         text: "G70[23]:"
         path: _test\.go
-      # The string pool and the program text view bytes as strings without a
-      # copy, see docs/StringsHotPath.md.
+      # The string pool, the program text and the boundary calls of D139 view
+      # bytes as strings without a copy, see docs/StringsHotPath.md.
       - linters:
           - gosec
         text: "G103:"
-        path: (t2-cx-core-stringpool/|t11-cx-command-cx/run_heap_test\.go)
+        path: (t2-cx-core-stringpool/|t11-cx-command-cx/run_heap_test\.go|t1-cx-runtime-sandbox/path\.go|t5-cx-library-fileopcodes/op_os\.go)
       # Lint debt from before golangci-lint ran in CI, one rule per file and
       # linter. Fixing a file removes its rule, and the list only shrinks.
       - path: ^t0-cx-tools-benchmarks/compare_test\.go$
