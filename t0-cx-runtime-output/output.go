@@ -69,13 +69,20 @@ func (writer *Writer) WriterFlush(bytes []byte) {
 	writer.writerFlush(writer, bytes)
 }
 
-// writerWrite writes bytes now. A failed write is dropped, as cx drops a
-// failed write to stdout.
+// writerWrite writes bytes now.
 func writerWrite(writer *Writer, bytes []byte) {
+	outWrite(writer.writerOut, bytes)
+}
+
+// outWrite writes bytes to out. A failed write is dropped, as cx drops a
+// failed write to stdout.
+func outWrite(out io.Writer, bytes []byte) {
 	if len(bytes) == 0 {
 		return
 	}
-	_, _ = writer.writerOut.Write(bytes)
+	if _, err := out.Write(bytes); err != nil {
+		return
+	}
 }
 
 func writerQueue(writer *Writer, bytes []byte) {
