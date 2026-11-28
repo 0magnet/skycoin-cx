@@ -1,5 +1,5 @@
 0007 Index check as one unsigned compare
-Status: requested by Synth (message 777). Not built.
+Status: requested by Synth (message 777), the slow path of 0006. Not built.
 
 Where: the index check in the LLVM output (t3-cx-compiler-llvm) and in the
 vm (OpcodeAddressIndex in the vm loop).
@@ -15,7 +15,8 @@ length: (unsigned) index < length. A negative index becomes a very large
 unsigned number, so it fails the same compare. One compare and one branch
 (x86 cmp + jae, ARM cmp + b.hs) check both ends, for any length, not only
 powers of two. With a power of two length, 0006 gives the same result with
-an AND.
+an AND, and the compiler uses that fast path whenever the length is a
+power of two (0006).
 
 Expected cost: no more than today's check, which already does one compare
 for the lower bound and one for the memory end.
