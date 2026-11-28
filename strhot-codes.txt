@@ -75,7 +75,7 @@ STRHOT-059 O removed t3-cx-core-ast/serialize.go deserializeOperator not on the 
 STRHOT-060 O removed t3-cx-core-ast/serialize.go deserializePackageImport not on the run path at dfcc46ab
 STRHOT-061 O removed t3-cx-core-ast/serialize.go deserializeExpressionFunction not on the run path at dfcc46ab
 STRHOT-062 O removed t3-cx-core-ast/serialize.go deserializeExpression not on the run path at dfcc46ab
-STRHOT-063 B open t3-cx-core-ast/serialize.go deserializeFunction
+STRHOT-063 B removed t3-cx-core-ast/serialize.go deserializeFunction a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
 STRHOT-064 O removed t3-cx-core-ast/serialize.go initDeserialization not on the run path at dfcc46ab
 STRHOT-065 O removed t3-cx-core-ast/serialize.go deserializeVersion not on the run path at dfcc46ab
 STRHOT-066 O removed t3-cx-core-ast/serialize.go packagesByName not on the run path at dfcc46ab
@@ -277,7 +277,7 @@ STRHOT-261 E removed t3-cx-core-ast/cxtypesignaturestruct_mng.go *CXTypeSignatur
 STRHOT-262 E removed t3-cx-core-ast/error.go ErrorHeader not on the run path at dfcc46ab
 STRHOT-263 E removed t3-cx-core-ast/error.go ErrorString not on the run path at dfcc46ab
 STRHOT-264 E removed t3-cx-core-ast/error.go RuntimeErrorInfo not on the run path at dfcc46ab
-STRHOT-265 B open t3-cx-core-ast/serialize.go Deserialize
+STRHOT-265 B removed t3-cx-core-ast/serialize.go Deserialize a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
 STRHOT-266 P removed t4-cx-runtime-printer/stack.go printerStackValueHeader folded into printerStackValueLine, which appends bytes
 STRHOT-267 P removed t4-cx-runtime-printer/stack.go StackPrint appends names viewed from the string pool and the built-in name tables, #412
 STRHOT-268 B boundary t1-cx-runtime-sandbox/file_error.go fileErrorFromFileSystemError a failed os call, os.Root tells a path escape only by the text of an unexported error, D139 #620
@@ -301,28 +301,28 @@ STRHOT-285 E removed t3-cx-core-ast/ast_names.go *CXProgram.CXProgramSourceFileT
 STRHOT-286 B removed t3-cx-core-ast/libraries.go *CXFunction.BuiltInName not on the run path since op_aff.go was deleted, D5 #500
 STRHOT-287 E removed t3-cx-core-ast/libraries.go libraryCall panics with RuntimeLibraryDisabled, the library number, whose Error builds the text when it is printed, #412
 STRHOT-288 E removed t3-cx-core-ast/libraries.go RuntimeLibraryDisabledMessage not on the run path, RuntimeLibraryDisabled.Error calls it when the error is printed, #412
-STRHOT-289 B open t3-cx-core-ast/serialize_codec.go deserializeUint8
-STRHOT-290 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderBool
+STRHOT-289 B removed t3-cx-core-ast/serialize_codec.go deserializeUint8 a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-290 B removed t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderBool a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
 STRHOT-291 E removed t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderFailf keeps the format and operands in a serializeMalformedError, whose Error builds the text, #412
-STRHOT-292 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderIntRange
-STRHOT-293 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderIntValue
-STRHOT-294 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderLength
-STRHOT-295 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderPointer
-STRHOT-296 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderSection
-STRHOT-297 B open t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderUint32
-STRHOT-298 B open t3-cx-core-ast/serialize.go deserializeArguments
-STRHOT-299 B open t3-cx-core-ast/serialize.go deserializeCallStack
-STRHOT-300 B open t3-cx-core-ast/serialize.go deserializeExpressions
-STRHOT-301 B open t3-cx-core-ast/serialize.go deserializeLibraries
-STRHOT-302 B open t3-cx-core-ast/serialize.go deserializeManager
-STRHOT-303 B open t3-cx-core-ast/serialize.go deserializeMemory
-STRHOT-304 B open t3-cx-core-ast/serialize.go deserializeProgramFields
-STRHOT-305 B open t3-cx-core-ast/serialize.go deserializeStringGid
-STRHOT-306 B open t3-cx-core-ast/serialize.go deserializeStrings
-STRHOT-307 B open t3-cx-core-ast/serialize.go deserializeStructReference
-STRHOT-308 B open t3-cx-core-ast/serialize.go deserializeTypeSignatures
+STRHOT-292 B removed t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderIntRange a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-293 B removed t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderIntValue a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-294 B removed t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderLength a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-295 B removed t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderPointer a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-296 B removed t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderSection a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-297 B removed t3-cx-core-ast/serialize_codec.go *serializeDecoder.serializeDecoderUint32 a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-298 B removed t3-cx-core-ast/serialize.go deserializeArguments a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-299 B removed t3-cx-core-ast/serialize.go deserializeCallStack a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-300 B removed t3-cx-core-ast/serialize.go deserializeExpressions a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-301 B removed t3-cx-core-ast/serialize.go deserializeLibraries a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-302 B removed t3-cx-core-ast/serialize.go deserializeManager a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-303 B removed t3-cx-core-ast/serialize.go deserializeMemory a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-304 B removed t3-cx-core-ast/serialize.go deserializeProgramFields a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-305 B removed t3-cx-core-ast/serialize.go deserializeStringGid a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-306 B removed t3-cx-core-ast/serialize.go deserializeStrings a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-307 B removed t3-cx-core-ast/serialize.go deserializeStructReference a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
+STRHOT-308 B removed t3-cx-core-ast/serialize.go deserializeTypeSignatures a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
 STRHOT-309 B removed t3-cx-core-ast/serialize.go encodeCXProgram appends a constant only, not an operation
-STRHOT-310 B open t3-cx-core-ast/serialize.go SerializedHeaderCheck
+STRHOT-310 B removed t3-cx-core-ast/serialize.go SerializedHeaderCheck a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
 STRHOT-311 E removed t3-cx-core-ast/serialize.go serializeStructReference fails with a serializeStructMissingError, whose Error builds the text, #412
 STRHOT-312 E removed t3-cx-core-ast/serialize.go serializeUnusedManagersCheck fails with a serializeUnusedManagerError, whose Error builds the text, #412
 STRHOT-313 E removed t3-cx-core-ast/sourcefilemng.go *SourceFileMng.SourceFilePath the check passes the Gid to objmodel.GidFirstGenerationFailureReport, a STRHOT REPORTER, #412
@@ -363,12 +363,12 @@ STRHOT-347 B boundary t1-cx-library-networkbatch/socket.go netTCPDialRun net.Dia
 STRHOT-348 B removed t1-cx-library-networkbatch/replay.go netPayloadQuote the hex digits are a byte array, D139 #621
 STRHOT-349 B boundary t1-cx-runtime-sandbox/path.go FileOpenReadWrite os.Root.OpenFile takes a string, the path is a view of pool bytes, D139 #620
 STRHOT-350 B boundary t1-cx-runtime-sandbox/path.go FileRemove os.Root.Remove takes a string, the path is a view of pool bytes, D139 #620
-STRHOT-351 B open t3-cx-core-ast/serialize.go deserializeOpcodeSet
+STRHOT-351 B removed t3-cx-core-ast/serialize.go deserializeOpcodeSet a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
 STRHOT-352 E removed t3-cx-core-ast/cxfunction_mng.go *CXFunctionMng.CXFunctionGet the check passes the Gid and the slot arrays to objmodel.GidGetFailureReport, a STRHOT REPORTER, #412
-STRHOT-353 B open t3-cx-core-ast/serialize.go deserializeFunctions
+STRHOT-353 B removed t3-cx-core-ast/serialize.go deserializeFunctions a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
 STRHOT-354 B boundary t1-cx-runtime-sandbox/root.go rootFileOpen os.Root.OpenFile takes a string, D139 #620
 STRHOT-355 B removed t1-cx-runtime-profiling/profiling_stderr_unix.go profilingStderrMute mutes stderr with a pipe, not a path, #606
-STRHOT-356 B open t3-cx-core-ast/serialize.go deserializeOutputMode
+STRHOT-356 B removed t3-cx-core-ast/serialize.go deserializeOutputMode a failure is a serializeFailure code with its operands and names are serializeName codes, the text is built when printed, D139 #622
 STRHOT-357 B boundary t1-cx-runtime-sandbox/path.go fileLogPrint the file log to stdout, only while os.LogFile has turned it on, D139 #620
 STRHOT-358 B boundary t1-cx-runtime-sandbox/file_error.go *FileError.FileErrorTextOf builds the failure text for the file log and the callers that print it, D139 #620
 STRHOT-359 B boundary t5-cx-library-fileopcodes/op_profile.go osProfileFailurePrint Go gives the CPU profile failure only as error text, printed to stderr, D139 #620

@@ -3,7 +3,6 @@ package ast
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"math"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
@@ -94,19 +93,12 @@ func (decoder *serializeDecoder) serializeDecoderFail(err error) {
 	}
 }
 
-// serializeMalformedError is a malformed serialized program as a constant
-// format and its operands. Error builds the text only when it is printed (#412).
-type serializeMalformedError struct {
-	serializeMalformedErrorFormat   string
-	serializeMalformedErrorOperands []interface{}
+func (decoder *serializeDecoder) serializeDecoderFailWith(failure serializeFailure, operands ...interface{}) {
+	decoder.serializeDecoderFail(serializeMalformedError{failure, serializeNameNone, operands})
 }
 
-func (malformed serializeMalformedError) Error() string {
-	return fmt.Sprintf("serialized program is malformed: "+malformed.serializeMalformedErrorFormat, malformed.serializeMalformedErrorOperands...)
-}
-
-func (decoder *serializeDecoder) serializeDecoderFailf(format string, args ...interface{}) {
-	decoder.serializeDecoderFail(serializeMalformedError{format, args})
+func (decoder *serializeDecoder) serializeDecoderFailNamed(failure serializeFailure, name serializeName, operands ...interface{}) {
+	decoder.serializeDecoderFail(serializeMalformedError{failure, name, operands})
 }
 
 func (decoder *serializeDecoder) serializeDecoderRemaining() int {
@@ -141,32 +133,28 @@ func (decoder *serializeDecoder) serializeDecoderUint() uint64 {
 
 // serializeDecoderIntRange reads a signed integer and fails unless it is in
 // minimum to maximum.
-// VIOLATION STRHOT-292: B, the serializer, compiler code run by an opcode, #412.
-func (decoder *serializeDecoder) serializeDecoderIntRange(minimum int64, maximum int64, name string) int64 {
+func (decoder *serializeDecoder) serializeDecoderIntRange(minimum int64, maximum int64, name serializeName) int64 {
 	value := decoder.serializeDecoderInt()
 	if value < minimum || value > maximum {
-		decoder.serializeDecoderFailf("%s %d is outside %d to %d", name, value, minimum, maximum)
+		decoder.serializeDecoderFailNamed(serializeFailureRange, name, value, minimum, maximum)
 		return 0
 	}
 	return value
 }
 
-// VIOLATION STRHOT-293: B, the serializer, compiler code run by an opcode, #412.
 func (decoder *serializeDecoder) serializeDecoderIntValue() int {
-	return int(decoder.serializeDecoderIntRange(math.MinInt, math.MaxInt, "integer"))
+	return int(decoder.serializeDecoderIntRange(math.MinInt, math.MaxInt, serializeNameInteger))
 }
 
-// VIOLATION STRHOT-297: B, the serializer, compiler code run by an opcode, #412.
 func (decoder *serializeDecoder) serializeDecoderUint32() uint32 {
 	value := decoder.serializeDecoderUint()
 	if value > math.MaxUint32 {
-		decoder.serializeDecoderFailf("value %d does not fit 32 bits", value)
+		decoder.serializeDecoderFailWith(serializeFailureUint32, value)
 		return 0
 	}
 	return uint32(value)
 }
 
-// VIOLATION STRHOT-290: B, the serializer, compiler code run by an opcode, #412.
 func (decoder *serializeDecoder) serializeDecoderBool() bool {
 	if decoder.serializeDecoderError != nil {
 		return false
@@ -178,17 +166,16 @@ func (decoder *serializeDecoder) serializeDecoderBool() bool {
 	value := decoder.serializeDecoderBytes[decoder.serializeDecoderPosition]
 	decoder.serializeDecoderPosition++
 	if value > 1 {
-		decoder.serializeDecoderFailf("boolean byte %d", value)
+		decoder.serializeDecoderFailWith(serializeFailureBool, value)
 		return false
 	}
 	return value == 1
 }
 
-// VIOLATION STRHOT-295: B, the serializer, compiler code run by an opcode, #412.
 func (decoder *serializeDecoder) serializeDecoderPointer() valuetypes.Pointer {
 	value := decoder.serializeDecoderUint()
 	if value > uint64(valuetypes.InvalidPointer) {
-		decoder.serializeDecoderFailf("pointer %d does not fit %d bytes", value, valuetypes.PointerSize)
+		decoder.serializeDecoderFailWith(serializeFailurePointer, value, valuetypes.PointerSize)
 		return 0
 	}
 	return valuetypes.Pointer(value)
@@ -197,14 +184,13 @@ func (decoder *serializeDecoder) serializeDecoderPointer() valuetypes.Pointer {
 // serializeDecoderLength reads a length written by serializeEncoderLength and
 // returns -1 for nil. Each element takes at least elementSize bytes, so a
 // length the remaining bytes cannot hold fails before anything is allocated.
-// VIOLATION STRHOT-294: B, the serializer, compiler code run by an opcode, #412.
 func (decoder *serializeDecoder) serializeDecoderLength(elementSize int) int {
 	length := decoder.serializeDecoderInt()
 	if decoder.serializeDecoderError != nil {
 		return 0
 	}
 	if length < -1 || length > int64(decoder.serializeDecoderRemaining()/elementSize) {
-		decoder.serializeDecoderFailf("length %d with %d bytes left", length, decoder.serializeDecoderRemaining())
+		decoder.serializeDecoderFailWith(serializeFailureLength, length, decoder.serializeDecoderRemaining())
 		return 0
 	}
 	return int(length)
@@ -247,8 +233,7 @@ func (decoder *serializeDecoder) serializeDecoderPointers() []valuetypes.Pointer
 
 // serializeDecoderSection reads one section written by serializeEncoderSection
 // with body, which must read all of it.
-// VIOLATION STRHOT-296: B, the serializer, compiler code run by an opcode, #412.
-func (decoder *serializeDecoder) serializeDecoderSection(name string, body func(section *serializeDecoder)) {
+func (decoder *serializeDecoder) serializeDecoderSection(name serializeName, body func(section *serializeDecoder)) {
 	length := decoder.serializeDecoderUint()
 	if decoder.serializeDecoderError != nil {
 		return
@@ -263,17 +248,16 @@ func (decoder *serializeDecoder) serializeDecoderSection(name string, body func(
 	decoder.serializeDecoderPosition = end
 	switch {
 	case section.serializeDecoderError != nil:
-		decoder.serializeDecoderFail(fmt.Errorf("%s section: %w", name, section.serializeDecoderError))
+		decoder.serializeDecoderFail(serializeSectionError{name, section.serializeDecoderError})
 	case section.serializeDecoderRemaining() != 0:
-		decoder.serializeDecoderFailf("%s section has %d bytes left over", name, section.serializeDecoderRemaining())
+		decoder.serializeDecoderFailNamed(serializeFailureSectionLeftOver, name, section.serializeDecoderRemaining())
 	}
 }
 
-// VIOLATION STRHOT-289: B, the serializer, compiler code run by an opcode, #412.
 func deserializeUint8(decoder *serializeDecoder) uint8 {
 	value := decoder.serializeDecoderUint()
 	if value > math.MaxUint8 {
-		decoder.serializeDecoderFailf("value %d does not fit 8 bits", value)
+		decoder.serializeDecoderFailWith(serializeFailureUint8, value)
 		return 0
 	}
 	return uint8(value)
