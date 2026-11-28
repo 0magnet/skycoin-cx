@@ -1,5 +1,5 @@
 0001 TinyGo wasm build without a scheduler
-Status: proposed. Measured by hand, not built.
+Status: built in #615.
 
 Where: t11-cx-command-cx, buildLlvmTinygoNative. For wasm, cx build
 --target=llvm hands the LLVM output to TinyGo and TinyGo links the .wasm.
