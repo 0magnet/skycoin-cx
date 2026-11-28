@@ -1,6 +1,6 @@
 0006 Power of two sizes for one instruction bound checks
-Status: decided by Synth, D146 (all sizes powers of two, the stack size limit
-a power of two). Not built. Open detail: array lengths, see below.
+Status: decided by Synth, D146 (internal sizes powers of two, the stack size limit
+a power of two, two paths for program arrays). Not built.
 
 Problem: a bound check written as two compares (below zero, at or above the
 end) costs two compares and two branches.
@@ -17,11 +17,18 @@ A negative index has its high bits set, so the same test catches it.
 On x86 the test and the jump fuse into one micro-op (test + jnz). On ARM it
 is tst + b.ne.
 
-Open detail: an array declared with a length that is not a power of two,
-for example [100]. Either the length must be a power of two (compile error
-otherwise), or the storage is rounded up to 128 and the mask check tests
-against 128, which misses indexes 100 to 127. 0007 covers any length exactly
-with one unsigned compare.
+Two paths (Synth, message 781):
+  fast path: a size that is a power of two gets the mask check above,
+    one AND and one jump. The runtime's internal arrays are always powers
+    of two and always take the fast path: the stack, the call stack kept
+    for stack traces, caches, frame pointer tables, and the vm and image
+    runner buffers.
+  slow path: a program array whose declared length is not a power of two,
+    for example var a [100]i32, keeps its exact length and gets the
+    unsigned compare of 0007 (one compare and one jump, index < 100), so
+    indexes 100 to 127 are caught.
+The compiler picks the path from the length at build time, so neither
+check tests which path it is at run time.
 
 The compiler writes a comment next to each check in the emitted IR, naming
 the check and its mask.
