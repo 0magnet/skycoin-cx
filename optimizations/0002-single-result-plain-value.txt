@@ -1,5 +1,5 @@
 0002 Return a single result as a plain value
-Status: proposed. Measured by hand, not built. Ship with 0003.
+Status: built in #616, with 0003.
 
 Where: t3-cx-compiler-llvm/llvm.go, returnType, instrReturn,
 instrCallResult (lines 789 to 875 at c5db7d2b).
@@ -17,3 +17,8 @@ Measured (user cycles, two code layouts):
   factorialrec  8.23G/8.16G -> 3.23G/3.21G   (C 2.94G/3.14G), about 1.05x C
   fib           made about 17 percent slower while the fp check of 0003
                 stays, so ship 0002 and 0003 together.
+
+Built (#616, with 0003, user cycles, layouts a/b):
+  factorialrec  8.05G/8.11G -> 3.10G/3.07G   (C 2.83G/2.85G)
+  fib           9.79G/8.21G -> 7.65G/7.61G   (C 6.60G/6.59G), the same
+                instructions as the hand edit of 0002 and 0003 together.

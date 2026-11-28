@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	goruntime "runtime"
 	"strings"
 	"testing"
@@ -362,6 +363,82 @@ func TestLlvmCompareBenchmarks(t *testing.T) {
 		lines := strings.Split(string(run.stdout), "\n")
 		if run.exitCode != 0 || len(lines) < 2 || lines[0] != want[bench] || lines[1] != bench+" pass" {
 			t.Errorf("%s: exit code %d, output %q, want hash %s and a pass line", bench, run.exitCode, run.stdout, want[bench])
+		}
+	}
+}
+
+// TestLlvmFramePointer checks that a function with one result returns the
+// value and one with two a struct, and that only a function whose frame
+// stays in cx_mem takes fp, unless the stack is too small for the deepest
+// call chain (optimizations 0002 and 0003).
+func TestLlvmFramePointer(t *testing.T) {
+	initProgram()
+	compileRunSources(t, []string{"framepointer.cx"}, []string{`package main
+
+func fib(n i32) (out i32) {
+	if n < 2 {
+		out = n
+	} else {
+		out = fib(n-1) + fib(n-2)
+	}
+}
+
+func pair(n i32) (a i32, b i64) {
+	a = n
+	b = i32.i64(n) * 2L
+}
+
+func addressed(n i32) (out i32) {
+	var x i32
+	x = n
+	var p *i32
+	p = &x
+	out = *p + 1
+}
+
+func main() {
+	var a i32
+	var b i64
+	a, b = pair(fib(10))
+	i32.print(a)
+	i64.print(b)
+	i32.print(addressed(4))
+}
+`})
+	image, failures := lower.Program(astbuild.AST)
+	if len(failures) > 0 {
+		t.Fatalf("does not lower: %+v", failures)
+	}
+	small := image
+	small.ImageStackSize = 4096
+	for _, c := range []struct {
+		image *ir.Image
+		want  []string
+	}{
+		{&image, []string{
+			`define internal i32 @"cx\.\d+\.[^"]*fib"\(i32 %depth, i32 %in0\)`,
+			`define internal \{ i32, i64 \} @"cx\.\d+\.[^"]*pair"\(i32 %depth, i32 %in0\)`,
+			`define internal i32 @"cx\.\d+\.[^"]*addressed"\(i32 %fp, i32 %depth, i32 %in0\)`,
+		}},
+		{&small, []string{
+			`define internal i32 @"cx\.\d+\.[^"]*fib"\(i32 %fp, i32 %depth, i32 %in0\)`,
+			`icmp ugt i64 %t\d+, 4096`,
+		}},
+	} {
+		module, _, err := llvm.Emit(c.image, buildLlvmOptions())
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, want := range c.want {
+			if !regexp.MustCompile(want).Match(module) {
+				t.Errorf("stack %d: module has no %s", c.image.ImageStackSize, want)
+			}
+		}
+	}
+	cc := llvmTestClang(t)
+	for _, run := range []*ir.Image{&image, &small} {
+		if got, want := llvmTestNative(t, cc, run, buildLlvmOptions()), llvmTestVm(t, run); !bytes.Equal(got, want) {
+			t.Errorf("stack %d: native prints %q, vm %q", run.ImageStackSize, got, want)
 		}
 	}
 }

@@ -1,5 +1,5 @@
 0003 Pass the frame pointer only to functions that need it
-Status: proposed. Measured by hand, not built.
+Status: built in #616, with 0002.
 
 Where: t3-cx-compiler-llvm/llvm.go, instrCall and instrCallFrame (line 812).
 
@@ -17,3 +17,7 @@ Measured (user cycles, two code layouts, instructions per call):
   fib  9.16G/8.04G, 16.8 per call -> 5.42G/5.57G, 12.0 per call
        (C 6.72G/6.66G, 11.0 per call), about 0.8x C
   ackermann  no gain. Its cost is the depth check, see 0004.
+
+Built (#616, with 0002): the 5.42G above keeps the struct return. With the
+plain return of 0002, fib runs 7.65G/7.61G while the depth check stays.
+ackermann went 6.96G/7.04G -> 5.98G/6.01G (C 3.87G/3.90G).
