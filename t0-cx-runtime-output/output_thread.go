@@ -84,7 +84,7 @@ func (r *ring) ringRun() {
 }
 
 // ringDrain writes everything pushed so far, one contiguous part at a
-// time. A failed write is dropped, as cx drops a failed write to stdout.
+// time.
 func (r *ring) ringDrain() {
 	for {
 		drained := r.ringDrained.Load()
@@ -94,7 +94,7 @@ func (r *ring) ringDrain() {
 		}
 		start := drained % ringSize
 		count := min(written-drained, ringSize-start)
-		_, _ = r.ringOut.Write(r.ringBuffer[start : start+count])
+		outWrite(r.ringOut, r.ringBuffer[start:start+count])
 		r.ringDrained.Store(drained + count)
 		ringSignal(r.ringSpace)
 	}
