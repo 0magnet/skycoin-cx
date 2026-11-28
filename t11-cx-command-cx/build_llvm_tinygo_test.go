@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
@@ -107,6 +108,24 @@ func TestBuildLlvmTinygoTripleClang(t *testing.T) {
 	for _, c := range cases {
 		if got := buildLlvmTinygoTripleClang(c.triple, buildLlvmTinygoLlvmMajorParse([]byte(c.version))); got != c.want {
 			t.Errorf("%q %s: got %s, want %s", c.version, c.triple, got, c.want)
+		}
+	}
+}
+
+func TestBuildLlvmTinygoSchedulerArgs(t *testing.T) {
+	cases := []struct {
+		triple string
+		want   string
+	}{
+		{buildLlvmTinygoTripleWasi, "-scheduler=none"},
+		{buildLlvmTinygoTripleWasip1, "-scheduler=none"},
+		{"wasm32-unknown-unknown", "-scheduler=none"},
+		{"thumbv6m-unknown-unknown-eabi", ""},
+		{"x86_64-unknown-linux", ""},
+	}
+	for _, c := range cases {
+		if got := strings.Join(buildLlvmTinygoSchedulerArgs(c.triple), " "); got != c.want {
+			t.Errorf("%s: got %q, want %q", c.triple, got, c.want)
 		}
 	}
 }

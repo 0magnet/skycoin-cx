@@ -293,11 +293,23 @@ func buildLlvmTinygoNative(modulePath string, output string, target string, debu
 	if !debug {
 		args = append(args, "-no-debug")
 	}
+	args = append(args, buildLlvmTinygoSchedulerArgs(codeGeneration.buildLlvmTinygoTargetTriple)...)
 	args = append(args, strings.Fields(os.Getenv(buildLlvmTinygoFlagsEnv))...)
 	if err := buildLlvmTinygoRun(tinygo, directory, append(args, ".")); err != nil {
 		return buildFail(err.Error())
 	}
 	return valuetypes.CXSuccess
+}
+
+// buildLlvmTinygoSchedulerArgs returns -scheduler=none for a wasm triple. The
+// default asyncify scheduler rewrites every function that can reach
+// cx_rt_stop, and a CX program starts no goroutine, see optimizations/0001.
+// Boards keep their scheduler, as no board run is tested.
+func buildLlvmTinygoSchedulerArgs(triple string) []string {
+	if strings.HasPrefix(triple, "wasm") {
+		return []string{"-scheduler=none"}
+	}
+	return nil
 }
 
 // buildLlvmTinygoRun runs tinygo with args in directory, its output on
