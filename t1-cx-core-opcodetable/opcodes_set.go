@@ -75,3 +75,10 @@ func (set *OpcodeSet) OpcodeSetLibraryRemove(library int) {
 		}
 	}
 }
+
+// OpcodeSetRemove removes opcode code from set.
+func (set *OpcodeSet) OpcodeSetRemove(code int) {
+	if code > 0 && code < OpcodeSignatureTableSize {
+		set[code>>6] &^= 1 << (uint(code) & 63)
+	}
+}

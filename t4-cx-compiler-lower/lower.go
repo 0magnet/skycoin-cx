@@ -1136,6 +1136,12 @@ func libraryOpcodeOf(opcode int) ir.Opcode {
 		return ir.OpcodeFileSeek
 	case opcodetable.OpcodeFileSync:
 		return ir.OpcodeFileSync
+	case opcodetable.OpcodeTerminalArgCount:
+		return ir.OpcodeTerminalArgCount
+	case opcodetable.OpcodeTerminalArgRead:
+		return ir.OpcodeTerminalArgRead
+	case opcodetable.OpcodeTerminalInputLineRead:
+		return ir.OpcodeTerminalInputLineRead
 	}
 	return ir.OpcodeInvalid
 }

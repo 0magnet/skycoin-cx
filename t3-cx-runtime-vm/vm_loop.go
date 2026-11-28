@@ -908,6 +908,15 @@ func (machine *Machine) slow() Stop {
 		netOpcodeRun(in.InstrOpcode, mem, machine.MachineStackPointer)
 	case ir.OpcodeFileClose, ir.OpcodeFileSeek, ir.OpcodeFileSync:
 		fileOpcodeRun(in.InstrOpcode, mem, machine.MachineStackPointer)
+	case ir.OpcodeTerminalInputLineRead:
+		// A prompt printed before the read reaches the terminal first.
+		if len(machine.MachineOutput) > 0 {
+			machine.machineResumePc = machine.MachinePc
+			return StopOutputFull
+		}
+		terminalOpcodeRun(in.InstrOpcode, mem, machine.MachineStackPointer)
+	case ir.OpcodeTerminalArgCount, ir.OpcodeTerminalArgRead:
+		terminalOpcodeRun(in.InstrOpcode, mem, machine.MachineStackPointer)
 	case ir.OpcodePrintValue:
 		machine.MachineOutput = printValue(machine.MachineOutput, mem, a, valuetypes.Code(in.InstrM), byte(in.InstrN))
 	case ir.OpcodeTestEqual:

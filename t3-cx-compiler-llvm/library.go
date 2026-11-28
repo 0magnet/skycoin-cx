@@ -32,6 +32,9 @@ var libraryRuntimeFunctions = map[ir.Opcode]string{
 	ir.OpcodeFileClose:              "cx_rt_file_close",
 	ir.OpcodeFileSeek:               "cx_rt_file_seek",
 	ir.OpcodeFileSync:               "cx_rt_file_sync",
+	ir.OpcodeTerminalArgCount:       "cx_rt_terminal_arg_count",
+	ir.OpcodeTerminalArgRead:        "cx_rt_terminal_arg_read",
+	ir.OpcodeTerminalInputLineRead:  "cx_rt_terminal_input_line_read",
 }
 
 // instrLibrary emits a system library opcode: the arguments of the pending

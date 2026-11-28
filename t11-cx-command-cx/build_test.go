@@ -47,9 +47,15 @@ func buildTestCore(t *testing.T, dir string, libraries ...string) string {
 func buildTestCores(t *testing.T, dir string) map[string]string {
 	t.Helper()
 	cores := map[string]string{}
-	for set := 0; set < 1<<len(opcodetable.LibraryTable); set++ {
+	var tagged []opcodetable.Library
+	for _, library := range opcodetable.LibraryTable {
+		if !library.LibraryLinkedEveryCore {
+			tagged = append(tagged, library)
+		}
+	}
+	for set := 0; set < 1<<len(tagged); set++ {
 		var libraries []string
-		for i, library := range opcodetable.LibraryTable {
+		for i, library := range tagged {
 			if set>>i&1 != 0 {
 				libraries = append(libraries, library.LibraryName)
 			}

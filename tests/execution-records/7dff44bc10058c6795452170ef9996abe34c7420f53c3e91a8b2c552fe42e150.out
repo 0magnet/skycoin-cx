@@ -1,0 +1,10 @@
+args 2
+arg 0 length 3 first 49
+arg 1 length 1 first 48
+past the last argument -1
+prompt: line length 5 first 104 last 0
+line length 2 first 97 last 0
+line length 0 first 97 last 0
+line length 8 first 116 last 110
+line length 4 first 108 last 110
+end of input -1

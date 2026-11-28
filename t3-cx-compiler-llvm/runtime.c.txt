@@ -243,9 +243,19 @@ static void putFloat(double v, int bits) {
 	}
 }
 
-// cx_rt_start takes the exit code of a division by zero.
-void cx_rt_start(int32_t divide) {
+// terminalArgCount and terminalArgs are the program arguments of a native
+// program, its argv without the program name.
+static int32_t terminalArgCount;
+static char **terminalArgs;
+
+// cx_rt_start takes the exit code of a division by zero and the arguments
+// of main.
+void cx_rt_start(int32_t divide, int32_t argc, char **argv) {
 	divideCode = divide;
+	if (argc > 1 && argv) {
+		terminalArgCount = argc - 1;
+		terminalArgs = argv + 1;
+	}
 #ifdef _WIN32
 	// The vm writes bytes, so a new line stays one byte.
 	_setmode(_fileno(stdout), _O_BINARY);
@@ -1641,4 +1651,81 @@ void cx_rt_file_seek(uint8_t *mem, uint64_t size, uint32_t ptrSize, uint8_t *blo
 void cx_rt_file_sync(uint8_t *mem, uint64_t size, uint32_t ptrSize, uint8_t *block) {
 	(void)mem, (void)size, (void)ptrSize;
 	block[4] = 0;
+}
+
+// The terminal opcodes, decision D142. They read the block at sp as
+// terminalOpcodeRun of the vm does: a buffer is its address and size, each
+// a pointer, and the i32 result follows the inputs.
+#ifdef CX_RT_TINYGO
+// The Go side of a TinyGo program reads os.Args and os.Stdin.
+int32_t cx_rt_tinygo_arg_count(void);
+int32_t cx_rt_tinygo_arg_read(int32_t index, uint8_t *out, int32_t room);
+int32_t cx_rt_tinygo_input_line_read(uint8_t *out, int32_t room);
+#endif
+
+static uint8_t *terminalBuffer(uint8_t *mem, uint64_t size, uint32_t ptrSize, uint8_t *at, int32_t *room) {
+	uint64_t address = readPtr(at, 0, ptrSize);
+	uint64_t length = readPtr(at, ptrSize, ptrSize);
+	if (address + length > size) {
+		*room = 0;
+		return mem;
+	}
+	*room = (int32_t)length;
+	return mem + address;
+}
+
+void cx_rt_terminal_arg_count(uint8_t *mem, uint64_t size, uint32_t ptrSize, uint8_t *block) {
+	(void)mem, (void)size, (void)ptrSize;
+#ifdef CX_RT_TINYGO
+	int32_t count = cx_rt_tinygo_arg_count();
+#else
+	int32_t count = terminalArgCount;
+#endif
+	memcpy(block, &count, 4);
+}
+
+void cx_rt_terminal_arg_read(uint8_t *mem, uint64_t size, uint32_t ptrSize, uint8_t *block) {
+	int32_t index, room, copied;
+	memcpy(&index, block, 4);
+	uint8_t *buffer = terminalBuffer(mem, size, ptrSize, block + 4, &room);
+#ifdef CX_RT_TINYGO
+	copied = cx_rt_tinygo_arg_read(index, buffer, room);
+#else
+	copied = -1;
+	if (index >= 0 && index < terminalArgCount) {
+		// cx passes ++arg, and every form drops the ++, see t0-cx-library-terminal.
+		const char *arg = terminalArgs[index];
+		if (arg[0] == '+' && arg[1] == '+')
+			arg += 2;
+		size_t length = strlen(arg);
+		copied = (int32_t)(length < (size_t)room ? length : (size_t)room);
+		memcpy(buffer, arg, (size_t)copied);
+	}
+#endif
+	memcpy(block + 4 + 2 * ptrSize, &copied, 4);
+}
+
+// cx_rt_terminal_input_line_read writes the output first, so a prompt shows
+// before the read, as the vm drains its output before it reads.
+void cx_rt_terminal_input_line_read(uint8_t *mem, uint64_t size, uint32_t ptrSize, uint8_t *block) {
+	int32_t room, copied;
+	uint8_t *buffer = terminalBuffer(mem, size, ptrSize, block, &room);
+	flush();
+	fflush(stdout);
+#ifdef CX_RT_TINYGO
+	copied = cx_rt_tinygo_input_line_read(buffer, room);
+#else
+	int c = getchar();
+	if (c == EOF) {
+		copied = -1;
+	} else {
+		copied = 0;
+		while (c != EOF && c != '\n') {
+			if (c != '\r' && copied < room)
+				buffer[copied++] = (uint8_t)c;
+			c = getchar();
+		}
+	}
+#endif
+	memcpy(block + 2 * ptrSize, &copied, 4);
 }

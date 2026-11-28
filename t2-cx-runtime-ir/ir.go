@@ -259,6 +259,12 @@ const (
 	OpcodeFileClose
 	OpcodeFileSeek
 	OpcodeFileSync
+	// OpcodeTerminalArgCount, OpcodeTerminalArgRead and
+	// OpcodeTerminalInputLineRead read the program arguments and standard
+	// input, decision D142.
+	OpcodeTerminalArgCount
+	OpcodeTerminalArgRead
+	OpcodeTerminalInputLineRead
 	// OpcodeBoolNot and the rest of the bool family read A and B and write C.
 	OpcodeBoolNot
 	OpcodeBoolAnd
@@ -568,7 +574,7 @@ const (
 // libraries, which run on the block at sp (decision D119).
 const (
 	OpcodeLibraryFirst = OpcodeCipherHashStateNew
-	OpcodeLibraryLast  = OpcodeFileSync
+	OpcodeLibraryLast  = OpcodeTerminalInputLineRead
 )
 
 // OpcodeLibrary reports whether op is an opcode of a system library.

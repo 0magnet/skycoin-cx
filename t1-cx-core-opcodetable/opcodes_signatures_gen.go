@@ -7,7 +7,7 @@ import (
 )
 
 // OpcodeSignatureTableSize is one past the highest live opcode number.
-const OpcodeSignatureTableSize = 876
+const OpcodeSignatureTableSize = 879
 
 // OpcodeParameterTable holds the parameters of every opcode signature. Read only.
 var OpcodeParameterTable = [...]OpcodeParameter{
@@ -1822,6 +1822,12 @@ var OpcodeParameterTable = [...]OpcodeParameter{
 	{OpcodeParameterFormAtomic, valuetypes.BOOL, 0},
 	{OpcodeParameterFormAtomic, valuetypes.STR, 0},
 	{OpcodeParameterFormAtomic, valuetypes.BOOL, 0},
+	{OpcodeParameterFormAtomic, valuetypes.I32, 0},
+	{OpcodeParameterFormAtomic, valuetypes.I32, 0},
+	{OpcodeParameterFormAtomic, valuetypes.UNDEFINED, 0},
+	{OpcodeParameterFormAtomic, valuetypes.I32, 0},
+	{OpcodeParameterFormAtomic, valuetypes.UNDEFINED, 0},
+	{OpcodeParameterFormAtomic, valuetypes.I32, 0},
 }
 
 // OpcodeParameterStructTable holds the struct types of struct parameters. Read only.
@@ -2535,6 +2541,9 @@ var OpcodeSignatureTable = [OpcodeSignatureTableSize]OpcodeSignature{
 	873: {OpcodeGroupFile, true, 1805, 1, 1},
 	874: {OpcodeGroupFile, true, 1807, 1, 1},
 	875: {OpcodeGroupFile, true, 1809, 1, 1},
+	876: {OpcodeGroupTerminal, true, 1811, 0, 1},
+	877: {OpcodeGroupTerminal, true, 1812, 2, 1},
+	878: {OpcodeGroupTerminal, true, 1815, 1, 1},
 }
 
 // OpcodeOperatorTable is the typed form of each untyped operator by operand
@@ -3442,6 +3451,9 @@ var OpcodeNameRowTable = [OpcodeSignatureTableSize]uint16{
 	873: 783,
 	874: 784,
 	875: 785,
+	876: 786,
+	877: 787,
+	878: 788,
 }
 
 // NativeNameTable is every name a program calls a built-in by, the opcodes of
@@ -3929,10 +3941,13 @@ var NativeNameTable = [...]NativeName{
 	{"net.Update", 805},
 	{"net.Write", 810},
 	{"nop", 12},
+	{"os.ArgCount", 876},
+	{"os.ArgRead", 877},
 	{"os.Close", 824},
 	{"os.Create", 823},
 	{"os.Exit", 190},
 	{"os.GetWorkingDirectory", 820},
+	{"os.InputLineRead", 878},
 	{"os.LogFile", 821},
 	{"os.Open", 822},
 	{"os.OpenReadWrite", 873},

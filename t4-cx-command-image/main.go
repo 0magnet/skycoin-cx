@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t0-cx-library-terminal"
 	"github.com/skycoin/skycoin-cx/t1-cx-core-opcodetable"
 	"github.com/skycoin/skycoin-cx/t2-cx-runtime-ir"
 	vm "github.com/skycoin/skycoin-cx/t3-cx-runtime-vm"
@@ -27,7 +28,7 @@ func main() {
 // coreImageRun decodes the image, runs it and returns the exit code. The
 // image comes from coreImageFileRead, embedded or named on the command line.
 func coreImageRun() int32 {
-	file, problem := coreImageFileRead()
+	file, args, problem := coreImageFileRead()
 	if problem != "" {
 		coreImageWrite(os.Stderr, "cx-core-image: "+problem+"\n")
 		return valuetypes.CXCompilationError
@@ -37,6 +38,7 @@ func coreImageRun() int32 {
 		coreImageWrite(os.Stderr, "cx-core-image: "+ir.ImageFileProblemMessages[fileProblem]+"\n")
 		return valuetypes.CXCompilationError
 	}
+	terminal.ArgsSet(args)
 	for _, unlinked := range coreImageLibrariesUnlinked {
 		if coreImageOpcodesEnabled(&image.ImageOperationsEnabled, unlinked.coreImageLibraryOpcodeFirst, unlinked.coreImageLibraryOpcodeLast) {
 			coreImageWrite(os.Stderr, "cx-core-image: the image enables the "+opcodetable.LibraryTable[unlinked.coreImageLibraryNumber-1].LibraryName+" library, which cx-core-image does not link\n")

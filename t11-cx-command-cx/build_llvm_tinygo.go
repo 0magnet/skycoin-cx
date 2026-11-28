@@ -160,15 +160,21 @@ const buildLlvmTinygoMain = `package main
 #cgo CFLAGS: -DCX_RT_TINYGO -O2 -w
 #cgo LDFLAGS: %s
 #include <stdint.h>
-int32_t %s(void);
+int32_t %s(int32_t, char **);
 */
 import "C"
 
 import (
+	"bufio"
 	"os"
 	"strconv"
+	"strings"
 	"unsafe"
 )
+
+// input is made at the first read, so a program that reads nothing keeps
+// the RAM of a microcontroller.
+var input *bufio.Reader
 
 //export cx_rt_tinygo_exit
 func cx_rt_tinygo_exit(code int32) {
@@ -181,8 +187,47 @@ func cx_rt_tinygo_float_append(v float64, format int32, precision int32, bits in
 	return int32(copy(unsafe.Slice(out, room), strconv.AppendFloat(text[:0], v, byte(format), int(precision), int(bits))))
 }
 
+//export cx_rt_tinygo_arg_count
+func cx_rt_tinygo_arg_count() int32 {
+	return int32(len(os.Args) - 1)
+}
+
+//export cx_rt_tinygo_arg_read
+func cx_rt_tinygo_arg_read(index int32, out *byte, room int32) int32 {
+	if index < 0 || int(index) >= len(os.Args)-1 {
+		return -1
+	}
+	return int32(copy(unsafe.Slice(out, room), strings.TrimPrefix(os.Args[index+1], "++")))
+}
+
+//export cx_rt_tinygo_input_line_read
+func cx_rt_tinygo_input_line_read(out *byte, room int32) int32 {
+	if input == nil {
+		input = bufio.NewReader(os.Stdin)
+	}
+	buffer := unsafe.Slice(out, room)
+	copied := 0
+	read := false
+	for {
+		line, err := input.ReadSlice('\n')
+		read = read || len(line) > 0
+		for _, character := range line {
+			if character != '\n' && character != '\r' && copied < len(buffer) {
+				buffer[copied] = character
+				copied++
+			}
+		}
+		if err != bufio.ErrBufferFull {
+			if err != nil && !read {
+				return -1
+			}
+			return int32(copied)
+		}
+	}
+}
+
 func main() {
-	os.Exit(int(C.%s()))
+	os.Exit(int(C.%s(0, nil)))
 }
 `
 

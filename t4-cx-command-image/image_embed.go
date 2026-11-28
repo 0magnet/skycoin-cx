@@ -4,6 +4,7 @@ package main
 
 import (
 	_ "embed"
+	"os"
 	"unsafe"
 )
 
@@ -15,7 +16,8 @@ import (
 var coreImageEmbedded string
 
 // coreImageFileRead returns the embedded image. Nothing writes the bytes:
-// ImageFileDecode only reads them and Machine.Reset copies the data.
-func coreImageFileRead() ([]byte, string) {
-	return unsafe.Slice(unsafe.StringData(coreImageEmbedded), len(coreImageEmbedded)), ""
+// ImageFileDecode only reads them and Machine.Reset copies the data. Every
+// argument is a program argument.
+func coreImageFileRead() ([]byte, []string, string) {
+	return unsafe.Slice(unsafe.StringData(coreImageEmbedded), len(coreImageEmbedded)), os.Args[1:], ""
 }

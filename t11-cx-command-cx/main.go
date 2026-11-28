@@ -7,6 +7,7 @@ import (
 
 	sourceargs "github.com/skycoin/skycoin-cx/t0-cx-compiler-sourceargs"
 	"github.com/skycoin/skycoin-cx/t0-cx-core-valuetypes"
+	"github.com/skycoin/skycoin-cx/t0-cx-library-terminal"
 	filelog "github.com/skycoin/skycoin-cx/t0-cx-runtime-filelog"
 	sandbox "github.com/skycoin/skycoin-cx/t1-cx-runtime-sandbox"
 
@@ -67,6 +68,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File) {
 	defer root.Close()
 	astbuild.AST.ProgramSandboxRoot = root
 	astbuild.AST.ProgramStdinInit(os.Stdin)
+	terminal.ArgsSet(cxArgs)
 
 	profiling.ProfileStart("run")
 
@@ -250,6 +252,9 @@ func runStart(args []string) (options cxCmdFlags, cxArgs []string, sourceCode []
 	// Init 9: built-in opcode and operator tables
 
 	enabled, operations, problem := librariesEnabledParse(options.enable)
+	if problem == "" {
+		problem = librariesDisabledApply(options.disable, &enabled, &operations)
+	}
 	if problem != "" {
 		fmt.Fprintln(os.Stderr, problem)
 		os.Exit(valuetypes.CXCompilationError)
