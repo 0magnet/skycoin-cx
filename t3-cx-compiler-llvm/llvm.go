@@ -134,6 +134,18 @@ type emitter struct {
 	resultBlock bool
 	readOnly    []bool
 	debug       *debugMetadata
+	// layouts holds the regions of each function, from analyze.
+	layouts []funcLayout
+	// framePointerCheck says that a call checks fp against the stack end.
+	framePointerCheck bool
+}
+
+// funcLayout is the frame and scratch regions of a function and whether it
+// takes the frame pointer fp.
+type funcLayout struct {
+	funcLayoutFrame        []region
+	funcLayoutScratch      []region
+	funcLayoutFramePointer bool
 }
 
 // Emit returns the LLVM IR module of image, or an error for an instruction
@@ -152,6 +164,18 @@ func Emit(image *ir.Image, options Options) ([]byte, Stats, error) {
 	if options.Debug {
 		e.debug = debugMetadataNew()
 	}
+	e.layouts = make([]funcLayout, len(image.ImageFuncs))
+	for id := range image.ImageFuncs {
+		fn := &image.ImageFuncs[id]
+		if len(fn.FuncCode) == 0 {
+			continue
+		}
+		if err := e.analyze(fn); err != nil {
+			return nil, e.stats, fmt.Errorf("%s: %w", image.ImageFuncNames[id], err)
+		}
+		e.layouts[id] = funcLayout{funcLayoutFrame: e.frame, funcLayoutScratch: e.scratch}
+	}
+	e.framePointerPlan()
 	for id := range image.ImageFuncs {
 		fn := &image.ImageFuncs[id]
 		if len(fn.FuncCode) == 0 {
@@ -221,19 +245,91 @@ func (e *emitter) entry() {
 		e.line("call void @llvm.memcpy.p0.p0.i64(ptr getelementptr (i8, ptr @cx_mem, i64 %d), ptr @cx_init.%d, i64 %d, i1 false)", image.ImageDataStart+uint32(run[0]), i, run[1]-run[0])
 	}
 	e.declare("llvm.memcpy", "declare void @llvm.memcpy.p0.p0.i64(ptr, ptr, i64, i1)")
-	fp := uint32(0)
 	if image.ImageEntryInit != ir.ImageFuncNone {
-		e.line("call %s %s(i32 0, i32 0)", e.returnType(&image.ImageFuncs[image.ImageEntryInit]), e.funcName(image.ImageEntryInit))
-		fp = image.ImageFuncs[image.ImageEntryInit].FuncFrameSize
+		e.entryCall(image.ImageEntryInit, 0)
 	}
 	if image.ImageEntryMain != ir.ImageFuncNone {
-		e.line("call %s %s(i32 %d, i32 0)", e.returnType(&image.ImageFuncs[image.ImageEntryMain]), e.funcName(image.ImageEntryMain), fp)
+		e.entryCall(image.ImageEntryMain, e.framePointerEntry())
 	}
 	e.declare("cx_rt_finish", "declare i32 @cx_rt_finish(i32)")
 	e.line("%%code = call i32 @cx_rt_finish(i32 %d)", e.options.AssertCode)
 	e.line("ret i32 %%code")
 	e.body.WriteString("}\n\n")
 	e.out.Write(e.body.Bytes())
+}
+
+// entryCall calls function id from main at depth 0 with its frame at fp.
+func (e *emitter) entryCall(id uint32, fp uint32) {
+	args := "i32 0"
+	if e.layouts[id].funcLayoutFramePointer {
+		args = fmt.Sprintf("i32 %d, i32 0", fp)
+	}
+	e.line("call %s %s(%s)", e.returnType(&e.image.ImageFuncs[id]), e.funcName(id), args)
+}
+
+// framePointerEntry is the frame pointer main runs at, past the frame of
+// *init.
+func (e *emitter) framePointerEntry() uint32 {
+	if e.image.ImageEntryInit == ir.ImageFuncNone {
+		return 0
+	}
+	return e.image.ImageFuncs[e.image.ImageEntryInit].FuncFrameSize
+}
+
+// framePointerPlan decides which functions take the frame pointer fp and
+// whether a call checks fp against the stack end (optimizations/0003). The
+// check is left out when the deepest chain the depth check allows fits the
+// stack with every frame as large as the largest, as the depth check then
+// stops the run first. Without the check, a function takes fp only when a
+// region of its frame stays in cx_mem, it calls a library opcode, whose
+// block lies at sp, or it calls a function that takes fp.
+func (e *emitter) framePointerPlan() {
+	image := e.image
+	frameMax := uint32(0)
+	for id := range image.ImageFuncs {
+		fn := &image.ImageFuncs[id]
+		if len(fn.FuncCode) == 0 {
+			continue
+		}
+		frameMax = max(frameMax, fn.FuncFrameSize)
+		for pc := range fn.FuncCode {
+			if fn.FuncCode[pc].InstrOpcode == ir.OpcodeCallFrame {
+				frameMax = max(frameMax, fn.FuncCode[pc].InstrN)
+			}
+		}
+	}
+	e.framePointerCheck = uint64(e.framePointerEntry())+uint64(ir.ImageCallDepthMax)*uint64(frameMax) > uint64(image.ImageStackSize)
+	for id := range image.ImageFuncs {
+		fn := &image.ImageFuncs[id]
+		if len(fn.FuncCode) == 0 {
+			continue
+		}
+		layout := &e.layouts[id]
+		layout.funcLayoutFramePointer = e.framePointerCheck
+		for _, r := range layout.funcLayoutFrame {
+			layout.funcLayoutFramePointer = layout.funcLayoutFramePointer || r.regionShadow
+		}
+		for pc := range fn.FuncCode {
+			layout.funcLayoutFramePointer = layout.funcLayoutFramePointer || ir.OpcodeLibrary(fn.FuncCode[pc].InstrOpcode)
+		}
+	}
+	for changed := true; changed; {
+		changed = false
+		for id := range image.ImageFuncs {
+			fn := &image.ImageFuncs[id]
+			if e.layouts[id].funcLayoutFramePointer {
+				continue
+			}
+			for pc := range fn.FuncCode {
+				in := &fn.FuncCode[pc]
+				if in.InstrOpcode == ir.OpcodeCall && e.layouts[in.InstrM].funcLayoutFramePointer {
+					e.layouts[id].funcLayoutFramePointer = true
+					changed = true
+					break
+				}
+			}
+		}
+	}
 }
 
 func llvmBytes(raw []byte) string {
@@ -314,9 +410,14 @@ func typeSigned(code valuetypes.Code) bool {
 
 func typeFloat(code valuetypes.Code) bool { return code == valuetypes.F32 || code == valuetypes.F64 }
 
+// returnType is the LLVM type a function returns: void, the value of a
+// single result, or a struct of two or more (optimizations/0002).
 func (e *emitter) returnType(fn *ir.Func) string {
-	if len(fn.FuncOutputs) == 0 {
+	switch len(fn.FuncOutputs) {
+	case 0:
 		return "void"
+	case 1:
+		return valueType(fn.FuncOutputs[0].SlotSize)
 	}
 	parts := make([]string, len(fn.FuncOutputs))
 	for i, slot := range fn.FuncOutputs {
@@ -632,18 +733,22 @@ func (e *emitter) emitFunction(id uint32, fn *ir.Func) error {
 	e.function, e.currentFunction, e.localCount = id, fn, 0
 	e.cold.Reset()
 	e.call = pendingCall{}
-	if err := e.analyze(fn); err != nil {
-		return err
+	layout := &e.layouts[id]
+	e.frame, e.scratch = layout.funcLayoutFrame, layout.funcLayoutScratch
+	params := []string{"i32 %depth"}
+	if layout.funcLayoutFramePointer {
+		params = []string{"i32 %fp", "i32 %depth"}
 	}
-	params := []string{"i32 %fp", "i32 %depth"}
 	for i, slot := range fn.FuncInputs {
 		params = append(params, fmt.Sprintf("%s %%in%d", valueType(slot.SlotSize), i))
 	}
 	attachment := e.debugFunction(id, fn)
 	fmt.Fprintf(&e.body, "define internal %s %s(%s) nounwind%s {\nentry:\n", e.returnType(fn), e.funcName(id), strings.Join(params, ", "), attachment)
-	e.line("%%fp64 = zext i32 %%fp to i64")
-	e.line("%%fpp = getelementptr inbounds i8, ptr @cx_mem, i64 %%fp64")
-	e.line("%%sp = add i32 %%fp, %d", fn.FuncFrameSize)
+	if layout.funcLayoutFramePointer {
+		e.line("%%fp64 = zext i32 %%fp to i64")
+		e.line("%%fpp = getelementptr inbounds i8, ptr @cx_mem, i64 %%fp64")
+		e.line("%%sp = add i32 %%fp, %d", fn.FuncFrameSize)
+	}
 	e.declare("llvm.memset", "declare void @llvm.memset.p0.i64(ptr, i8, i64, i1)")
 	e.declare("llvm.memcpy", "declare void @llvm.memcpy.p0.p0.i64(ptr, ptr, i64, i1)")
 	for _, r := range e.frame {
@@ -828,8 +933,19 @@ func (e *emitter) instrReturn() error {
 		e.line("ret void")
 		return nil
 	}
-	aggregate := "undef"
 	rt := e.returnType(fn)
+	if len(fn.FuncOutputs) == 1 {
+		slot := fn.FuncOutputs[0]
+		p, err := e.ptrAt(slot.SlotOffset, true, slot.SlotSize)
+		if err != nil {
+			return err
+		}
+		v := e.localNew()
+		e.line("%s = load %s, ptr %s, align 1", v, rt, p)
+		e.line("ret %s %s", rt, v)
+		return nil
+	}
+	aggregate := "undef"
 	for i, slot := range fn.FuncOutputs {
 		p, err := e.ptrAt(slot.SlotOffset, true, slot.SlotSize)
 		if err != nil {
@@ -853,6 +969,9 @@ func (e *emitter) instrCallFrame(pc uint32, in *ir.Instr) error {
 	d := e.localNew()
 	e.line("%s = icmp uge i32 %%depth, %d", d, ir.ImageCallDepthMax-1)
 	e.check(d, StopStackOverflow, pc)
+	if !e.framePointerCheck {
+		return nil
+	}
 	end := e.localNew()
 	e.line("%s = add i64 %%fp64, %d", end, uint64(e.currentFunction.FuncFrameSize)+uint64(in.InstrN))
 	s := e.localNew()
@@ -871,7 +990,10 @@ func (e *emitter) instrCall(in *ir.Instr) error {
 	}
 	d := e.localNew()
 	e.line("%s = add i32 %%depth, 1", d)
-	args := []string{"i32 %sp", "i32 " + d}
+	args := []string{"i32 " + d}
+	if e.layouts[in.InstrM].funcLayoutFramePointer {
+		args = []string{"i32 %sp", "i32 " + d}
+	}
 	used := 0
 	for _, slot := range callee.FuncInputs {
 		typ := valueType(slot.SlotSize)
@@ -913,6 +1035,9 @@ func (e *emitter) instrCallResult(in *ir.Instr) error {
 		}
 		if slot.SlotSize != in.InstrN {
 			return fmt.Errorf("result size %d of a slot of %d", in.InstrN, slot.SlotSize)
+		}
+		if len(callee.FuncOutputs) == 1 {
+			return e.store(in, 2, valueType(slot.SlotSize), slot.SlotSize, e.result)
 		}
 		v := e.localNew()
 		e.line("%s = extractvalue %s %s, %d", v, e.returnType(callee), e.result, i)
